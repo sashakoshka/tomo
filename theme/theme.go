@@ -10,11 +10,15 @@ import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 // none of these colors are final! TODO: generate these values from a theme
 // file at startup.
 
-var foregroundImage = artist.NewUniform(color.Gray16 { 0x0000})
+var foregroundImage  = artist.NewUniform(color.Gray16 { 0x0000})
 var disabledForegroundImage = artist.NewUniform(color.Gray16 { 0x5555})
-var accentImage     = artist.NewUniform(color.RGBA { 0xFF, 0x22, 0x00, 0xFF})
-var highlightImage  = artist.NewUniform(color.Gray16 { 0xEEEE })
-var shadowImage     = artist.NewUniform(color.Gray16 { 0x3333 })
+var accentImage      = artist.NewUniform(color.RGBA { 0x3E, 0x81, 0x69, 0xFF})
+var highlightImage   = artist.NewUniform(color.Gray16 { 0xEEEE })
+var shadowImage      = artist.NewUniform(color.Gray16 { 0x3333 })
+var weakShadeImage   = artist.NewUniform(color.Gray16 { 0x7777 })
+var strokeImage      = artist.NewUniform(color.Gray16 { 0x0000 })
+var weakStrokeImage  = artist.NewUniform(color.Gray16 { 0x3333 })
+var insetShadowImage = artist.NewUniform(color.Gray16 { 0x7777 })
 
 var backgroundImage = artist.NewUniform(color.Gray16 { 0xAAAA})
 var backgroundProfile = artist.ShadingProfile {
@@ -31,42 +35,66 @@ var raisedImage = artist.NewUniform(color.RGBA { 0x8D, 0x98, 0x94, 0xFF})
 var raisedProfile = artist.ShadingProfile {
 	Highlight:     highlightImage,
 	Shadow:        shadowImage,
-	Stroke:        artist.NewUniform(color.Gray16 { 0x0000 }),
+	Stroke:        strokeImage,
+	Fill:          raisedImage,
+	StrokeWeight:  1,
+	ShadingWeight: 1,
+}
+var selectedRaisedProfile = artist.ShadingProfile {
+	Highlight:     highlightImage,
+	Shadow:        shadowImage,
+	Stroke:        accentImage,
 	Fill:          raisedImage,
 	StrokeWeight:  1,
 	ShadingWeight: 1,
 }
 var engravedRaisedProfile = artist.ShadingProfile {
-	Highlight:     artist.NewUniform(color.Gray16 { 0x7777 }),
+	Highlight:     weakShadeImage,
 	Shadow:        raisedImage,
-	Stroke:        artist.NewUniform(color.Gray16 { 0x0000 }),
+	Stroke:        strokeImage,
+	Fill:          raisedImage,
+	StrokeWeight:  1,
+	ShadingWeight: 1,
+}
+var selectedEngravedRaisedProfile = artist.ShadingProfile {
+	Highlight:     insetShadowImage,
+	Shadow:        raisedImage,
+	Stroke:        accentImage,
 	Fill:          raisedImage,
 	StrokeWeight:  1,
 	ShadingWeight: 1,
 }
 var disabledRaisedProfile = artist.ShadingProfile {
-	Highlight:     artist.NewUniform(color.Gray16 { 0x7777 }),
-	Shadow:        artist.NewUniform(color.Gray16 { 0x7777 }),
-	Stroke:        artist.NewUniform(color.Gray16 { 0x3333 }),
-	Fill:          raisedImage,
+	Highlight:     weakShadeImage,
+	Shadow:        weakShadeImage,
+	Stroke:        weakStrokeImage,
+	Fill:          backgroundImage,
 	StrokeWeight:  1,
 	ShadingWeight: 0,
 }
 
 var inputImage = artist.NewUniform(color.Gray16 { 0xFFFF })
 var inputProfile = artist.ShadingProfile {
-	Highlight:     shadowImage,
-	Shadow:        highlightImage,
-	Stroke:        artist.NewUniform(color.Gray16 { 0x0000 }),
+	Highlight:     insetShadowImage,
+	Shadow:        inputImage,
+	Stroke:        strokeImage,
+	Fill:          inputImage,
+	StrokeWeight:  1,
+	ShadingWeight: 1,
+}
+var selectedInputProfile = artist.ShadingProfile {
+	Highlight:     insetShadowImage,
+	Shadow:        inputImage,
+	Stroke:        accentImage,
 	Fill:          inputImage,
 	StrokeWeight:  1,
 	ShadingWeight: 1,
 }
 var disabledInputProfile = artist.ShadingProfile {
-	Highlight:     artist.NewUniform(color.Gray16 { 0x7777 }),
-	Shadow:        artist.NewUniform(color.Gray16 { 0x7777 }),
-	Stroke:        artist.NewUniform(color.Gray16 { 0x3333 }),
-	Fill:          inputImage,
+	Highlight:     weakShadeImage,
+	Shadow:        backgroundImage,
+	Stroke:        accentImage,
+	Fill:          backgroundImage,
 	StrokeWeight:  1,
 	ShadingWeight: 0,
 }
@@ -82,12 +110,26 @@ func BackgroundProfile (engraved bool) artist.ShadingProfile {
 
 // RaisedProfile returns the shading profile to be used for raised objects such
 // as buttons.
-func RaisedProfile (engraved bool, enabled bool) artist.ShadingProfile {
+func RaisedProfile (
+	engraved bool,
+	enabled  bool,
+	selected bool,
+) (
+	artist.ShadingProfile,
+) {
 	if enabled {
 		if engraved {
-			return engravedRaisedProfile
+			if selected {
+				return selectedEngravedRaisedProfile
+			} else {
+				return engravedRaisedProfile
+			}
 		} else {
-			return raisedProfile
+			if selected {
+				return selectedRaisedProfile
+			} else {
+				return raisedProfile
+			}
 		}
 	} else {
 		return disabledRaisedProfile
@@ -95,9 +137,13 @@ func RaisedProfile (engraved bool, enabled bool) artist.ShadingProfile {
 }
 
 // InputProfile returns the shading profile to be used for input fields.
-func InputProfile (enabled bool) artist.ShadingProfile {
+func InputProfile (enabled bool, selected bool) artist.ShadingProfile {
 	if enabled {
-		return inputProfile
+		if selected {
+			return selectedInputProfile
+		} else {
+			return inputProfile
+		}
 	} else {
 		return disabledInputProfile
 	}

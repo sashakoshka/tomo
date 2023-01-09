@@ -1,7 +1,6 @@
 package basic
 
 import "image"
-import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
@@ -10,8 +9,9 @@ type Button struct {
 	*Core
 	core CoreControl
 	
-	pressed bool
-	enabled bool
+	pressed  bool
+	enabled  bool
+	selected bool
 	onClick func ()
 
 	text   string
@@ -39,6 +39,7 @@ func (element *Button) Handle (event tomo.Event) {
 		if !element.enabled { break }
 		
 		mouseDownEvent := event.(tomo.EventMouseDown)
+		element.Select()
 		if mouseDownEvent.Button != tomo.ButtonLeft { break }
 		element.pressed = true
 		if element.core.HasImage() {
@@ -63,9 +64,37 @@ func (element *Button) Handle (event tomo.Event) {
 		if within && element.onClick != nil {
 			element.onClick()
 		}
+
+	case tomo.EventSelect:
+		element.selected = true
+
+	case tomo.EventDeselect:
+		element.selected = false
 	// TODO: handle selection events, and the enter key
 	}
 	return
+}
+
+func (element *Button) OnClick (callback func ()) {
+	element.onClick = callback
+}
+
+func (element *Button) AdvanceSelection (direction int) (ok bool) {
+	wasSelected := element.selected
+	element.selected = false
+	if element.core.HasImage() && wasSelected {
+		element.draw()
+		element.core.PushAll()
+	}
+	return
+}
+
+func (element *Button) Selectable () (selectable bool) {
+	return true
+}
+
+func (element *Button) Select () {
+	element.core.Select()
 }
 
 func (element *Button) SetEnabled (enabled bool) {
@@ -92,24 +121,15 @@ func (element *Button) SetText (text string) {
 	}
 }
 
-func (element *Button) OnClick (callback func ()) {
-	element.onClick = callback
-}
-
-func (element *Button) AdvanceSelection (direction int) (ok bool) {
-	return
-}
-
-func (element *Button) Selectable () (selectable bool) {
-	return true
-}
-
 func (element *Button) draw () {
 	bounds := element.core.Bounds()
 
 	artist.ChiseledRectangle (
 		element.core,
-		theme.RaisedProfile(element.pressed, element.enabled),
+		theme.RaisedProfile (
+			element.pressed,
+			element.enabled,
+			element.selected),
 		bounds)
 		
 	innerBounds := bounds

@@ -7,13 +7,14 @@ import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // Test is a simple element that can be used as a placeholder.
 type Test struct {
-	core Core
+	*Core
+	core CoreControl
 }
 
 // NewTest creates a new test element.
 func NewTest () (element *Test) {
 	element = &Test { }
-	element.core = NewCore(element)
+	element.Core, element.core = NewCore(element)
 	element.core.SetMinimumSize(32, 32)
 	return
 }
@@ -46,45 +47,10 @@ func (element *Test) Handle (event tomo.Event) {
 	return
 }
 
-func (element *Test) ColorModel () (model color.Model) {
-	return color.RGBAModel
-}
-
-func (element *Test) At (x, y int) (pixel color.Color) {
-	pixel = element.core.At(x, y)
-	return
-}
-
-func (element *Test) RGBAAt (x, y int) (pixel color.RGBA) {
-	pixel = element.core.RGBAAt(x, y)
-	return
-}
-
-func (element *Test) Bounds () (bounds image.Rectangle) {
-	bounds = element.core.Bounds()
-	return
-}
-
-func (element *Test) SetDrawCallback (draw func (region tomo.Image)) {
-	element.core.SetDrawCallback(draw)
-}
-
-func (element *Test) SetMinimumSizeChangeCallback (
-	notify func (width, height int),
-) {
-	element.core.SetMinimumSizeChangeCallback(notify)
-}
-
 func (element *Test) Selectable () (selectable bool) {
 	return
 }
 
-func (element *Test) MinimumWidth () (minimum int) {
-	minimum = element.core.MinimumWidth()
-	return
-}
-
-func (element *Test) MinimumHeight () (minimum int) {
-	minimum = element.core.MinimumHeight()
+func (element *Test) AdvanceSelection (direction int) (ok bool) {
 	return
 }

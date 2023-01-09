@@ -84,6 +84,7 @@ func (window *Window) Adopt (child tomo.Element) {
 		child.SetParentHooks (tomo.ParentHooks {
 			Draw: window.childDrawCallback,
 			MinimumSizeChange: window.childMinimumSizeChangeCallback,
+			SelectionRequest: window.childSelectionRequestCallback,
 		})
 		window.resizeChildToFit()
 	}
@@ -237,6 +238,10 @@ func (window *Window) childMinimumSizeChangeCallback (width, height int) {
 		newHeight != window.metrics.height {
 		window.xWindow.Resize(newWidth, newHeight)
 	}
+}
+
+func (window *Window) childSelectionRequestCallback () {
+	window.child.Handle(tomo.EventSelect { })
 }
 
 func (window *Window) pushRegion (region image.Rectangle) {

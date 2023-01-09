@@ -67,16 +67,19 @@ func (control CoreControl) HasImage () (has bool) {
 	return
 }
 
+func (control CoreControl) Select () {
+	control.core.hooks.RunSelectionRequest()
+}
+
 func (control CoreControl) PushRegion (bounds image.Rectangle) {
-	core := control.core
-	core.hooks.RunDraw(control.SubImage(bounds).(*image.RGBA))
+	control.core.hooks.RunDraw(control.SubImage(bounds).(*image.RGBA))
 }
 
 func (control CoreControl) PushAll () {
 	control.PushRegion(control.Bounds())
 }
 
-func (control CoreControl) AllocateCanvas (width, height int) {
+func (control *CoreControl) AllocateCanvas (width, height int) {
 	core := control.core
 	width, height, _ = control.ConstrainSize(width, height)
 	core.canvas  = image.NewRGBA(image.Rect (0, 0, width, height))
