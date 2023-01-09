@@ -160,7 +160,7 @@ func Stop () {
 // Do executes the specified callback within the main thread as soon as
 // possible. This function can be safely called from other threads.
 func Do (callback func ()) {
-	
+	backend.Do(callback)
 }
 
 // NewWindow creates a new window using the current backend, and returns it as a
