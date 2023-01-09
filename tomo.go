@@ -43,6 +43,29 @@ type ParentHooks struct {
 	SelectionRequest func ()
 }
 
+// RunDraw runs the Draw hook if it is not nil. If it is nil, it does nothing.
+func (hooks ParentHooks) RunDraw (region Image) {
+	if hooks.Draw != nil {
+		hooks.Draw(region)
+	}
+}
+
+// RunMinimumSizeChange runs the MinimumSizeChange hook if it is not nil. If it
+// is nil, it does nothing.
+func (hooks ParentHooks) RunMinimumSizeChange (width, height int) {
+	if hooks.MinimumSizeChange != nil {
+		hooks.MinimumSizeChange(width, height)
+	}
+}
+
+// RunSelectionRequest runs the SelectionRequest hook if it is not nil. If it is
+// nil, it does nothing.
+func (hooks ParentHooks) RunSelectionRequest () {
+	if hooks.SelectionRequest != nil {
+		hooks.SelectionRequest()
+	}
+}
+
 // Element represents a basic on-screen object.
 type Element interface {
 	// Element must implement the Image interface. Elements should start out
