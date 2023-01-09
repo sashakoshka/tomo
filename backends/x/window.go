@@ -1,7 +1,6 @@
 package x
 
 import "image"
-import "image/color"
 import "github.com/jezek/xgb/xproto"
 import "github.com/jezek/xgbutil/ewmh"
 import "github.com/jezek/xgbutil/icccm"
@@ -78,90 +77,16 @@ func (backend *Backend) NewWindow (
 	return
 }
 
-func (window *Window) ColorModel () (model color.Model) {
-	return color.RGBAModel
-}
-
-func (window *Window) At (x, y int) (pixel color.Color) {
-	pixel = window.xCanvas.At(x, y)
-	return
-}
-
-func (window *Window) RGBAAt (x, y int) (pixel color.RGBA) {
-	sourcePixel := window.xCanvas.At(x, y).(xgraphics.BGRA)
-	pixel = color.RGBA {
-		R: sourcePixel.R,
-		G: sourcePixel.G,
-		B: sourcePixel.B,
-		A: sourcePixel.A,
-	}
-	return
-}
-
-func (window *Window) Bounds () (bounds image.Rectangle) {
-	bounds.Max = image.Point {
-		X: window.metrics.width,
-		Y: window.metrics.height,
-	}
-	return
-}
-
-func (window *Window) Handle (event tomo.Event) () {
-	switch event.(type) {
-	case tomo.EventResize:
-		resizeEvent := event.(tomo.EventResize)
-		// we will receive a resize event from X later which will be
-		// handled by our event handler callbacks.
-		if resizeEvent.Width < window.MinimumWidth() {
-			resizeEvent.Width = window.MinimumWidth()
-		}
-		if resizeEvent.Height < window.MinimumHeight() {
-			resizeEvent.Height = window.MinimumHeight()
-		}
-		window.xWindow.Resize(resizeEvent.Width, resizeEvent.Height)
-	default:
-		if window.child != nil { window.child.Handle(event) }
-	}
-	return
-}
-
-func (window *Window) SetDrawCallback (draw func (region tomo.Image)) {
-	window.drawCallback = draw
-}
-
-func (window *Window) SetMinimumSizeChangeCallback (
-	notify func (width, height int),
-) {
-	window.minimumSizeChangeCallback = notify
-}
-
-func (window *Window) Selectable () (selectable bool) {
-	if window.child != nil { selectable = window.child.Selectable() }
-	return
-}
-
-func (window *Window) MinimumWidth () (minimum int) {
-	if window.child != nil { minimum = window.child.MinimumWidth() }
-	minimum = 8
-	return
-}
-
-func (window *Window) MinimumHeight () (minimum int) {
-	if window.child != nil { minimum = window.child.MinimumHeight() }
-	minimum = 8
-	return
-}
-
 func (window *Window) Adopt (child tomo.Element) {
 	if window.child != nil {
-		window.child.SetDrawCallback(nil)
-		window.child.SetMinimumSizeChangeCallback(nil)
+		child.SetParentHooks (tomo.ParentHooks {})
 	}
 	window.child = child
 	if child != nil {
-		child.SetDrawCallback(window.childDrawCallback)
-		child.SetMinimumSizeChangeCallback (
-			window.childMinimumSizeChangeCallback)
+		child.SetParentHooks (tomo.ParentHooks {
+			Draw: window.childDrawCallback,
+			MinimumSizeChange: window.childMinimumSizeChangeCallback,
+		})
 		window.resizeChildToFit()
 	}
 	window.childMinimumSizeChangeCallback (
