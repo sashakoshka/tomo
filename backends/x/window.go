@@ -77,7 +77,8 @@ func (backend *Backend) NewWindow (
 
 func (window *Window) Adopt (child tomo.Element) {
 	if window.child != nil {
-		child.SetParentHooks (tomo.ParentHooks {})
+		child.SetParentHooks (tomo.ParentHooks { })
+		if child.Selectable() { child.Handle(tomo.EventDeselect { }) }
 	}
 	window.child = child
 	if child != nil {
@@ -86,6 +87,7 @@ func (window *Window) Adopt (child tomo.Element) {
 			MinimumSizeChange: window.childMinimumSizeChangeCallback,
 			SelectionRequest: window.childSelectionRequestCallback,
 		})
+		if child.Selectable() { child.Handle(tomo.EventSelect { }) }
 		window.resizeChildToFit()
 	}
 	window.childMinimumSizeChangeCallback(child.MinimumSize())

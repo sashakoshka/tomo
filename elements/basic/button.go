@@ -47,6 +47,16 @@ func (element *Button) Handle (event tomo.Event) {
 			element.core.PushAll()
 		}
 
+	case tomo.EventKeyDown:
+		keyDownEvent := event.(tomo.EventKeyDown)
+		if keyDownEvent.Key == tomo.KeyEnter {
+			element.pressed = true
+			if element.core.HasImage() {
+				element.draw()
+				element.core.PushAll()
+			}
+		}
+
 	case tomo.EventMouseUp:
 		if !element.enabled { break }
 	
@@ -65,12 +75,24 @@ func (element *Button) Handle (event tomo.Event) {
 			element.onClick()
 		}
 
+	case tomo.EventKeyUp:
+		keyDownEvent := event.(tomo.EventKeyUp)
+		if keyDownEvent.Key == tomo.KeyEnter {
+			element.pressed = false
+			if element.core.HasImage() {
+				element.draw()
+				element.core.PushAll()
+			}
+			if element.onClick != nil {
+				element.onClick()
+			}
+		}
+
 	case tomo.EventSelect:
 		element.selected = true
 
 	case tomo.EventDeselect:
 		element.selected = false
-	// TODO: handle selection events, and the enter key
 	}
 	return
 }
