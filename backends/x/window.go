@@ -10,13 +10,11 @@ import "github.com/jezek/xgbutil/xgraphics"
 import "git.tebibyte.media/sashakoshka/tomo"
 
 type Window struct {
-	backend                   *Backend
-	xWindow                   *xwindow.Window
-	xCanvas                   *xgraphics.Image
-	child                     tomo.Element
-	onClose                   func ()
-	drawCallback              func (region tomo.Image)
-	minimumSizeChangeCallback func (width, height int)
+	backend *Backend
+	xWindow *xwindow.Window
+	xCanvas *xgraphics.Image
+	child   tomo.Element
+	onClose func ()
 	skipChildDrawCallback bool
 
 	metrics struct {
@@ -89,9 +87,7 @@ func (window *Window) Adopt (child tomo.Element) {
 		})
 		window.resizeChildToFit()
 	}
-	window.childMinimumSizeChangeCallback (
-		child.MinimumWidth(),
-		child.MinimumHeight())
+	window.childMinimumSizeChangeCallback(child.MinimumSize())
 }
 
 func (window *Window) Child () (child tomo.Element) {
