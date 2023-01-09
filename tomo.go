@@ -121,7 +121,7 @@ type Window interface {
 	// SetIcon taks in a list different sizes of the same icon and selects
 	// the best one to display on the window title bar, dock, or whatever is
 	// applicable for the given backend. This method might have no effect
-	// with some backends.
+	// for some backends.
 	SetIcon (sizes []image.Image)
 
 	// Show shows the window. The window starts off hidden, so this must be

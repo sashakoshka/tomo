@@ -5,24 +5,23 @@ import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
 
 // Core is a struct that implements some core functionality common to most
-// widgets. It is possible to embed this directly into a struct, but this is not
-// reccomended as it exposes internal functionality.
+// widgets. It is meant to be embedded directly into a struct.
 type Core struct {
-	*image.RGBA
+	canvas *image.RGBA
 	parent tomo.Element
-	
-	drawCallback func (region tomo.Image)
-	minimumSizeChangeCallback func (width, height int)
 
 	metrics struct {
 		minimumWidth  int
 		minimumHeight int
 	}
+
+	hooks tomo.ParentHooks
 }
 
-// Core creates a new element core.
-func NewCore (parent tomo.Element) (core Core) {
-	core = Core { parent: parent }
+// NewCore creates a new element core and its corresponding control.
+func NewCore (parent tomo.Element) (core *Core, control CoreControl) {
+	core    = &Core { parent: parent }
+	control = CoreControl { core: core }
 	return
 }
 
@@ -31,81 +30,75 @@ func (core Core) ColorModel () (model color.Model) {
 }
 
 func (core Core) At (x, y int) (pixel color.Color) {
-	if core.RGBA == nil { return color.RGBA { } }
-	pixel = core.RGBA.At(x, y)
+	if core.canvas == nil { return color.RGBA { } }
+	pixel = core.canvas.At(x, y)
 	return
 }
 
 func (core Core) RGBAAt (x, y int) (pixel color.RGBA) {
-	if core.RGBA == nil { return color.RGBA { } }
-	pixel = core.RGBA.RGBAAt(x, y)
+	if core.canvas == nil { return color.RGBA { } }
+	pixel = core.canvas.RGBAAt(x, y)
 	return
 }
 
 func (core Core) Bounds () (bounds image.Rectangle) {
-	if core.RGBA != nil { bounds = core.RGBA.Bounds() }
+	if core.canvas != nil { bounds = core.canvas.Bounds() }
 	return
 }
 
-func (core *Core) SetDrawCallback (draw func (region tomo.Image)) {
-	core.drawCallback = draw
+func (core *Core) SetParentHooks (hooks tomo.ParentHooks) {
+	core.hooks = hooks
 }
 
-func (core *Core) SetMinimumSizeChangeCallback (
-	notify func (width, height int),
-) {
-	core.minimumSizeChangeCallback = notify
+func (core Core) MinimumSize () (width, height int) {
+	return core.metrics.minimumWidth, core.metrics.minimumHeight
 }
 
-func (core Core) HasImage () (has bool) {
-	has = core.RGBA != nil
+// CoreControl is a struct that can exert control over a control struct. It can
+// be used as a canvas. It must not be directly embedded into an element, but
+// instead kept as a private member.
+type CoreControl struct {
+	*image.RGBA
+	core *Core
+}
+
+func (control CoreControl) HasImage () (has bool) {
+	has = control.RGBA != nil
 	return
 }
 
-func (core Core) PushRegion (bounds image.Rectangle) {
-	if core.drawCallback != nil {
-		core.drawCallback(core.SubImage(bounds).
-			(*image.RGBA))
-	}
+func (control CoreControl) PushRegion (bounds image.Rectangle) {
+	core := control.core
+	core.hooks.RunDraw(control.SubImage(bounds).(*image.RGBA))
 }
 
-func (core Core) PushAll () {
-	core.PushRegion(core.Bounds())
+func (control CoreControl) PushAll () {
+	control.PushRegion(control.Bounds())
 }
 
-func (core *Core) AllocateCanvas (width, height int) {
-	width, height, _ = core.ConstrainSize(width, height)
-	core.RGBA = image.NewRGBA(image.Rect (0, 0, width, height))
+func (control CoreControl) AllocateCanvas (width, height int) {
+	core := control.core
+	width, height, _ = control.ConstrainSize(width, height)
+	core.canvas  = image.NewRGBA(image.Rect (0, 0, width, height))
+	control.RGBA = core.canvas
 }
 
-func (core Core) MinimumWidth () (minimum int) {
-	minimum = core.metrics.minimumWidth
-	return
-}
-
-func (core Core) MinimumHeight () (minimum int) {
-	minimum = core.metrics.minimumHeight
-	return
-}
-
-func (core *Core) SetMinimumSize (width, height int) {
+func (control CoreControl) SetMinimumSize (width, height int) {
+	core := control.core
 	if width != core.metrics.minimumWidth ||
 		height != core.metrics.minimumHeight {
 
 		core.metrics.minimumWidth  = width
 		core.metrics.minimumHeight = height
-		
-		if core.minimumSizeChangeCallback != nil {
-			core.minimumSizeChangeCallback(width, height)
-		}
+		core.hooks.RunMinimumSizeChange(width, height)
 
 		// if there is an image buffer, and the current size is less
 		// than this new minimum size, send core.parent a resize event.
-		if core.HasImage() {
-			bounds := core.Bounds()
+		if control.HasImage() {
+			bounds := control.Bounds()
 			imageWidth,
 			imageHeight,
-			constrained := core.ConstrainSize (
+			constrained := control.ConstrainSize (
 				bounds.Dx(),
 				bounds.Dy())
 			if constrained {
@@ -118,12 +111,13 @@ func (core *Core) SetMinimumSize (width, height int) {
 	}
 }
 
-func (core Core) ConstrainSize (
+func (control CoreControl) ConstrainSize (
 	inWidth, inHeight int,
 ) (
 	outWidth, outHeight int,
 	constrained bool,
 ) {
+	core := control.core
 	outWidth  = inWidth
 	outHeight = inHeight
 	if outWidth < core.metrics.minimumWidth {

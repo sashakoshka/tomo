@@ -7,7 +7,9 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 type Button struct {
-	core    Core
+	*Core
+	core CoreControl
+	
 	pressed bool
 	enabled bool
 	onClick func ()
@@ -18,7 +20,7 @@ type Button struct {
 
 func NewButton (text string) (element *Button) {
 	element = &Button { enabled: true }
-	element.core = NewCore(element)
+	element.Core, element.core = NewCore(element)
 	element.drawer.SetFace(theme.FontFaceRegular())
 	element.SetText(text)
 	return
@@ -94,48 +96,12 @@ func (element *Button) OnClick (callback func ()) {
 	element.onClick = callback
 }
 
-func (element *Button) ColorModel () (model color.Model) {
-	return color.RGBAModel
-}
-
-func (element *Button) At (x, y int) (pixel color.Color) {
-	pixel = element.core.At(x, y)
+func (element *Button) AdvanceSelection (direction int) (ok bool) {
 	return
-}
-
-func (element *Button) RGBAAt (x, y int) (pixel color.RGBA) {
-	pixel = element.core.RGBAAt(x, y)
-	return
-}
-
-func (element *Button) Bounds () (bounds image.Rectangle) {
-	bounds = element.core.Bounds()
-	return
-}
-
-func (element *Button) SetDrawCallback (draw func (region tomo.Image)) {
-	element.core.SetDrawCallback(draw)
-}
-
-func (element *Button) SetMinimumSizeChangeCallback (
-	notify func (width, height int),
-) {
-	element.core.SetMinimumSizeChangeCallback(notify)
 }
 
 func (element *Button) Selectable () (selectable bool) {
-	selectable = true
-	return
-}
-
-func (element *Button) MinimumWidth () (minimum int) {
-	minimum = element.core.MinimumWidth()
-	return
-}
-
-func (element *Button) MinimumHeight () (minimum int) {
-	minimum = element.core.MinimumHeight()
-	return
+	return true
 }
 
 func (element *Button) draw () {
