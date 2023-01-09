@@ -112,7 +112,7 @@ func (element *Button) AdvanceSelection (direction int) (ok bool) {
 }
 
 func (element *Button) Selectable () (selectable bool) {
-	return true
+	return element.enabled
 }
 
 func (element *Button) Select () {
