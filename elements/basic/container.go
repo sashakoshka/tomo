@@ -81,6 +81,19 @@ func (element *Container) Disown (child tomo.Element) {
 	}
 }
 
+// DisownAll removes all child elements from the container at once.
+func (element *Container) DisownAll () {
+	element.children = nil
+
+	element.updateMinimumSize()
+	element.updateSelectable()
+	element.recalculate()
+	if element.core.HasImage() {
+		element.draw()
+		element.core.PushAll()
+	}
+}
+
 // Children returns a slice containing this element's children.
 func (element *Container) Children () (children []tomo.Element) {
 	children = make([]tomo.Element, len(element.children))

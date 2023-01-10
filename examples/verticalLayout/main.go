@@ -20,9 +20,7 @@ func run () {
 	button   := basic.NewButton("drawing pad")
 	okButton := basic.NewButton("OK")
 	button.OnClick (func () {
-		container.Disown(label)
-		container.Disown(button)
-		container.Disown(okButton)
+		container.DisownAll()
 		container.Adopt(basic.NewLabel("Draw here:"), false)
 		container.Adopt(basic.NewTest(), true)
 		container.Adopt(okButton, false)
