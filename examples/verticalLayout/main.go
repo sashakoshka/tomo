@@ -16,18 +16,22 @@ func run () {
 	container := basic.NewContainer(layouts.Vertical { true, true })
 	window.Adopt(container)
 
-	label  := basic.NewLabel("it is a label hehe")
-	button := basic.NewButton("press me")
+	label    := basic.NewLabel("it is a label hehe")
+	button   := basic.NewButton("drawing pad")
+	okButton := basic.NewButton("OK")
 	button.OnClick (func () {
-		label.SetText (
-			"woah, this button changes the label text! since the " +
-			"size of this text box has changed, the window " +
-			"should expand (unless you resized it already).")
+		container.Disown(label)
+		container.Disown(button)
+		container.Disown(okButton)
+		container.Adopt(basic.NewLabel("Draw here:"), false)
+		container.Adopt(basic.NewTest(), true)
+		container.Adopt(okButton, false)
 	})
+	okButton.OnClick(tomo.Stop)
 	
 	container.Adopt(label, true)
-	container.Adopt(basic.NewButton("yeah"), false)
 	container.Adopt(button, false)
+	container.Adopt(okButton, false)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

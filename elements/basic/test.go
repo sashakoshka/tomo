@@ -10,6 +10,9 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 type Test struct {
 	*core.Core
 	core core.CoreControl
+	drawing      bool
+	color        tomo.Image
+	lastMousePos image.Point
 }
 
 // NewTest creates a new test element.
@@ -17,6 +20,7 @@ func NewTest () (element *Test) {
 	element = &Test { }
 	element.Core, element.core = core.NewCore(element)
 	element.core.SetMinimumSize(32, 32)
+	element.color = artist.NewUniform(color.Black)
 	return
 }
 
@@ -43,7 +47,33 @@ func (element *Test) Handle (event tomo.Event) {
 			image.Pt(0, resizeEvent.Height),
 			image.Pt(resizeEvent.Width, 0))
 	
-	default:
+	case tomo.EventMouseDown:
+		element.drawing = true
+		mouseDownEvent := event.(tomo.EventMouseDown)
+		element.lastMousePos = image.Pt (
+			mouseDownEvent.X,
+			mouseDownEvent.Y)
+
+	case tomo.EventMouseUp:
+		element.drawing = false
+		mouseUpEvent := event.(tomo.EventMouseUp)
+		mousePos := image.Pt (
+			mouseUpEvent.X,
+			mouseUpEvent.Y)
+		element.core.PushRegion (artist.Line (
+			element.core, element.color, 1,
+			element.lastMousePos, mousePos))
+		element.lastMousePos = mousePos
+
+	case tomo.EventMouseMove:
+		mouseMoveEvent := event.(tomo.EventMouseMove)
+		mousePos := image.Pt (
+			mouseMoveEvent.X,
+			mouseMoveEvent.Y)
+		element.core.PushRegion (artist.Line (
+			element.core, element.color, 1,
+			element.lastMousePos, mousePos))
+		element.lastMousePos = mousePos
 	}
 	return
 }

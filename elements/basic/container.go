@@ -1,5 +1,6 @@
 package basic
 
+import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
@@ -12,6 +13,8 @@ type Container struct {
 	layout     tomo.Layout
 	children   []tomo.LayoutEntry
 	selectable bool
+
+	drags [10]tomo.Element
 }
 
 func NewContainer (layout tomo.Layout) (element *Container) {
@@ -24,23 +27,36 @@ func NewContainer (layout tomo.Layout) (element *Container) {
 func (element *Container) SetLayout (layout tomo.Layout) {
 	element.layout = layout
 	element.recalculate()
+	if element.core.HasImage() {
+		element.draw()
+		element.core.PushAll()
+	}
 }
 
 func (element *Container) Adopt (child tomo.Element, expand bool) {
 	child.SetParentHooks (tomo.ParentHooks {
-		MinimumSizeChange:
-			func (int, int) { element.updateMinimumSize() },
-		SelectabilityChange:
-			func (bool) { element.updateSelectable() },
+		MinimumSizeChange: func (int, int) {
+			element.updateMinimumSize()
+		},
+		SelectabilityChange: func (bool) {
+			element.updateSelectable()
+		},
+		Draw: func (region tomo.Image) {
+			element.drawChildRegion(child, region)
+		},
 	})
 	element.children = append (element.children, tomo.LayoutEntry {
 		Element: child,
+		Expand:  expand,
 	})
 
 	element.updateMinimumSize()
 	element.updateSelectable()
 	element.recalculate()
-	if element.core.HasImage() { element.draw() }
+	if element.core.HasImage() {
+		element.draw()
+		element.core.PushAll()
+	}
 }
 
 // Disown removes the given child from the container if it is contained within
@@ -59,7 +75,10 @@ func (element *Container) Disown (child tomo.Element) {
 	element.updateMinimumSize()
 	element.updateSelectable()
 	element.recalculate()
-	if element.core.HasImage() { element.draw() }
+	if element.core.HasImage() {
+		element.draw()
+		element.core.PushAll()
+	}
 }
 
 // Children returns a slice containing this element's children.
@@ -83,6 +102,28 @@ func (element *Container) Child (index int) (child tomo.Element) {
 	return element.children[index].Element
 }
 
+// ChildAt returns the child that contains the specified x and y coordinates. If
+// there are no children at the coordinates, this method will return nil.
+func (element *Container) ChildAt (point image.Point) (child tomo.Element) {
+	for _, entry := range element.children {
+		if point.In(entry.Bounds().Add(entry.Position)) {
+			child = entry.Element
+		}
+	}
+	return
+}
+
+func (element *Container) childPosition (child tomo.Element) (position image.Point) {
+	for _, entry := range element.children {
+		if entry.Element == child {
+			position = entry.Position
+			break
+		}
+	}
+
+	return
+}
+
 func (element *Container) Handle (event tomo.Event) {
 	switch event.(type) {
 	case tomo.EventResize:
@@ -92,8 +133,43 @@ func (element *Container) Handle (event tomo.Event) {
 			resizeEvent.Height)
 		element.recalculate()
 		element.draw()
-	
-	// TODO:
+
+	case tomo.EventMouseDown:
+		mouseDownEvent := event.(tomo.EventMouseDown)
+		child := element.ChildAt (image.Pt (
+			mouseDownEvent.X,
+			mouseDownEvent.Y))
+		if child == nil { break }
+		element.drags[mouseDownEvent.Button] = child
+		childPosition := element.childPosition(child)
+		child.Handle (tomo.EventMouseDown {
+			Button: mouseDownEvent.Button,
+			X: mouseDownEvent.X - childPosition.X,
+			Y: mouseDownEvent.Y - childPosition.Y,
+		})
+
+	case tomo.EventMouseUp:
+		mouseUpEvent := event.(tomo.EventMouseUp)
+		child := element.drags[mouseUpEvent.Button]
+		if child == nil { break }
+		element.drags[mouseUpEvent.Button] = nil
+		childPosition := element.childPosition(child)
+		child.Handle (tomo.EventMouseUp {
+			Button: mouseUpEvent.Button,
+			X: mouseUpEvent.X - childPosition.X,
+			Y: mouseUpEvent.Y - childPosition.Y,
+		})
+
+	case tomo.EventMouseMove:
+		mouseMoveEvent := event.(tomo.EventMouseMove)
+		for _, child := range element.drags {
+			if child == nil { continue }
+			childPosition := element.childPosition(child)
+			child.Handle (tomo.EventMouseMove {
+				X: mouseMoveEvent.X - childPosition.X,
+				Y: mouseMoveEvent.Y - childPosition.Y,
+			})
+		}
 	}
 	return
 }
@@ -129,8 +205,18 @@ func (element *Container) draw () {
 		nil, 0,
 		bounds)
 
-	// TODO
 	for _, entry := range element.children {
 		artist.Paste(element.core, entry, entry.Position)
+	}
+}
+
+func (element *Container) drawChildRegion (child tomo.Element, region tomo.Image) {
+	for _, entry := range element.children {
+		if entry.Element == child {
+			artist.Paste(element.core, region, entry.Position)
+			element.core.PushRegion (
+				region.Bounds().Add(entry.Position))
+			break
+		}
 	}
 }

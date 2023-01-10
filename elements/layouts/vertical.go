@@ -33,6 +33,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 		} else {
 			_, entryMinHeight := entry.MinimumSize()
 			freeSpace -= entryMinHeight
+			freeSpace -= theme.Padding()
 		}
 	}
 	expandingElementHeight := 0
