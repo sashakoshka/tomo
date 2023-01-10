@@ -1,4 +1,4 @@
-package basic
+package core
 
 import "image"
 import "image/color"

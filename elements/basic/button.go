@@ -4,10 +4,11 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 type Button struct {
-	*Core
-	core CoreControl
+	*core.Core
+	core core.CoreControl
 	
 	pressed  bool
 	enabled  bool
@@ -20,7 +21,7 @@ type Button struct {
 
 func NewButton (text string) (element *Button) {
 	element = &Button { enabled: true }
-	element.Core, element.core = NewCore(element)
+	element.Core, element.core = core.NewCore(element)
 	element.drawer.SetFace(theme.FontFaceRegular())
 	element.SetText(text)
 	return

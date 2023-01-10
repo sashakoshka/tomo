@@ -2,6 +2,7 @@ package layouts
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // Vertical lays its children out vertically. It can contain any number of
 // children. When an child is added to the layout, it can either be set to

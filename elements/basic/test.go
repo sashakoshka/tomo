@@ -4,17 +4,18 @@ import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // Test is a simple element that can be used as a placeholder.
 type Test struct {
-	*Core
-	core CoreControl
+	*core.Core
+	core core.CoreControl
 }
 
 // NewTest creates a new test element.
 func NewTest () (element *Test) {
 	element = &Test { }
-	element.Core, element.core = NewCore(element)
+	element.Core, element.core = core.NewCore(element)
 	element.core.SetMinimumSize(32, 32)
 	return
 }

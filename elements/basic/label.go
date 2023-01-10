@@ -4,10 +4,11 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 type Label struct {
-	*Core
-	core CoreControl
+	*core.Core
+	core core.CoreControl
 	
 	text   string
 	drawer artist.TextDrawer
@@ -15,7 +16,7 @@ type Label struct {
 
 func NewLabel (text string) (element *Label) {
 	element = &Label {  }
-	element.Core, element.core = NewCore(element)
+	element.Core, element.core = core.NewCore(element)
 	face := theme.FontFaceRegular()
 	element.drawer.SetFace(face)
 	element.SetText(text)
