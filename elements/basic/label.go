@@ -53,10 +53,6 @@ func (element *Label) SetText (text string) {
 	}
 }
 
-func (element *Label) Selectable () (selectable bool) {
-	return
-}
-
 func (element *Label) AdvanceSelection (direction int) (ok bool) {
 	return
 }

@@ -48,10 +48,6 @@ func (element *Test) Handle (event tomo.Event) {
 	return
 }
 
-func (element *Test) Selectable () (selectable bool) {
-	return
-}
-
 func (element *Test) AdvanceSelection (direction int) (ok bool) {
 	return
 }

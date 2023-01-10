@@ -23,6 +23,7 @@ func NewButton (text string) (element *Button) {
 	element = &Button { enabled: true }
 	element.Core, element.core = core.NewCore(element)
 	element.drawer.SetFace(theme.FontFaceRegular())
+	element.core.SetSelectable(true)
 	element.SetText(text)
 	return
 }
@@ -112,10 +113,6 @@ func (element *Button) AdvanceSelection (direction int) (ok bool) {
 	return
 }
 
-func (element *Button) Selectable () (selectable bool) {
-	return element.enabled
-}
-
 func (element *Button) Select () {
 	element.core.Select()
 }
@@ -123,6 +120,7 @@ func (element *Button) Select () {
 func (element *Button) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
+	element.core.SetSelectable(enabled)
 	if element.core.HasImage () {
 		element.draw()
 		element.core.PushAll()

@@ -15,6 +15,7 @@ type Core struct {
 		minimumHeight int
 	}
 
+	selectable bool
 	hooks tomo.ParentHooks
 }
 
@@ -48,6 +49,10 @@ func (core Core) Bounds () (bounds image.Rectangle) {
 
 func (core *Core) SetParentHooks (hooks tomo.ParentHooks) {
 	core.hooks = hooks
+}
+
+func (core Core) Selectable () (selectable bool) {
+	return core.selectable
 }
 
 func (core Core) MinimumSize () (width, height int) {
@@ -84,6 +89,14 @@ func (control *CoreControl) AllocateCanvas (width, height int) {
 	width, height, _ = control.ConstrainSize(width, height)
 	core.canvas  = image.NewRGBA(image.Rect (0, 0, width, height))
 	control.RGBA = core.canvas
+}
+
+func (control CoreControl) SetSelectable (selectable bool) {
+	changed := control.core.selectable != selectable
+	control.core.selectable = selectable
+	if changed {
+		control.core.hooks.RunSelectabilityChange(selectable)
+	}
 }
 
 func (control CoreControl) SetMinimumSize (width, height int) {

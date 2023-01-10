@@ -37,6 +37,10 @@ type ParentHooks struct {
 	// event.
 	MinimumSizeChange func (width, height int)
 
+	// SelectabilityChange is called when the chid element becomes
+	// selectable or non-selectable.
+	SelectabilityChange func (selectable bool)
+
 	// SelectionRequest is called when the child element element wants
 	// itself to be selected. If the parent element chooses to grant the
 	// request, it must send the child element a selection event.
@@ -63,6 +67,14 @@ func (hooks ParentHooks) RunMinimumSizeChange (width, height int) {
 func (hooks ParentHooks) RunSelectionRequest () {
 	if hooks.SelectionRequest != nil {
 		hooks.SelectionRequest()
+	}
+}
+
+// RunSelectabilityChange runs the SelectionRequest hook if it is not nil. If it
+// is nil, it does nothing.
+func (hooks ParentHooks) RunSelectabilityChange (selectable bool) {
+	if hooks.SelectabilityChange != nil {
+		hooks.SelectabilityChange(selectable)
 	}
 }
 
