@@ -87,6 +87,12 @@ func (window *Window) Adopt (child tomo.Element) {
 			MinimumSizeChange: window.childMinimumSizeChangeCallback,
 			SelectionRequest: window.childSelectionRequestCallback,
 		})
+		// TODO: it is possible for an element to start out as
+		// selectable, and then become unselectable. it should be
+		// standard behavior for containers (including windows) to, if
+		// no children are selected, select the first child on ctrl-tab
+		// press. we should therefore be able to ask any element if it
+		// is selected.
 		if child.Selectable() { child.Handle(tomo.EventSelect { }) }
 		window.resizeChildToFit()
 	}
