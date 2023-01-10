@@ -13,12 +13,21 @@ func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("vertical stack")
 
-	layout := layouts.NewVertical(true, true)
-	window.Adopt(layout)
+	container := basic.NewContainer(layouts.Vertical { true, true })
+	window.Adopt(container)
 
-	layout.Adopt(basic.NewLabel("it is a label hehe"))
-	layout.Adopt(basic.NewButton("yeah"), false)
-	layout.Adopt(button := basic.NewButton("wow"), false)
+	label  := basic.NewLabel("it is a label hehe")
+	button := basic.NewButton("press me")
+	button.OnClick (func () {
+		label.SetText (
+			"woah, this button changes the label text! since the " +
+			"size of this text box has changed, the window " +
+			"should expand (unless you resized it already).")
+	})
+	
+	container.Adopt(label, true)
+	container.Adopt(basic.NewButton("yeah"), false)
+	container.Adopt(button, false)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

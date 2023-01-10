@@ -1,136 +1,90 @@
 package layouts
 
+import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
-// import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
-type verticalEntry struct {
-	y int
-	minHeight int
-	element tomo.Element
-}
-
-// Vertical lays its children out vertically. It can contain any number of
-// children. When an child is added to the layout, it can either be set to
-// contract to its minimum height or expand to fill the remaining space (space
-// that is not taken up by other children or padding is divided equally among
-// these). Child elements will all have the same width.
+// Vertical arranges elements vertically. Elements at the start of the entry
+// list will be positioned at the top, and elements at the end of the entry list
+// will positioned at the bottom. All elements have the same width.
 type Vertical struct {
-	*core.Core
-	core core.CoreControl
+	// If Gap is true, a gap will be placed between each element.
+	Gap bool
 
-	gap, pad bool
-	children []verticalEntry
-	selectable bool
+	// If Pad is true, there will be padding running along the inside of the
+	// layout's border.
+	Pad bool
 }
 
-// NewVertical creates a new vertical layout. If gap is set to true, a gap will
-// be placed between each child element. If pad is set to true, padding will be
-// be placed around the inside of this element's border. Usually, you will want
-// these to be true.
-func NewVertical (gap, pad bool) (element *Vertical) {
-	element = &Vertical { }
-	element.Core, element.core = core.NewCore(element)
-	element.gap = gap
-	element.pad = pad
-	element.recalculate()
-	return
-}
+// Arrange arranges a list of entries vertically.
+func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
+	if layout.Pad {
+		width  -= theme.Padding() * 2
+		height -= theme.Padding() * 2
+	}
+	freeSpace := height
+	expandingElements := 0
 
-// SetPad sets whether or not padding will be placed around the inside of this
-// element's border.
-func (element *Vertical) SetPad (pad bool) {
-	changed := element.pad != pad
-	element.pad = pad
-	if changed { element.recalculate() }
-}
-
-// SetGap sets whether or not a gap will be placed in between child elements.
-func (element *Vertical) SetGap (gap bool) {
-	changed := element.gap != gap
-	element.gap = gap
-	if changed { element.recalculate() }
-}
-
-// Adopt adds a child element to the vertical layout. If expand is set to true,
-// the element will be expanded to fill a portion of the remaining space in the
-// layout.
-func (element *Vertical) Adopt (child tomo.Element, expand bool) {
-	_, minHeight := child.MinimumSize()
-	child.SetParentHooks (tomo.ParentHooks {
-		// TODO
-	})
-	element.children = append (element.children, verticalEntry {
-		element: child,
-		minHeight: minHeight,
-	})
-	if child.Selectable() { element.core.SetSelectable(true) }
-
-	element.recalculate()
-}
-
-// Disown removes the given child from the layout if it is contained within it.
-func (element *Vertical) Disown (child tomo.Element) {
-	for index, entry := range element.children {
-		if entry.element == child {
-			entry.element.SetParentHooks(tomo.ParentHooks { })
-			element.children = append (
-				element.children[:index],
-				element.children[index + 1:]...)
-				break
+	// count the number of expanding elements and the amount of free space
+	// for them to collectively occupy
+	for _, entry := range entries {
+		if entry.Expand {
+			expandingElements ++
+		} else {
+			_, entryMinHeight := entry.MinimumSize()
+			freeSpace -= entryMinHeight
 		}
 	}
-
-	selectable := false
-	for _, entry := range element.children {
-		if entry.element.Selectable() { selectable = true }
+	expandingElementHeight := 0
+	if expandingElements > 0 {
+		expandingElementHeight = freeSpace / expandingElements
 	}
-	element.core.SetSelectable(selectable)
-}
-
-// Children returns a slice containing this element's children.
-func (element *Vertical) Children () (children []tomo.Element) {
-	children = make([]tomo.Element, len(element.children))
-	for index, entry := range element.children {
-		children[index] = entry.element
-	}
-	return
-}
-
-// CountChildren returns the amount of children contained within this element.
-func (element *Vertical) CountChildren () (count int) {
-	return len(element.children)
-}
-
-// Child returns the child at the specified index. If the index is out of
-// bounds, this method will return nil.
-func (element *Vertical) Child (index int) (child tomo.Element) {
-	if index < 0 || index > len(element.children) { return }
-	return element.children[index].element
-}
-
-func (element *Vertical) Handle (event tomo.Event) {
-	switch event.(type) {
-	case tomo.EventResize:
-		element.recalculate()
-		// TODO:
 	
-	// TODO:
-	}
-	return
-}
-
-func (element *Vertical) AdvanceSelection (direction int) (ok bool) {
-	// TODO:
-	return
-}
-
-func (element *Vertical) recalculate () {
-	var x, y int
-	if element.pad {
+	x, y := 0, 0
+	if layout.Pad {
 		x += theme.Padding()
 		y += theme.Padding()
 	}
-	// TODO
+
+	// set the size and position of each element
+	for index, entry := range entries {
+		if index > 0 && layout.Gap { y += theme.Padding() }
+		
+		entries[index].Position = image.Pt(x, y)
+		entryHeight := 0
+		if entry.Expand {
+			entryHeight = expandingElementHeight
+		} else {
+			_, entryHeight = entry.MinimumSize()
+		}
+		y += entryHeight
+		entryBounds := entry.Bounds()
+		if entryBounds.Dx() != width || entryBounds.Dy() != entryHeight {
+			entry.Handle (tomo.EventResize {
+				Width:  width,
+				Height: entryHeight,
+			})
+		}
+	}
+}
+
+// MinimumSize returns the minimum width and height will be needed to arrange
+// the given list of entries.
+func (layout Vertical) MinimumSize (entries []tomo.LayoutEntry) (width, height int) {
+	for index, entry := range entries {
+		entryWidth, entryHeight := entry.MinimumSize()
+		if entryWidth > width {
+			width = entryWidth
+		}
+		height += entryHeight
+		if layout.Gap && index > 0 {
+			height += theme.Padding()
+		}
+	}
+
+	if layout.Pad {
+		width  += theme.Padding() * 2
+		height += theme.Padding() * 2
+	}
+	return
 }
