@@ -27,12 +27,14 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 
 	// count the number of expanding elements and the amount of free space
 	// for them to collectively occupy
-	for _, entry := range entries {
+	for index, entry := range entries {
 		if entry.Expand {
 			expandingElements ++
 		} else {
 			_, entryMinHeight := entry.MinimumSize()
 			freeSpace -= entryMinHeight
+		}
+		if index > 0 {
 			freeSpace -= theme.Padding()
 		}
 	}
