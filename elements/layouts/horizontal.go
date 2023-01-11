@@ -4,10 +4,10 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 
-// Vertical arranges elements vertically. Elements at the start of the entry
-// list will be positioned at the top, and elements at the end of the entry list
-// will positioned at the bottom. All elements have the same width.
-type Vertical struct {
+// Horizontal arranges elements horizontally. Elements at the start of the entry
+// list will be positioned on the left, and elements at the end of the entry
+// list will positioned on the right. All elements have the same height.
+type Horizontal struct {
 	// If Gap is true, a gap will be placed between each element.
 	Gap bool
 
@@ -16,13 +16,13 @@ type Vertical struct {
 	Pad bool
 }
 
-// Arrange arranges a list of entries vertically.
-func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
+// Arrange arranges a list of entries horizontally.
+func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	if layout.Pad {
 		width  -= theme.Padding() * 2
 		height -= theme.Padding() * 2
 	}
-	freeSpace := height
+	freeSpace := width
 	expandingElements := 0
 
 	// count the number of expanding elements and the amount of free space
@@ -31,16 +31,16 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 		if entry.Expand {
 			expandingElements ++
 		} else {
-			_, entryMinHeight := entry.MinimumSize()
-			freeSpace -= entryMinHeight
+			entryMinWidth, _ := entry.MinimumSize()
+			freeSpace -= entryMinWidth
 		}
 		if index > 0 && layout.Gap {
 			freeSpace -= theme.Padding()
 		}
 	}
-	expandingElementHeight := 0
+	expandingElementWidth := 0
 	if expandingElements > 0 {
-		expandingElementHeight = freeSpace / expandingElements
+		expandingElementWidth = freeSpace / expandingElements
 	}
 	
 	x, y := 0, 0
@@ -51,21 +51,21 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 
 	// set the size and position of each element
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { y += theme.Padding() }
+		if index > 0 && layout.Gap { x += theme.Padding() }
 		
 		entries[index].Position = image.Pt(x, y)
-		entryHeight := 0
+		entryWidth := 0
 		if entry.Expand {
-			entryHeight = expandingElementHeight
+			entryWidth = expandingElementWidth
 		} else {
-			_, entryHeight = entry.MinimumSize()
+			entryWidth, _ = entry.MinimumSize()
 		}
-		y += entryHeight
+		x += entryWidth
 		entryBounds := entry.Bounds()
-		if entryBounds.Dx() != width || entryBounds.Dy() != entryHeight {
+		if entryBounds.Dy() != height || entryBounds.Dx() != entryWidth {
 			entry.Handle (tomo.EventResize {
-				Width:  width,
-				Height: entryHeight,
+				Width:  entryWidth,
+				Height: height,
 			})
 		}
 	}
@@ -73,15 +73,15 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 
 // MinimumSize returns the minimum width and height that will be needed to
 // arrange the given list of entries.
-func (layout Vertical) MinimumSize (entries []tomo.LayoutEntry) (width, height int) {
+func (layout Horizontal) MinimumSize (entries []tomo.LayoutEntry) (width, height int) {
 	for index, entry := range entries {
 		entryWidth, entryHeight := entry.MinimumSize()
-		if entryWidth > width {
-			width = entryWidth
+		if entryHeight > height {
+			height = entryHeight
 		}
-		height += entryHeight
+		width += entryWidth
 		if layout.Gap && index > 0 {
-			height += theme.Padding()
+			width += theme.Padding()
 		}
 	}
 
