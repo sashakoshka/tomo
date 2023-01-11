@@ -66,11 +66,34 @@ func (window *Window) handleKeyPress (
 		NumberPad: numberPad,
 	}
 
-	window.child.Handle (tomo.EventKeyDown {
+	keyDownEvent := tomo.EventKeyDown {
 		Key: key,
 		Modifiers: modifiers,
 		Repeated: false, // FIXME: return correct value here
-	})
+	}
+
+	if keyDownEvent.Key == tomo.KeyTab && keyDownEvent.Modifiers.Alt {
+		if window.child.Selectable() {
+			direction := 1
+			if keyDownEvent.Modifiers.Shift {
+				direction = -1
+			}
+
+			window.advanceSelectionInChild(direction)
+		}
+	} else {
+		window.child.Handle(event)
+	}
+}
+
+func (window *Window) advanceSelectionInChild (direction int) {
+	if window.child.Selected() {
+		if !window.child.AdvanceSelection(direction) {
+			window.child.Handle(tomo.EventDeselect { })
+		}
+	} else {
+		window.child.Handle(tomo.EventSelect { })
+	}
 }
 
 func (window *Window) handleKeyRelease (

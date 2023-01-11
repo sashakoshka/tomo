@@ -92,17 +92,18 @@ type Element interface {
 	// element contains other selectable elements, it must return true.
 	Selectable () (selectable bool)
 
-	// Selected returns wehther this element is currently selected. This
-	// will always return false if it is not selectable.
+	// Selected returns whether or not this element is currently selected.
+	// This will always return false if it is not selectable.
 	Selected () (selected bool)
 
 	// If this element contains other elements, and one is selected, this
-	// method will advance the selection in the specified direction. If no
-	// children are selected, or there are no more children to be selected
-	// in the specified direction, the element will unselect all of its
-	// children and return false. If the selection could be advanced, it
-	// will return true. If the element contains no child elements, it will
-	// always return false.
+	// method will advance the selection in the specified direction. If
+	// the element contains selectable elements but none of them are
+	// selected, it will select the first selectable element. If there are
+	// no more children to be selected in the specified direction, the
+	// element will return false. If the selection could be advanced, it
+	// will return true. If the element contains no selectable child
+	// elements, it will  always return false.
 	AdvanceSelection (direction int) (ok bool)
 
 	// SetParentHooks gives the element callbacks that let it send
