@@ -137,6 +137,21 @@ func (drawer *TextDrawer) LayoutBounds () (bounds image.Rectangle) {
 	return
 }
 
+// Em returns the width of an emspace.
+func (drawer *TextDrawer) Em () (width fixed.Int26_6) {
+	if drawer.face == nil { return }
+	width, _ = drawer.face.GlyphAdvance('M')
+	return
+}
+
+// LineHeight returns the height of one line.
+func (drawer *TextDrawer) LineHeight () (height fixed.Int26_6) {
+	if drawer.face == nil { return }
+	metrics := drawer.face.Metrics()
+	height = metrics.Height
+	return
+}
+
 func (drawer *TextDrawer) recalculate () {
 	drawer.layoutClean = true
 	drawer.layout = nil
