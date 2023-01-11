@@ -11,14 +11,16 @@ func main () {
 
 func run () {
 	window, _ := tomo.NewWindow(2, 2)
-	window.SetTitle("horizontal stack")
+	window.SetTitle("dialog")
 
-	container := basic.NewContainer(layouts.Horizontal { true, true })
+	container := basic.NewContainer(layouts.Dialog { true, true })
 	window.Adopt(container)
 
-	container.Adopt(basic.NewTest(), true)
-	container.Adopt(basic.NewLabel("<- left\nright ->", false), false)
-	container.Adopt(basic.NewTest(), true)
+	container.Adopt(basic.NewLabel("you will explode", false), true)
+	cancel := basic.NewButton("Cancel")
+	cancel.SetEnabled(false)
+	container.Adopt(cancel, false)
+	container.Adopt(basic.NewButton("OK"), false)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

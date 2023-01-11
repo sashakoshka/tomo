@@ -26,8 +26,8 @@ func NewContainer (layout tomo.Layout) (element *Container) {
 
 func (element *Container) SetLayout (layout tomo.Layout) {
 	element.layout = layout
-	element.recalculate()
 	if element.core.HasImage() {
+		element.recalculate()
 		element.draw()
 		element.core.PushAll()
 	}
@@ -52,8 +52,8 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 
 	element.updateMinimumSize()
 	element.updateSelectable()
-	element.recalculate()
 	if element.core.HasImage() {
+		element.recalculate()
 		element.draw()
 		element.core.PushAll()
 	}
@@ -74,8 +74,8 @@ func (element *Container) Disown (child tomo.Element) {
 
 	element.updateMinimumSize()
 	element.updateSelectable()
-	element.recalculate()
 	if element.core.HasImage() {
+		element.recalculate()
 		element.draw()
 		element.core.PushAll()
 	}
@@ -87,8 +87,8 @@ func (element *Container) DisownAll () {
 
 	element.updateMinimumSize()
 	element.updateSelectable()
-	element.recalculate()
 	if element.core.HasImage() {
+		element.recalculate()
 		element.draw()
 		element.core.PushAll()
 	}

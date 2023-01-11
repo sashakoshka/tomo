@@ -63,6 +63,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 		y += entryHeight
 		entryBounds := entry.Bounds()
 		if entryBounds.Dx() != width || entryBounds.Dy() != entryHeight {
+			// println(entryHeight)
 			entry.Handle (tomo.EventResize {
 				Width:  width,
 				Height: entryHeight,

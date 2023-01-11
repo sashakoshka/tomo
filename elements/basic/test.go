@@ -46,6 +46,7 @@ func (element *Test) Handle (event tomo.Event) {
 			element.core, artist.NewUniform(color.White), 1,
 			image.Pt(1, resizeEvent.Height - 2),
 			image.Pt(resizeEvent.Width - 2, 1))
+		// println(resizeEvent.Width, resizeEvent.Height)
 	
 	case tomo.EventMouseDown:
 		element.drawing = true
