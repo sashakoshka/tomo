@@ -90,7 +90,11 @@ type Element interface {
 
 	// Selectable returns whether this element can be selected. If this
 	// element contains other selectable elements, it must return true.
-	Selectable () (bool)
+	Selectable () (selectable bool)
+
+	// Selected returns wehther this element is currently selected. This
+	// will always return false if it is not selectable.
+	Selected () (selected bool)
 
 	// If this element contains other elements, and one is selected, this
 	// method will advance the selection in the specified direction. If no

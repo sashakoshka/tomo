@@ -3,6 +3,7 @@ package basic
 import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -33,9 +34,7 @@ func (element *Test) Handle (event tomo.Event) {
 			resizeEvent.Height)
 		artist.Rectangle (
 			element.core,
-			artist.NewUniform (color.RGBA {
-				R: 0x40, G: 0x80, B: 0x90, A: 0xFF,
-			}),
+			theme.AccentImage(),
 			artist.NewUniform(color.Black),
 			1, element.Bounds())
 		artist.Line (
@@ -46,7 +45,6 @@ func (element *Test) Handle (event tomo.Event) {
 			element.core, artist.NewUniform(color.White), 1,
 			image.Pt(1, resizeEvent.Height - 2),
 			image.Pt(resizeEvent.Width - 2, 1))
-		// println(resizeEvent.Width, resizeEvent.Height)
 	
 	case tomo.EventMouseDown:
 		element.drawing = true
@@ -76,9 +74,5 @@ func (element *Test) Handle (event tomo.Event) {
 			element.lastMousePos, mousePos))
 		element.lastMousePos = mousePos
 	}
-	return
-}
-
-func (element *Test) AdvanceSelection (direction int) (ok bool) {
 	return
 }

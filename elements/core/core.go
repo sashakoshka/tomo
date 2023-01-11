@@ -16,6 +16,7 @@ type Core struct {
 	}
 
 	selectable bool
+	selected   bool
 	hooks tomo.ParentHooks
 }
 
@@ -47,12 +48,20 @@ func (core Core) Bounds () (bounds image.Rectangle) {
 	return
 }
 
-func (core *Core) SetParentHooks (hooks tomo.ParentHooks) {
-	core.hooks = hooks
-}
-
 func (core Core) Selectable () (selectable bool) {
 	return core.selectable
+}
+
+func (core Core) Selected () (selected bool) {
+	return core.selected
+}
+
+func (core Core) AdvanceSelection (direction int) (ok bool) {
+	return
+}
+
+func (core *Core) SetParentHooks (hooks tomo.ParentHooks) {
+	core.hooks = hooks
 }
 
 func (core Core) MinimumSize () (width, height int) {
@@ -76,6 +85,18 @@ func (control CoreControl) Select () {
 	control.core.hooks.RunSelectionRequest()
 }
 
+func (control CoreControl) SetSelected (selected bool) {
+	if !control.core.selectable { return }
+	control.core.selected = selected
+}
+
+func (control CoreControl) SetSelectable (selectable bool) {
+	if control.core.selectable == selectable { return }
+	control.core.selectable = selectable
+	if !selectable { control.core.selected = false }
+	control.core.hooks.RunSelectabilityChange(selectable)
+}
+
 func (control CoreControl) PushRegion (bounds image.Rectangle) {
 	control.core.hooks.RunDraw(control.SubImage(bounds).(*image.RGBA))
 }
@@ -91,38 +112,31 @@ func (control *CoreControl) AllocateCanvas (width, height int) {
 	control.RGBA = core.canvas
 }
 
-func (control CoreControl) SetSelectable (selectable bool) {
-	changed := control.core.selectable != selectable
-	control.core.selectable = selectable
-	if changed {
-		control.core.hooks.RunSelectabilityChange(selectable)
-	}
-}
-
 func (control CoreControl) SetMinimumSize (width, height int) {
 	core := control.core
-	if width != core.metrics.minimumWidth ||
-		height != core.metrics.minimumHeight {
+	if width == core.metrics.minimumWidth &&
+		height == core.metrics.minimumHeight {
+		return
+	}
 
-		core.metrics.minimumWidth  = width
-		core.metrics.minimumHeight = height
-		core.hooks.RunMinimumSizeChange(width, height)
+	core.metrics.minimumWidth  = width
+	core.metrics.minimumHeight = height
+	core.hooks.RunMinimumSizeChange(width, height)
 
-		// if there is an image buffer, and the current size is less
-		// than this new minimum size, send core.parent a resize event.
-		if control.HasImage() {
-			bounds := control.Bounds()
-			imageWidth,
-			imageHeight,
-			constrained := control.ConstrainSize (
-				bounds.Dx(),
-				bounds.Dy())
-			if constrained {
-				core.parent.Handle (tomo.EventResize {
-					Width:  imageWidth,
-					Height: imageHeight,
-				})
-			}
+	// if there is an image buffer, and the current size is less
+	// than this new minimum size, send core.parent a resize event.
+	if control.HasImage() {
+		bounds := control.Bounds()
+		imageWidth,
+		imageHeight,
+		constrained := control.ConstrainSize (
+			bounds.Dx(),
+			bounds.Dy())
+		if constrained {
+			core.parent.Handle (tomo.EventResize {
+				Width:  imageWidth,
+				Height: imageHeight,
+			})
 		}
 	}
 }

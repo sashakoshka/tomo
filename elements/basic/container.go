@@ -13,6 +13,7 @@ type Container struct {
 	layout     tomo.Layout
 	children   []tomo.LayoutEntry
 	selectable bool
+	selected   bool
 
 	drags [10]tomo.Element
 }
@@ -183,6 +184,16 @@ func (element *Container) Handle (event tomo.Event) {
 				Y: mouseMoveEvent.Y - childPosition.Y,
 			})
 		}
+
+	case tomo.EventSelect:
+		if !element.Selectable() { break }
+		element.core.SetSelected(true)
+
+	case tomo.EventDeselect:
+		element.core.SetSelected(false)
+		// TODO: propogate deselect event to all children who report
+		// themselves as selected.
+		
 	}
 	return
 }
@@ -198,6 +209,7 @@ func (element *Container) updateSelectable () {
 		if entry.Selectable() { selectable = true }
 	}
 	element.core.SetSelectable(selectable)
+	if !selectable { element.selected = false }
 }
 
 func (element *Container) updateMinimumSize () {

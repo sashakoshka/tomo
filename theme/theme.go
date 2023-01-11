@@ -12,7 +12,7 @@ import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 
 var foregroundImage  = artist.NewUniform(color.Gray16 { 0x0000})
 var disabledForegroundImage = artist.NewUniform(color.Gray16 { 0x5555})
-var accentImage      = artist.NewUniform(color.RGBA { 0x3E, 0x81, 0x69, 0xFF})
+var accentImage      = artist.NewUniform(color.RGBA { 0x40, 0x80, 0x90, 0xFF})
 var highlightImage   = artist.NewUniform(color.Gray16 { 0xEEEE })
 var shadowImage      = artist.NewUniform(color.Gray16 { 0x3333 })
 var weakShadeImage   = artist.NewUniform(color.Gray16 { 0x7777 })
@@ -24,7 +24,7 @@ var backgroundImage = artist.NewUniform(color.Gray16 { 0xAAAA})
 var backgroundProfile = artist.ShadingProfile {
 	Highlight:     highlightImage,
 	Shadow:        shadowImage,
-	Stroke:        artist.NewUniform(color.Gray16 { 0x0000 }),
+	Stroke:        strokeImage,
 	Fill:          backgroundImage,
 	StrokeWeight:  1,
 	ShadingWeight: 1,

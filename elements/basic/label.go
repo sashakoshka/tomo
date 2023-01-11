@@ -84,10 +84,6 @@ func (element *Label) updateMinimumSize () {
 	}
 }
 
-func (element *Label) AdvanceSelection (direction int) (ok bool) {
-	return
-}
-
 func (element *Label) draw () {
 	bounds := element.core.Bounds()
 

@@ -12,7 +12,6 @@ type Button struct {
 	
 	pressed  bool
 	enabled  bool
-	selected bool
 	onClick func ()
 
 	text   string
@@ -91,26 +90,16 @@ func (element *Button) Handle (event tomo.Event) {
 		}
 
 	case tomo.EventSelect:
-		element.selected = true
+		element.core.SetSelected(true)
 
 	case tomo.EventDeselect:
-		element.selected = false
+		element.core.SetSelected(false)
 	}
 	return
 }
 
 func (element *Button) OnClick (callback func ()) {
 	element.onClick = callback
-}
-
-func (element *Button) AdvanceSelection (direction int) (ok bool) {
-	wasSelected := element.selected
-	element.selected = false
-	if element.core.HasImage() && wasSelected {
-		element.draw()
-		element.core.PushAll()
-	}
-	return
 }
 
 func (element *Button) Select () {
@@ -150,7 +139,7 @@ func (element *Button) draw () {
 		theme.RaisedProfile (
 			element.pressed,
 			element.enabled,
-			element.selected),
+			element.Selected()),
 		bounds)
 		
 	innerBounds := bounds
