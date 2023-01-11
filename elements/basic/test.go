@@ -31,21 +31,21 @@ func (element *Test) Handle (event tomo.Event) {
 		element.core.AllocateCanvas (
 			resizeEvent.Width,
 			resizeEvent.Height)
-		for y := 0; y < resizeEvent.Height; y ++ {
-		for x := 0; x < resizeEvent.Width;  x ++ {
-			pixel := color.RGBA {
+		artist.Rectangle (
+			element.core,
+			artist.NewUniform (color.RGBA {
 				R: 0x40, G: 0x80, B: 0x90, A: 0xFF,
-			}
-			element.core.SetRGBA (x, y, pixel)
-		}}
+			}),
+			artist.NewUniform(color.Black),
+			1, element.Bounds())
 		artist.Line (
 			element.core, artist.NewUniform(color.White), 1,
-			image.Pt(0, 0),
-			image.Pt(resizeEvent.Width, resizeEvent.Height))
+			image.Pt(1, 1),
+			image.Pt(resizeEvent.Width - 2, resizeEvent.Height - 2))
 		artist.Line (
 			element.core, artist.NewUniform(color.White), 1,
-			image.Pt(0, resizeEvent.Height),
-			image.Pt(resizeEvent.Width, 0))
+			image.Pt(1, resizeEvent.Height - 2),
+			image.Pt(resizeEvent.Width - 2, 1))
 	
 	case tomo.EventMouseDown:
 		element.drawing = true
