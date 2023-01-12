@@ -4,6 +4,7 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/layouts"
 
+// DialogKind defines the semantic role of a dialog window.
 type DialogKind int
 
 const (
@@ -13,13 +14,25 @@ const (
 	DialogKindError
 )
 
+// Button represents a dialog response button.
 type Button struct {
+	// Name contains the text to display on the button.
 	Name string
+
+	// OnPress specifies a callback to run when the button is pressed. If
+	// this callback is nil, the button will appear disabled.
 	OnPress func ()
 }
 
-func NewDialog (kind DialogKind, title, message string, buttons ...Button) {
-	window, _ := tomo.NewWindow(2, 2)
+// NewDialog creates a new dialog window and returns it.
+func NewDialog (
+	kind DialogKind,
+	title, message string,
+	buttons ...Button,
+) (
+	window tomo.Window,
+) {
+	window, _ = tomo.NewWindow(2, 2)
 	window.SetTitle(title)
 	
 	container := basic.NewContainer(layouts.Dialog { true, true })
@@ -46,4 +59,5 @@ func NewDialog (kind DialogKind, title, message string, buttons ...Button) {
 	}
 	
 	window.Show()
+	return
 }
