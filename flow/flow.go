@@ -25,6 +25,14 @@ func (flow Flow) Switch (stage string) {
 	stageCallback()
 }
 
+// SwitchFunc returns a function that calles Switch with the specfied stage
+// name. This is useful for creating callbacks.
+func (flow Flow) SwitchFunc (stage string) (callback func ()) {
+	return func () {
+		flow.Switch(stage)
+	}
+}
+
 // Stage returns the name of the current stage the flow is on.
 func (flow Flow) Stage () (name string) {
 	return flow.stage
