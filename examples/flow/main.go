@@ -22,50 +22,55 @@ func run () {
 		"start": func () {
 			label := basic.NewLabel (
 				"you are standing next to a river.", false)
-			container.Adopt(label, true)
 			
 			button0 := basic.NewButton("go in the river")
 			button0.OnClick(world.SwitchFunc("wet"))
-			container.Adopt(button0, false)
-			button0.Select()
-			
 			button1 := basic.NewButton("walk along the river")
 			button1.OnClick(world.SwitchFunc("house"))
-			container.Adopt(button1, false)
-			
 			button2 := basic.NewButton("turn around")
 			button2.OnClick(world.SwitchFunc("bear"))
-			container.Adopt(button2, false)
+
+			container.Warp ( func () {
+				container.Adopt(label, true)
+				container.Adopt(button0, false)
+				container.Adopt(button1, false)
+				container.Adopt(button2, false)
+				button0.Select()
+			})
 		},
 		"wet": func () {
 			label := basic.NewLabel (
 				"you get completely soaked.\n" +
 				"you die of hypothermia.", false)
-			container.Adopt(label, true)
 			
 			button0 := basic.NewButton("try again")
 			button0.OnClick(world.SwitchFunc("start"))
-			container.Adopt(button0, false)
-			button0.Select()
-			
 			button1 := basic.NewButton("exit")
 			button1.OnClick(tomo.Stop)
-			container.Adopt(button1, false)
+
+			container.Warp (func () {
+				container.Adopt(label, true)
+				container.Adopt(button0, false)
+				container.Adopt(button1, false)
+				button0.Select()				
+			})
 		},
 		"house": func () {
 			label := basic.NewLabel (
 				"you are standing in front of a delapidated " +
 				"house.", false)
-			container.Adopt(label, true)
 			
 			button1 := basic.NewButton("go inside")
 			button1.OnClick(world.SwitchFunc("inside"))
-			container.Adopt(button1, false)
-			button1.Select()
-			
 			button0 := basic.NewButton("turn back")
 			button0.OnClick(world.SwitchFunc("start"))
-			container.Adopt(button0, false)
+			
+			container.Warp (func () {	
+				container.Adopt(label, true)
+				container.Adopt(button1, false)
+				container.Adopt(button0, false)
+				button1.Select()
+			})
 		},
 		"inside": func () {
 			label := basic.NewLabel (
@@ -74,27 +79,32 @@ func run () {
 				"through the window.\n" +
 				"there is nothing particularly interesting " +
 				"here.", false)
-			container.Adopt(label, true)
 			
 			button0 := basic.NewButton("go back outside")
 			button0.OnClick(world.SwitchFunc("house"))
-			container.Adopt(button0, false)
-			button0.Select()
+			
+			container.Warp (func () {	
+				container.Adopt(label, true)
+				container.Adopt(button0, false)
+				button0.Select()
+			})
 		},
 		"bear": func () {
 			label := basic.NewLabel (
 				"you come face to face with a bear.\n" +
 				"it eats you (it was hungry).", false)
-			container.Adopt(label, true)
 			
 			button0 := basic.NewButton("try again")
 			button0.OnClick(world.SwitchFunc("start"))
-			container.Adopt(button0, false)
-			button0.Select()
-			
 			button1 := basic.NewButton("exit")
 			button1.OnClick(tomo.Stop)
-			container.Adopt(button1, false)
+			
+			container.Warp (func () {	
+				container.Adopt(label, true)
+				container.Adopt(button0, false)
+				container.Adopt(button1, false)
+				button0.Select()
+			})
 		},
 	}
 	world.Switch("start")

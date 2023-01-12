@@ -6,16 +6,19 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+// Container is an element capable of containg other elements, and arranging
+// them in a layout.
 type Container struct {
 	*core.Core
 	core core.CoreControl
 
-	layout     tomo.Layout
-	children   []tomo.LayoutEntry
-
-	drags [10]tomo.Element
+	layout   tomo.Layout
+	children []tomo.LayoutEntry
+	drags    [10]tomo.Element
+	warping  bool
 }
 
+// NewContainer creates a new container.
 func NewContainer (layout tomo.Layout) (element *Container) {
 	element = &Container { }
 	element.Core, element.core = core.NewCore(element)
@@ -23,6 +26,7 @@ func NewContainer (layout tomo.Layout) (element *Container) {
 	return
 }
 
+// SetLayout sets the layout of this container.
 func (element *Container) SetLayout (layout tomo.Layout) {
 	element.layout = layout
 	if element.core.HasImage() {
@@ -32,6 +36,9 @@ func (element *Container) SetLayout (layout tomo.Layout) {
 	}
 }
 
+// Adopt adds a new child element to the container. If expand is set to true,
+// the element will expand (instead of contract to its minimum size), in
+// whatever way is defined by the current layout.
 func (element *Container) Adopt (child tomo.Element, expand bool) {
 	child.SetParentHooks (tomo.ParentHooks {
 		MinimumSizeChange: func (int, int) {
@@ -61,6 +68,29 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 
 	element.updateMinimumSize()
 	element.updateSelectable()
+	if element.core.HasImage() && !element.warping {
+		element.recalculate()
+		element.draw()
+		element.core.PushAll()
+	}
+}
+
+// Warp runs the specified callback, deferring all layout and rendering updates
+// until the callback has finished executing. This allows for aplications to
+// perform batch gui updates without flickering and stuff.
+func (element *Container) Warp (callback func ()) {
+	if element.warping {
+		callback()
+		return
+	}
+
+	element.warping = true
+	callback()
+	element.warping = false
+	
+	// TODO: create some sort of task list so we don't do a full recalculate
+	// and redraw every time, because although that is the most likely use
+	// case, it is not the only one.
 	if element.core.HasImage() {
 		element.recalculate()
 		element.draw()
@@ -83,7 +113,7 @@ func (element *Container) Disown (child tomo.Element) {
 
 	element.updateMinimumSize()
 	element.updateSelectable()
-	if element.core.HasImage() {
+	if element.core.HasImage() && !element.warping {
 		element.recalculate()
 		element.draw()
 		element.core.PushAll()
@@ -96,7 +126,7 @@ func (element *Container) DisownAll () {
 
 	element.updateMinimumSize()
 	element.updateSelectable()
-	if element.core.HasImage() {
+	if element.core.HasImage() && !element.warping {
 		element.recalculate()
 		element.draw()
 		element.core.PushAll()
@@ -300,6 +330,7 @@ func (element *Container) draw () {
 }
 
 func (element *Container) drawChildRegion (child tomo.Element, region tomo.Image) {
+	if element.warping { return }
 	for _, entry := range element.children {
 		if entry.Element == child {
 			artist.Paste(element.core, region, entry.Position)
