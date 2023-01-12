@@ -261,6 +261,7 @@ func (drawer *TextDrawer) recalculate () {
 
 	if drawer.wrap {
 		drawer.layoutBounds.Max.X = drawer.width
+		println("aaa")
 	} else {
 		drawer.layoutBounds.Max.X = horizontalExtent
 	}

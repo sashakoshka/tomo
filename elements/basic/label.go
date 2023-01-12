@@ -36,8 +36,10 @@ func (element *Label) Handle (event tomo.Event) {
 		element.core.AllocateCanvas (
 			resizeEvent.Width,
 			resizeEvent.Height)
-		element.drawer.SetMaxWidth (resizeEvent.Width)
-		element.drawer.SetMaxHeight(resizeEvent.Height)
+		if element.wrap {
+			element.drawer.SetMaxWidth (resizeEvent.Width)
+			element.drawer.SetMaxHeight(resizeEvent.Height)
+		}
 		element.draw()
 	}
 	return
@@ -63,6 +65,10 @@ func (element *Label) SetText (text string) {
 // have a minimum size that fits its text.
 func (element *Label) SetWrap (wrap bool) {
 	if wrap == element.wrap { return }
+	if !wrap {
+		element.drawer.SetMaxWidth(0)
+		element.drawer.SetMaxHeight(0)
+	}
 	element.wrap = wrap
 	element.updateMinimumSize()
 	
