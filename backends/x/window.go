@@ -243,8 +243,9 @@ func (window *Window) childMinimumSizeChangeCallback (width, height int) {
 	}
 }
 
-func (window *Window) childSelectionRequestCallback () {
+func (window *Window) childSelectionRequestCallback () (granted bool) {
 	window.child.Handle(tomo.EventSelect { })
+	return true
 }
 
 func (window *Window) pushRegion (region image.Rectangle) {

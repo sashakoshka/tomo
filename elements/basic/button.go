@@ -78,7 +78,7 @@ func (element *Button) Handle (event tomo.Event) {
 
 	case tomo.EventKeyUp:
 		keyDownEvent := event.(tomo.EventKeyUp)
-		if keyDownEvent.Key == tomo.KeyEnter {
+		if keyDownEvent.Key == tomo.KeyEnter && element.pressed {
 			element.pressed = false
 			if element.core.HasImage() {
 				element.draw()
@@ -91,9 +91,17 @@ func (element *Button) Handle (event tomo.Event) {
 
 	case tomo.EventSelect:
 		element.core.SetSelected(true)
+		if element.core.HasImage() {
+			element.draw()
+			element.core.PushAll()
+		}
 
 	case tomo.EventDeselect:
 		element.core.SetSelected(false)
+		if element.core.HasImage() {
+			element.draw()
+			element.core.PushAll()
+		}
 	}
 	return
 }

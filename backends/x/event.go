@@ -82,7 +82,7 @@ func (window *Window) handleKeyPress (
 			window.advanceSelectionInChild(direction)
 		}
 	} else {
-		window.child.Handle(event)
+		window.child.Handle(keyDownEvent)
 	}
 }
 

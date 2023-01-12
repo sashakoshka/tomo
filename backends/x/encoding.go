@@ -20,6 +20,7 @@ var buttonCodeTable = map[xproto.Keysym] tomo.Key {
 	0xFF7F: tomo.KeyNumLock,
 	0xFF08: tomo.KeyBackspace,
 	0xFF09: tomo.KeyTab,
+	0xFE20: tomo.KeyTab,
 	0xFF0D: tomo.KeyEnter,
 	0xFF1B: tomo.KeyEscape,
 	

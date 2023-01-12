@@ -43,8 +43,9 @@ type ParentHooks struct {
 
 	// SelectionRequest is called when the child element element wants
 	// itself to be selected. If the parent element chooses to grant the
-	// request, it must send the child element a selection event.
-	SelectionRequest func ()
+	// request, it must send the child element a selection event and return
+	// true.
+	SelectionRequest func () (granted bool)
 }
 
 // RunDraw runs the Draw hook if it is not nil. If it is nil, it does nothing.
@@ -64,10 +65,11 @@ func (hooks ParentHooks) RunMinimumSizeChange (width, height int) {
 
 // RunSelectionRequest runs the SelectionRequest hook if it is not nil. If it is
 // nil, it does nothing.
-func (hooks ParentHooks) RunSelectionRequest () {
+func (hooks ParentHooks) RunSelectionRequest () (granted bool) {
 	if hooks.SelectionRequest != nil {
-		hooks.SelectionRequest()
+		granted = hooks.SelectionRequest()
 	}
+	return
 }
 
 // RunSelectabilityChange runs the SelectionRequest hook if it is not nil. If it

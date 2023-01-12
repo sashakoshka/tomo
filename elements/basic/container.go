@@ -12,8 +12,6 @@ type Container struct {
 
 	layout     tomo.Layout
 	children   []tomo.LayoutEntry
-	selectable bool
-	selected   bool
 
 	drags [10]tomo.Element
 }
@@ -41,6 +39,16 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 		},
 		SelectabilityChange: func (bool) {
 			element.updateSelectable()
+		},
+		SelectionRequest: func () (granted bool) {
+			if !child.Selectable() { return }
+			if element.core.Select() {
+				element.propogateToSelected(tomo.EventDeselect { })
+				child.Handle(tomo.EventSelect { })
+				return true
+			}
+			
+			return
 		},
 		Draw: func (region tomo.Image) {
 			element.drawChildRegion(child, region)
@@ -188,19 +196,76 @@ func (element *Container) Handle (event tomo.Event) {
 	case tomo.EventSelect:
 		if !element.Selectable() { break }
 		element.core.SetSelected(true)
+		
+		// select the first selectable element
+		for _, entry := range element.children {
+			if entry.Selectable() {
+				entry.Handle(event)
+				break
+			}
+		}
 
 	case tomo.EventDeselect:
 		element.core.SetSelected(false)
-		// TODO: propogate deselect event to all children who report
-		// themselves as selected.
-		
+		element.propogateToSelected(event)
+
+	default:
+		// other events are just directly sent to the selected child.
+		element.propogateToSelected(event)
 	}
 	return
 }
 
+func (element *Container) propogateToSelected (event tomo.Event) {
+	for _, entry := range element.children {
+		if entry.Selected() {
+			entry.Handle(event)
+		}
+	}
+}
+
 func (element *Container) AdvanceSelection (direction int) (ok bool) {
-	// TODO:
+	if !element.Selectable() { return }
+
+	firstSelected := element.firstSelected()
+	if firstSelected < 0 {
+		for _, entry := range element.children {
+			if entry.Selectable() {
+				entry.Handle(tomo.EventSelect { })
+				return true
+			}
+		}
+	} else {
+		nextSelectable := -1
+		step := 1
+		if direction < 0 { step = - 1 }
+		for index := firstSelected + step;
+			index < len(element.children) && index > 0;
+			index += step {
+
+			if element.children[index].Selectable() {
+				nextSelectable = index
+				break
+			}
+		}
+
+		if nextSelectable > 0 {
+			element.children[firstSelected ].Handle(tomo.EventDeselect { })
+			element.children[nextSelectable].Handle(tomo.EventSelect   { })
+			return true
+		}
+	}
+	
 	return
+}
+
+func (element *Container) firstSelected () (index int) {
+	for currentIndex, entry := range element.children {
+		if entry.Selected() {
+			return currentIndex
+		}
+	}
+	return -1
 }
 
 func (element *Container) updateSelectable () {
@@ -209,7 +274,6 @@ func (element *Container) updateSelectable () {
 		if entry.Selectable() { selectable = true }
 	}
 	element.core.SetSelectable(selectable)
-	if !selectable { element.selected = false }
 }
 
 func (element *Container) updateMinimumSize () {

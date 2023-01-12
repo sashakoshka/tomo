@@ -20,8 +20,10 @@ func run () {
 	cancel := basic.NewButton("Cancel")
 	cancel.SetEnabled(false)
 	container.Adopt(cancel, false)
-	container.Adopt(basic.NewButton("OK"), false)
-	
+	okButton := basic.NewButton("OK")
+	container.Adopt(okButton, false)
+	okButton.Select()
+		
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

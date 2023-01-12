@@ -81,8 +81,8 @@ func (control CoreControl) HasImage () (has bool) {
 	return
 }
 
-func (control CoreControl) Select () {
-	control.core.hooks.RunSelectionRequest()
+func (control CoreControl) Select () (granted bool) {
+	return control.core.hooks.RunSelectionRequest()
 }
 
 func (control CoreControl) SetSelected (selected bool) {
