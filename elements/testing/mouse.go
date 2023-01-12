@@ -1,4 +1,4 @@
-package basic
+package testing
 
 import "image"
 import "image/color"
@@ -7,8 +7,9 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
-// Test is a simple element that can be used as a placeholder.
-type Test struct {
+// Mouse is an element capable of testing mouse input. When the mouse is clicked
+// and dragged on it, it draws a trail.
+type Mouse struct {
 	*core.Core
 	core core.CoreControl
 	drawing      bool
@@ -16,16 +17,16 @@ type Test struct {
 	lastMousePos image.Point
 }
 
-// NewTest creates a new test element.
-func NewTest () (element *Test) {
-	element = &Test { }
+// NewMouse creates a new mouse test element.
+func NewMouse () (element *Mouse) {
+	element = &Mouse { }
 	element.Core, element.core = core.NewCore(element)
 	element.core.SetMinimumSize(32, 32)
 	element.color = artist.NewUniform(color.Black)
 	return
 }
 
-func (element *Test) Handle (event tomo.Event) {
+func (element *Mouse) Handle (event tomo.Event) {
 	switch event.(type) {
 	case tomo.EventResize:
 		resizeEvent := event.(tomo.EventResize)

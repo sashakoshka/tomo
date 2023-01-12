@@ -2,6 +2,7 @@ package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
+import "git.tebibyte.media/sashakoshka/tomo/elements/testing"
 import "git.tebibyte.media/sashakoshka/tomo/elements/layouts"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
 
@@ -22,7 +23,7 @@ func run () {
 	button.OnClick (func () {
 		container.DisownAll()
 		container.Adopt(basic.NewLabel("Draw here:", false), false)
-		container.Adopt(basic.NewTest(), true)
+		container.Adopt(testing.NewMouse(), true)
 		container.Adopt(okButton, false)
 		okButton.Select()
 	})
