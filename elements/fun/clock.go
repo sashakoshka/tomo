@@ -55,15 +55,19 @@ func (element *AnalogClock) draw () {
 			0.8, 0.9, float64(hour) / 6 * math.Pi)
 	}
 
+	second := float64(element.time.Second())
+	minute := float64(element.time.Minute()) + second / 60
+	hour   := float64(element.time.Hour())   + minute / 60
+
 	element.radialLine (
 		theme.ForegroundImage(),
-		0, 0.5, float64(element.time.Hour() - 3) / 6 * math.Pi)
+		0, 0.5, (hour - 3) / 6 * math.Pi)
 	element.radialLine (
 		theme.ForegroundImage(),
-		0, 0.7, float64(element.time.Minute() - 15) / 30 * math.Pi)
+		0, 0.7, (minute - 15) / 30 * math.Pi)
 	element.radialLine (
 		theme.AccentImage(),
-		0, 0.7, float64(element.time.Second() - 15) / 30 * math.Pi)
+		0, 0.7, (second - 15) / 30 * math.Pi)
 	// TODO: engraved background, draw lines with std foreground, draw the
 	// second hand with the accent color.
 }
