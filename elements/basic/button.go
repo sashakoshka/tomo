@@ -6,6 +6,7 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+// Button is a clickable button.
 type Button struct {
 	*core.Core
 	core core.CoreControl
@@ -18,6 +19,7 @@ type Button struct {
 	drawer artist.TextDrawer
 }
 
+// NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
 	element = &Button { enabled: true }
 	element.Core, element.core = core.NewCore(element)
@@ -27,6 +29,7 @@ func NewButton (text string) (element *Button) {
 	return
 }
 
+// Handle handles an event.
 func (element *Button) Handle (event tomo.Event) {
 	switch event.(type) {
 	case tomo.EventResize:
@@ -106,14 +109,18 @@ func (element *Button) Handle (event tomo.Event) {
 	return
 }
 
+// OnClick sets the function to be called when the button is clicked.
 func (element *Button) OnClick (callback func ()) {
 	element.onClick = callback
 }
 
+// Select requests that this button's parent container send it a selection
+// event.
 func (element *Button) Select () {
 	element.core.Select()
 }
 
+// SetEnabled sets whether this button can be clicked or not.
 func (element *Button) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
@@ -124,6 +131,7 @@ func (element *Button) SetEnabled (enabled bool) {
 	}
 }
 
+// SetText sets the button's label text.
 func (element *Button) SetText (text string) {
 	if element.text == text { return }
 
