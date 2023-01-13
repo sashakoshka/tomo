@@ -68,8 +68,6 @@ func (element *AnalogClock) draw () {
 	element.radialLine (
 		theme.AccentImage(),
 		0, 0.7, (second - 15) / 30 * math.Pi)
-	// TODO: engraved background, draw lines with std foreground, draw the
-	// second hand with the accent color.
 }
 
 func (element *AnalogClock) radialLine (
