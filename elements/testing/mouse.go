@@ -37,7 +37,10 @@ func (element *Mouse) Handle (event tomo.Event) {
 			element.core,
 			theme.AccentImage(),
 			element.Bounds())
-		// TODO: draw a stroked rectangle around the edges
+		artist.StrokeRectangle (
+			element.core,
+			artist.NewUniform(color.Black), 5,
+			element.Bounds())
 		artist.Line (
 			element.core, artist.NewUniform(color.White), 1,
 			image.Pt(1, 1),
