@@ -52,6 +52,7 @@ func lineLow (
 	width, height int,
 ) {
 	data, stride := destination.Buffer()
+	bounds := destination.Bounds()
 
 	deltaX := max.X - min.X
 	deltaY := max.Y - min.Y
@@ -66,6 +67,7 @@ func lineLow (
 	y := min.Y
 
 	for x := min.X; x < max.X; x ++ {
+		if !(image.Point { x, y }).In(bounds) { break }
 		data[x + y * stride] = source.AtWhen(x, y, width, height)
 		if D > 0 {
 			y += yi
@@ -85,6 +87,7 @@ func lineHigh (
 	width, height int,
 ) {
 	data, stride := destination.Buffer()
+	bounds := destination.Bounds()
 
 	deltaX := max.X - min.X
 	deltaY := max.Y - min.Y
@@ -99,6 +102,7 @@ func lineHigh (
 	x := min.X
 
 	for y := min.Y; y < max.Y; y ++ {
+		if !(image.Point { x, y }).In(bounds) { break }
 		data[x + y * stride] = source.AtWhen(x, y, width, height)
 		if D > 0 {
 			x += xi
