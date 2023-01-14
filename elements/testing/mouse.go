@@ -39,7 +39,7 @@ func (element *Mouse) Handle (event tomo.Event) {
 			element.Bounds())
 		artist.StrokeRectangle (
 			element.core,
-			artist.NewUniform(color.Black), 5,
+			artist.NewUniform(color.Black), 1,
 			element.Bounds())
 		artist.Line (
 			element.core, artist.NewUniform(color.White), 1,

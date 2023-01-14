@@ -70,12 +70,12 @@ func StrokeRectangle (
 	// top
 	FillRectangle (destination, source, image.Rect (
 		bounds.Min.X, bounds.Min.Y,
-		insetBounds.Max.X, insetBounds.Min.Y))
+		bounds.Max.X, insetBounds.Min.Y))
 		
 	// bottom
 	FillRectangle (destination, source, image.Rect (
 		bounds.Min.X, insetBounds.Max.Y,
-		insetBounds.Max.X, bounds.Max.Y))
+		bounds.Max.X, bounds.Max.Y))
 
 	// left
 	FillRectangle (destination, source, image.Rect (
