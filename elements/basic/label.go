@@ -93,10 +93,9 @@ func (element *Label) updateMinimumSize () {
 func (element *Label) draw () {
 	bounds := element.core.Bounds()
 
-	artist.Rectangle (
+	artist.FillRectangle (
 		element.core,
 		theme.BackgroundImage(),
-		nil, 0,
 		bounds)
 
 	textBounds := element.drawer.LayoutBounds()

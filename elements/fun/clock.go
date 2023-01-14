@@ -71,7 +71,7 @@ func (element *AnalogClock) draw () {
 }
 
 func (element *AnalogClock) radialLine (
-	source tomo.Image,
+	source artist.Pattern,
 	inner  float64,
 	outer  float64,
 	radian float64,

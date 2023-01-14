@@ -187,8 +187,9 @@ func (window *Window) reallocateCanvas () {
 }
 
 func (window *Window) redrawChildEntirely () {
+	data, stride := window.child.Buffer()
 	window.xCanvas.For (func (x, y int) (c xgraphics.BGRA) {
-		rgba := window.child.RGBAAt(x, y)
+		rgba := data[x + y * stride]
 		c.R, c.G, c.B, c.A = rgba.R, rgba.G, rgba.B, rgba.A
 		return
 	})
@@ -206,13 +207,14 @@ func (window *Window) resizeChildToFit () {
 	window.redrawChildEntirely()
 }
 
-func (window *Window) childDrawCallback (region tomo.Image) {
+func (window *Window) childDrawCallback (region tomo.Canvas) {
 	if window.skipChildDrawCallback { return }
 
+	data, stride := region.Buffer()
 	bounds := region.Bounds()
 	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
 	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
-		rgba := region.RGBAAt(x, y)
+		rgba := data[x + y * stride]
 		window.xCanvas.SetBGRA (x, y, xgraphics.BGRA {
 			R: rgba.R,
 			G: rgba.G,

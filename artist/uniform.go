@@ -3,8 +3,8 @@ package artist
 import "image"
 import "image/color"
 
-// Uniform is an infinite-sized Image of uniform color. It implements the
-// color.Color, color.Model, and tomo.Image interfaces.
+// Uniform is an infinite-sized pattern of uniform color. It implements the
+// color.Color, color.Model, and image.Image interfaces.
 type Uniform struct {
 	C color.RGBA
 }
@@ -29,13 +29,11 @@ func (uniform *Uniform) RGBA () (r, g, b, a uint32) {
 }
 
 func (uniform *Uniform) ColorModel () (model color.Model) {
-	model = uniform
-	return
+	return uniform
 }
 
-func (uniform *Uniform) Convert (in color.Color) (out color.Color) {
-	out = uniform.C
-	return
+func (uniform *Uniform) Convert (in color.Color) (c color.Color) {
+	return uniform.C
 }
 
 func (uniform *Uniform) Bounds () (rectangle image.Rectangle) {
@@ -45,13 +43,11 @@ func (uniform *Uniform) Bounds () (rectangle image.Rectangle) {
 }
 
 func (uniform *Uniform) At (x, y int) (c color.Color) {
-	c = uniform.C
-	return
+	return uniform.C
 }
 
-func (uniform *Uniform) RGBAAt (x, y int) (c color.RGBA) {
-	c = uniform.C
-	return
+func (uniform *Uniform) AtWhen (x, y, width, height int) (c color.RGBA) {
+	return uniform.C
 }
 
 func (uniform *Uniform) RGBA64At (x, y int) (c color.RGBA64) {
@@ -59,13 +55,10 @@ func (uniform *Uniform) RGBA64At (x, y int) (c color.RGBA64) {
 	g := uint16(uniform.C.G) << 8 | uint16(uniform.C.G)
 	b := uint16(uniform.C.B) << 8 | uint16(uniform.C.B)
 	a := uint16(uniform.C.A) << 8 | uint16(uniform.C.A)
-	
-	c = color.RGBA64 { R: r, G: g, B: b, A: a }
-	return
+	return color.RGBA64 { R: r, G: g, B: b, A: a }
 }
 
 // Opaque scans the entire image and reports whether it is fully opaque.
 func (uniform *Uniform) Opaque () (opaque bool) {
-	opaque = uniform.C.A == 0xFF
-	return
+	return uniform.C.A == 0xFF
 }

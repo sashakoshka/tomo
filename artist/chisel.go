@@ -7,10 +7,10 @@ import "git.tebibyte.media/sashakoshka/tomo"
 // ShadingProfile contains shading information that can be used to draw chiseled
 // objects.
 type ShadingProfile struct {
-	Highlight     tomo.Image
-	Shadow        tomo.Image
-	Stroke        tomo.Image
-	Fill          tomo.Image
+	Highlight     Pattern
+	Shadow        Pattern
+	Stroke        Pattern
+	Fill          Pattern
 	StrokeWeight  int
 	ShadingWeight int
 }
@@ -43,6 +43,7 @@ func ChiseledRectangle (
 	strokeWeight  := profile.StrokeWeight
 	shadingWeight := profile.ShadingWeight
 
+	data, stride := destination.Buffer()
 	bounds = bounds.Canon()
 	updatedRegion = bounds
 
@@ -59,11 +60,6 @@ func ChiseledRectangle (
 	fillBounds.Max = fillBounds.Max.Sub(shadingWeightVector)
 	fillBounds = fillBounds.Canon()
 
-	strokeImageMin    := stroke.Bounds().Min
-	highlightImageMin := highlight.Bounds().Min
-	shadowImageMin    := shadow.Bounds().Min
-	fillImageMin      := fill.Bounds().Min
-
 	width  := float64(bounds.Dx())
 	height := float64(bounds.Dy())
 
@@ -75,11 +71,10 @@ func ChiseledRectangle (
 			point := image.Point { x, y }
 			switch {
 			case point.In(fillBounds):
-				pixel = fill.RGBAAt (
-					xx - strokeWeight - shadingWeight +
-					fillImageMin.X,
-					yy - strokeWeight - shadingWeight +
-					fillImageMin.Y)
+				pixel = fill.AtWhen (
+					xx - strokeWeight - shadingWeight,
+					yy - strokeWeight - shadingWeight,
+					fillBounds.Dx(), fillBounds.Dy())
 					
 			case point.In(shadingBounds):
 				var highlighted bool
@@ -97,27 +92,21 @@ func ChiseledRectangle (
 						width - float64(xx) >
 						float64(yy)
 				}
-			
+
+				shadingSource := shadow
 				if highlighted {
-					pixel = highlight.RGBAAt (
-						xx - strokeWeight +
-						highlightImageMin.X,
-						yy - strokeWeight +
-						highlightImageMin.Y)
-				} else {
-					pixel = shadow.RGBAAt (
-						xx - strokeWeight +
-						shadowImageMin.X,
-						yy - strokeWeight +
-						shadowImageMin.Y)
+					shadingSource = highlight
 				}
-				
+				pixel = shadingSource.AtWhen (
+					xx - strokeWeight,
+					yy - strokeWeight,
+					shadingBounds.Dx(),
+					shadingBounds.Dy())
 			default:
-				pixel = stroke.RGBAAt (
-					xx + strokeImageMin.X,
-					yy + strokeImageMin.Y)
+				pixel = stroke.AtWhen (
+					xx, yy, bounds.Dx(), bounds.Dy())
 			}
-			destination.SetRGBA(x, y, pixel)
+			data[x + y * stride] = pixel
 			xx ++
 		}
 		yy ++

@@ -2,25 +2,6 @@ package tomo
 
 import "image"
 import "errors"
-import "image/draw"
-import "image/color"
-
-// Image represents a simple image buffer that fulfills the image.Image
-// interface while also having methods that do away with the use of the
-// color.Color interface to facilitate more efficient drawing. This interface
-// can be easily satisfied using an image.RGBA struct.
-type Image interface {
-	image.Image
-	RGBAAt (x, y int) (c color.RGBA)
-}
-
-// Canvas is like Image but also requires Set and SetRGBA methods. This
-// interface can be easily satisfied using an image.RGBA struct.
-type Canvas interface {
-	draw.Image
-	RGBAAt (x, y int) (c color.RGBA)
-	SetRGBA (x, y int, c color.RGBA)
-}
 
 // ParentHooks is a struct that contains callbacks that let child elements send
 // information to their parent element without the child element knowing
@@ -29,7 +10,7 @@ type Canvas interface {
 type ParentHooks struct {
 	// Draw is called when a part of the child element's surface is updated.
 	// The updated region will be passed to the callback as a sub-image.
-	Draw func (region Image)
+	Draw func (region Canvas)
 
 	// MinimumSizeChange is called when the child element's minimum width
 	// and/or height changes. When this function is called, the element will
@@ -49,7 +30,7 @@ type ParentHooks struct {
 }
 
 // RunDraw runs the Draw hook if it is not nil. If it is nil, it does nothing.
-func (hooks ParentHooks) RunDraw (region Image) {
+func (hooks ParentHooks) RunDraw (region Canvas) {
 	if hooks.Draw != nil {
 		hooks.Draw(region)
 	}
@@ -82,10 +63,10 @@ func (hooks ParentHooks) RunSelectabilityChange (selectable bool) {
 
 // Element represents a basic on-screen object.
 type Element interface {
-	// Element must implement the Image interface. Elements should start out
-	// with a completely blank image buffer, and only set its size and draw
+	// Element must implement the Canvas interface. Elements should start
+	// out with a completely blank buffer, and only allocate memory and draw
 	// on it for the first time when sent an EventResize event.
-	Image
+	Canvas
 
 	// Handle handles an event, propagating it to children if necessary.
 	Handle (event Event)

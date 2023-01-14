@@ -3,7 +3,6 @@ package theme
 import "image"
 import "image/color"
 import "golang.org/x/image/font"
-import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 
@@ -151,34 +150,34 @@ func InputProfile (enabled bool, selected bool) artist.ShadingProfile {
 
 // BackgroundImage returns the texture/color used for the fill of
 // BackgroundProfile.
-func BackgroundImage () tomo.Image {
+func BackgroundImage () artist.Pattern {
 	return backgroundImage
 }
 
 // RaisedImage returns the texture/color used for the fill of RaisedProfile.
-func RaisedImage () tomo.Image {
+func RaisedImage () artist.Pattern {
 	return raisedImage
 }
 
 // InputImage returns the texture/color used for the fill of InputProfile.
-func InputImage () tomo.Image {
+func InputImage () artist.Pattern {
 	return inputImage
 }
 
 // ForegroundImage returns the texture/color text and monochromatic icons should
 // be drawn with.
-func ForegroundImage () tomo.Image {
+func ForegroundImage () artist.Pattern {
 	return foregroundImage
 }
 
 // DisabledForegroundImage returns the texture/color text and monochromatic
 // icons should be drawn with if they are disabled.
-func DisabledForegroundImage () tomo.Image {
+func DisabledForegroundImage () artist.Pattern {
 	return disabledForegroundImage
 }
 
 // AccentImage returns the accent texture/color.
-func AccentImage () tomo.Image {
+func AccentImage () artist.Pattern {
 	return accentImage
 }
 

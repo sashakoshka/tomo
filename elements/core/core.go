@@ -7,7 +7,7 @@ import "git.tebibyte.media/sashakoshka/tomo"
 // Core is a struct that implements some core functionality common to most
 // widgets. It is meant to be embedded directly into a struct.
 type Core struct {
-	canvas *image.RGBA
+	canvas tomo.BasicCanvas
 	parent tomo.Element
 
 	metrics struct {
@@ -32,20 +32,19 @@ func (core Core) ColorModel () (model color.Model) {
 }
 
 func (core Core) At (x, y int) (pixel color.Color) {
-	if core.canvas == nil { return color.RGBA { } }
-	pixel = core.canvas.At(x, y)
-	return
-}
-
-func (core Core) RGBAAt (x, y int) (pixel color.RGBA) {
-	if core.canvas == nil { return color.RGBA { } }
-	pixel = core.canvas.RGBAAt(x, y)
-	return
+	return core.canvas.At(x, y)
 }
 
 func (core Core) Bounds () (bounds image.Rectangle) {
-	if core.canvas != nil { bounds = core.canvas.Bounds() }
-	return
+	return core.canvas.Bounds()
+}
+
+func (core Core) Set (x, y int, c color.Color) () {
+	core.canvas.Set(x, y, c)
+}
+
+func (core Core) Buffer () (data []color.RGBA, stride int) {
+	return core.canvas.Buffer()
 }
 
 func (core Core) Selectable () (selectable bool) {
@@ -72,13 +71,12 @@ func (core Core) MinimumSize () (width, height int) {
 // be used as a canvas. It must not be directly embedded into an element, but
 // instead kept as a private member.
 type CoreControl struct {
-	*image.RGBA
+	tomo.BasicCanvas
 	core *Core
 }
 
-func (control CoreControl) HasImage () (has bool) {
-	has = control.RGBA != nil
-	return
+func (control CoreControl) HasImage () (empty bool) {
+	return !control.Bounds().Empty()
 }
 
 func (control CoreControl) Select () (granted bool) {
@@ -98,7 +96,7 @@ func (control CoreControl) SetSelectable (selectable bool) {
 }
 
 func (control CoreControl) PushRegion (bounds image.Rectangle) {
-	control.core.hooks.RunDraw(control.SubImage(bounds).(*image.RGBA))
+	control.core.hooks.RunDraw(tomo.Cut(control, bounds))
 }
 
 func (control CoreControl) PushAll () {
@@ -108,8 +106,8 @@ func (control CoreControl) PushAll () {
 func (control *CoreControl) AllocateCanvas (width, height int) {
 	core := control.core
 	width, height, _ = control.ConstrainSize(width, height)
-	core.canvas  = image.NewRGBA(image.Rect (0, 0, width, height))
-	control.RGBA = core.canvas
+	core.canvas  = tomo.NewBasicCanvas(width, height)
+	control.BasicCanvas = core.canvas
 }
 
 func (control CoreControl) SetMinimumSize (width, height int) {
@@ -125,19 +123,17 @@ func (control CoreControl) SetMinimumSize (width, height int) {
 
 	// if there is an image buffer, and the current size is less
 	// than this new minimum size, send core.parent a resize event.
-	if control.HasImage() {
-		bounds := control.Bounds()
-		imageWidth,
-		imageHeight,
-		constrained := control.ConstrainSize (
-			bounds.Dx(),
-			bounds.Dy())
-		if constrained {
-			core.parent.Handle (tomo.EventResize {
-				Width:  imageWidth,
-				Height: imageHeight,
-			})
-		}
+	bounds := control.Bounds()
+	imageWidth,
+	imageHeight,
+	constrained := control.ConstrainSize (
+		bounds.Dx(),
+		bounds.Dy())
+	if constrained {
+		core.parent.Handle (tomo.EventResize {
+			Width:  imageWidth,
+			Height: imageHeight,
+		})
 	}
 }
 
