@@ -69,6 +69,7 @@ func (element *Mouse) Handle (event tomo.Event) {
 		element.lastMousePos = mousePos
 
 	case tomo.EventMouseMove:
+		if !element.drawing { return }
 		mouseMoveEvent := event.(tomo.EventMouseMove)
 		mousePos := image.Pt (
 			mouseMoveEvent.X,
