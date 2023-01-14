@@ -3,7 +3,7 @@ package artist
 // import "fmt"
 import "image"
 import "unicode"
-// import "image/draw"
+import "image/draw"
 import "golang.org/x/image/font"
 import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo"
@@ -100,30 +100,36 @@ func (drawer *TextDrawer) Draw (
 ) (
 	updatedRegion image.Rectangle,
 ) {
+	wrappedSource := WrappedPattern {
+		Pattern: source,
+		Width:  0,
+		Height: 0, // TODO: choose a better width and height
+	}
+
 	if !drawer.layoutClean { drawer.recalculate() }
 	// TODO: reimplement a version of draw mask that takes in a pattern
-	// for _, word := range drawer.layout {
-	// for _, character := range word.text {
-		// destinationRectangle,
-		// mask, maskPoint, _, ok := drawer.face.Glyph (
-			// fixed.P (
-				// offset.X + word.position.X + character.x,
-				// offset.Y + word.position.Y),
-			// character.character)
-		// if !ok { continue }
+	for _, word := range drawer.layout {
+	for _, character := range word.text {
+		destinationRectangle,
+		mask, maskPoint, _, ok := drawer.face.Glyph (
+			fixed.P (
+				offset.X + word.position.X + character.x,
+				offset.Y + word.position.Y),
+			character.character)
+		if !ok { continue }
 
 		// FIXME: clip destination rectangle if we are on the cusp of
 		// the maximum height.
 
-		// draw.DrawMask (
-			// destination,
-			// destinationRectangle,
-			// source, image.Point { },
-			// mask, maskPoint,
-			// draw.Over)
+		draw.DrawMask (
+			destination,
+			destinationRectangle,
+			wrappedSource, image.Point { },
+			mask, maskPoint,
+			draw.Over)
 
-		// updatedRegion = updatedRegion.Union(destinationRectangle)
-	// }}
+		updatedRegion = updatedRegion.Union(destinationRectangle)
+	}}
 	return
 }
 

@@ -29,6 +29,7 @@ func Paste (
 	return
 }
 
+// FillRectangle draws a filled rectangle with the specified pattern.
 func FillRectangle (
 	destination tomo.Canvas,
 	source Pattern,
