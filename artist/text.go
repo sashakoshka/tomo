@@ -107,7 +107,8 @@ func (drawer *TextDrawer) Draw (
 	}
 
 	if !drawer.layoutClean { drawer.recalculate() }
-	// TODO: reimplement a version of draw mask that takes in a pattern
+	// TODO: reimplement a version of draw mask that takes in a pattern and
+	// only draws to a tomo.Canvas.
 	for _, word := range drawer.layout {
 	for _, character := range word.text {
 		destinationRectangle,

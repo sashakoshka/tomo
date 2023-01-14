@@ -50,3 +50,44 @@ func FillRectangle (
 	}}
 	return
 }
+
+
+// StrokeRectangle draws the outline of a rectangle with the specified line
+// weight and pattern.
+func StrokeRectangle (
+	destination tomo.Canvas,
+	source Pattern,
+	weight int,
+	bounds image.Rectangle,
+) {
+	bounds = bounds.Canon()
+	insetBounds := bounds.Inset(weight)
+	if insetBounds.Empty() {
+		FillRectangle(destination, source, bounds)
+		return
+	}
+
+	// top
+	FillRectangle (destination, source, image.Rect (
+		bounds.Min.X, bounds.Min.Y,
+		insetBounds.Max.X, insetBounds.Min.Y))
+		
+	// bottom
+	FillRectangle (destination, source, image.Rect (
+		bounds.Min.X, insetBounds.Max.Y,
+		insetBounds.Max.X, bounds.Max.Y))
+
+	// left
+	FillRectangle (destination, source, image.Rect (
+		bounds.Min.X, insetBounds.Min.Y,
+		insetBounds.Min.X, insetBounds.Max.Y))
+		
+	// right
+	FillRectangle (destination, source, image.Rect (
+		insetBounds.Max.X, insetBounds.Min.Y,
+		bounds.Max.X, insetBounds.Max.Y))
+}
+
+// TODO: FillEllipse
+
+// TODO: StrokeEllipse

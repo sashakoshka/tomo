@@ -3,6 +3,8 @@ package artist
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 
+// Line draws a line from one point to another with the specified weight and
+// pattern.
 func Line (
 	destination tomo.Canvas,
 	source Pattern,
