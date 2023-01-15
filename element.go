@@ -14,11 +14,7 @@ type ParentHooks struct {
 	// have already been resized and there is no need to send it a resize
 	// event.
 	MinimumSizeChange func (width, height int)
-
-	// SelectabilityChange is called when the chid element becomes
-	// selectable or non-selectable.
-	SelectabilityChange func (selectable bool)
-
+	
 	// SelectionRequest is called when the child element element wants
 	// itself to be selected. If the parent element chooses to grant the
 	// request, it must send the child element a selection event and return
@@ -50,41 +46,12 @@ func (hooks ParentHooks) RunSelectionRequest () (granted bool) {
 	return
 }
 
-// RunSelectabilityChange runs the SelectionRequest hook if it is not nil. If it
-// is nil, it does nothing.
-func (hooks ParentHooks) RunSelectabilityChange (selectable bool) {
-	if hooks.SelectabilityChange != nil {
-		hooks.SelectabilityChange(selectable)
-	}
-}
-
 // Element represents a basic on-screen object.
 type Element interface {
 	// Element must implement the Canvas interface. Elements should start
 	// out with a completely blank buffer, and only allocate memory and draw
 	// on it for the first time when sent an EventResize event.
 	Canvas
-
-	// Handle handles an event, propagating it to children if necessary.
-	Handle (event Event)
-
-	// Selectable returns whether this element can be selected. If this
-	// element contains other selectable elements, it must return true.
-	Selectable () (selectable bool)
-
-	// Selected returns whether or not this element is currently selected.
-	// This will always return false if it is not selectable.
-	Selected () (selected bool)
-
-	// If this element contains other elements, and one is selected, this
-	// method will advance the selection in the specified direction. If
-	// the element contains selectable elements but none of them are
-	// selected, it will select the first selectable element. If there are
-	// no more children to be selected in the specified direction, the
-	// element will return false. If the selection could be advanced, it
-	// will return true. If the element contains no selectable child
-	// elements, it will  always return false.
-	AdvanceSelection (direction int) (ok bool)
 
 	// SetParentHooks gives the element callbacks that let it send
 	// information to its parent element without it knowing anything about
@@ -97,4 +64,76 @@ type Element interface {
 	// event with dimensions smaller than this, it will use its minimum
 	// instead of the offending dimension(s).
 	MinimumSize () (width, height int)
+}
+
+// SelectionDirection represents a keyboard navigation direction.
+type SelectionDirection int
+
+const (
+	SelectionDirectionNeutral  SelectionDirection =  0
+	SelectionDirectionBackward SelectionDirection = -1
+	SelectionDirectionForward  SelectionDirection =  1
+)
+
+// Selectable represents an element that has keyboard navigation support. This
+// includes inputs, buttons, sliders, etc. as well as any elements that have
+// children (so keyboard navigation events can be propagated downward).
+type Selectable interface {
+	Element
+
+	// Selected returns whether or not this element is currently selected.
+	Selected () (selected bool)
+
+	// Select selects this element, if its parent element grants the
+	// request.
+	Select ()
+
+	// HandleSelection causes this element to mark itself as selected, if it
+	// can currently be. Otherwise, it will return false and do nothing.
+	HandleSelection (direction SelectionDirection) (accepted bool)
+
+	// HandleDeselection causes this element to mark itself and all of its
+	// children as deselected.
+	HandleDeselection ()
+}
+
+// KeyboardTarget represents an element that can receive keyboard input.
+type KeyboardTarget interface {
+	Element
+
+	// HandleKeyDown is called when a key is pressed down while this element
+	// has keyboard focus. It is important to note that not every key down
+	// event is guaranteed to be paired with exactly one key up event. This
+	// is the reason a list of modifier keys held down at the time of the
+	// key press is given.
+	HandleKeyDown (key Key, modifiers Modifiers, repeated bool)
+
+	// HandleKeyUp is called when a key is released while this element has
+	// keyboard focus.
+	HandleKeyUp (key Key)
+}
+
+// MouseTarget represents an element that can receive mouse events.
+type MouseTarget interface {
+	Element
+
+	// Each of these handler methods is passed the position of the mouse
+	// cursor at the time of the event as x, y.
+
+	// HandleMouseDown is called when a mouse button is pressed down on this
+	// element.
+	HandleMouseDown (x, y int, button Button)
+
+	// HandleMouseUp is called when a mouse button is released that was
+	// originally pressed down on this element.
+	HandleMouseUp (x, y int, button Button)
+
+	// HandleMouseMove is called when the mouse is moved over this element,
+	// or the mouse is moving while being held down and originally pressed
+	// down on this element.
+	HandleMouseMove (x, y int)
+
+	// HandleScroll is called when the mouse is scrolled. The X and Y
+	// direction of the scroll event are passed as deltaX and deltaY.
+	HandleScroll (x, y int, deltaX, deltaY float64)
 }
