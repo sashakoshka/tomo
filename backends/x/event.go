@@ -27,6 +27,8 @@ func (window *Window) handleConfigureNotify (
 	connection *xgbutil.XUtil,
 	event xevent.ConfigureNotifyEvent,
 ) {
+	if window.child == nil { return }
+
 	configureEvent := *event.ConfigureNotifyEvent
 	
 	newWidth  := int(configureEvent.Width)
@@ -66,33 +68,29 @@ func (window *Window) handleKeyPress (
 		NumberPad: numberPad,
 	}
 
-	keyDownEvent := tomo.EventKeyDown {
-		Key: key,
-		Modifiers: modifiers,
-		Repeated: false, // FIXME: return correct value here
-	}
-
-	if keyDownEvent.Key == tomo.KeyTab && keyDownEvent.Modifiers.Alt {
-		if window.child.Selectable() {
-			direction := 1
-			if keyDownEvent.Modifiers.Shift {
-				direction = -1
+	if key == tomo.KeyTab && modifiers.Alt {
+		if _, ok := window.child.(tomo.Selectable); ok {
+			direction := tomo.SelectionDirectionForward
+			if modifiers.Shift {
+				direction = tomo.SelectionDirectionBackward
 			}
 
 			window.advanceSelectionInChild(direction)
 		}
-	} else {
-		window.child.Handle(keyDownEvent)
+	} else if child, ok := window.child.(tomo.KeyboardTarget); ok {
+		// FIXME: pass correct value for repeated
+		child.HandleKeyDown(key, modifiers, false)
 	}
 }
 
-func (window *Window) advanceSelectionInChild (direction int) {
-	if window.child.Selected() {
-		if !window.child.AdvanceSelection(direction) {
-			window.child.Handle(tomo.EventDeselect { })
+func (window *Window) advanceSelectionInChild (direction tomo.SelectionDirection) {
+	child := window.child.(tomo.Selectable)
+	if child.Selected() {
+		if !child.HandleSelection(direction) {
+			child.HandleDeselection()
 		}
 	} else {
-		window.child.Handle(tomo.EventSelect { })
+		child.HandleSelection(tomo.SelectionDirectionNeutral)
 	}
 }
 
@@ -115,11 +113,10 @@ func (window *Window) handleKeyRelease (
 		Hyper:   (keyEvent.State & window.backend.modifierMasks.hyper) > 0,
 		NumberPad: numberPad,
 	}
-
-	window.child.Handle (tomo.EventKeyUp {
-		Key: key,
-		Modifiers: modifiers,
-	})
+	
+	if child, ok := window.child.(tomo.KeyboardTarget); ok {
+		child.HandleKeyUp(key, modifiers)
+	}
 }
 
 func (window *Window) handleButtonPress (
@@ -128,48 +125,54 @@ func (window *Window) handleButtonPress (
 ) {
 	if window.child == nil { return }
 	
-	buttonEvent := *event.ButtonPressEvent
-	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
-		sum := scrollSum { }
-		sum.add(buttonEvent.Detail)
-		window.compressScrollSum(buttonEvent, &sum)
-		window.child.Handle (tomo.EventScroll {
-			X: int(buttonEvent.EventX),
-			Y: int(buttonEvent.EventY),
-			ScrollX: sum.x,
-			ScrollY: sum.y,
-		})
-	} else {
-		window.child.Handle (tomo.EventMouseDown {
-			Button: tomo.Button(buttonEvent.Detail),
-			X: int(buttonEvent.EventX),
-			Y: int(buttonEvent.EventY),
-		})
+	if child, ok := window.child.(tomo.MouseTarget); ok {
+		buttonEvent := *event.ButtonPressEvent
+		if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
+			sum := scrollSum { }
+			sum.add(buttonEvent.Detail)
+			window.compressScrollSum(buttonEvent, &sum)
+			child.HandleScroll (
+				int(buttonEvent.EventX),
+				int(buttonEvent.EventY),
+				float64(sum.x), float64(sum.y))
+		} else {
+			child.HandleMouseDown (
+				int(buttonEvent.EventX),
+				int(buttonEvent.EventY),
+				tomo.Button(buttonEvent.Detail))
+		}
 	}
+	
 }
 
 func (window *Window) handleButtonRelease (
 	connection *xgbutil.XUtil,
 	event xevent.ButtonReleaseEvent,
 ) {
-	buttonEvent := *event.ButtonReleaseEvent
-	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
-	window.child.Handle (tomo.EventMouseUp {
-		Button: tomo.Button(buttonEvent.Detail),
-		X: int(buttonEvent.EventX),
-		Y: int(buttonEvent.EventY),
-	})
+	if window.child == nil { return }
+	
+	if child, ok := window.child.(tomo.MouseTarget); ok {
+		buttonEvent := *event.ButtonReleaseEvent
+		if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
+		child.HandleMouseUp (
+			int(buttonEvent.EventX),
+			int(buttonEvent.EventY),
+			tomo.Button(buttonEvent.Detail))
+	}
 }
 
 func (window *Window) handleMotionNotify (
 	connection *xgbutil.XUtil,
 	event xevent.MotionNotifyEvent,
 ) {
-	motionEvent := window.compressMotionNotify(*event.MotionNotifyEvent)
-	window.child.Handle (tomo.EventMouseMove {
-		X: int(motionEvent.EventX),
-		Y: int(motionEvent.EventY),
-	})
+	if window.child == nil { return }
+	
+	if child, ok := window.child.(tomo.MouseTarget); ok {
+		motionEvent := window.compressMotionNotify(*event.MotionNotifyEvent)
+		child.HandleMouseMove (
+			int(motionEvent.EventX),
+			int(motionEvent.EventY))
+	}
 }
 
 

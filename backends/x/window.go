@@ -78,7 +78,11 @@ func (backend *Backend) NewWindow (
 func (window *Window) Adopt (child tomo.Element) {
 	if window.child != nil {
 		child.SetParentHooks (tomo.ParentHooks { })
-		if child.Selected() { child.Handle(tomo.EventDeselect { }) }
+		if previousChild, ok := window.child.(tomo.Selectable); ok {
+			if previousChild.Selected() {
+				previousChild.HandleDeselection()
+			}
+		}
 	}
 	window.child = child
 	if child != nil {
@@ -88,7 +92,6 @@ func (window *Window) Adopt (child tomo.Element) {
 			SelectionRequest: window.childSelectionRequestCallback,
 		})
 		
-		if child.Selectable() { child.Handle(tomo.EventSelect { }) }
 		window.resizeChildToFit()
 	}
 	window.childMinimumSizeChangeCallback(child.MinimumSize())
@@ -199,12 +202,18 @@ func (window *Window) redrawChildEntirely () {
 
 func (window *Window) resizeChildToFit () {
 	window.skipChildDrawCallback = true
-	window.child.Handle(tomo.EventResize {
-		Width:  window.metrics.width,
-		Height: window.metrics.height,
-	})
+	if child, ok := window.child.(tomo.Expanding); ok {
+		minimumHeight := child.MinimumHeightFor(window.metrics.width)
+		_, minimumWidth := child.MinimumSize()
+		window.childMinimumSizeChangeCallback (
+			minimumWidth, minimumHeight)
+	} else {
+		window.child.Resize (
+			window.metrics.width,
+			window.metrics.height)
+			window.redrawChildEntirely()
+	}
 	window.skipChildDrawCallback = false
-	window.redrawChildEntirely()
 }
 
 func (window *Window) childDrawCallback (region tomo.Canvas) {
@@ -246,7 +255,9 @@ func (window *Window) childMinimumSizeChangeCallback (width, height int) {
 }
 
 func (window *Window) childSelectionRequestCallback () (granted bool) {
-	window.child.Handle(tomo.EventSelect { })
+	if child, ok := window.child.(tomo.Selectable); ok {
+		child.HandleSelection(tomo.SelectionDirectionNeutral)
+	}
 	return true
 }
 

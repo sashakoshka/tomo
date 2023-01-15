@@ -53,17 +53,21 @@ type Element interface {
 	// on it for the first time when sent an EventResize event.
 	Canvas
 
-	// SetParentHooks gives the element callbacks that let it send
-	// information to its parent element without it knowing anything about
-	// the parent element or containing any reference to it. When a parent
-	// element adopts a child element, it must set these callbacks.
-	SetParentHooks (callbacks ParentHooks)
-
 	// MinimumSize specifies the minimum amount of pixels this element's
 	// width and height may be set to. If the element is given a resize
 	// event with dimensions smaller than this, it will use its minimum
 	// instead of the offending dimension(s).
 	MinimumSize () (width, height int)
+
+	// Resize resizes the element. This should only be called by the
+	// element's parent.
+	Resize (width, height int)
+
+	// SetParentHooks gives the element callbacks that let it send
+	// information to its parent element without it knowing anything about
+	// the parent element or containing any reference to it. When a parent
+	// element adopts a child element, it must set these callbacks.
+	SetParentHooks (callbacks ParentHooks)
 }
 
 // SelectionDirection represents a keyboard navigation direction.
@@ -110,7 +114,7 @@ type KeyboardTarget interface {
 
 	// HandleKeyUp is called when a key is released while this element has
 	// keyboard focus.
-	HandleKeyUp (key Key)
+	HandleKeyUp (key Key, modifiers Modifiers)
 }
 
 // MouseTarget represents an element that can receive mouse events.
@@ -136,4 +140,16 @@ type MouseTarget interface {
 	// HandleScroll is called when the mouse is scrolled. The X and Y
 	// direction of the scroll event are passed as deltaX and deltaY.
 	HandleScroll (x, y int, deltaX, deltaY float64)
+}
+
+// Expanding represents an element who's minimum height can change in response
+// to a change in its width.
+type Expanding interface {
+	Element
+
+	// HeightForWidth returns what the element's minimum height would be if
+	// resized to the specified width. This does not actually alter the
+	// state of the element in any way, but it may perform significant work,
+	// so it should be used sparingly.
+	MinimumHeightFor (width int) (height int)
 }
