@@ -57,7 +57,7 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 			
 			return
 		},
-		Draw: func (region tomo.Image) {
+		Draw: func (region tomo.Canvas) {
 			element.drawChildRegion(child, region)
 		},
 	})
@@ -318,10 +318,9 @@ func (element *Container) recalculate () {
 func (element *Container) draw () {
 	bounds := element.core.Bounds()
 
-	artist.Rectangle (
+	artist.FillRectangle (
 		element.core,
-		theme.BackgroundImage(),
-		nil, 0,
+		theme.BackgroundPattern(),
 		bounds)
 
 	for _, entry := range element.children {
@@ -329,7 +328,7 @@ func (element *Container) draw () {
 	}
 }
 
-func (element *Container) drawChildRegion (child tomo.Element, region tomo.Image) {
+func (element *Container) drawChildRegion (child tomo.Element, region tomo.Canvas) {
 	if element.warping { return }
 	for _, entry := range element.children {
 		if entry.Element == child {

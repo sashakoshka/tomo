@@ -13,7 +13,7 @@ type Mouse struct {
 	*core.Core
 	core core.CoreControl
 	drawing      bool
-	color        tomo.Image
+	color        artist.Pattern
 	lastMousePos image.Point
 }
 
@@ -33,13 +33,16 @@ func (element *Mouse) Handle (event tomo.Event) {
 		element.core.AllocateCanvas (
 			resizeEvent.Width,
 			resizeEvent.Height)
-		artist.Rectangle (
+		artist.FillRectangle (
 			element.core,
-			theme.AccentImage(),
-			artist.NewUniform(color.Black),
-			1, element.Bounds())
+			theme.AccentPattern(),
+			element.Bounds())
+		artist.StrokeRectangle (
+			element.core,
+			artist.NewUniform(color.Black), 1,
+			element.Bounds())
 		artist.Line (
-			element.core, artist.NewUniform(color.White), 1,
+			element.core, artist.NewUniform(color.White), 3,
 			image.Pt(1, 1),
 			image.Pt(resizeEvent.Width - 2, resizeEvent.Height - 2))
 		artist.Line (
@@ -66,6 +69,7 @@ func (element *Mouse) Handle (event tomo.Event) {
 		element.lastMousePos = mousePos
 
 	case tomo.EventMouseMove:
+		if !element.drawing { return }
 		mouseMoveEvent := event.(tomo.EventMouseMove)
 		mousePos := image.Pt (
 			mouseMoveEvent.X,

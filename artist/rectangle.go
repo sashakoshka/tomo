@@ -1,105 +1,93 @@
 package artist
 
 import "image"
-import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
 
-// Paste transfers one image onto another, offset by the specified point.
+// Paste transfers one canvas onto another, offset by the specified point.
 func Paste (
 	destination tomo.Canvas,
-	source tomo.Image,
+	source tomo.Canvas,
 	offset image.Point,
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	sourceBounds := source.Bounds().Canon()
+	dstData, dstStride := destination.Buffer()
+	srcData, srcStride := source.Buffer()
+
+	sourceBounds :=
+		source.Bounds().Canon().
+		Intersect(destination.Bounds().Sub(offset))
+	if sourceBounds.Empty() { return }
+	
 	updatedRegion = sourceBounds.Add(offset)
 	for y := sourceBounds.Min.Y; y < sourceBounds.Max.Y; y ++ {
 	for x := sourceBounds.Min.X; x < sourceBounds.Max.X; x ++ {
-		destination.SetRGBA (
-			x + offset.X, y + offset.Y,
-			source.RGBAAt(x, y))
+		dstData[x + offset.X + (y + offset.Y) * dstStride] =
+			srcData[x + y * srcStride]
 	}}
 
 	return
 }
 
-// Rectangle draws a rectangle with an inset border. If the border image is nil,
-// no border will be drawn. Likewise, if the fill image is nil, the rectangle
-// will have no fill.
-func Rectangle (
+// FillRectangle draws a filled rectangle with the specified pattern.
+func FillRectangle (
 	destination tomo.Canvas,
-	fill   tomo.Image,
-	stroke tomo.Image,
-	weight int,
+	source Pattern,
 	bounds image.Rectangle,
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	bounds = bounds.Canon()
+	data, stride := destination.Buffer()
+	bounds = bounds.Canon().Intersect(destination.Bounds()).Canon()
+	if bounds.Empty() { return }
 	updatedRegion = bounds
 
-	fillBounds := bounds
-	fillBounds.Min = fillBounds.Min.Add(image.Point { weight, weight })
-	fillBounds.Max = fillBounds.Max.Sub(image.Point { weight, weight })
-	fillBounds = fillBounds.Canon()
-
-	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
-	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
-		var pixel color.RGBA
-		if (image.Point { x, y }).In(fillBounds) {
-			pixel = fill.RGBAAt(x, y)
-		} else {
-			pixel = stroke.RGBAAt(x, y)
-		}
-		destination.SetRGBA(x, y, pixel)
+	width, height := bounds.Dx(), bounds.Dy()
+	for y := 0; y < height; y ++ {
+	for x := 0; x < width;  x ++ {
+		data[x + bounds.Min.X + (y + bounds.Min.Y) * stride] =
+			source.AtWhen(x, y, width, height)
 	}}
-	
 	return
 }
 
-// OffsetRectangle is the same as Rectangle, but offsets the border image to the
-// top left corner of the border and the fill image to the top left corner of
-// the fill.
-func OffsetRectangle (
+
+// StrokeRectangle draws the outline of a rectangle with the specified line
+// weight and pattern.
+func StrokeRectangle (
 	destination tomo.Canvas,
-	fill   tomo.Image,
-	stroke tomo.Image,
+	source Pattern,
 	weight int,
 	bounds image.Rectangle,
-) (
-	updatedRegion image.Rectangle,
 ) {
 	bounds = bounds.Canon()
-	updatedRegion = bounds
-
-	fillBounds := bounds
-	fillBounds.Min = fillBounds.Min.Add(image.Point { weight, weight })
-	fillBounds.Max = fillBounds.Max.Sub(image.Point { weight, weight })
-	fillBounds = fillBounds.Canon()
-
-	strokeImageMin := stroke.Bounds().Min
-	fillImageMin   := fill.Bounds().Min
-
-	yy := 0
-	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
-		xx := 0
-		for x := bounds.Min.X; x < bounds.Max.X; x ++ {
-			var pixel color.RGBA
-			if (image.Point { x, y }).In(fillBounds) {
-				pixel = fill.RGBAAt (
-					xx - weight + fillImageMin.X,
-					yy - weight + fillImageMin.Y)
-			} else {
-				pixel = stroke.RGBAAt (
-					xx + strokeImageMin.X,
-					yy + strokeImageMin.Y)
-			}
-			destination.SetRGBA(x, y, pixel)
-			xx ++
-		}
-		yy ++
+	insetBounds := bounds.Inset(weight)
+	if insetBounds.Empty() {
+		FillRectangle(destination, source, bounds)
+		return
 	}
-	
-	return
+
+	// top
+	FillRectangle (destination, source, image.Rect (
+		bounds.Min.X, bounds.Min.Y,
+		bounds.Max.X, insetBounds.Min.Y))
+		
+	// bottom
+	FillRectangle (destination, source, image.Rect (
+		bounds.Min.X, insetBounds.Max.Y,
+		bounds.Max.X, bounds.Max.Y))
+
+	// left
+	FillRectangle (destination, source, image.Rect (
+		bounds.Min.X, insetBounds.Min.Y,
+		insetBounds.Min.X, insetBounds.Max.Y))
+		
+	// right
+	FillRectangle (destination, source, image.Rect (
+		insetBounds.Max.X, insetBounds.Min.Y,
+		bounds.Max.X, insetBounds.Max.Y))
 }
+
+// TODO: FillEllipse
+
+// TODO: StrokeEllipse

@@ -3,9 +3,11 @@ package artist
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 
+// Line draws a line from one point to another with the specified weight and
+// pattern.
 func Line (
 	destination tomo.Canvas,
-	source tomo.Image,
+	source Pattern,
 	weight int,
 	min image.Point,
 	max image.Point,
@@ -17,6 +19,8 @@ func Line (
 	updatedRegion = image.Rectangle { Min: min, Max: max }.Canon()
 	updatedRegion.Max.X ++
 	updatedRegion.Max.Y ++
+	width  := updatedRegion.Dx()
+	height := updatedRegion.Dy()
 	
 	if abs(max.Y - min.Y) <
 		abs(max.X - min.X) {
@@ -26,7 +30,7 @@ func Line (
 			min = max
 			max = temp
 		}
-		lineLow(destination, source, weight, min, max)
+		lineLow(destination, source, weight, min, max, width, height)
 	} else {
 	
 		if max.Y < min.Y {
@@ -34,18 +38,22 @@ func Line (
 			min = max
 			max = temp
 		}
-		lineHigh(destination, source, weight, min, max)
+		lineHigh(destination, source, weight, min, max, width, height)
 	}
 	return
 }
 
 func lineLow (
 	destination tomo.Canvas,
-	source tomo.Image,
+	source Pattern,
 	weight int,
 	min image.Point,
 	max image.Point,
+	width, height int,
 ) {
+	data, stride := destination.Buffer()
+	bounds := destination.Bounds()
+
 	deltaX := max.X - min.X
 	deltaY := max.Y - min.Y
 	yi     := 1
@@ -59,7 +67,8 @@ func lineLow (
 	y := min.Y
 
 	for x := min.X; x < max.X; x ++ {
-		destination.SetRGBA(x, y, source.RGBAAt(x, y))
+		if !(image.Point { x, y }).In(bounds) { break }
+		data[x + y * stride] = source.AtWhen(x, y, width, height)
 		if D > 0 {
 			y += yi
 			D += 2 * (deltaY - deltaX)
@@ -71,11 +80,15 @@ func lineLow (
 
 func lineHigh (
 	destination tomo.Canvas,
-	source tomo.Image,
+	source Pattern,
 	weight int,
 	min image.Point,
 	max image.Point,
+	width, height int,
 ) {
+	data, stride := destination.Buffer()
+	bounds := destination.Bounds()
+
 	deltaX := max.X - min.X
 	deltaY := max.Y - min.Y
 	xi     := 1
@@ -89,7 +102,8 @@ func lineHigh (
 	x := min.X
 
 	for y := min.Y; y < max.Y; y ++ {
-		destination.SetRGBA(x, y, source.RGBAAt(x, y))
+		if !(image.Point { x, y }).In(bounds) { break }
+		data[x + y * stride] = source.AtWhen(x, y, width, height)
 		if D > 0 {
 			x += xi
 			D += 2 * (deltaX - deltaY)

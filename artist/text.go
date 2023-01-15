@@ -95,12 +95,20 @@ func (drawer *TextDrawer) SetAlignment (align Align) {
 // Draw draws the drawer's text onto the specified canvas at the given offset.
 func (drawer *TextDrawer) Draw (
 	destination tomo.Canvas,
-	source      tomo.Image,
+	source      Pattern,
 	offset      image.Point,
 ) (
 	updatedRegion image.Rectangle,
 ) {
+	wrappedSource := WrappedPattern {
+		Pattern: source,
+		Width:  0,
+		Height: 0, // TODO: choose a better width and height
+	}
+
 	if !drawer.layoutClean { drawer.recalculate() }
+	// TODO: reimplement a version of draw mask that takes in a pattern and
+	// only draws to a tomo.Canvas.
 	for _, word := range drawer.layout {
 	for _, character := range word.text {
 		destinationRectangle,
@@ -117,7 +125,7 @@ func (drawer *TextDrawer) Draw (
 		draw.DrawMask (
 			destination,
 			destinationRectangle,
-			source, image.Point { },
+			wrappedSource, image.Point { },
 			mask, maskPoint,
 			draw.Over)
 

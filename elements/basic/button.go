@@ -150,12 +150,12 @@ func (element *Button) SetText (text string) {
 func (element *Button) draw () {
 	bounds := element.core.Bounds()
 
-	artist.ChiseledRectangle (
+	artist.FillRectangle (
 		element.core,
-		theme.RaisedProfile (
-			element.pressed,
+		theme.ButtonPattern (
 			element.enabled,
-			element.Selected()),
+			element.Selected(),
+			element.pressed),
 		bounds)
 		
 	innerBounds := bounds
@@ -179,10 +179,6 @@ func (element *Button) draw () {
 		offset = offset.Add(theme.SinkOffsetVector())
 	}
 
-	foreground := theme.ForegroundImage()
-	if !element.enabled {
-		foreground = theme.DisabledForegroundImage()
-	}
-
+	foreground := theme.ForegroundPattern(element.enabled)
 	element.drawer.Draw(element.core, foreground, offset)
 }
