@@ -142,14 +142,23 @@ type MouseTarget interface {
 	HandleScroll (x, y int, deltaX, deltaY float64)
 }
 
-// Expanding represents an element who's minimum height can change in response
-// to a change in its width.
+// Expanding represents an element who's preferred minimum height can change in
+// response to its width.
 type Expanding interface {
 	Element
 
 	// HeightForWidth returns what the element's minimum height would be if
-	// resized to the specified width. This does not actually alter the
-	// state of the element in any way, but it may perform significant work,
-	// so it should be used sparingly.
+	// resized to a specified width. This does not actually alter the state
+	// of the element in any way, but it may perform significant work, so it
+	// should be called sparingly.
+	//
+	// It is reccomended that parent containers check for this interface and
+	// take this method's value into account in order to support things like
+	// flow layouts and text wrapping, but it is not absolutely necessary.
+	// The element's MinimumSize method will still return the absolute
+	// minimum size that the element may be resized to.
+	//
+	// It is important to note that if a parent container checks for
+	// expanding chilren, it itself will likely need to be expanding.
 	MinimumHeightFor (width int) (height int)
 }
