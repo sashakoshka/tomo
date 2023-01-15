@@ -9,179 +9,93 @@ import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 // none of these colors are final! TODO: generate these values from a theme
 // file at startup.
 
-var foregroundImage  = artist.NewUniform(color.Gray16 { 0x0000})
-var disabledForegroundImage = artist.NewUniform(color.Gray16 { 0x5555})
-var accentImage      = artist.NewUniform(color.RGBA { 0x40, 0x80, 0x90, 0xFF})
-var highlightImage   = artist.NewUniform(color.Gray16 { 0xEEEE })
-var shadowImage      = artist.NewUniform(color.Gray16 { 0x3333 })
-var weakShadeImage   = artist.NewUniform(color.Gray16 { 0x7777 })
-var strokeImage      = artist.NewUniform(color.Gray16 { 0x0000 })
-var weakStrokeImage  = artist.NewUniform(color.Gray16 { 0x3333 })
-var insetShadowImage = artist.NewUniform(color.Gray16 { 0x7777 })
-
-var backgroundImage = artist.NewUniform(color.Gray16 { 0xAAAA})
-var backgroundProfile = artist.ShadingProfile {
-	Highlight:     highlightImage,
-	Shadow:        shadowImage,
-	Stroke:        strokeImage,
-	Fill:          backgroundImage,
-	StrokeWeight:  1,
-	ShadingWeight: 1,
-}
-var engravedBackgroundProfile = backgroundProfile.Engraved()
-
-var raisedImage = artist.NewUniform(color.RGBA { 0x8D, 0x98, 0x94, 0xFF})
-var raisedProfile = artist.ShadingProfile {
-	Highlight:     highlightImage,
-	Shadow:        shadowImage,
-	Stroke:        strokeImage,
-	Fill:          raisedImage,
-	StrokeWeight:  1,
-	ShadingWeight: 1,
-}
-var selectedRaisedProfile = artist.ShadingProfile {
-	Highlight:     highlightImage,
-	Shadow:        shadowImage,
-	Stroke:        accentImage,
-	Fill:          raisedImage,
-	StrokeWeight:  1,
-	ShadingWeight: 1,
-}
-var engravedRaisedProfile = artist.ShadingProfile {
-	Highlight:     weakShadeImage,
-	Shadow:        raisedImage,
-	Stroke:        strokeImage,
-	Fill:          raisedImage,
-	StrokeWeight:  1,
-	ShadingWeight: 1,
-}
-var selectedEngravedRaisedProfile = artist.ShadingProfile {
-	Highlight:     insetShadowImage,
-	Shadow:        raisedImage,
-	Stroke:        accentImage,
-	Fill:          raisedImage,
-	StrokeWeight:  1,
-	ShadingWeight: 1,
-}
-var disabledRaisedProfile = artist.ShadingProfile {
-	Highlight:     weakShadeImage,
-	Shadow:        weakShadeImage,
-	Stroke:        weakStrokeImage,
-	Fill:          backgroundImage,
-	StrokeWeight:  1,
-	ShadingWeight: 0,
+func hex (color uint32) (c color.RGBA) {
+	c.A = uint8(color)
+	c.B = uint8(color >>  8)
+	c.G = uint8(color >> 16)
+	c.R = uint8(color >> 24)
+	return
 }
 
-var inputImage = artist.NewUniform(color.Gray16 { 0xFFFF })
-var inputProfile = artist.ShadingProfile {
-	Highlight:     insetShadowImage,
-	Shadow:        inputImage,
-	Stroke:        strokeImage,
-	Fill:          inputImage,
-	StrokeWeight:  1,
-	ShadingWeight: 1,
-}
-var selectedInputProfile = artist.ShadingProfile {
-	Highlight:     insetShadowImage,
-	Shadow:        inputImage,
-	Stroke:        accentImage,
-	Fill:          inputImage,
-	StrokeWeight:  1,
-	ShadingWeight: 1,
-}
-var disabledInputProfile = artist.ShadingProfile {
-	Highlight:     weakShadeImage,
-	Shadow:        backgroundImage,
-	Stroke:        accentImage,
-	Fill:          backgroundImage,
-	StrokeWeight:  1,
-	ShadingWeight: 0,
-}
+var accentPattern         = artist.NewUniform(hex(0x408090FF))
+var backgroundPattern     = artist.NewUniform(color.Gray16 { 0xAAAA })
+var foregroundPattern     = artist.NewUniform(color.Gray16 { 0x0000 })
+var weakForegroundPattern = artist.NewUniform(color.Gray16 { 0x4444 })
+var strokePattern         = artist.NewUniform(color.Gray16 { 0x0000 })
 
-// BackgroundProfile returns the shading profile to be used for backgrounds.
-func BackgroundProfile (engraved bool) artist.ShadingProfile {
-	if engraved {
-		return engravedBackgroundProfile
+var buttonPattern = artist.NewMultiBorder (
+	artist.Border { Weight: 1, Stroke: strokePattern },
+	artist.Border {
+		Weight: 1,
+		Stroke: artist.Chiseled {
+			Highlight: artist.NewUniform(hex(0xCCD5D2FF)),
+			Shadow:    artist.NewUniform(hex(0x4B5B59FF)),
+		},
+	},
+	artist.Border { Stroke: artist.NewUniform(hex(0x8D9894FF)) })
+var selectedButtonPattern = artist.NewMultiBorder (
+	artist.Border { Weight: 1, Stroke: strokePattern },
+	artist.Border {
+		Weight: 1,
+		Stroke: artist.Chiseled {
+			Highlight: artist.NewUniform(hex(0xCCD5D2FF)),
+			Shadow:    artist.NewUniform(hex(0x4B5B59FF)),
+		},
+	},
+	artist.Border { Weight: 1, Stroke: accentPattern },
+	artist.Border { Stroke: artist.NewUniform(hex(0x8D9894FF)) })
+var pressedButtonPattern = artist.NewMultiBorder (
+	artist.Border { Weight: 1, Stroke: strokePattern },
+	artist.Border {
+		Weight: 1,
+		Stroke: artist.Chiseled {
+			Highlight: artist.NewUniform(hex(0x4B5B59FF)),
+			Shadow:    artist.NewUniform(hex(0x8D9894FF)),
+		},
+	},
+	artist.Border { Stroke: artist.NewUniform(hex(0x8D9894FF)) })
+var disabledButtonPattern = artist.NewMultiBorder (
+	artist.Border { Weight: 1, Stroke: weakForegroundPattern },
+	artist.Border { Stroke: backgroundPattern })
+
+var sunkenPattern = artist.NewMultiBorder (
+	artist.Border { Weight: 1, Stroke: strokePattern },
+	artist.Border {
+		Weight: 1,
+		Stroke: artist.Chiseled {
+			Highlight: artist.NewUniform(hex(0x373C3AFF)),
+			Shadow:    artist.NewUniform(hex(0xDBDBDBFF)),
+		},
+	},
+	artist.Border { Stroke: backgroundPattern })
+
+func AccentPattern () (artist.Pattern) { return accentPattern }
+func BackgroundPattern () (artist.Pattern) { return backgroundPattern }
+func SunkenPattern () (artist.Pattern) { return sunkenPattern}
+func ForegroundPattern (enabled bool) (artist.Pattern) {
+	if enabled {
+		return foregroundPattern
 	} else {
-		return backgroundProfile
+		return weakForegroundPattern
 	}
 }
-
-// RaisedProfile returns the shading profile to be used for raised objects such
-// as buttons.
-func RaisedProfile (
-	engraved bool,
-	enabled  bool,
-	selected bool,
-) (
-	artist.ShadingProfile,
-) {
+func ButtonPattern (enabled, selected, pressed bool) (artist.Pattern) {
 	if enabled {
-		if engraved {
-			if selected {
-				return selectedEngravedRaisedProfile
-			} else {
-				return engravedRaisedProfile
-			}
+		if pressed {
+			return pressedButtonPattern
 		} else {
 			if selected {
-				return selectedRaisedProfile
+				return selectedButtonPattern
 			} else {
-				return raisedProfile
+				return buttonPattern
 			}
 		}
 	} else {
-		return disabledRaisedProfile
+		return disabledButtonPattern
 	}
 }
 
-// InputProfile returns the shading profile to be used for input fields.
-func InputProfile (enabled bool, selected bool) artist.ShadingProfile {
-	if enabled {
-		if selected {
-			return selectedInputProfile
-		} else {
-			return inputProfile
-		}
-	} else {
-		return disabledInputProfile
-	}
-}
-
-// BackgroundImage returns the texture/color used for the fill of
-// BackgroundProfile.
-func BackgroundImage () artist.Pattern {
-	return backgroundImage
-}
-
-// RaisedImage returns the texture/color used for the fill of RaisedProfile.
-func RaisedImage () artist.Pattern {
-	return raisedImage
-}
-
-// InputImage returns the texture/color used for the fill of InputProfile.
-func InputImage () artist.Pattern {
-	return inputImage
-}
-
-// ForegroundImage returns the texture/color text and monochromatic icons should
-// be drawn with.
-func ForegroundImage () artist.Pattern {
-	return foregroundImage
-}
-
-// DisabledForegroundImage returns the texture/color text and monochromatic
-// icons should be drawn with if they are disabled.
-func DisabledForegroundImage () artist.Pattern {
-	return disabledForegroundImage
-}
-
-// AccentImage returns the accent texture/color.
-func AccentImage () artist.Pattern {
-	return accentImage
-}
-
-// TODO: load fonts from an actual source instead of using basicfont
+// TODO: load fonts from an actual source instead of using defaultfont
 
 // FontFaceRegular returns the font face to be used for normal text.
 func FontFaceRegular () font.Face {

@@ -320,7 +320,7 @@ func (element *Container) draw () {
 
 	artist.FillRectangle (
 		element.core,
-		theme.BackgroundImage(),
+		theme.BackgroundPattern(),
 		bounds)
 
 	for _, entry := range element.children {

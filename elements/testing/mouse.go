@@ -35,7 +35,7 @@ func (element *Mouse) Handle (event tomo.Event) {
 			resizeEvent.Height)
 		artist.FillRectangle (
 			element.core,
-			theme.AccentImage(),
+			theme.AccentPattern(),
 			element.Bounds())
 		artist.StrokeRectangle (
 			element.core,

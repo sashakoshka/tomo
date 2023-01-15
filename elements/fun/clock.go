@@ -44,14 +44,14 @@ func (element *AnalogClock) SetTime (newTime time.Time) {
 func (element *AnalogClock) draw () {
 	bounds := element.core.Bounds()
 
-	artist.ChiseledRectangle (
+	artist.FillRectangle (
 		element.core,
-		theme.BackgroundProfile(true),
+		theme.SunkenPattern(),
 		bounds)
 
 	for hour := 0; hour < 12; hour ++ {
 		element.radialLine (
-			theme.ForegroundImage(),
+			theme.ForegroundPattern(true),
 			0.8, 0.9, float64(hour) / 6 * math.Pi)
 	}
 
@@ -60,13 +60,13 @@ func (element *AnalogClock) draw () {
 	hour   := float64(element.time.Hour())   + minute / 60
 
 	element.radialLine (
-		theme.ForegroundImage(),
+		theme.ForegroundPattern(true),
 		0, 0.5, (hour - 3) / 6 * math.Pi)
 	element.radialLine (
-		theme.ForegroundImage(),
+		theme.ForegroundPattern(true),
 		0, 0.7, (minute - 15) / 30 * math.Pi)
 	element.radialLine (
-		theme.AccentImage(),
+		theme.AccentPattern(),
 		0, 0.7, (second - 15) / 30 * math.Pi)
 }
 

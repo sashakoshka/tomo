@@ -3,6 +3,7 @@ package artist
 import "image"
 import "image/color"
 
+// Border represents a border that can be fed to MultiBorder.
 type Border struct {
 	Weight int
 	Stroke Pattern
@@ -10,16 +11,22 @@ type Border struct {
 	dx, dy int
 }
 
+// MultiBorder is a pattern that allows multiple borders of different lengths to
+// be inset within one another. The final border is treated as a fill color, and
+// its weight does not matter.
 type MultiBorder struct {
 	borders []Border
 	lastWidth, lastHeight int
 	maxBorder int
 }
 
+// NewMultiBorder creates a new MultiBorder pattern from the given list of
+// borders.
 func NewMultiBorder (borders ...Border) (multi *MultiBorder) {
 	return &MultiBorder { borders: borders }
 }
 
+// AtWhen satisfies the Pattern interface.
 func (multi *MultiBorder) AtWhen (x, y, width, height int) (c color.RGBA) {
 	if multi.lastWidth != width || multi.lastHeight != height {
 		multi.recalculate(width, height)
