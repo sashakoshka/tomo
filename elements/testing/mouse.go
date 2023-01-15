@@ -42,7 +42,7 @@ func (element *Mouse) Handle (event tomo.Event) {
 			artist.NewUniform(color.Black), 1,
 			element.Bounds())
 		artist.Line (
-			element.core, artist.NewUniform(color.White), 1,
+			element.core, artist.NewUniform(color.White), 3,
 			image.Pt(1, 1),
 			image.Pt(resizeEvent.Width - 2, resizeEvent.Height - 2))
 		artist.Line (
