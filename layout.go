@@ -20,6 +20,8 @@ type Layout interface {
 	Arrange (entries []LayoutEntry, width, height int)
 
 	// MinimumSize returns the minimum width and height that the layout
-	// needs to properly arrange the given slice of layout entries.
+	// needs to properly arrange the given slice of layout entries, given a
+	// "suqeeze" width so that the height can be determined for elements
+	// fulfilling the Expanding interface.
 	MinimumSize (entries []LayoutEntry) (width, height int)
 }

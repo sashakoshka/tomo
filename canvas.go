@@ -5,7 +5,7 @@ import "image/draw"
 import "image/color"
 
 // Canvas is like Image but also requires Set and SetRGBA methods. This
-// interface can be easily satisfied using an image.RGBA struct.
+// interface can be easily satisfied using a BasicCanvas struct.
 type Canvas interface {
 	draw.Image
 	Buffer () (data []color.RGBA, stride int)
