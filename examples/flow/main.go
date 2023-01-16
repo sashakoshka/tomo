@@ -21,7 +21,7 @@ func run () {
 	world.Stages = map [string] func () {
 		"start": func () {
 			label := basic.NewLabel (
-				"you are standing next to a river.", false)
+				"you are standing next to a river.", true)
 			
 			button0 := basic.NewButton("go in the river")
 			button0.OnClick(world.SwitchFunc("wet"))
@@ -41,7 +41,7 @@ func run () {
 		"wet": func () {
 			label := basic.NewLabel (
 				"you get completely soaked.\n" +
-				"you die of hypothermia.", false)
+				"you die of hypothermia.", true)
 			
 			button0 := basic.NewButton("try again")
 			button0.OnClick(world.SwitchFunc("start"))
@@ -58,7 +58,7 @@ func run () {
 		"house": func () {
 			label := basic.NewLabel (
 				"you are standing in front of a delapidated " +
-				"house.", false)
+				"house.", true)
 			
 			button1 := basic.NewButton("go inside")
 			button1.OnClick(world.SwitchFunc("inside"))
@@ -78,7 +78,7 @@ func run () {
 				"it is dark, but rays of light stream " +
 				"through the window.\n" +
 				"there is nothing particularly interesting " +
-				"here.", false)
+				"here.", true)
 			
 			button0 := basic.NewButton("go back outside")
 			button0.OnClick(world.SwitchFunc("house"))
@@ -92,7 +92,7 @@ func run () {
 		"bear": func () {
 			label := basic.NewLabel (
 				"you come face to face with a bear.\n" +
-				"it eats you (it was hungry).", false)
+				"it eats you (it was hungry).", true)
 			
 			button0 := basic.NewButton("try again")
 			button0.OnClick(world.SwitchFunc("start"))

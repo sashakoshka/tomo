@@ -15,6 +15,10 @@ type ParentHooks struct {
 	// have already been resized and there is no need to send it a resize
 	// event.
 	MinimumSizeChange func (width, height int)
+
+	// ExpandingHeightChange is called when the parameters affecting the
+	// element's expanding height have changed.
+	ExpandingHeightChange func ()
 	
 	// SelectionRequest is called when the child element element wants
 	// itself to be selected. If the parent element chooses to grant the
@@ -39,6 +43,14 @@ func (hooks ParentHooks) RunDraw (region Canvas) {
 func (hooks ParentHooks) RunMinimumSizeChange (width, height int) {
 	if hooks.MinimumSizeChange != nil {
 		hooks.MinimumSizeChange(width, height)
+	}
+}
+
+// RunExpandingHeightChange runs the ExpandingHeightChange hook if it is not
+// nil. If it is nil, it does nothing.
+func (hooks ParentHooks) RunExpandingHeightChange () {
+	if hooks.ExpandingHeightChange != nil {
+		hooks.ExpandingHeightChange()
 	}
 }
 

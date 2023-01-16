@@ -144,6 +144,12 @@ func (control CoreControl) SetMinimumSize (width, height int) {
 	}
 }
 
+// NotifyExpandingHeightChange notifies the parent element that this element's
+// expanding height has changed.
+func (control CoreControl) NotifyExpandingHeightChange () {
+	control.core.hooks.RunExpandingHeightChange()
+}
+
 // ConstrainSize contstrains the specified width and height to the minimum width
 // and height, and returns wether or not anything ended up being constrained.
 func (control CoreControl) ConstrainSize (

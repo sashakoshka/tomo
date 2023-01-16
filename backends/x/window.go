@@ -89,6 +89,7 @@ func (window *Window) Adopt (child tomo.Element) {
 		child.SetParentHooks (tomo.ParentHooks {
 			Draw: window.childDrawCallback,
 			MinimumSizeChange: window.childMinimumSizeChangeCallback,
+			ExpandingHeightChange: window.resizeChildToFit,
 			SelectionRequest: window.childSelectionRequestCallback,
 		})
 		
@@ -205,8 +206,25 @@ func (window *Window) resizeChildToFit () {
 	if child, ok := window.child.(tomo.Expanding); ok {
 		minimumHeight := child.MinimumHeightFor(window.metrics.width)
 		_, minimumWidth := child.MinimumSize()
-		window.childMinimumSizeChangeCallback (
-			minimumWidth, minimumHeight)
+		
+			
+		icccm.WmNormalHintsSet (
+			window.backend.connection,
+			window.xWindow.Id,
+			&icccm.NormalHints {
+				Flags:     icccm.SizeHintPMinSize,
+				MinWidth:  uint(minimumWidth),
+				MinHeight: uint(minimumHeight),
+			})
+				
+		if window.metrics.height >= minimumHeight &&
+			window.metrics.width >= minimumWidth {
+			
+			window.child.Resize (
+				window.metrics.width,
+				window.metrics.height)
+				window.redrawChildEntirely()
+		}
 	} else {
 		window.child.Resize (
 			window.metrics.width,
