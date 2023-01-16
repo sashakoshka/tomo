@@ -4,6 +4,11 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 
+// Dialog arranges elements in the form of a dialog box. The first element is
+// positioned above as the main focus of the dialog, and is set to expand
+// regardless of whether it is expanding or not. The remaining elements are
+// arranged at the bottom in a row called the control row, which is aligned to
+// the right, the last element being the rightmost one.
 type Dialog struct {
 	// If Gap is true, a gap will be placed between each element.
 	Gap bool
@@ -39,10 +44,7 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 		mainBounds := entries[0].Bounds()
 		if mainBounds.Dy() != mainHeight ||
 			mainBounds.Dx() != width {
-			entries[0].Handle (tomo.EventResize {
-				Width:  width,
-				Height: mainHeight,
-			})
+			entries[0].Resize(width, mainHeight)
 		}
 	}
 
@@ -94,10 +96,7 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 			entryBounds := entry.Bounds()
 			if entryBounds.Dy() != controlRowHeight ||
 				entryBounds.Dx() != entryWidth {
-				entry.Handle (tomo.EventResize {
-					Width:  entryWidth,
-					Height: controlRowHeight,
-				})
+				entry.Resize(entryWidth, controlRowHeight)
 			}
 		}
 	}
@@ -107,7 +106,12 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 
 // MinimumSize returns the minimum width and height that will be needed to
 // arrange the given list of entries.
-func (layout Dialog) MinimumSize (entries []tomo.LayoutEntry) (width, height int) {
+func (layout Dialog) MinimumSize (
+	entries []tomo.LayoutEntry,
+	squeeze int,
+) (
+	width, height int,
+) {
 	if len(entries) > 0 {
 		mainChildHeight := 0
 		width, mainChildHeight = entries[0].MinimumSize()

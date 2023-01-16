@@ -63,17 +63,19 @@ func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, width, height int)
 		x += entryWidth
 		entryBounds := entry.Bounds()
 		if entryBounds.Dy() != height || entryBounds.Dx() != entryWidth {
-			entry.Handle (tomo.EventResize {
-				Width:  entryWidth,
-				Height: height,
-			})
+			entry.Resize(entryWidth, height)
 		}
 	}
 }
 
 // MinimumSize returns the minimum width and height that will be needed to
 // arrange the given list of entries.
-func (layout Horizontal) MinimumSize (entries []tomo.LayoutEntry) (width, height int) {
+func (layout Horizontal) MinimumSize (
+	entries []tomo.LayoutEntry,
+	squeeze int,
+) (
+	width, height int,
+) {
 	for index, entry := range entries {
 		entryWidth, entryHeight := entry.MinimumSize()
 		if entryHeight > height {
