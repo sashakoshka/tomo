@@ -16,6 +16,7 @@ type characterLayout struct {
 type wordLayout struct {
 	position   image.Point
 	width      int
+	spaceAfter int
 	text       []characterLayout
 }
 
@@ -160,6 +161,25 @@ func (drawer *TextDrawer) LineHeight () (height fixed.Int26_6) {
 	return
 }
 
+// ReccomendedHeightFor returns the reccomended max height if the text were to
+// have its maximum width set to the given width. This does not alter the
+// drawer's state.
+func (drawer *TextDrawer) ReccomendedHeightFor (width int) (height int) {
+	if !drawer.layoutClean { drawer.recalculate() }
+	metrics := drawer.face.Metrics()
+	dot := fixed.Point26_6 { 0, 0 }
+	for _, word := range drawer.layout {
+		dot.X += fixed.Int26_6((word.width + word.spaceAfter) << 6)
+		
+		if word.width + word.position.X > width && word.position.X > 0 {
+			dot.Y += metrics.Height
+			dot.X = fixed.Int26_6(word.width << 6)
+		}
+	}
+
+	return dot.Y.Round()
+}
+
 func (drawer *TextDrawer) recalculate () {
 	drawer.layoutClean = true
 	drawer.layout = nil
@@ -219,9 +239,6 @@ func (drawer *TextDrawer) recalculate () {
 			dot.X = wordWidth
 		}
 
-		// add the word to the layout
-		drawer.layout = append(drawer.layout, word)
-
 		// skip over whitespace, going onto a new line if there is a
 		// newline character
 		for index < len(drawer.runes) && unicode.IsSpace(drawer.runes[index]) {
@@ -233,6 +250,7 @@ func (drawer *TextDrawer) recalculate () {
 				index ++
 			} else {
 				_, advance, ok := drawer.face.GlyphBounds(character)
+				word.spaceAfter = advance.Round()
 				index ++
 				if !ok { continue }
 				
@@ -245,6 +263,9 @@ func (drawer *TextDrawer) recalculate () {
 				previousCharacter = character
 			}
 		}
+
+		// add the word to the layout
+		drawer.layout = append(drawer.layout, word)
 
 		// if there is a set maximum height, and we have crossed it,
 		// stop processing more words. and remove any words that have
