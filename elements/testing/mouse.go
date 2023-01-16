@@ -26,58 +26,47 @@ func NewMouse () (element *Mouse) {
 	return
 }
 
-func (element *Mouse) Handle (event tomo.Event) {
-	switch event.(type) {
-	case tomo.EventResize:
-		resizeEvent := event.(tomo.EventResize)
-		element.core.AllocateCanvas (
-			resizeEvent.Width,
-			resizeEvent.Height)
-		artist.FillRectangle (
-			element.core,
-			theme.AccentPattern(),
-			element.Bounds())
-		artist.StrokeRectangle (
-			element.core,
-			artist.NewUniform(color.Black), 1,
-			element.Bounds())
-		artist.Line (
-			element.core, artist.NewUniform(color.White), 3,
-			image.Pt(1, 1),
-			image.Pt(resizeEvent.Width - 2, resizeEvent.Height - 2))
-		artist.Line (
-			element.core, artist.NewUniform(color.White), 1,
-			image.Pt(1, resizeEvent.Height - 2),
-			image.Pt(resizeEvent.Width - 2, 1))
-	
-	case tomo.EventMouseDown:
-		element.drawing = true
-		mouseDownEvent := event.(tomo.EventMouseDown)
-		element.lastMousePos = image.Pt (
-			mouseDownEvent.X,
-			mouseDownEvent.Y)
-
-	case tomo.EventMouseUp:
-		element.drawing = false
-		mouseUpEvent := event.(tomo.EventMouseUp)
-		mousePos := image.Pt (
-			mouseUpEvent.X,
-			mouseUpEvent.Y)
-		element.core.PushRegion (artist.Line (
-			element.core, element.color, 1,
-			element.lastMousePos, mousePos))
-		element.lastMousePos = mousePos
-
-	case tomo.EventMouseMove:
-		if !element.drawing { return }
-		mouseMoveEvent := event.(tomo.EventMouseMove)
-		mousePos := image.Pt (
-			mouseMoveEvent.X,
-			mouseMoveEvent.Y)
-		element.core.PushRegion (artist.Line (
-			element.core, element.color, 1,
-			element.lastMousePos, mousePos))
-		element.lastMousePos = mousePos
-	}
-	return
+func (element *Mouse) Resize (width, height int) {
+	element.core.AllocateCanvas(width, height)
+	artist.FillRectangle (
+		element.core,
+		theme.AccentPattern(),
+		element.Bounds())
+	artist.StrokeRectangle (
+		element.core,
+		artist.NewUniform(color.Black), 1,
+		element.Bounds())
+	artist.Line (
+		element.core, artist.NewUniform(color.White), 3,
+		image.Pt(1, 1),
+		image.Pt(width - 2, height - 2))
+	artist.Line (
+		element.core, artist.NewUniform(color.White), 1,
+		image.Pt(1, height - 2),
+		image.Pt(width - 2, 1))
 }
+
+func (element *Mouse) HandleMouseDown (x, y int, button tomo.Button) {
+	element.drawing = true
+	element.lastMousePos = image.Pt(x, y)
+}
+
+func (element *Mouse) HandleMouseUp (x, y int, button tomo.Button) {
+	element.drawing = false
+	mousePos := image.Pt(x, y)
+	element.core.PushRegion (artist.Line (
+		element.core, element.color, 1,
+		element.lastMousePos, mousePos))
+	element.lastMousePos = mousePos
+}
+
+func (element *Mouse) HandleMouseMove (x, y int) {
+	if !element.drawing { return }
+	mousePos := image.Pt(x, y)
+	element.core.PushRegion (artist.Line (
+		element.core, element.color, 1,
+		element.lastMousePos, mousePos))
+	element.lastMousePos = mousePos
+}
+
+func (element *Mouse) HandleScroll (x, y int, deltaX, deltaY float64) { }
