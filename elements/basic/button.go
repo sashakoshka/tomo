@@ -13,6 +13,7 @@ type Button struct {
 	
 	pressed  bool
 	enabled  bool
+	selected bool
 	onClick func ()
 
 	text   string
@@ -24,89 +25,102 @@ func NewButton (text string) (element *Button) {
 	element = &Button { enabled: true }
 	element.Core, element.core = core.NewCore(element)
 	element.drawer.SetFace(theme.FontFaceRegular())
-	element.core.SetSelectable(true)
 	element.SetText(text)
 	return
 }
 
-// Handle handles an event.
-func (element *Button) Handle (event tomo.Event) {
-	switch event.(type) {
-	case tomo.EventResize:
-		resizeEvent := event.(tomo.EventResize)
-		element.core.AllocateCanvas (
-			resizeEvent.Width,
-			resizeEvent.Height)
-		element.draw()
+func (element *Button) Resize (width, height int) {
+	element.core.AllocateCanvas(width, height)
+	element.draw()
+}
 
-	case tomo.EventMouseDown:
-		if !element.enabled { break }
+func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {
+	element.Select()
+	if button != tomo.ButtonLeft { return }
+	element.pressed = true
+	if element.core.HasImage() {
+		element.draw()
+		element.core.PushAll()
+	}
+}
+
+func (element *Button) HandleMouseUp (x, y int, button tomo.Button) {
+	if button != tomo.ButtonLeft { return }
+	element.pressed = false
+	if element.core.HasImage() {
+		element.draw()
+		element.core.PushAll()
+	}
+
+	within := image.Point { x, y }.
+		In(element.Bounds())
 		
-		mouseDownEvent := event.(tomo.EventMouseDown)
-		element.Select()
-		if mouseDownEvent.Button != tomo.ButtonLeft { break }
+	if within && element.onClick != nil {
+		element.onClick()
+	}
+}
+
+func (element *Button) HandleMouseMove (x, y int) { }
+func (element *Button) HandleScroll (x, y int, deltaX, deltaY float64) { }
+
+func (element *Button) HandleKeyDown (
+	key tomo.Key,
+	modifiers tomo.Modifiers,
+	repeated bool,
+) {
+	if key == tomo.KeyEnter {
 		element.pressed = true
 		if element.core.HasImage() {
 			element.draw()
 			element.core.PushAll()
 		}
+	}
+}
 
-	case tomo.EventKeyDown:
-		keyDownEvent := event.(tomo.EventKeyDown)
-		if keyDownEvent.Key == tomo.KeyEnter {
-			element.pressed = true
-			if element.core.HasImage() {
-				element.draw()
-				element.core.PushAll()
-			}
-		}
-
-	case tomo.EventMouseUp:
-		if !element.enabled { break }
-	
-		mouseUpEvent := event.(tomo.EventMouseUp)
-		if mouseUpEvent.Button != tomo.ButtonLeft { break }
+func (element *Button) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) {
+	if key == tomo.KeyEnter && element.pressed {
 		element.pressed = false
 		if element.core.HasImage() {
 			element.draw()
 			element.core.PushAll()
 		}
-
-		within := image.Point { mouseUpEvent.X, mouseUpEvent.Y }.
-			In(element.Bounds())
-			
-		if within && element.onClick != nil {
+		if element.onClick != nil {
 			element.onClick()
 		}
-
-	case tomo.EventKeyUp:
-		keyDownEvent := event.(tomo.EventKeyUp)
-		if keyDownEvent.Key == tomo.KeyEnter && element.pressed {
-			element.pressed = false
-			if element.core.HasImage() {
-				element.draw()
-				element.core.PushAll()
-			}
-			if element.onClick != nil {
-				element.onClick()
-			}
-		}
-
-	case tomo.EventSelect:
-		element.core.SetSelected(true)
-		if element.core.HasImage() {
-			element.draw()
-			element.core.PushAll()
-		}
-
-	case tomo.EventDeselect:
-		element.core.SetSelected(false)
-		if element.core.HasImage() {
-			element.draw()
-			element.core.PushAll()
-		}
 	}
-	return
+}
+
+func (element *Button) Selected () (selected bool) {
+	return element.selected
+}
+
+func (element *Button) Select () {
+	element.core.RequestSelection()
+}
+
+func (element *Button) HandleSelection (
+	direction tomo.SelectionDirection,
+) (
+	accepted bool,
+) {
+	if direction == tomo.SelectionDirectionNeutral {
+		element.selected = true
+		if element.core.HasImage() {
+			element.draw()
+			element.core.PushAll()
+		}
+		return true
+	} else {
+		return false
+	}
+}
+
+func (element *Button) HandleDeselection () {
+	element.selected = false
+	if element.core.HasImage() {
+		element.draw()
+		element.core.PushAll()
+	}
 }
 
 // OnClick sets the function to be called when the button is clicked.
@@ -114,17 +128,10 @@ func (element *Button) OnClick (callback func ()) {
 	element.onClick = callback
 }
 
-// Select requests that this button's parent container send it a selection
-// event.
-func (element *Button) Select () {
-	element.core.Select()
-}
-
 // SetEnabled sets whether this button can be clicked or not.
 func (element *Button) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
-	element.core.SetSelectable(enabled)
 	if element.core.HasImage () {
 		element.draw()
 		element.core.PushAll()

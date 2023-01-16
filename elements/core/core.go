@@ -73,6 +73,13 @@ type CoreControl struct {
 	core *Core
 }
 
+// RequestSelection requests that the element's parent send it a selection
+// event. If the request was granted, it returns true. If it was denied, it
+// returns false.
+func (control CoreControl) RequestSelection () (granted bool) {
+	return control.core.hooks.RunSelectionRequest()
+}
+
 // HasImage returns true if the core has an allocated image buffer, and false if
 // it doesn't.
 func (control CoreControl) HasImage () (has bool) {
