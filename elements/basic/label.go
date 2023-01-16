@@ -1,7 +1,6 @@
 package basic
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -29,15 +28,12 @@ func NewLabel (text string, wrap bool) (element *Label) {
 }
 
 func (element *Label) Resize (width, height int) {
-	switch event.(type) {
-	case tomo.EventResize:
-		element.core.AllocateCanvas(width, height)
-		if element.wrap {
-			element.drawer.SetMaxWidth(width)
-			element.drawer.SetMaxHeight(height)
-		}
-		element.draw()
+	element.core.AllocateCanvas(width, height)
+	if element.wrap {
+		element.drawer.SetMaxWidth(width)
+		element.drawer.SetMaxHeight(height)
 	}
+	element.draw()
 	return
 }
 

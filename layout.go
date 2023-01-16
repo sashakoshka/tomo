@@ -23,5 +23,5 @@ type Layout interface {
 	// needs to properly arrange the given slice of layout entries, given a
 	// "suqeeze" width so that the height can be determined for elements
 	// fulfilling the Expanding interface.
-	MinimumSize (entries []LayoutEntry) (width, height int)
+	MinimumSize (entries []LayoutEntry, squeeze int) (width, height int)
 }

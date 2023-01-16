@@ -12,10 +12,12 @@ type Container struct {
 	*core.Core
 	core core.CoreControl
 
-	layout   tomo.Layout
-	children []tomo.LayoutEntry
-	drags    [10]tomo.Element
-	warping  bool
+	layout     tomo.Layout
+	children   []tomo.LayoutEntry
+	drags      [10]tomo.MouseTarget
+	warping    bool
+	selected   bool
+	selectable bool
 }
 
 // NewContainer creates a new container.
@@ -44,18 +46,10 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 		MinimumSizeChange: func (int, int) {
 			element.updateMinimumSize()
 		},
-		SelectabilityChange: func (bool) {
-			element.updateSelectable()
-		},
 		SelectionRequest: func () (granted bool) {
-			if !child.Selectable() { return }
-			if element.core.Select() {
-				element.propogateToSelected(tomo.EventDeselect { })
-				child.Handle(tomo.EventSelect { })
-				return true
-			}
-			
-			return
+			child, selectable := child.(tomo.Selectable)
+			if !selectable { return }
+			return element.childSelectionRequestCallback(child)
 		},
 		Draw: func (region tomo.Canvas) {
 			element.drawChildRegion(child, region)
@@ -176,122 +170,172 @@ func (element *Container) childPosition (child tomo.Element) (position image.Poi
 	return
 }
 
-func (element *Container) Handle (event tomo.Event) {
-	switch event.(type) {
-	case tomo.EventResize:
-		resizeEvent := event.(tomo.EventResize)
-		element.core.AllocateCanvas (
-			resizeEvent.Width,
-			resizeEvent.Height)
-		element.recalculate()
-		element.draw()
-
-	case tomo.EventMouseDown:
-		mouseDownEvent := event.(tomo.EventMouseDown)
-		child := element.ChildAt (image.Pt (
-			mouseDownEvent.X,
-			mouseDownEvent.Y))
-		if child == nil { break }
-		element.drags[mouseDownEvent.Button] = child
-		childPosition := element.childPosition(child)
-		child.Handle (tomo.EventMouseDown {
-			Button: mouseDownEvent.Button,
-			X: mouseDownEvent.X - childPosition.X,
-			Y: mouseDownEvent.Y - childPosition.Y,
-		})
-
-	case tomo.EventMouseUp:
-		mouseUpEvent := event.(tomo.EventMouseUp)
-		child := element.drags[mouseUpEvent.Button]
-		if child == nil { break }
-		element.drags[mouseUpEvent.Button] = nil
-		childPosition := element.childPosition(child)
-		child.Handle (tomo.EventMouseUp {
-			Button: mouseUpEvent.Button,
-			X: mouseUpEvent.X - childPosition.X,
-			Y: mouseUpEvent.Y - childPosition.Y,
-		})
-
-	case tomo.EventMouseMove:
-		mouseMoveEvent := event.(tomo.EventMouseMove)
-		for _, child := range element.drags {
-			if child == nil { continue }
-			childPosition := element.childPosition(child)
-			child.Handle (tomo.EventMouseMove {
-				X: mouseMoveEvent.X - childPosition.X,
-				Y: mouseMoveEvent.Y - childPosition.Y,
-			})
-		}
-
-	case tomo.EventSelect:
-		if !element.Selectable() { break }
-		element.core.SetSelected(true)
-		
-		// select the first selectable element
-		for _, entry := range element.children {
-			if entry.Selectable() {
-				entry.Handle(event)
-				break
-			}
-		}
-
-	case tomo.EventDeselect:
-		element.core.SetSelected(false)
-		element.propogateToSelected(event)
-
-	default:
-		// other events are just directly sent to the selected child.
-		element.propogateToSelected(event)
-	}
-	return
+func (element *Container) Resize (width, height int) {
+	element.core.AllocateCanvas(width, height)
+	element.recalculate()
+	element.draw()
 }
 
-func (element *Container) propogateToSelected (event tomo.Event) {
-	for _, entry := range element.children {
-		if entry.Selected() {
-			entry.Handle(event)
-		}
+// TODO: implement KeyboardTarget
+
+func (element *Container) HandleMouseDown (x, y int, button tomo.Button) {
+	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(tomo.MouseTarget)
+	if !handlesMouse { return }
+	element.drags[button] = child
+	childPosition := element.childPosition(child)
+	child.HandleMouseDown(x - childPosition.X, y - childPosition.Y, button)
+}
+
+func (element *Container) HandleMouseUp (x, y int, button tomo.Button) {
+	child := element.drags[button]
+	if child == nil { return }
+	element.drags[button] = nil
+	childPosition := element.childPosition(child)
+	child.HandleMouseUp(x - childPosition.X, y - childPosition.Y, button)
+}
+
+func (element *Container) HandleMouseMove (x, y int) {
+	for _, child := range element.drags {
+		if child == nil { continue }
+		childPosition := element.childPosition(child)
+		child.HandleMouseMove(x - childPosition.X, y - childPosition.Y)
 	}
 }
 
-func (element *Container) AdvanceSelection (direction int) (ok bool) {
-	if !element.Selectable() { return }
+func (element *Container) HandleScroll (x, y int, deltaX, deltaY float64) {
+	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(tomo.MouseTarget)
+	if !handlesMouse { return }
+	childPosition := element.childPosition(child)
+	child.HandleScroll(x - childPosition.X, y - childPosition.Y, deltaX, deltaY)
+}
+
+func (element *Container) HandleKeyDown (
+	key tomo.Key,
+	modifiers tomo.Modifiers,
+	repeated bool,
+) {
+	element.forSelected (func (child tomo.Selectable) bool {
+		child0, handlesKeyboard := child.(tomo.KeyboardTarget)
+		if handlesKeyboard {
+			child0.HandleKeyDown(key, modifiers, repeated)
+		}
+		return true
+	})
+}
+
+func (element *Container) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) {
+	element.forSelected (func (child tomo.Selectable) bool {
+		child0, handlesKeyboard := child.(tomo.KeyboardTarget)
+		if handlesKeyboard {
+			child0.HandleKeyUp(key, modifiers)
+		}
+		return true
+	})
+}
+
+func (element *Container) Selected () (selected bool) {
+	return element.selected
+}
+
+func (element *Container) Select () {
+	element.core.RequestSelection()
+}
+
+// FIXME
+func (element *Container) HandleSelection (direction tomo.SelectionDirection) (ok bool) {
+	if !element.selectable { return false }
 
 	firstSelected := element.firstSelected()
 	if firstSelected < 0 {
-		for _, entry := range element.children {
-			if entry.Selectable() {
-				entry.Handle(tomo.EventSelect { })
+		switch direction {
+		case tomo.SelectionDirectionNeutral,
+		tomo.SelectionDirectionBackward:
+			element.forSelectableBackward (func (child tomo.Selectable) bool {
+				if child.HandleSelection (
+					tomo.SelectionDirectionNeutral,
+				) {
+					element.selected = true
+					return false
+				}
 				return true
-			}
+			})
+		
+		case tomo.SelectionDirectionForward:
+			element.forSelectable (func (child tomo.Selectable) bool {
+				if child.HandleSelection (
+					tomo.SelectionDirectionNeutral,
+				) {
+					element.selected = true
+					return false
+				}
+				return true
+			})
 		}
+
+		return false
 	} else {
-		nextSelectable := -1
+		firstSelectedChild :=
+			element.children[firstSelected].Element.(tomo.Selectable)
 		step := 1
 		if direction < 0 { step = - 1 }
+		
 		for index := firstSelected + step;
-			index < len(element.children) && index > 0;
+			index < len(element.children) && index >= 0;
 			index += step {
 
-			if element.children[index].Selectable() {
-				nextSelectable = index
-				break
+			child, selectable :=
+				element.children[index].
+				Element.(tomo.Selectable)
+			if selectable && child.HandleSelection(direction) {
+				firstSelectedChild.HandleDeselection()
+				element.selected = true
+				return true
 			}
-		}
-
-		if nextSelectable > 0 {
-			element.children[firstSelected ].Handle(tomo.EventDeselect { })
-			element.children[nextSelectable].Handle(tomo.EventSelect   { })
-			return true
 		}
 	}
 	
 	return
 }
 
+func (element *Container) HandleDeselection () {
+	element.selected = false
+	element.forSelected (func (child tomo.Selectable) bool {
+		child.HandleDeselection()
+		return true
+	})
+}
+
+func (element *Container) forSelected (callback func (child tomo.Selectable) bool) {
+	for _, entry := range element.children {
+		child, selectable := entry.Element.(tomo.Selectable)
+		if selectable && child.Selected() {
+			if !callback(child) { break }
+		}
+	}
+}
+
+func (element *Container) forSelectable (callback func (child tomo.Selectable) bool) {
+	for _, entry := range element.children {
+		child, selectable := entry.Element.(tomo.Selectable)
+		if selectable {
+			if !callback(child) { break }
+		}
+	}
+}
+
+func (element *Container) forSelectableBackward (callback func (child tomo.Selectable) bool) {
+	for index := len(element.children) - 1; index >= 0; index -- {
+		child, selectable := element.children[index].Element.(tomo.Selectable)
+		if selectable {
+			if !callback(child) { break }
+		}
+	}
+}
+
 func (element *Container) firstSelected () (index int) {
 	for currentIndex, entry := range element.children {
-		if entry.Selected() {
+		child, selectable := entry.Element.(tomo.Selectable)
+		if selectable && child.Selected() {
 			return currentIndex
 		}
 	}
@@ -299,15 +343,36 @@ func (element *Container) firstSelected () (index int) {
 }
 
 func (element *Container) updateSelectable () {
-	selectable := false
-	for _, entry := range element.children {
-		if entry.Selectable() { selectable = true }
+	element.selectable = false
+	element.forSelectable (func (tomo.Selectable) bool {
+		element.selectable = true
+		return false
+	})
+	if !element.selectable {
+		element.selected = false
 	}
-	element.core.SetSelectable(selectable)
+}
+
+func (element *Container) childSelectionRequestCallback (
+	child tomo.Selectable,
+) (
+	granted bool,
+) {
+	if element.core.RequestSelection() {
+		element.forSelected (func (child tomo.Selectable) bool {
+			child.HandleDeselection()
+			return true
+		})
+		child.HandleSelection(tomo.SelectionDirectionNeutral)
+		return true
+	} else {
+		return false
+	}
 }
 
 func (element *Container) updateMinimumSize () {
-	element.core.SetMinimumSize(element.layout.MinimumSize(element.children))
+	element.core.SetMinimumSize (
+		element.layout.MinimumSize(element.children, 1e9))
 }
 
 func (element *Container) recalculate () {
