@@ -28,17 +28,13 @@ func NewLabel (text string, wrap bool) (element *Label) {
 	return
 }
 
-// Handle handles and event.
-func (element *Label) Handle (event tomo.Event) {
+func (element *Label) Resize (width, height int) {
 	switch event.(type) {
 	case tomo.EventResize:
-		resizeEvent := event.(tomo.EventResize)
-		element.core.AllocateCanvas (
-			resizeEvent.Width,
-			resizeEvent.Height)
+		element.core.AllocateCanvas(width, height)
 		if element.wrap {
-			element.drawer.SetMaxWidth (resizeEvent.Width)
-			element.drawer.SetMaxHeight(resizeEvent.Height)
+			element.drawer.SetMaxWidth(width)
+			element.drawer.SetMaxHeight(height)
 		}
 		element.draw()
 	}
