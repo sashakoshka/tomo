@@ -3,7 +3,6 @@ package fun
 import "time"
 import "math"
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -21,15 +20,9 @@ func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 	return
 }
 
-func (element *AnalogClock) Handle (event tomo.Event) {
-	switch event.(type) {
-	case tomo.EventResize:
-		resizeEvent := event.(tomo.EventResize)
-		element.core.AllocateCanvas (
-			resizeEvent.Width,
-			resizeEvent.Height)
-		element.draw()
-	}
+func (element *AnalogClock) Resize (width, height int) {
+	element.core.AllocateCanvas(width, height)
+	element.draw()
 }
 
 func (element *AnalogClock) SetTime (newTime time.Time) {
