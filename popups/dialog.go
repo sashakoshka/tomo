@@ -1,8 +1,8 @@
 package popups
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
-import "git.tebibyte.media/sashakoshka/tomo/elements/layouts"
 
 // DialogKind defines the semantic role of a dialog window.
 type DialogKind int
