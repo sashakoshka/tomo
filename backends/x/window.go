@@ -261,6 +261,20 @@ func (window *Window) childSelectionRequestCallback () (granted bool) {
 	return true
 }
 
+func (window *Window) childSelectionMotionRequestCallback (
+	direction tomo.SelectionDirection,
+) (
+	granted bool,
+) {
+	if child, ok := window.child.(tomo.Selectable); ok {
+		if !child.HandleSelection(direction) {
+			child.HandleDeselection()
+		}
+		return true
+	}
+	return true
+}
+
 func (window *Window) pushRegion (region image.Rectangle) {
 	if window.xCanvas == nil { panic("whoopsie!!!!!!!!!!!!!!") }
 	image, ok := window.xCanvas.SubImage(region).(*xgraphics.Image)

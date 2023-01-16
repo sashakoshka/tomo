@@ -43,6 +43,9 @@ func (element *Container) SetLayout (layout tomo.Layout) {
 // whatever way is defined by the current layout.
 func (element *Container) Adopt (child tomo.Element, expand bool) {
 	child.SetParentHooks (tomo.ParentHooks {
+		Draw: func (region tomo.Canvas) {
+			element.drawChildRegion(child, region)
+		},
 		MinimumSizeChange: func (int, int) {
 			element.updateMinimumSize()
 		},
@@ -51,8 +54,12 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 			if !selectable { return }
 			return element.childSelectionRequestCallback(child)
 		},
-		Draw: func (region tomo.Canvas) {
-			element.drawChildRegion(child, region)
+		SelectionMotionRequest: func (
+			direction tomo.SelectionDirection,
+		) (
+			granted bool,
+		) {
+			return element.core.RequestSelectionMotion(direction)
 		},
 	})
 	element.children = append (element.children, tomo.LayoutEntry {

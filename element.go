@@ -3,7 +3,8 @@ package tomo
 // ParentHooks is a struct that contains callbacks that let child elements send
 // information to their parent element without the child element knowing
 // anything about the parent element or containing any reference to it. When a
-// parent element adopts a child element, it must set these callbacks.
+// parent element adopts a child element, it must set these callbacks. They are
+// allowed to be nil.
 type ParentHooks struct {
 	// Draw is called when a part of the child element's surface is updated.
 	// The updated region will be passed to the callback as a sub-image.
@@ -20,6 +21,10 @@ type ParentHooks struct {
 	// request, it must send the child element a selection event and return
 	// true.
 	SelectionRequest func () (granted bool)
+
+	// SelectionMotionRequest is called when the child element wants the
+	// parent element to select the previous/next element in relation to it.
+	SelectionMotionRequest func (direction SelectionDirection) (granted bool)
 }
 
 // RunDraw runs the Draw hook if it is not nil. If it is nil, it does nothing.
@@ -42,6 +47,19 @@ func (hooks ParentHooks) RunMinimumSizeChange (width, height int) {
 func (hooks ParentHooks) RunSelectionRequest () (granted bool) {
 	if hooks.SelectionRequest != nil {
 		granted = hooks.SelectionRequest()
+	}
+	return
+}
+
+// RunSelectionMotionRequest runs the SelectionMotionRequest hook if it is not
+// nil. If it is nil, it does nothing.
+func (hooks ParentHooks) RunSelectionMotionRequest (
+	direction SelectionDirection,
+) (
+	granted bool,
+) {
+	if hooks.SelectionMotionRequest != nil {
+		granted = hooks.SelectionMotionRequest(direction)
 	}
 	return
 }

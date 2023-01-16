@@ -80,6 +80,18 @@ func (control CoreControl) RequestSelection () (granted bool) {
 	return control.core.hooks.RunSelectionRequest()
 }
 
+// RequestSelectionMotion requests that the element's parent deselect this
+// element and select the one to the left or right of it, depending on the
+// direction. If the requests was granted, it returns true. If it was denied, it
+// returns false.
+func (control CoreControl) RequestSelectionMotion (
+	direction tomo.SelectionDirection,
+) (
+	granted bool,
+) {
+	return control.core.hooks.RunSelectionMotionRequest(direction)
+}
+
 // HasImage returns true if the core has an allocated image buffer, and false if
 // it doesn't.
 func (control CoreControl) HasImage () (has bool) {
