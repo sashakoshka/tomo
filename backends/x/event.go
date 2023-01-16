@@ -69,28 +69,19 @@ func (window *Window) handleKeyPress (
 	}
 
 	if key == tomo.KeyTab && modifiers.Alt {
-		if _, ok := window.child.(tomo.Selectable); ok {
+		if child, ok := window.child.(tomo.Selectable); ok {
 			direction := tomo.SelectionDirectionForward
 			if modifiers.Shift {
 				direction = tomo.SelectionDirectionBackward
 			}
 
-			window.advanceSelectionInChild(direction)
+			if !child.HandleSelection(direction) {
+				child.HandleDeselection()
+			}
 		}
 	} else if child, ok := window.child.(tomo.KeyboardTarget); ok {
 		// FIXME: pass correct value for repeated
 		child.HandleKeyDown(key, modifiers, false)
-	}
-}
-
-func (window *Window) advanceSelectionInChild (direction tomo.SelectionDirection) {
-	child := window.child.(tomo.Selectable)
-	if child.Selected() {
-		if !child.HandleSelection(direction) {
-			child.HandleDeselection()
-		}
-	} else {
-		child.HandleSelection(tomo.SelectionDirectionNeutral)
 	}
 }
 

@@ -79,6 +79,17 @@ const (
 	SelectionDirectionForward  SelectionDirection =  1
 )
 
+// Canon returns a well-formed direction.
+func (direction SelectionDirection) Canon () (canon SelectionDirection) {
+	if direction > 0 {
+		return SelectionDirectionForward
+	} else if direction == 0 {
+		return SelectionDirectionNeutral
+	} else {
+		return SelectionDirectionBackward
+	}
+}
+
 // Selectable represents an element that has keyboard navigation support. This
 // includes inputs, buttons, sliders, etc. as well as any elements that have
 // children (so keyboard navigation events can be propagated downward).

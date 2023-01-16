@@ -103,16 +103,17 @@ func (element *Button) HandleSelection (
 ) (
 	accepted bool,
 ) {
-	if direction == tomo.SelectionDirectionNeutral && element.enabled {
-		element.selected = true
-		if element.core.HasImage() {
-			element.draw()
-			element.core.PushAll()
-		}
-		return true
-	} else {
+	if !element.enabled { return false }
+	if element.selected && direction != tomo.SelectionDirectionNeutral {
 		return false
 	}
+	
+	element.selected = true
+	if element.core.HasImage() {
+		element.draw()
+		element.core.PushAll()
+	}
+	return true
 }
 
 func (element *Button) HandleDeselection () {

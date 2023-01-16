@@ -244,44 +244,41 @@ func (element *Container) Select () {
 // FIXME
 func (element *Container) HandleSelection (direction tomo.SelectionDirection) (ok bool) {
 	if !element.selectable { return false }
+	direction = direction.Canon()
 
 	firstSelected := element.firstSelected()
 	if firstSelected < 0 {
+		found := false
 		switch direction {
-		case tomo.SelectionDirectionNeutral,
-		tomo.SelectionDirectionBackward:
+		case tomo.SelectionDirectionBackward:
 			element.forSelectableBackward (func (child tomo.Selectable) bool {
-				if child.HandleSelection (
-					tomo.SelectionDirectionNeutral,
-				) {
+				if child.HandleSelection(direction) {
 					element.selected = true
+					found = true
 					return false
 				}
 				return true
 			})
+			return true
 		
-		case tomo.SelectionDirectionForward:
+		case tomo.SelectionDirectionNeutral, tomo.SelectionDirectionForward:
 			element.forSelectable (func (child tomo.Selectable) bool {
-				if child.HandleSelection (
-					tomo.SelectionDirectionNeutral,
-				) {
+				if child.HandleSelection(direction) {
 					element.selected = true
+					found = true
 					return false
 				}
 				return true
 			})
 		}
-
-		return false
+		return found
 	} else {
 		firstSelectedChild :=
 			element.children[firstSelected].Element.(tomo.Selectable)
-		step := 1
-		if direction < 0 { step = - 1 }
 		
-		for index := firstSelected + step;
+		for index := firstSelected + int(direction);
 			index < len(element.children) && index >= 0;
-			index += step {
+			index += int(direction) {
 
 			child, selectable :=
 				element.children[index].
@@ -294,7 +291,7 @@ func (element *Container) HandleSelection (direction tomo.SelectionDirection) (o
 		}
 	}
 	
-	return
+	return false
 }
 
 func (element *Container) HandleDeselection () {
