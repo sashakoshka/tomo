@@ -241,7 +241,6 @@ func (element *Container) Select () {
 	element.core.RequestSelection()
 }
 
-// FIXME
 func (element *Container) HandleSelection (direction tomo.SelectionDirection) (ok bool) {
 	if !element.selectable { return false }
 	direction = direction.Canon()
