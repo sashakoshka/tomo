@@ -27,43 +27,39 @@ func NewCore (parent tomo.Element) (core *Core, control CoreControl) {
 	return
 }
 
+// ColorModel fulfills the draw.Image interface.
 func (core *Core) ColorModel () (model color.Model) {
 	return color.RGBAModel
 }
 
+// ColorModel fulfills the draw.Image interface.
 func (core *Core) At (x, y int) (pixel color.Color) {
 	return core.canvas.At(x, y)
 }
 
+// ColorModel fulfills the draw.Image interface.
 func (core *Core) Bounds () (bounds image.Rectangle) {
 	return core.canvas.Bounds()
 }
 
+// ColorModel fulfills the draw.Image interface.
 func (core *Core) Set (x, y int, c color.Color) () {
 	core.canvas.Set(x, y, c)
 }
 
+// Buffer fulfills the tomo.Canvas interface.
 func (core *Core) Buffer () (data []color.RGBA, stride int) {
 	return core.canvas.Buffer()
 }
 
+// MinimumSize fulfils the tomo.Element interface. This should not need to be
+// overridden.
 func (core *Core) MinimumSize () (width, height int) {
 	return core.metrics.minimumWidth, core.metrics.minimumHeight
 }
 
-func (core *Core) Resize (width, height int) {
-	if width < core.metrics.minimumWidth {
-		width = core.metrics.minimumWidth
-	}
-	if height < core.metrics.minimumHeight {
-		height = core.metrics.minimumHeight
-	}
-	bounds := core.canvas.Bounds()
-	if width != bounds.Dx() || height != bounds.Dy() {
-		core.canvas = tomo.NewBasicCanvas(width, height)
-	}
-}
-
+// SetParentHooks fulfils the tomo.Element interface. This should not need to be
+// overridden.
 func (core *Core) SetParentHooks (hooks tomo.ParentHooks) {
 	core.hooks = hooks
 }
@@ -76,25 +72,33 @@ type CoreControl struct {
 	core *Core
 }
 
-func (control CoreControl) HasImage () (empty bool) {
+// HasImage returns true if the core has an allocated image buffer, and false if
+// it doesn't.
+func (control CoreControl) HasImage () (has bool) {
 	return !control.Bounds().Empty()
 }
 
+// PushRegion pushes the selected region of pixels to the parent element. This
+// does not need to be called when responding to a resize event.
 func (control CoreControl) PushRegion (bounds image.Rectangle) {
 	control.core.hooks.RunDraw(tomo.Cut(control, bounds))
 }
 
+// PushAll pushes all pixels to the parent element. This does not need to be
+// called when responding to a resize event.
 func (control CoreControl) PushAll () {
 	control.PushRegion(control.Bounds())
 }
 
+// AllocateCanvas resizes the canvas.
 func (control *CoreControl) AllocateCanvas (width, height int) {
-	core := control.core
 	width, height, _ = control.ConstrainSize(width, height)
-	core.canvas  = tomo.NewBasicCanvas(width, height)
-	control.BasicCanvas = core.canvas
+	control.core.canvas = tomo.NewBasicCanvas(width, height)
+	control.BasicCanvas = control.core.canvas
 }
 
+// SetMinimumSize sets the minimum size of this element, notifying the parent
+// element in the process.
 func (control CoreControl) SetMinimumSize (width, height int) {
 	core := control.core
 	if width == core.metrics.minimumWidth &&
@@ -119,6 +123,8 @@ func (control CoreControl) SetMinimumSize (width, height int) {
 	}
 }
 
+// ConstrainSize contstrains the specified width and height to the minimum width
+// and height, and returns wether or not anything ended up being constrained.
 func (control CoreControl) ConstrainSize (
 	inWidth, inHeight int,
 ) (
