@@ -64,9 +64,10 @@ func (core *Core) SetParentHooks (hooks tomo.ParentHooks) {
 	core.hooks = hooks
 }
 
-// CoreControl is a struct that can exert control over a control struct. It can
-// be used as a canvas. It must not be directly embedded into an element, but
-// instead kept as a private member.
+// CoreControl is a struct that can exert control over a Core struct. It can be
+// used as a canvas. It must not be directly embedded into an element, but
+// instead kept as a private member. When a Core struct is created, a
+// corresponding CoreControl struct is linked to it and returned alongside it.
 type CoreControl struct {
 	tomo.BasicCanvas
 	core *Core
@@ -90,7 +91,8 @@ func (control CoreControl) PushAll () {
 	control.PushRegion(control.Bounds())
 }
 
-// AllocateCanvas resizes the canvas.
+// AllocateCanvas resizes the canvas, constraining the width and height so that
+// they are not less than the specified minimum width and height.
 func (control *CoreControl) AllocateCanvas (width, height int) {
 	width, height, _ = control.ConstrainSize(width, height)
 	control.core.canvas = tomo.NewBasicCanvas(width, height)
