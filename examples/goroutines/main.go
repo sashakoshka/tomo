@@ -3,9 +3,9 @@ package main
 import "os"
 import "time"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
-import "git.tebibyte.media/sashakoshka/tomo/elements/layouts"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
 
 func main () {

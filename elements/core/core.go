@@ -27,89 +27,87 @@ func NewCore (parent tomo.Element) (core *Core, control CoreControl) {
 	return
 }
 
-func (core Core) ColorModel () (model color.Model) {
+// ColorModel fulfills the draw.Image interface.
+func (core *Core) ColorModel () (model color.Model) {
 	return color.RGBAModel
 }
 
-func (core Core) At (x, y int) (pixel color.Color) {
+// ColorModel fulfills the draw.Image interface.
+func (core *Core) At (x, y int) (pixel color.Color) {
 	return core.canvas.At(x, y)
 }
 
-func (core Core) Bounds () (bounds image.Rectangle) {
+// ColorModel fulfills the draw.Image interface.
+func (core *Core) Bounds () (bounds image.Rectangle) {
 	return core.canvas.Bounds()
 }
 
-func (core Core) Set (x, y int, c color.Color) () {
+// ColorModel fulfills the draw.Image interface.
+func (core *Core) Set (x, y int, c color.Color) () {
 	core.canvas.Set(x, y, c)
 }
 
-func (core Core) Buffer () (data []color.RGBA, stride int) {
+// Buffer fulfills the tomo.Canvas interface.
+func (core *Core) Buffer () (data []color.RGBA, stride int) {
 	return core.canvas.Buffer()
 }
 
-func (core Core) Selectable () (selectable bool) {
-	return core.selectable
+// MinimumSize fulfils the tomo.Element interface. This should not need to be
+// overridden.
+func (core *Core) MinimumSize () (width, height int) {
+	return core.metrics.minimumWidth, core.metrics.minimumHeight
 }
 
-func (core Core) Selected () (selected bool) {
-	return core.selected
-}
-
-func (core Core) AdvanceSelection (direction int) (ok bool) {
-	return
-}
-
+// SetParentHooks fulfils the tomo.Element interface. This should not need to be
+// overridden.
 func (core *Core) SetParentHooks (hooks tomo.ParentHooks) {
 	core.hooks = hooks
 }
 
-func (core Core) MinimumSize () (width, height int) {
-	return core.metrics.minimumWidth, core.metrics.minimumHeight
-}
-
-// CoreControl is a struct that can exert control over a control struct. It can
-// be used as a canvas. It must not be directly embedded into an element, but
-// instead kept as a private member.
+// CoreControl is a struct that can exert control over a Core struct. It can be
+// used as a canvas. It must not be directly embedded into an element, but
+// instead kept as a private member. When a Core struct is created, a
+// corresponding CoreControl struct is linked to it and returned alongside it.
 type CoreControl struct {
 	tomo.BasicCanvas
 	core *Core
 }
 
-func (control CoreControl) HasImage () (empty bool) {
-	return !control.Bounds().Empty()
-}
-
-func (control CoreControl) Select () (granted bool) {
+// RequestSelection requests that the element's parent send it a selection
+// event. If the request was granted, it returns true. If it was denied, it
+// returns false.
+func (control CoreControl) RequestSelection () (granted bool) {
 	return control.core.hooks.RunSelectionRequest()
 }
 
-func (control CoreControl) SetSelected (selected bool) {
-	if !control.core.selectable { return }
-	control.core.selected = selected
+// HasImage returns true if the core has an allocated image buffer, and false if
+// it doesn't.
+func (control CoreControl) HasImage () (has bool) {
+	return !control.Bounds().Empty()
 }
 
-func (control CoreControl) SetSelectable (selectable bool) {
-	if control.core.selectable == selectable { return }
-	control.core.selectable = selectable
-	if !selectable { control.core.selected = false }
-	control.core.hooks.RunSelectabilityChange(selectable)
-}
-
+// PushRegion pushes the selected region of pixels to the parent element. This
+// does not need to be called when responding to a resize event.
 func (control CoreControl) PushRegion (bounds image.Rectangle) {
 	control.core.hooks.RunDraw(tomo.Cut(control, bounds))
 }
 
+// PushAll pushes all pixels to the parent element. This does not need to be
+// called when responding to a resize event.
 func (control CoreControl) PushAll () {
 	control.PushRegion(control.Bounds())
 }
 
+// AllocateCanvas resizes the canvas, constraining the width and height so that
+// they are not less than the specified minimum width and height.
 func (control *CoreControl) AllocateCanvas (width, height int) {
-	core := control.core
 	width, height, _ = control.ConstrainSize(width, height)
-	core.canvas  = tomo.NewBasicCanvas(width, height)
-	control.BasicCanvas = core.canvas
+	control.core.canvas = tomo.NewBasicCanvas(width, height)
+	control.BasicCanvas = control.core.canvas
 }
 
+// SetMinimumSize sets the minimum size of this element, notifying the parent
+// element in the process.
 func (control CoreControl) SetMinimumSize (width, height int) {
 	core := control.core
 	if width == core.metrics.minimumWidth &&
@@ -123,20 +121,19 @@ func (control CoreControl) SetMinimumSize (width, height int) {
 
 	// if there is an image buffer, and the current size is less
 	// than this new minimum size, send core.parent a resize event.
-	bounds := control.Bounds()
-	imageWidth,
-	imageHeight,
-	constrained := control.ConstrainSize (
-		bounds.Dx(),
-		bounds.Dy())
-	if constrained {
-		core.parent.Handle (tomo.EventResize {
-			Width:  imageWidth,
-			Height: imageHeight,
-		})
+	if control.HasImage() {
+		bounds := control.Bounds()
+		imageWidth,
+		imageHeight,
+		constrained := control.ConstrainSize(bounds.Dx(), bounds.Dy())
+		if constrained {
+			core.parent.Resize(imageWidth, imageHeight)
+		}
 	}
 }
 
+// ConstrainSize contstrains the specified width and height to the minimum width
+// and height, and returns wether or not anything ended up being constrained.
 func (control CoreControl) ConstrainSize (
 	inWidth, inHeight int,
 ) (
