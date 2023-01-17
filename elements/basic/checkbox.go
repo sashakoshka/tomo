@@ -23,7 +23,7 @@ type Checkbox struct {
 
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
-	element = &Checkbox { enabled: true }
+	element = &Checkbox { enabled: true, checked: checked }
 	element.Core, element.core = core.NewCore(element)
 	element.drawer.SetFace(theme.FontFaceRegular())
 	element.SetText(text)
