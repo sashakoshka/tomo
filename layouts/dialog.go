@@ -28,7 +28,7 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	controlRowWidth, controlRowHeight := 0, 0
 	if len(entries) > 1 {
 		controlRowWidth,
-		controlRowHeight = layout.minimumSizeOf(entries[1:])
+		controlRowHeight = layout.minimumSizeOfControlRow(entries[1:])
 	}
 
 	if len(entries) > 0 {
@@ -108,7 +108,6 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 // arrange the given list of entries.
 func (layout Dialog) MinimumSize (
 	entries []tomo.LayoutEntry,
-	squeeze int,
 ) (
 	width, height int,
 ) {
@@ -121,7 +120,7 @@ func (layout Dialog) MinimumSize (
 	if len(entries) > 1 {
 		if layout.Gap { height += theme.Padding() }
 		additionalWidth,
-		additionalHeight := layout.minimumSizeOf(entries[1:])
+		additionalHeight := layout.minimumSizeOfControlRow(entries[1:])
 		height += additionalHeight
 		if additionalWidth > width {
 			width = additionalWidth
@@ -135,7 +134,41 @@ func (layout Dialog) MinimumSize (
 	return
 }
 
-func (layout Dialog) minimumSizeOf (
+func (layout Dialog) MinimumHeightFor (
+	entries []tomo.LayoutEntry,
+	width int,
+) (
+	height int,
+) {
+	if layout.Pad {
+		width -= theme.Padding() * 2
+	}
+	
+	if len(entries) > 0 {
+		mainChildHeight := 0
+		if child, flexible := entries[0].Element.(tomo.Flexible); flexible {
+			mainChildHeight = child.MinimumHeightFor(width)
+		} else {
+			_, mainChildHeight = entries[0].MinimumSize()
+		}
+		height += mainChildHeight
+	}
+
+	if len(entries) > 1 {
+		if layout.Gap { height += theme.Padding() }
+		_, additionalHeight := layout.minimumSizeOfControlRow(entries[1:])
+		height += additionalHeight
+	}
+
+	if layout.Pad {
+		height += theme.Padding() * 2
+	}
+	return
+}
+
+// TODO: possibly flatten this method to account for flexible elements within
+// the control row.
+func (layout Dialog) minimumSizeOfControlRow (
 	entries []tomo.LayoutEntry,
 ) (
 	width, height int,

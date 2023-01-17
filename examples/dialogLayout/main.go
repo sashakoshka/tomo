@@ -16,7 +16,7 @@ func run () {
 	container := basic.NewContainer(layouts.Dialog { true, true })
 	window.Adopt(container)
 
-	container.Adopt(basic.NewLabel("you will explode", false), true)
+	container.Adopt(basic.NewLabel("you will explode", true), true)
 	cancel := basic.NewButton("Cancel")
 	cancel.SetEnabled(false)
 	container.Adopt(cancel, false)
