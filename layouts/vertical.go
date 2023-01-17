@@ -99,6 +99,7 @@ func (layout Vertical) MinimumSize (
 		width  += theme.Padding() * 2
 		height += theme.Padding() * 2
 	}
+	println(width, height)
 	return
 }
 
@@ -112,6 +113,7 @@ func (layout Vertical) MinimumHeightFor (
 ) {
 	if layout.Pad {
 		width -= theme.Padding() * 2
+		height += theme.Padding() * 2
 	}
 	
 	for index, entry := range entries {
@@ -126,10 +128,6 @@ func (layout Vertical) MinimumHeightFor (
 		if layout.Gap && index > 0 {
 			height += theme.Padding()
 		}
-	}
-
-	if layout.Pad {
-		height += theme.Padding() * 2
 	}
 	return
 }
