@@ -25,6 +25,10 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	freeSpace := height
 	expandingElements := 0
 
+	// TODO: find the width first, then store the minumum height of
+	// everything in a list, then arrange everything.
+	// minimumHeights := make([]int, len(entries))
+
 	// count the number of expanding elements and the amount of free space
 	// for them to collectively occupy
 	for index, entry := range entries {

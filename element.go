@@ -183,9 +183,9 @@ type MouseTarget interface {
 	HandleScroll (x, y int, deltaX, deltaY float64)
 }
 
-// Expanding represents an element who's preferred minimum height can change in
+// Flexible represents an element who's preferred minimum height can change in
 // response to its width.
-type Expanding interface {
+type Flexible interface {
 	Element
 
 	// HeightForWidth returns what the element's minimum height would be if
@@ -200,6 +200,6 @@ type Expanding interface {
 	// minimum size that the element may be resized to.
 	//
 	// It is important to note that if a parent container checks for
-	// expanding chilren, it itself will likely need to be expanding.
+	// flexible chilren, it itself will likely need to be flexible.
 	MinimumHeightFor (width int) (height int)
 }

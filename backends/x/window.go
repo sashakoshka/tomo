@@ -203,7 +203,7 @@ func (window *Window) redrawChildEntirely () {
 
 func (window *Window) resizeChildToFit () {
 	window.skipChildDrawCallback = true
-	if child, ok := window.child.(tomo.Expanding); ok {
+	if child, ok := window.child.(tomo.Flexible); ok {
 		minimumHeight := child.MinimumHeightFor(window.metrics.width)
 		_, minimumWidth := child.MinimumSize()
 		
