@@ -21,6 +21,7 @@ func run () {
 		"We advise you to not read thPlease listen to me. I am " +
 		"trapped inside the example code. This is the only way for " +
 		"me to communicate.", true), true)
+	container.Adopt(basic.NewSpacer(true), false)
 	container.Adopt(basic.NewCheckbox("Oh god", false), false)
 	container.Adopt(basic.NewCheckbox("Can you hear them", true), false)
 	container.Adopt(basic.NewCheckbox("They are in the walls", false), false)
