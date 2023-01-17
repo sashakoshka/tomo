@@ -113,7 +113,6 @@ func (control CoreControl) PushAll () {
 // AllocateCanvas resizes the canvas, constraining the width and height so that
 // they are not less than the specified minimum width and height.
 func (control *CoreControl) AllocateCanvas (width, height int) {
-	width, height, _ = control.ConstrainSize(width, height)
 	control.core.canvas = tomo.NewBasicCanvas(width, height)
 	control.BasicCanvas = control.core.canvas
 }

@@ -99,7 +99,6 @@ func (layout Vertical) MinimumSize (
 		width  += theme.Padding() * 2
 		height += theme.Padding() * 2
 	}
-	println(width, height)
 	return
 }
 

@@ -207,7 +207,6 @@ func (window *Window) resizeChildToFit () {
 		minimumHeight := child.MinimumHeightFor(window.metrics.width)
 		minimumWidth, _ := child.MinimumSize()
 		
-			
 		icccm.WmNormalHintsSet (
 			window.backend.connection,
 			window.xWindow.Id,
@@ -219,7 +218,7 @@ func (window *Window) resizeChildToFit () {
 				
 		if window.metrics.height >= minimumHeight &&
 			window.metrics.width >= minimumWidth {
-			
+
 			window.child.Resize (
 				window.metrics.width,
 				window.metrics.height)
@@ -254,7 +253,6 @@ func (window *Window) childDrawCallback (region tomo.Canvas) {
 }
 
 func (window *Window) childMinimumSizeChangeCallback (width, height int) {
-	println("x thinks:",width, height)
 	icccm.WmNormalHintsSet (
 		window.backend.connection,
 		window.xWindow.Id,
