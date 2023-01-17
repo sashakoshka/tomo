@@ -72,7 +72,6 @@ func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, width, height int)
 // arrange the given list of entries.
 func (layout Horizontal) MinimumSize (
 	entries []tomo.LayoutEntry,
-	squeeze int,
 ) (
 	width, height int,
 ) {
@@ -89,6 +88,34 @@ func (layout Horizontal) MinimumSize (
 
 	if layout.Pad {
 		width  += theme.Padding() * 2
+		height += theme.Padding() * 2
+	}
+	return
+}
+
+func (layout Horizontal) MinimumHeightFor (
+	entries []tomo.LayoutEntry,
+	width int,
+) (
+	height int,
+) {
+	if layout.Pad {
+		width -= theme.Padding() * 2
+	}
+
+	for _, entry := range entries {
+		var entryHeight int
+		if child, flexible := entry.Element.(tomo.Flexible); flexible {
+			entryHeight = child.MinimumHeightFor(width)
+		} else {
+			_, entryHeight = entry.MinimumSize()
+		}
+		if entryHeight > height {
+			height = entryHeight
+		}
+	}
+
+	if layout.Pad {
 		height += theme.Padding() * 2
 	}
 	return

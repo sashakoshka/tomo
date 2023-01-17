@@ -300,7 +300,7 @@ func (element *Container) HandleSelection (direction tomo.SelectionDirection) (o
 	return false
 }
 
-// TODO: fix this!
+// FIXME: fix this!
 // func (element *Container) MinimumHeightFor (width int) (height int) {
 	// return element.layout.MinimumHeightFor(element.children, width)
 // }
