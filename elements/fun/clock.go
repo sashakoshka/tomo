@@ -7,12 +7,14 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+// AnalogClock can display the time of day in an analog format.
 type AnalogClock struct {
 	*core.Core
 	core core.CoreControl
 	time time.Time
 }
 
+// NewAnalogClock creates a new analog clock that displays the specified time.
 func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 	element = &AnalogClock { }
 	element.Core, element.core = core.NewCore(element)
@@ -20,11 +22,13 @@ func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 	return
 }
 
+// Resize changes the size of the clock.
 func (element *AnalogClock) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	element.draw()
 }
 
+// SetTime changes the time that the clock displays.
 func (element *AnalogClock) SetTime (newTime time.Time) {
 	if newTime == element.time { return }
 	element.time = newTime
@@ -63,6 +67,7 @@ func (element *AnalogClock) draw () {
 		0, 0.7, (second - 15) / 30 * math.Pi)
 }
 
+// MinimumHeightFor constrains the clock's minimum size to a 1:1 aspect ratio.
 func (element *AnalogClock) MinimumHeightFor (width int) (height int) {
 	return width
 }
