@@ -3,7 +3,8 @@ package tomo
 // ParentHooks is a struct that contains callbacks that let child elements send
 // information to their parent element without the child element knowing
 // anything about the parent element or containing any reference to it. When a
-// parent element adopts a child element, it must set these callbacks.
+// parent element adopts a child element, it must set these callbacks. They are
+// allowed to be nil.
 type ParentHooks struct {
 	// Draw is called when a part of the child element's surface is updated.
 	// The updated region will be passed to the callback as a sub-image.
@@ -14,12 +15,20 @@ type ParentHooks struct {
 	// have already been resized and there is no need to send it a resize
 	// event.
 	MinimumSizeChange func (width, height int)
+
+	// FlexibleHeightChange is called when the parameters affecting the
+	// element's expanding height have changed.
+	FlexibleHeightChange func ()
 	
 	// SelectionRequest is called when the child element element wants
 	// itself to be selected. If the parent element chooses to grant the
 	// request, it must send the child element a selection event and return
 	// true.
 	SelectionRequest func () (granted bool)
+
+	// SelectionMotionRequest is called when the child element wants the
+	// parent element to select the previous/next element in relation to it.
+	SelectionMotionRequest func (direction SelectionDirection) (granted bool)
 }
 
 // RunDraw runs the Draw hook if it is not nil. If it is nil, it does nothing.
@@ -37,11 +46,32 @@ func (hooks ParentHooks) RunMinimumSizeChange (width, height int) {
 	}
 }
 
+// RunFlexibleHeightChange runs the ExpandingHeightChange hook if it is not
+// nil. If it is nil, it does nothing.
+func (hooks ParentHooks) RunFlexibleHeightChange () {
+	if hooks.FlexibleHeightChange != nil {
+		hooks.FlexibleHeightChange()
+	}
+}
+
 // RunSelectionRequest runs the SelectionRequest hook if it is not nil. If it is
 // nil, it does nothing.
 func (hooks ParentHooks) RunSelectionRequest () (granted bool) {
 	if hooks.SelectionRequest != nil {
 		granted = hooks.SelectionRequest()
+	}
+	return
+}
+
+// RunSelectionMotionRequest runs the SelectionMotionRequest hook if it is not
+// nil. If it is nil, it does nothing.
+func (hooks ParentHooks) RunSelectionMotionRequest (
+	direction SelectionDirection,
+) (
+	granted bool,
+) {
+	if hooks.SelectionMotionRequest != nil {
+		granted = hooks.SelectionMotionRequest(direction)
 	}
 	return
 }
@@ -153,9 +183,9 @@ type MouseTarget interface {
 	HandleScroll (x, y int, deltaX, deltaY float64)
 }
 
-// Expanding represents an element who's preferred minimum height can change in
+// Flexible represents an element who's preferred minimum height can change in
 // response to its width.
-type Expanding interface {
+type Flexible interface {
 	Element
 
 	// HeightForWidth returns what the element's minimum height would be if
@@ -170,6 +200,6 @@ type Expanding interface {
 	// minimum size that the element may be resized to.
 	//
 	// It is important to note that if a parent container checks for
-	// expanding chilren, it itself will likely need to be expanding.
+	// flexible chilren, it itself will likely need to be flexible.
 	MinimumHeightFor (width int) (height int)
 }

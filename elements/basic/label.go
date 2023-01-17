@@ -27,6 +27,7 @@ func NewLabel (text string, wrap bool) (element *Label) {
 	return
 }
 
+// Resize resizes the label and re-wraps the text if wrapping is enabled.
 func (element *Label) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	if element.wrap {
@@ -35,6 +36,17 @@ func (element *Label) Resize (width, height int) {
 	}
 	element.draw()
 	return
+}
+
+// MinimumHeightFor returns the reccomended height for this element based on the
+// given width in order to allow the text to wrap properly.
+func (element *Label) MinimumHeightFor (width int) (height int) {
+	if element.wrap {
+		return element.drawer.ReccomendedHeightFor(width)
+	} else {
+		_, height = element.MinimumSize()
+		return
+	}
 }
 
 // SetText sets the label's text.
@@ -76,6 +88,7 @@ func (element *Label) updateMinimumSize () {
 		if em < 1 { em = theme.Padding() }
 		element.core.SetMinimumSize (
 			em, element.drawer.LineHeight().Round())
+		element.core.NotifyFlexibleHeightChange()
 	} else {
 		bounds := element.drawer.LayoutBounds()
 		element.core.SetMinimumSize(bounds.Dx(), bounds.Dy())

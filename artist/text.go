@@ -14,10 +14,11 @@ type characterLayout struct {
 }
 
 type wordLayout struct {
-	position   image.Point
-	width      int
-	spaceAfter int
-	text       []characterLayout
+	position    image.Point
+	width       int
+	spaceAfter  int
+	breaksAfter int
+	text        []characterLayout
 }
 
 // Align specifies a text alignment method.
@@ -167,13 +168,16 @@ func (drawer *TextDrawer) LineHeight () (height fixed.Int26_6) {
 func (drawer *TextDrawer) ReccomendedHeightFor (width int) (height int) {
 	if !drawer.layoutClean { drawer.recalculate() }
 	metrics := drawer.face.Metrics()
-	dot := fixed.Point26_6 { 0, 0 }
+	dot := fixed.Point26_6 { 0, metrics.Height }
 	for _, word := range drawer.layout {
-		dot.X += fixed.Int26_6((word.width + word.spaceAfter) << 6)
-		
-		if word.width + word.position.X > width && word.position.X > 0 {
+		if word.width + dot.X.Round() > width {
 			dot.Y += metrics.Height
-			dot.X = fixed.Int26_6(word.width << 6)
+			dot.X = 0
+		}
+		dot.X += fixed.I(word.width + word.spaceAfter)
+		if word.breaksAfter > 0 {
+			dot.Y += fixed.I(word.breaksAfter).Mul(metrics.Height)
+			dot.X = 0
 		}
 	}
 
@@ -246,6 +250,7 @@ func (drawer *TextDrawer) recalculate () {
 			if character == '\n' {
 				dot.Y += metrics.Height
 				dot.X = 0
+				word.breaksAfter ++
 				previousCharacter = character
 				index ++
 			} else {
@@ -290,7 +295,6 @@ func (drawer *TextDrawer) recalculate () {
 
 	if drawer.wrap {
 		drawer.layoutBounds.Max.X = drawer.width
-		println("aaa")
 	} else {
 		drawer.layoutBounds.Max.X = horizontalExtent
 	}

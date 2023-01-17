@@ -17,7 +17,7 @@ func run () {
 	container := basic.NewContainer(layouts.Vertical { true, true })
 	window.Adopt(container)
 
-	label    := basic.NewLabel("it is a label hehe", false)
+	label    := basic.NewLabel("it is a label hehe", true)
 	button   := basic.NewButton("drawing pad")
 	okButton := basic.NewButton("OK")
 	button.OnClick (func () {

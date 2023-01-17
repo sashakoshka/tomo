@@ -26,12 +26,21 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	expandingElements := 0
 
 	// count the number of expanding elements and the amount of free space
-	// for them to collectively occupy
+	// for them to collectively occupy, while gathering minimum heights.
+	minimumHeights := make([]int, len(entries))
 	for index, entry := range entries {
+		var entryMinHeight int
+
+		if child, flexible := entry.Element.(tomo.Flexible); flexible {
+			entryMinHeight = child.MinimumHeightFor(width)
+		} else {
+			_, entryMinHeight = entry.MinimumSize()
+		}
+		minimumHeights[index] = entryMinHeight
+		
 		if entry.Expand {
 			expandingElements ++
 		} else {
-			_, entryMinHeight := entry.MinimumSize()
 			freeSpace -= entryMinHeight
 		}
 		if index > 0 && layout.Gap {
@@ -58,7 +67,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 		if entry.Expand {
 			entryHeight = expandingElementHeight
 		} else {
-			_, entryHeight = entry.MinimumSize()
+			entryHeight = minimumHeights[index]
 		}
 		y += entryHeight
 		entryBounds := entry.Bounds()
@@ -72,7 +81,6 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 // arrange the given list of entries.
 func (layout Vertical) MinimumSize (
 	entries []tomo.LayoutEntry,
-	squeeze int,
 ) (
 	width, height int,
 ) {
@@ -90,6 +98,35 @@ func (layout Vertical) MinimumSize (
 	if layout.Pad {
 		width  += theme.Padding() * 2
 		height += theme.Padding() * 2
+	}
+	return
+}
+
+// MinimumHeightFor Returns the minimum height the layout needs to lay out the
+// specified elements at the given width, taking into account flexible elements.
+func (layout Vertical) MinimumHeightFor (
+	entries []tomo.LayoutEntry,
+	width int,
+) (
+	height int,
+) {
+	if layout.Pad {
+		width -= theme.Padding() * 2
+		height += theme.Padding() * 2
+	}
+	
+	for index, entry := range entries {
+		child, flexible := entry.Element.(tomo.Flexible)
+		if flexible {
+			height += child.MinimumHeightFor(width)
+		} else {
+			_, entryHeight := entry.MinimumSize()
+			height += entryHeight
+		}
+		
+		if layout.Gap && index > 0 {
+			height += theme.Padding()
+		}
 	}
 	return
 }

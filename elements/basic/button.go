@@ -103,6 +103,7 @@ func (element *Button) HandleSelection (
 ) (
 	accepted bool,
 ) {
+	direction = direction.Canon()
 	if !element.enabled { return false }
 	if element.selected && direction != tomo.SelectionDirectionNeutral {
 		return false

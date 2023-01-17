@@ -72,7 +72,6 @@ func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, width, height int)
 // arrange the given list of entries.
 func (layout Horizontal) MinimumSize (
 	entries []tomo.LayoutEntry,
-	squeeze int,
 ) (
 	width, height int,
 ) {
@@ -89,6 +88,65 @@ func (layout Horizontal) MinimumSize (
 
 	if layout.Pad {
 		width  += theme.Padding() * 2
+		height += theme.Padding() * 2
+	}
+	return
+}
+
+func (layout Horizontal) MinimumHeightFor (
+	entries []tomo.LayoutEntry,
+	width int,
+) (
+	height int,
+) {
+	// TODO: maybe put calculating the expanding element width in a separate
+	// method
+	if layout.Pad {
+		width  -= theme.Padding() * 2
+	}
+	freeSpace := width
+	expandingElements := 0
+
+	// count the number of expanding elements and the amount of free space
+	// for them to collectively occupy
+	for index, entry := range entries {
+		if entry.Expand {
+			expandingElements ++
+		} else {
+			entryMinWidth, _ := entry.MinimumSize()
+			freeSpace -= entryMinWidth
+		}
+		if index > 0 && layout.Gap {
+			freeSpace -= theme.Padding()
+		}
+	}
+	expandingElementWidth := 0
+	if expandingElements > 0 {
+		expandingElementWidth = freeSpace / expandingElements
+	}
+	
+	x, y := 0, 0
+	if layout.Pad {
+		x += theme.Padding()
+		y += theme.Padding()
+	}
+
+	// set the size and position of each element
+	for index, entry := range entries {
+		entryWidth, entryHeight := entry.MinimumSize()
+		if entry.Expand {
+			entryWidth = expandingElementWidth
+		}
+		if child, flexible := entry.Element.(tomo.Flexible); flexible {
+			entryHeight = child.MinimumHeightFor(entryWidth)
+		}
+		if entryHeight > height { height = entryHeight }
+		
+		x += entryWidth
+		if index > 0 && layout.Gap { x += theme.Padding() }
+	}
+
+	if layout.Pad {
 		height += theme.Padding() * 2
 	}
 	return

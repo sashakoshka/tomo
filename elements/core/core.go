@@ -80,6 +80,18 @@ func (control CoreControl) RequestSelection () (granted bool) {
 	return control.core.hooks.RunSelectionRequest()
 }
 
+// RequestSelectionMotion requests that the element's parent deselect this
+// element and select the one to the left or right of it, depending on the
+// direction. If the requests was granted, it returns true. If it was denied, it
+// returns false.
+func (control CoreControl) RequestSelectionMotion (
+	direction tomo.SelectionDirection,
+) (
+	granted bool,
+) {
+	return control.core.hooks.RunSelectionMotionRequest(direction)
+}
+
 // HasImage returns true if the core has an allocated image buffer, and false if
 // it doesn't.
 func (control CoreControl) HasImage () (has bool) {
@@ -101,7 +113,6 @@ func (control CoreControl) PushAll () {
 // AllocateCanvas resizes the canvas, constraining the width and height so that
 // they are not less than the specified minimum width and height.
 func (control *CoreControl) AllocateCanvas (width, height int) {
-	width, height, _ = control.ConstrainSize(width, height)
 	control.core.canvas = tomo.NewBasicCanvas(width, height)
 	control.BasicCanvas = control.core.canvas
 }
@@ -130,6 +141,12 @@ func (control CoreControl) SetMinimumSize (width, height int) {
 			core.parent.Resize(imageWidth, imageHeight)
 		}
 	}
+}
+
+// NotifyFlexibleHeightChange notifies the parent element that this element's
+// flexible height has changed.
+func (control CoreControl) NotifyFlexibleHeightChange () {
+	control.core.hooks.RunFlexibleHeightChange()
 }
 
 // ConstrainSize contstrains the specified width and height to the minimum width

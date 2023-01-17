@@ -18,6 +18,7 @@ type Container struct {
 	warping    bool
 	selected   bool
 	selectable bool
+	flexible   bool
 }
 
 // NewContainer creates a new container.
@@ -43,16 +44,24 @@ func (element *Container) SetLayout (layout tomo.Layout) {
 // whatever way is defined by the current layout.
 func (element *Container) Adopt (child tomo.Element, expand bool) {
 	child.SetParentHooks (tomo.ParentHooks {
+		Draw: func (region tomo.Canvas) {
+			element.drawChildRegion(child, region)
+		},
 		MinimumSizeChange: func (int, int) {
 			element.updateMinimumSize()
 		},
+		FlexibleHeightChange: element.updateMinimumSize,
 		SelectionRequest: func () (granted bool) {
 			child, selectable := child.(tomo.Selectable)
 			if !selectable { return }
 			return element.childSelectionRequestCallback(child)
 		},
-		Draw: func (region tomo.Canvas) {
-			element.drawChildRegion(child, region)
+		SelectionMotionRequest: func (
+			direction tomo.SelectionDirection,
+		) (
+			granted bool,
+		) {
+			return element.core.RequestSelectionMotion(direction)
 		},
 	})
 	element.children = append (element.children, tomo.LayoutEntry {
@@ -61,7 +70,7 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 	})
 
 	element.updateMinimumSize()
-	element.updateSelectable()
+	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
 		element.recalculate()
 		element.draw()
@@ -106,7 +115,7 @@ func (element *Container) Disown (child tomo.Element) {
 	}
 
 	element.updateMinimumSize()
-	element.updateSelectable()
+	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
 		element.recalculate()
 		element.draw()
@@ -119,7 +128,7 @@ func (element *Container) DisownAll () {
 	element.children = nil
 
 	element.updateMinimumSize()
-	element.updateSelectable()
+	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
 		element.recalculate()
 		element.draw()
@@ -176,8 +185,6 @@ func (element *Container) Resize (width, height int) {
 	element.draw()
 }
 
-// TODO: implement KeyboardTarget
-
 func (element *Container) HandleMouseDown (x, y int, button tomo.Button) {
 	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(tomo.MouseTarget)
 	if !handlesMouse { return }
@@ -223,7 +230,7 @@ func (element *Container) HandleKeyDown (
 	})
 }
 
-func (element *Container) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) {
+func (element *Container) HandleKeyUp (key tomo.Key, modifiers tomo.Modifiers) {
 	element.forSelected (func (child tomo.Selectable) bool {
 		child0, handlesKeyboard := child.(tomo.KeyboardTarget)
 		if handlesKeyboard {
@@ -293,6 +300,10 @@ func (element *Container) HandleSelection (direction tomo.SelectionDirection) (o
 	return false
 }
 
+func (element *Container) MinimumHeightFor (width int) (height int) {
+	return element.layout.MinimumHeightFor(element.children, width)
+}
+
 func (element *Container) HandleDeselection () {
 	element.selected = false
 	element.forSelected (func (child tomo.Selectable) bool {
@@ -319,6 +330,15 @@ func (element *Container) forSelectable (callback func (child tomo.Selectable) b
 	}
 }
 
+func (element *Container) forFlexible (callback func (child tomo.Flexible) bool) {
+	for _, entry := range element.children {
+		child, selectable := entry.Element.(tomo.Flexible)
+		if selectable {
+			if !callback(child) { break }
+		}
+	}
+}
+
 func (element *Container) forSelectableBackward (callback func (child tomo.Selectable) bool) {
 	for index := len(element.children) - 1; index >= 0; index -- {
 		child, selectable := element.children[index].Element.(tomo.Selectable)
@@ -338,10 +358,15 @@ func (element *Container) firstSelected () (index int) {
 	return -1
 }
 
-func (element *Container) updateSelectable () {
+func (element *Container) reflectChildProperties () {
 	element.selectable = false
 	element.forSelectable (func (tomo.Selectable) bool {
 		element.selectable = true
+		return false
+	})
+	element.flexible = false
+	element.forFlexible (func (tomo.Flexible) bool {
+		element.flexible = true
 		return false
 	})
 	if !element.selectable {
@@ -367,8 +392,11 @@ func (element *Container) childSelectionRequestCallback (
 }
 
 func (element *Container) updateMinimumSize () {
-	element.core.SetMinimumSize (
-		element.layout.MinimumSize(element.children, 1e9))
+	width, height := element.layout.MinimumSize(element.children)
+	if element.flexible {
+		height = element.layout.MinimumHeightFor(element.children, width)
+	}
+	element.core.SetMinimumSize(width, height)
 }
 
 func (element *Container) recalculate () {

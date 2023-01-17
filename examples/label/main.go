@@ -9,7 +9,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(480, 360)
+	window, _ := tomo.NewWindow(480, 2)
 	window.SetTitle("example label")
 	window.Adopt(basic.NewLabel(text, true))
 	window.OnClose(tomo.Stop)
