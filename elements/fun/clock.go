@@ -63,6 +63,10 @@ func (element *AnalogClock) draw () {
 		0, 0.7, (second - 15) / 30 * math.Pi)
 }
 
+func (element *AnalogClock) MinimumHeightFor (width int) (height int) {
+	return width
+}
+
 func (element *AnalogClock) radialLine (
 	source artist.Pattern,
 	inner  float64,
