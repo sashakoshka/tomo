@@ -89,7 +89,7 @@ func (window *Window) Adopt (child tomo.Element) {
 		child.SetParentHooks (tomo.ParentHooks {
 			Draw: window.childDrawCallback,
 			MinimumSizeChange: window.childMinimumSizeChangeCallback,
-			ExpandingHeightChange: window.resizeChildToFit,
+			FlexibleHeightChange: window.resizeChildToFit,
 			SelectionRequest: window.childSelectionRequestCallback,
 		})
 		

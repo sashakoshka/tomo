@@ -88,7 +88,7 @@ func (element *Label) updateMinimumSize () {
 		if em < 1 { em = theme.Padding() }
 		element.core.SetMinimumSize (
 			em, element.drawer.LineHeight().Round())
-		element.core.NotifyExpandingHeightChange()
+		element.core.NotifyFlexibleHeightChange()
 	} else {
 		bounds := element.drawer.LayoutBounds()
 		element.core.SetMinimumSize(bounds.Dx(), bounds.Dy())
