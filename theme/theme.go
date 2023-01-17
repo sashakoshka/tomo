@@ -28,11 +28,11 @@ var sunkenPattern = artist.NewMultiBorder (
 	artist.Border {
 		Weight: 1,
 		Stroke: artist.Chiseled {
-			Highlight: artist.NewUniform(hex(0x373C3AFF)),
-			Shadow:    artist.NewUniform(hex(0xDBDBDBFF)),
+			Highlight: artist.NewUniform(hex(0x3b534eFF)),
+			Shadow:    artist.NewUniform(hex(0x97a09cFF)),
 		},
 	},
-	artist.Border { Stroke: backgroundPattern })
+	artist.Border { Stroke: artist.NewUniform(hex(0x97a09cFF)) })
 
 func AccentPattern () (artist.Pattern) { return accentPattern }
 func BackgroundPattern () (artist.Pattern) { return backgroundPattern }
