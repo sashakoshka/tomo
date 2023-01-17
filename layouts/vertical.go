@@ -106,14 +106,18 @@ func (layout Vertical) MinimumSize (
 // specified elements at the given width, taking into account flexible elements.
 func (layout Vertical) MinimumHeightFor (
 	entries []tomo.LayoutEntry,
-	squeeze int,
+	width int,
 ) (
 	height int,
 ) {
+	if layout.Pad {
+		width -= theme.Padding() * 2
+	}
+	
 	for index, entry := range entries {
 		child, flexible := entry.Element.(tomo.Flexible)
 		if flexible {
-			height += child.MinimumHeightFor(squeeze)
+			height += child.MinimumHeightFor(width)
 		} else {
 			_, entryHeight := entry.MinimumSize()
 			height += entryHeight
