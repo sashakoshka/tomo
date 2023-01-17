@@ -22,26 +22,8 @@ func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, width, height int)
 		width  -= theme.Padding() * 2
 		height -= theme.Padding() * 2
 	}
-	freeSpace := width
-	expandingElements := 0
-
-	// count the number of expanding elements and the amount of free space
-	// for them to collectively occupy
-	for index, entry := range entries {
-		if entry.Expand {
-			expandingElements ++
-		} else {
-			entryMinWidth, _ := entry.MinimumSize()
-			freeSpace -= entryMinWidth
-		}
-		if index > 0 && layout.Gap {
-			freeSpace -= theme.Padding()
-		}
-	}
-	expandingElementWidth := 0
-	if expandingElements > 0 {
-		expandingElementWidth = freeSpace / expandingElements
-	}
+	// get width of expanding elements
+	expandingElementWidth := layout.expandingElementWidth(entries, width)
 	
 	x, y := 0, 0
 	if layout.Pad {
@@ -99,31 +81,11 @@ func (layout Horizontal) MinimumHeightFor (
 ) (
 	height int,
 ) {
-	// TODO: maybe put calculating the expanding element width in a separate
-	// method
 	if layout.Pad {
-		width  -= theme.Padding() * 2
+		width -= theme.Padding() * 2
 	}
-	freeSpace := width
-	expandingElements := 0
-
-	// count the number of expanding elements and the amount of free space
-	// for them to collectively occupy
-	for index, entry := range entries {
-		if entry.Expand {
-			expandingElements ++
-		} else {
-			entryMinWidth, _ := entry.MinimumSize()
-			freeSpace -= entryMinWidth
-		}
-		if index > 0 && layout.Gap {
-			freeSpace -= theme.Padding()
-		}
-	}
-	expandingElementWidth := 0
-	if expandingElements > 0 {
-		expandingElementWidth = freeSpace / expandingElements
-	}
+	// get width of expanding elements
+	expandingElementWidth := layout.expandingElementWidth(entries, width)
 	
 	x, y := 0, 0
 	if layout.Pad {
@@ -148,6 +110,34 @@ func (layout Horizontal) MinimumHeightFor (
 
 	if layout.Pad {
 		height += theme.Padding() * 2
+	}
+	return
+}
+
+func (layout Horizontal) expandingElementWidth (
+	entries []tomo.LayoutEntry,
+	freeSpace int,
+) (
+	width int,
+) {
+	expandingElements := 0
+
+	// count the number of expanding elements and the amount of free space
+	// for them to collectively occupy
+	for index, entry := range entries {
+		if entry.Expand {
+			expandingElements ++
+		} else {
+			entryMinWidth, _ := entry.MinimumSize()
+			freeSpace -= entryMinWidth
+		}
+		if index > 0 && layout.Gap {
+			freeSpace -= theme.Padding()
+		}
+	}
+	
+	if expandingElements > 0 {
+		width = freeSpace / expandingElements
 	}
 	return
 }

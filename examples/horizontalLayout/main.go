@@ -10,7 +10,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(256, 2)
+	window, _ := tomo.NewWindow(360, 2)
 	window.SetTitle("horizontal stack")
 
 	container := basic.NewContainer(layouts.Horizontal { true, true })
