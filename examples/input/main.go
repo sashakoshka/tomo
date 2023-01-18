@@ -17,6 +17,7 @@ func run () {
 
 	firstName    := basic.NewTextBox("First name", "")
 	lastName     := basic.NewTextBox("Last name", "")
+	lastName.SetEnabled(false)
 	fingerLength := basic.NewTextBox("Length of fingers", "")
 	button       := basic.NewButton("Ok")
 	
