@@ -1,6 +1,7 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
@@ -17,9 +18,17 @@ func run () {
 
 	firstName    := basic.NewTextBox("First name", "")
 	lastName     := basic.NewTextBox("Last name", "")
-	lastName.SetEnabled(false)
 	fingerLength := basic.NewTextBox("Length of fingers", "")
 	button       := basic.NewButton("Ok")
+
+	lastName.SetEnabled(false)
+	button.OnClick (func () {
+		popups.NewDialog (
+			popups.DialogKindInfo,
+			"Profile",
+			firstName.Value() + " [REDACTED]'s fingers\n" +
+			"measure in at " + fingerLength.Value() + " feet.")
+	})
 	
 	container.Adopt(basic.NewLabel("Choose your words carefully.", false), true)
 	container.Adopt(firstName, false)

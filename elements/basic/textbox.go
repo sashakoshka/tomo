@@ -183,6 +183,10 @@ func (element *TextBox) SetText (text string) {
 	}
 }
 
+func (element *TextBox) Value () (value string) {
+	return string(element.text)
+}
+
 func (element *TextBox) draw () {
 	bounds := element.core.Bounds()
 
