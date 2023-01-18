@@ -16,12 +16,15 @@ type TextBox struct {
 	selected bool
 
 	cursor int
+	scroll int
 	placeholder string
 	text        []rune
+	
 	placeholderDrawer artist.TextDrawer
 	valueDrawer       artist.TextDrawer
-	onKeyDown         func (tomo.Key, tomo.Modifiers, bool) (bool)
-	onChange          func ()
+	
+	onKeyDown func (tomo.Key, tomo.Modifiers, bool) (bool)
+	onChange  func ()
 }
 
 // NewTextBox creates a new text box with the specified placeholder text, and
@@ -41,6 +44,7 @@ func NewTextBox (placeholder, value string) (element *TextBox) {
 
 func (element *TextBox) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
+	element.scrollToCursor()
 	element.draw()
 }
 
@@ -62,7 +66,8 @@ func (element *TextBox) HandleKeyDown (
 		return
 	}
 
-	altered := true
+	altered     := true
+	textChanged := false
 	switch {
 	case key == tomo.KeyBackspace:
 		if len(element.text) < 1 { break }
@@ -70,7 +75,7 @@ func (element *TextBox) HandleKeyDown (
 			element.text,
 			element.cursor,
 			modifiers.Control)
-		element.runOnChange()
+		textChanged = true
 			
 	case key == tomo.KeyDelete:
 		if len(element.text) < 1 { break }
@@ -78,7 +83,7 @@ func (element *TextBox) HandleKeyDown (
 			element.text,
 			element.cursor,
 			modifiers.Control)
-		element.runOnChange()
+		textChanged = true
 			
 	case key == tomo.KeyLeft:
 		element.cursor = textmanip.MoveLeft (
@@ -97,14 +102,19 @@ func (element *TextBox) HandleKeyDown (
 			element.text,
 			element.cursor,
 			rune(key))
-		element.runOnChange()
+		textChanged = true
 			
 	default:
 		altered = false
 	}
 
-	if altered {
+	if textChanged {
+		element.runOnChange()
 		element.valueDrawer.SetText(element.text)
+	}
+
+	if altered {
+		element.scrollToCursor()
 	}
 	
 	if altered && element.core.HasImage () {
@@ -190,6 +200,7 @@ func (element *TextBox) SetValue (text string) {
 	if element.cursor > element.valueDrawer.Length() {
 		element.cursor = element.valueDrawer.Length()
 	}
+	element.scrollToCursor()
 	
 	if element.core.HasImage () {
 		element.draw()
@@ -225,6 +236,23 @@ func (element *TextBox) runOnChange () {
 	}
 }
 
+func (element *TextBox) scrollToCursor () {
+	if !element.core.HasImage() { return }
+
+	bounds := element.core.Bounds().Inset(theme.Padding())
+	bounds.Max.X -= element.valueDrawer.Em().Round()
+	cursorPosition := element.valueDrawer.PositionOf(element.cursor)
+	cursorPosition.X -= element.scroll
+	maxX := bounds.Max.X
+	minX := bounds.Min.X + bounds.Dx() / 2
+	if cursorPosition.X > maxX {
+		element.scroll += cursorPosition.X - maxX
+	} else if cursorPosition.X < minX {
+		element.scroll -= minX - cursorPosition.X
+		if element.scroll < 0 { element.scroll = 0 }
+	}
+}
+
 func (element *TextBox) draw () {
 	bounds := element.core.Bounds()
 
@@ -234,12 +262,6 @@ func (element *TextBox) draw () {
 			element.enabled,
 			element.Selected()),
 		bounds)
-		
-	innerBounds := bounds
-	innerBounds.Min.X += theme.Padding()
-	innerBounds.Min.Y += theme.Padding()
-	innerBounds.Max.X -= theme.Padding()
-	innerBounds.Max.Y -= theme.Padding()
 
 	if len(element.text) == 0 && !element.selected {
 		// draw placeholder
@@ -257,7 +279,7 @@ func (element *TextBox) draw () {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
 		offset := image.Point {
-			X: theme.Padding(),
+			X: theme.Padding() - element.scroll,
 			Y: theme.Padding(),
 		}
 		foreground := theme.ForegroundPattern(element.enabled)
