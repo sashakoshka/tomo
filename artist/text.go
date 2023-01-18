@@ -19,6 +19,7 @@ type wordLayout struct {
 	spaceAfter  int
 	breaksAfter int
 	text        []characterLayout
+	whitespace  []characterLayout
 }
 
 // Align specifies a text alignment method.
@@ -184,6 +185,32 @@ func (drawer *TextDrawer) ReccomendedHeightFor (width int) (height int) {
 	return dot.Y.Round()
 }
 
+// PositionOf returns the position of the character at the specified index
+// relative to the baseline.
+func (drawer *TextDrawer) PositionOf (index int) (position image.Point) {
+	if !drawer.layoutClean { drawer.recalculate() }
+	index ++
+	for _, word := range drawer.layout {
+		position = word.position
+		for _, character := range word.text {
+			index --
+			position.X = word.position.X + character.x
+			if index < 1 { return }
+		}
+		for _, character := range word.whitespace {
+			index --
+			position.X = word.position.X + character.x
+			if index < 1 { return }
+		}
+	}
+	return
+}
+
+// Length returns the amount of runes in the drawer's text.
+func (drawer *TextDrawer) Length () (length int) {
+	return len(drawer.runes)
+}
+
 func (drawer *TextDrawer) recalculate () {
 	drawer.layoutClean = true
 	drawer.layout = nil
@@ -194,7 +221,8 @@ func (drawer *TextDrawer) recalculate () {
 	metrics := drawer.face.Metrics()
 	dot := fixed.Point26_6 { 0, 0 }
 	index := 0
-	horizontalExtent := 0
+	horizontalExtent  := 0
+	currentCharacterX := fixed.Int26_6(0)
 
 	previousCharacter := rune(-1)
 	for index < len(drawer.runes) {
@@ -203,7 +231,7 @@ func (drawer *TextDrawer) recalculate () {
 		word.position.Y = dot.Y.Round()
 
 		// process a word
-		currentCharacterX := fixed.Int26_6(0)
+		currentCharacterX  = 0
 		wordWidth         := fixed.Int26_6(0)
 		for index < len(drawer.runes) && !unicode.IsSpace(drawer.runes[index]) {
 			character := drawer.runes[index]
@@ -243,31 +271,37 @@ func (drawer *TextDrawer) recalculate () {
 			dot.X = wordWidth
 		}
 
-		// skip over whitespace, going onto a new line if there is a
+		// process whitespace, going onto a new line if there is a
 		// newline character
+		spaceWidth := fixed.Int26_6(0)
 		for index < len(drawer.runes) && unicode.IsSpace(drawer.runes[index]) {
 			character := drawer.runes[index]
+			_, advance, ok := drawer.face.GlyphBounds(character)
+			index ++
+			if !ok { continue }
+			word.whitespace = append(word.whitespace, characterLayout {
+				x: currentCharacterX.Round(),
+				character: character,
+			})
+			spaceWidth        += advance
+			currentCharacterX += advance
+			
 			if character == '\n' {
 				dot.Y += metrics.Height
 				dot.X = 0
 				word.breaksAfter ++
-				previousCharacter = character
-				index ++
+				break
 			} else {
-				_, advance, ok := drawer.face.GlyphBounds(character)
-				word.spaceAfter = advance.Round()
-				index ++
-				if !ok { continue }
-				
 				dot.X += advance
 				if previousCharacter >= 0 {
 					dot.X += drawer.face.Kern (
 						previousCharacter,
 						character)
 				}
-				previousCharacter = character
 			}
+			previousCharacter = character
 		}
+		word.spaceAfter = spaceWidth.Round()
 
 		// add the word to the layout
 		drawer.layout = append(drawer.layout, word)
@@ -291,6 +325,16 @@ func (drawer *TextDrawer) recalculate () {
 			}
 			break
 		}
+	}
+
+	// add a little null to the last character
+	if len(drawer.layout) > 0 {
+		lastWord := &drawer.layout[len(drawer.layout) - 1]
+		lastWord.whitespace = append (
+			lastWord.whitespace,
+			characterLayout {
+				x: currentCharacterX.Round(),
+			})
 	}
 
 	if drawer.wrap {
