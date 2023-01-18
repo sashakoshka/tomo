@@ -221,6 +221,39 @@ func (element *TextBox) OnChange (callback func ()) {
 	element.onChange = callback
 }
 
+// ScrollContentBounds returns the full content size of the element.
+func (element *TextBox) ScrollContentBounds () (bounds image.Rectangle) {
+	bounds = element.valueDrawer.LayoutBounds()
+	return bounds.Sub(bounds.Min)
+}
+
+// ScrollViewportBounds returns the size and position of the element's viewport
+// relative to ScrollBounds.
+func (element *TextBox) ScrollViewportBounds () (bounds image.Rectangle) {
+	return image.Rect (
+		element.scroll,
+		0,
+		element.scroll + element.Bounds().Inset(theme.Padding()).Dx(),
+		0)
+}
+
+// ScrollTo scrolls the viewport to the specified point relative to
+// ScrollBounds.
+func (element *TextBox) ScrollTo (position image.Point) {
+	element.scroll = position.X
+	if element.scroll < 0 { element.scroll = 0 }
+	// TODO: constrain to max
+
+	if element.core.HasImage () {
+		element.draw()
+		element.core.PushAll()
+	}}
+
+// ScrollAxes returns the supported axes for scrolling.
+func (element *TextBox) ScrollAxes () (horizontal, vertical bool) {
+	return true, false
+}
+
 func (element *TextBox) updateMinimumSize () {
 	textBounds := element.placeholderDrawer.LayoutBounds()
 	element.core.SetMinimumSize (
@@ -278,6 +311,7 @@ func (element *TextBox) draw () {
 	} else {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
+		println(textBounds.String())
 		offset := image.Point {
 			X: theme.Padding() - element.scroll,
 			Y: theme.Padding(),
