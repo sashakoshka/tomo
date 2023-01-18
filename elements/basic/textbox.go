@@ -7,6 +7,7 @@ import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+// TextBox is a single-line text input.
 type TextBox struct {
 	*core.Core
 	core core.CoreControl
@@ -19,9 +20,14 @@ type TextBox struct {
 	text        []rune
 	placeholderDrawer artist.TextDrawer
 	valueDrawer       artist.TextDrawer
+	onKeyDown         func (tomo.Key, tomo.Modifiers, bool) (bool)
+	onChange          func ()
 }
 
-func NewTextBox (placeholder, text string) (element *TextBox) {
+// NewTextBox creates a new text box with the specified placeholder text, and
+// a value. When the value is empty, the placeholder will be displayed in gray
+// text.
+func NewTextBox (placeholder, value string) (element *TextBox) {
 	element = &TextBox { enabled: true }
 	element.Core, element.core = core.NewCore(element)
 	element.placeholderDrawer.SetFace(theme.FontFaceRegular())
@@ -29,7 +35,7 @@ func NewTextBox (placeholder, text string) (element *TextBox) {
 	element.placeholder = placeholder
 	element.placeholderDrawer.SetText([]rune(placeholder))
 	element.updateMinimumSize()
-	element.SetText(text)
+	element.SetValue(value)
 	return
 }
 
@@ -52,6 +58,10 @@ func (element *TextBox) HandleKeyDown (
 	modifiers tomo.Modifiers,
 	repeated bool,
 ) {
+	if element.onKeyDown != nil && element.onKeyDown(key, modifiers, repeated) {
+		return
+	}
+
 	altered := true
 	switch {
 	case key == tomo.KeyBackspace:
@@ -60,6 +70,7 @@ func (element *TextBox) HandleKeyDown (
 			element.text,
 			element.cursor,
 			modifiers.Control)
+		element.runOnChange()
 			
 	case key == tomo.KeyDelete:
 		if len(element.text) < 1 { break }
@@ -67,6 +78,7 @@ func (element *TextBox) HandleKeyDown (
 			element.text,
 			element.cursor,
 			modifiers.Control)
+		element.runOnChange()
 			
 	case key == tomo.KeyLeft:
 		element.cursor = textmanip.MoveLeft (
@@ -85,6 +97,7 @@ func (element *TextBox) HandleKeyDown (
 			element.text,
 			element.cursor,
 			rune(key))
+		element.runOnChange()
 			
 	default:
 		altered = false
@@ -168,10 +181,11 @@ func (element *TextBox) updateMinimumSize () {
 		theme.Padding() * 2)
 }
 
-func (element *TextBox) SetText (text string) {
+func (element *TextBox) SetValue (text string) {
 	// if element.text == text { return }
 
 	element.text = []rune(text)
+	element.runOnChange()
 	element.valueDrawer.SetText(element.text)
 	if element.cursor > element.valueDrawer.Length() {
 		element.cursor = element.valueDrawer.Length()
@@ -185,6 +199,30 @@ func (element *TextBox) SetText (text string) {
 
 func (element *TextBox) Value () (value string) {
 	return string(element.text)
+}
+
+func (element *TextBox) Filled () (filled bool) {
+	return len(element.text) > 0
+}
+
+func (element *TextBox) OnKeyDown (
+	callback func (
+		key tomo.Key, modifiers tomo.Modifiers, repeated bool,
+	) (
+		handled bool,
+	),
+) {
+	element.onKeyDown = callback
+}
+
+func (element *TextBox) OnChange (callback func ()) {
+	element.onChange = callback
+}
+
+func (element *TextBox) runOnChange () {
+	if element.onChange != nil {
+		element.onChange()
+	}
 }
 
 func (element *TextBox) draw () {
