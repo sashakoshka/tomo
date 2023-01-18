@@ -182,15 +182,6 @@ func (element *TextBox) SetPlaceholder (placeholder string) {
 	}
 }
 
-func (element *TextBox) updateMinimumSize () {
-	textBounds := element.placeholderDrawer.LayoutBounds()
-	element.core.SetMinimumSize (
-		textBounds.Dx() +
-		theme.Padding() * 2,
-		element.placeholderDrawer.LineHeight().Round() +
-		theme.Padding() * 2)
-}
-
 func (element *TextBox) SetValue (text string) {
 	// if element.text == text { return }
 
@@ -228,6 +219,15 @@ func (element *TextBox) OnKeyDown (
 
 func (element *TextBox) OnChange (callback func ()) {
 	element.onChange = callback
+}
+
+func (element *TextBox) updateMinimumSize () {
+	textBounds := element.placeholderDrawer.LayoutBounds()
+	element.core.SetMinimumSize (
+		textBounds.Dx() +
+		theme.Padding() * 2,
+		element.placeholderDrawer.LineHeight().Round() +
+		theme.Padding() * 2)
 }
 
 func (element *TextBox) runOnChange () {

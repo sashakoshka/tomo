@@ -1,5 +1,7 @@
 package tomo
 
+import "image"
+
 // ParentHooks is a struct that contains callbacks that let child elements send
 // information to their parent element without the child element knowing
 // anything about the parent element or containing any reference to it. When a
@@ -202,4 +204,24 @@ type Flexible interface {
 	// It is important to note that if a parent container checks for
 	// flexible chilren, it itself will likely need to be flexible.
 	MinimumHeightFor (width int) (height int)
+}
+
+// Scrollable represents an element that can be scrolled. It acts as a viewport
+// through which its contents can be observed.
+type Scrollable interface {
+	Element
+
+	// ScrollContentBounds returns the full content size of the element.
+	ScrollContentBounds () (bounds image.Rectangle)
+
+	// ScrollViewportBounds returns the size and position of the element's
+	// viewport relative to ScrollBounds.
+	ScrollViewportBounds () (bounds image.Rectangle)
+
+	// ScrollTo scrolls the viewport to the specified point relative to
+	// ScrollBounds.
+	ScrollTo (position image.Point)
+
+	// ScrollAxes returns the supported axes for scrolling.
+	ScrollAxes () (horizontal, vertical bool)
 }
