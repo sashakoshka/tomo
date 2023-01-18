@@ -145,7 +145,7 @@ func (element *Button) SetText (text string) {
 	if element.text == text { return }
 
 	element.text = text
-	element.drawer.SetText(text)
+	element.drawer.SetText([]rune(text))
 	textBounds := element.drawer.LayoutBounds()
 	element.core.SetMinimumSize (
 		theme.Padding() * 2 + textBounds.Dx(),

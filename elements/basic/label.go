@@ -54,7 +54,7 @@ func (element *Label) SetText (text string) {
 	if element.text == text { return }
 
 	element.text = text
-	element.drawer.SetText(text)
+	element.drawer.SetText([]rune(text))
 	element.updateMinimumSize()
 	
 	if element.core.HasImage () {

@@ -26,7 +26,7 @@ func NewTextBox (placeholder, text string) (element *TextBox) {
 	element.placeholderDrawer.SetFace(theme.FontFaceRegular())
 	element.valueDrawer.SetFace(theme.FontFaceRegular())
 	element.placeholder = placeholder
-	element.placeholderDrawer.SetText(placeholder)
+	element.placeholderDrawer.SetText([]rune(placeholder))
 	element.updateMinimumSize()
 	element.SetText(text)
 	return
@@ -111,7 +111,7 @@ func (element *TextBox) SetPlaceholder (placeholder string) {
 	if element.placeholder == placeholder { return }
 	
 	element.placeholder = placeholder
-	element.placeholderDrawer.SetText(placeholder)
+	element.placeholderDrawer.SetText([]rune(placeholder))
 	
 	element.updateMinimumSize()
 	if element.core.HasImage () {
@@ -133,7 +133,7 @@ func (element *TextBox) SetText (text string) {
 	if element.text == text { return }
 
 	element.text = text
-	element.valueDrawer.SetText(text)
+	element.valueDrawer.SetText([]rune(text))
 	if element.cursor > element.valueDrawer.Length() {
 		element.cursor = element.valueDrawer.Length()
 	}

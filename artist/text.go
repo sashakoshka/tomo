@@ -38,7 +38,6 @@ const (
 // text, and calculating text bounds. It avoids doing redundant work
 // automatically.
 type TextDrawer struct {
-	text   string
 	runes  []rune
 	face   font.Face
 	width  int
@@ -53,10 +52,9 @@ type TextDrawer struct {
 }
 
 // SetText sets the text of the text drawer.
-func (drawer *TextDrawer) SetText (text string) {
-	if drawer.text == text { return }
-	drawer.text  = text
-	drawer.runes = []rune(text)
+func (drawer *TextDrawer) SetText (runes []rune) {
+	// if drawer.runes == runes { return }
+	drawer.runes = runes
 	drawer.layoutClean = false
 }
 

@@ -157,7 +157,7 @@ func (element *Checkbox) SetText (text string) {
 	if element.text == text { return }
 
 	element.text = text
-	element.drawer.SetText(text)
+	element.drawer.SetText([]rune(text))
 	textBounds := element.drawer.LayoutBounds()
 	element.core.SetMinimumSize (
 		textBounds.Dy() + theme.Padding() + textBounds.Dx(),
