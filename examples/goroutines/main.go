@@ -35,8 +35,10 @@ func formatTime () (timeString string) {
 
 func tick (label *basic.Label, clock *fun.AnalogClock) {
 	for {
-		label.SetText(formatTime())
-		clock.SetTime(time.Now())
+		tomo.Do (func () {
+			label.SetText(formatTime())
+			clock.SetTime(time.Now())
+		})
 		time.Sleep(time.Second)
 	}
 }

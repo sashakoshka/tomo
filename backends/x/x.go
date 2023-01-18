@@ -31,6 +31,7 @@ type Backend struct {
 func NewBackend () (output tomo.Backend, err error) {
 	backend := &Backend {
 		windows: map[xproto.Window] *Window { },
+		doChannel: make(chan func (), 0),
 	}
 	
 	// connect to X
@@ -51,10 +52,12 @@ func (backend *Backend) Run () (err error) {
 	pingQuit := xevent.MainPing(backend.connection)
 	for {
 		select {
-		case <- pingBefore: <- pingAfter
+		case <- pingBefore:
+			<- pingAfter
 		case callback := <- backend.doChannel:
 			callback()
-		case <- pingQuit: return
+		case <- pingQuit:
+			return
 		}
 	}
 }
