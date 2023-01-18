@@ -4,6 +4,7 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 type TextBox struct {
@@ -15,7 +16,7 @@ type TextBox struct {
 
 	cursor int
 	placeholder string
-	text        string
+	text        []rune
 	placeholderDrawer artist.TextDrawer
 	valueDrawer       artist.TextDrawer
 }
@@ -50,14 +51,51 @@ func (element *TextBox) HandleKeyDown (
 	modifiers tomo.Modifiers,
 	repeated bool,
 ) {
+	altered := true
 	switch {
 	case key == tomo.KeyBackspace:
 		if len(element.text) < 1 { break }
-		element.cursor --
-		element.SetText(element.text[:len(element.text) - 1])
+		element.text, element.cursor = textmanip.Backspace (
+			element.text,
+			element.cursor,
+			modifiers.Control)
+			
+	case key == tomo.KeyDelete:
+		if len(element.text) < 1 { break }
+		element.text, element.cursor = textmanip.Delete (
+			element.text,
+			element.cursor,
+			modifiers.Control)
+			
+	case key == tomo.KeyLeft:
+		element.cursor = textmanip.MoveLeft (
+			element.text,
+			element.cursor,
+			modifiers.Control)
+			
+	case key == tomo.KeyRight:
+		element.cursor = textmanip.MoveRight (
+			element.text,
+			element.cursor,
+			modifiers.Control)
+		
 	case key.Printable():
-		element.cursor ++
-		element.SetText(element.text + string(rune(key)))
+		element.text, element.cursor = textmanip.Type (
+			element.text,
+			element.cursor,
+			rune(key))
+			
+	default:
+		altered = false
+	}
+
+	if altered {
+		element.valueDrawer.SetText(element.text)
+	}
+	
+	if altered && element.core.HasImage () {
+		element.draw()
+		element.core.PushAll()
 	}
 }
 
@@ -130,10 +168,10 @@ func (element *TextBox) updateMinimumSize () {
 }
 
 func (element *TextBox) SetText (text string) {
-	if element.text == text { return }
+	// if element.text == text { return }
 
-	element.text = text
-	element.valueDrawer.SetText([]rune(text))
+	element.text = []rune(text)
+	element.valueDrawer.SetText(element.text)
 	if element.cursor > element.valueDrawer.Length() {
 		element.cursor = element.valueDrawer.Length()
 	}
@@ -160,7 +198,7 @@ func (element *TextBox) draw () {
 	innerBounds.Max.X -= theme.Padding()
 	innerBounds.Max.Y -= theme.Padding()
 
-	if element.text == "" && !element.selected {
+	if element.text == nil && !element.selected {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
 		offset := image.Point {
