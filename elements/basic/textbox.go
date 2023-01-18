@@ -244,7 +244,7 @@ func (element *TextBox) scrollToCursor () {
 	cursorPosition := element.valueDrawer.PositionOf(element.cursor)
 	cursorPosition.X -= element.scroll
 	maxX := bounds.Max.X
-	minX := bounds.Min.X + bounds.Dx() / 2
+	minX := maxX
 	if cursorPosition.X > maxX {
 		element.scroll += cursorPosition.X - maxX
 	} else if cursorPosition.X < minX {
