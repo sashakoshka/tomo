@@ -198,7 +198,7 @@ func (element *TextBox) draw () {
 	innerBounds.Max.X -= theme.Padding()
 	innerBounds.Max.Y -= theme.Padding()
 
-	if element.text == nil && !element.selected {
+	if len(element.text) == 0 && !element.selected {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
 		offset := image.Point {
