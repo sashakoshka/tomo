@@ -35,6 +35,7 @@ func (element *Button) Resize (width, height int) {
 }
 
 func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {
+	if !element.enabled { return }
 	element.Select()
 	if button != tomo.ButtonLeft { return }
 	element.pressed = true
@@ -55,6 +56,7 @@ func (element *Button) HandleMouseUp (x, y int, button tomo.Button) {
 	within := image.Point { x, y }.
 		In(element.Bounds())
 		
+	if !element.enabled { return }
 	if within && element.onClick != nil {
 		element.onClick()
 	}
@@ -68,6 +70,7 @@ func (element *Button) HandleKeyDown (
 	modifiers tomo.Modifiers,
 	repeated bool,
 ) {
+	if !element.enabled { return }
 	if key == tomo.KeyEnter {
 		element.pressed = true
 		if element.core.HasImage() {
@@ -84,6 +87,7 @@ func (element *Button) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) {
 			element.draw()
 			element.core.PushAll()
 		}
+		if !element.enabled { return }
 		if element.onClick != nil {
 			element.onClick()
 		}
@@ -95,6 +99,7 @@ func (element *Button) Selected () (selected bool) {
 }
 
 func (element *Button) Select () {
+	if !element.enabled { return }
 	element.core.RequestSelection()
 }
 
