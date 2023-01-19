@@ -19,6 +19,10 @@ type Container struct {
 	selected   bool
 	selectable bool
 	flexible   bool
+	
+	onSelectionRequest func () (granted bool)
+	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
+	onFlexibleHeightChange func ()
 }
 
 // NewContainer creates a new container.
@@ -35,7 +39,7 @@ func (element *Container) SetLayout (layout tomo.Layout) {
 	if element.core.HasImage() {
 		element.recalculate()
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -43,38 +47,38 @@ func (element *Container) SetLayout (layout tomo.Layout) {
 // the element will expand (instead of contract to its minimum size), in
 // whatever way is defined by the current layout.
 func (element *Container) Adopt (child tomo.Element, expand bool) {
-	child.SetParentHooks (tomo.ParentHooks {
-		Draw: func (region tomo.Canvas) {
-			element.drawChildRegion(child, region)
-		},
-		MinimumSizeChange: func (int, int) {
-			element.updateMinimumSize()
-		},
-		FlexibleHeightChange: element.updateMinimumSize,
-		SelectionRequest: func () (granted bool) {
-			child, selectable := child.(tomo.Selectable)
-			if !selectable { return }
-			return element.childSelectionRequestCallback(child)
-		},
-		SelectionMotionRequest: func (
-			direction tomo.SelectionDirection,
-		) (
-			granted bool,
-		) {
-			return element.core.RequestSelectionMotion(direction)
-		},
+	// set event handlers
+	child.OnDamage (func (region tomo.Canvas) {
+		element.drawChildRegion(child, region)
 	})
+	child.OnMinimumSizeChange(element.updateMinimumSize)
+	if child0, ok := child.(tomo.Flexible); ok {
+		child0.OnFlexibleHeightChange(element.updateMinimumSize)
+	}
+	if child0, ok := child.(tomo.Selectable); ok {
+		child0.OnSelectionRequest (func () (granted bool) {
+			return element.childSelectionRequestCallback(child0)
+		})
+		child0.OnSelectionMotionRequest (
+			func (direction tomo.SelectionDirection) (granted bool) {
+				if element.onSelectionMotionRequest == nil { return }
+				return element.onSelectionMotionRequest(direction)
+			})
+	}
+
+	// add child
 	element.children = append (element.children, tomo.LayoutEntry {
 		Element: child,
 		Expand:  expand,
 	})
 
+	// refresh stale data
 	element.updateMinimumSize()
 	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
 		element.recalculate()
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -97,7 +101,7 @@ func (element *Container) Warp (callback func ()) {
 	if element.core.HasImage() {
 		element.recalculate()
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -106,7 +110,7 @@ func (element *Container) Warp (callback func ()) {
 func (element *Container) Disown (child tomo.Element) {
 	for index, entry := range element.children {
 		if entry.Element == child {
-			entry.SetParentHooks(tomo.ParentHooks { })
+			element.clearChildEventHandlers(entry.Element)
 			element.children = append (
 				element.children[:index],
 				element.children[index + 1:]...)
@@ -119,7 +123,22 @@ func (element *Container) Disown (child tomo.Element) {
 	if element.core.HasImage() && !element.warping {
 		element.recalculate()
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
+	}
+}
+
+func (element *Container) clearChildEventHandlers (child tomo.Element) {
+	child.OnDamage(nil)
+	child.OnMinimumSizeChange(nil)
+	if child0, ok := child.(tomo.Selectable); ok {
+		child0.OnSelectionRequest(nil)
+		child0.OnSelectionMotionRequest(nil)
+		if child0.Selected() {
+			child0.HandleDeselection()
+		}
+	}
+	if child0, ok := child.(tomo.Flexible); ok {
+		child0.OnFlexibleHeightChange(nil)
 	}
 }
 
@@ -132,7 +151,7 @@ func (element *Container) DisownAll () {
 	if element.core.HasImage() && !element.warping {
 		element.recalculate()
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -209,11 +228,11 @@ func (element *Container) HandleMouseMove (x, y int) {
 	}
 }
 
-func (element *Container) HandleScroll (x, y int, deltaX, deltaY float64) {
+func (element *Container) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
 	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(tomo.MouseTarget)
 	if !handlesMouse { return }
 	childPosition := element.childPosition(child)
-	child.HandleScroll(x - childPosition.X, y - childPosition.Y, deltaX, deltaY)
+	child.HandleMouseScroll(x - childPosition.X, y - childPosition.Y, deltaX, deltaY)
 }
 
 func (element *Container) HandleKeyDown (
@@ -245,7 +264,9 @@ func (element *Container) Selected () (selected bool) {
 }
 
 func (element *Container) Select () {
-	element.core.RequestSelection()
+	if element.onSelectionRequest != nil {
+		element.onSelectionRequest()
+	}
 }
 
 func (element *Container) HandleSelection (direction tomo.SelectionDirection) (ok bool) {
@@ -300,8 +321,12 @@ func (element *Container) HandleSelection (direction tomo.SelectionDirection) (o
 	return false
 }
 
-func (element *Container) MinimumHeightFor (width int) (height int) {
-	return element.layout.MinimumHeightFor(element.children, width)
+func (element *Container) FlexibleHeightFor (width int) (height int) {
+	return element.layout.FlexibleHeightFor(element.children, width)
+}
+
+func (element *Container) OnFlexibleHeightChange (callback func ()) {
+	element.onFlexibleHeightChange = callback
 }
 
 func (element *Container) HandleDeselection () {
@@ -310,6 +335,16 @@ func (element *Container) HandleDeselection () {
 		child.HandleDeselection()
 		return true
 	})
+}
+
+func (element *Container) OnSelectionRequest (callback func () (granted bool)) {
+	element.onSelectionRequest = callback
+}
+
+func (element *Container) OnSelectionMotionRequest (
+	callback func (direction tomo.SelectionDirection) (granted bool),
+) {
+	element.onSelectionMotionRequest = callback
 }
 
 func (element *Container) forSelected (callback func (child tomo.Selectable) bool) {
@@ -379,7 +414,7 @@ func (element *Container) childSelectionRequestCallback (
 ) (
 	granted bool,
 ) {
-	if element.core.RequestSelection() {
+	if element.onSelectionRequest != nil && element.onSelectionRequest() {
 		element.forSelected (func (child tomo.Selectable) bool {
 			child.HandleDeselection()
 			return true
@@ -394,7 +429,7 @@ func (element *Container) childSelectionRequestCallback (
 func (element *Container) updateMinimumSize () {
 	width, height := element.layout.MinimumSize(element.children)
 	if element.flexible {
-		height = element.layout.MinimumHeightFor(element.children, width)
+		height = element.layout.FlexibleHeightFor(element.children, width)
 	}
 	element.core.SetMinimumSize(width, height)
 }
@@ -422,7 +457,7 @@ func (element *Container) drawChildRegion (child tomo.Element, region tomo.Canva
 	for _, entry := range element.children {
 		if entry.Element == child {
 			artist.Paste(element.core, region, entry.Position)
-			element.core.PushRegion (
+			element.core.DamageRegion (
 				region.Bounds().Add(entry.Position))
 			break
 		}

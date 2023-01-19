@@ -17,7 +17,9 @@ type Core struct {
 
 	selectable bool
 	selected   bool
-	hooks tomo.ParentHooks
+
+	onMinimumSizeChange func ()
+	onDamage func (region tomo.Canvas)
 }
 
 // NewCore creates a new element core and its corresponding control.
@@ -58,10 +60,16 @@ func (core *Core) MinimumSize () (width, height int) {
 	return core.metrics.minimumWidth, core.metrics.minimumHeight
 }
 
-// SetParentHooks fulfils the tomo.Element interface. This should not need to be
+// OnDamage fulfils the tomo.Element interface. This should not need to be
 // overridden.
-func (core *Core) SetParentHooks (hooks tomo.ParentHooks) {
-	core.hooks = hooks
+func (core *Core) OnDamage (callback func (region tomo.Canvas)) {
+	core.onDamage = callback
+}
+
+// OnMinimumSizeChange fulfils the tomo.Element interface. This should not need
+// to be overridden.
+func (core *Core) OnMinimumSizeChange (callback func ()) {
+	core.onMinimumSizeChange = callback
 }
 
 // CoreControl is a struct that can exert control over a Core struct. It can be
@@ -73,41 +81,24 @@ type CoreControl struct {
 	core *Core
 }
 
-// RequestSelection requests that the element's parent send it a selection
-// event. If the request was granted, it returns true. If it was denied, it
-// returns false.
-func (control CoreControl) RequestSelection () (granted bool) {
-	return control.core.hooks.RunSelectionRequest()
-}
-
-// RequestSelectionMotion requests that the element's parent deselect this
-// element and select the one to the left or right of it, depending on the
-// direction. If the requests was granted, it returns true. If it was denied, it
-// returns false.
-func (control CoreControl) RequestSelectionMotion (
-	direction tomo.SelectionDirection,
-) (
-	granted bool,
-) {
-	return control.core.hooks.RunSelectionMotionRequest(direction)
-}
-
 // HasImage returns true if the core has an allocated image buffer, and false if
 // it doesn't.
 func (control CoreControl) HasImage () (has bool) {
 	return !control.Bounds().Empty()
 }
 
-// PushRegion pushes the selected region of pixels to the parent element. This
+// DamageRegion pushes the selected region of pixels to the parent element. This
 // does not need to be called when responding to a resize event.
-func (control CoreControl) PushRegion (bounds image.Rectangle) {
-	control.core.hooks.RunDraw(tomo.Cut(control, bounds))
+func (control CoreControl) DamageRegion (bounds image.Rectangle) {
+	if control.core.onDamage != nil {
+		control.core.onDamage(tomo.Cut(control, bounds))
+	}
 }
 
-// PushAll pushes all pixels to the parent element. This does not need to be
+// DamageAll pushes all pixels to the parent element. This does not need to be
 // called when responding to a resize event.
-func (control CoreControl) PushAll () {
-	control.PushRegion(control.Bounds())
+func (control CoreControl) DamageAll () {
+	control.DamageRegion(control.Bounds())
 }
 
 // AllocateCanvas resizes the canvas, constraining the width and height so that
@@ -128,7 +119,9 @@ func (control CoreControl) SetMinimumSize (width, height int) {
 
 	core.metrics.minimumWidth  = width
 	core.metrics.minimumHeight = height
-	core.hooks.RunMinimumSizeChange(width, height)
+	if control.core.onMinimumSizeChange != nil {
+		control.core.onMinimumSizeChange()
+	}
 
 	// if there is an image buffer, and the current size is less
 	// than this new minimum size, send core.parent a resize event.
@@ -141,18 +134,6 @@ func (control CoreControl) SetMinimumSize (width, height int) {
 			core.parent.Resize(imageWidth, imageHeight)
 		}
 	}
-}
-
-// NotifyFlexibleHeightChange notifies the parent element that this element's
-// flexible height has changed.
-func (control CoreControl) NotifyFlexibleHeightChange () {
-	control.core.hooks.RunFlexibleHeightChange()
-}
-
-// NotifyContentBoundsChange notifies the parent element that this element's
-// inner content bounds or scroll position have changed.
-func (control CoreControl) NotifyContentBoundsChange () {
-	control.core.hooks.RunContentBoundsChange()
 }
 
 // ConstrainSize contstrains the specified width and height to the minimum width

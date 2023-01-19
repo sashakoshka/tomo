@@ -23,8 +23,8 @@ type Layout interface {
 	// needs to properly arrange the given slice of layout entries.
 	MinimumSize (entries []LayoutEntry) (width, height int)
 
-	// MinimumHeightFor Returns the minimum height the layout needs to lay
+	// FlexibleHeightFor Returns the minimum height the layout needs to lay
 	// out the specified elements at the given width, taking into account
 	// flexible elements.
-	MinimumHeightFor (entries []LayoutEntry, squeeze int) (height int)
+	FlexibleHeightFor (entries []LayoutEntry, squeeze int) (height int)
 }

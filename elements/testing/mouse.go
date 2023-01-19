@@ -54,7 +54,7 @@ func (element *Mouse) HandleMouseDown (x, y int, button tomo.Button) {
 func (element *Mouse) HandleMouseUp (x, y int, button tomo.Button) {
 	element.drawing = false
 	mousePos := image.Pt(x, y)
-	element.core.PushRegion (artist.Line (
+	element.core.DamageRegion (artist.Line (
 		element.core, element.color, 1,
 		element.lastMousePos, mousePos))
 	element.lastMousePos = mousePos
@@ -63,10 +63,10 @@ func (element *Mouse) HandleMouseUp (x, y int, button tomo.Button) {
 func (element *Mouse) HandleMouseMove (x, y int) {
 	if !element.drawing { return }
 	mousePos := image.Pt(x, y)
-	element.core.PushRegion (artist.Line (
+	element.core.DamageRegion (artist.Line (
 		element.core, element.color, 1,
 		element.lastMousePos, mousePos))
 	element.lastMousePos = mousePos
 }
 
-func (element *Mouse) HandleScroll (x, y int, deltaX, deltaY float64) { }
+func (element *Mouse) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
