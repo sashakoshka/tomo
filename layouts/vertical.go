@@ -32,7 +32,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 		var entryMinHeight int
 
 		if child, flexible := entry.Element.(tomo.Flexible); flexible {
-			entryMinHeight = child.MinimumHeightFor(width)
+			entryMinHeight = child.FlexibleHeightFor(width)
 		} else {
 			_, entryMinHeight = entry.MinimumSize()
 		}
@@ -102,9 +102,9 @@ func (layout Vertical) MinimumSize (
 	return
 }
 
-// MinimumHeightFor Returns the minimum height the layout needs to lay out the
+// FlexibleHeightFor Returns the minimum height the layout needs to lay out the
 // specified elements at the given width, taking into account flexible elements.
-func (layout Vertical) MinimumHeightFor (
+func (layout Vertical) FlexibleHeightFor (
 	entries []tomo.LayoutEntry,
 	width int,
 ) (
@@ -118,7 +118,7 @@ func (layout Vertical) MinimumHeightFor (
 	for index, entry := range entries {
 		child, flexible := entry.Element.(tomo.Flexible)
 		if flexible {
-			height += child.MinimumHeightFor(width)
+			height += child.FlexibleHeightFor(width)
 		} else {
 			_, entryHeight := entry.MinimumSize()
 			height += entryHeight

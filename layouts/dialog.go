@@ -134,7 +134,9 @@ func (layout Dialog) MinimumSize (
 	return
 }
 
-func (layout Dialog) MinimumHeightFor (
+// FlexibleHeightFor Returns the minimum height the layout needs to lay out the
+// specified elements at the given width, taking into account flexible elements.
+func (layout Dialog) FlexibleHeightFor (
 	entries []tomo.LayoutEntry,
 	width int,
 ) (
@@ -147,7 +149,7 @@ func (layout Dialog) MinimumHeightFor (
 	if len(entries) > 0 {
 		mainChildHeight := 0
 		if child, flexible := entries[0].Element.(tomo.Flexible); flexible {
-			mainChildHeight = child.MinimumHeightFor(width)
+			mainChildHeight = child.FlexibleHeightFor(width)
 		} else {
 			_, mainChildHeight = entries[0].MinimumSize()
 		}

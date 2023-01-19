@@ -324,7 +324,7 @@ func (element *Container) HandleSelection (direction tomo.SelectionDirection) (o
 }
 
 func (element *Container) FlexibleHeightFor (width int) (height int) {
-	return element.layout.MinimumHeightFor(element.children, width)
+	return element.layout.FlexibleHeightFor(element.children, width)
 }
 
 func (element *Container) OnFlexibleHeightChange (callback func ()) {
@@ -431,7 +431,7 @@ func (element *Container) childSelectionRequestCallback (
 func (element *Container) updateMinimumSize () {
 	width, height := element.layout.MinimumSize(element.children)
 	if element.flexible {
-		height = element.layout.MinimumHeightFor(element.children, width)
+		height = element.layout.FlexibleHeightFor(element.children, width)
 	}
 	element.core.SetMinimumSize(width, height)
 }

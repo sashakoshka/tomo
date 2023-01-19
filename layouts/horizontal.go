@@ -75,7 +75,9 @@ func (layout Horizontal) MinimumSize (
 	return
 }
 
-func (layout Horizontal) MinimumHeightFor (
+// FlexibleHeightFor Returns the minimum height the layout needs to lay out the
+// specified elements at the given width, taking into account flexible elements.
+func (layout Horizontal) FlexibleHeightFor (
 	entries []tomo.LayoutEntry,
 	width int,
 ) (
@@ -100,7 +102,7 @@ func (layout Horizontal) MinimumHeightFor (
 			entryWidth = expandingElementWidth
 		}
 		if child, flexible := entry.Element.(tomo.Flexible); flexible {
-			entryHeight = child.MinimumHeightFor(entryWidth)
+			entryHeight = child.FlexibleHeightFor(entryWidth)
 		}
 		if entryHeight > height { height = entryHeight }
 		
