@@ -230,7 +230,7 @@ func (element *Container) HandleMouseMove (x, y int) {
 	}
 }
 
-func (element *Container) HandleScroll (x, y int, deltaX, deltaY float64) {
+func (element *Container) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
 	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(tomo.MouseTarget)
 	if !handlesMouse { return }
 	childPosition := element.childPosition(child)
