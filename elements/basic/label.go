@@ -13,6 +13,8 @@ type Label struct {
 	wrap   bool
 	text   string
 	drawer artist.TextDrawer
+	
+	onFlexibleHeightChange func ()
 }
 
 // NewLabel creates a new label. If wrap is set to true, the text inside will be
@@ -38,15 +40,21 @@ func (element *Label) Resize (width, height int) {
 	return
 }
 
-// MinimumHeightFor returns the reccomended height for this element based on the
-// given width in order to allow the text to wrap properly.
-func (element *Label) MinimumHeightFor (width int) (height int) {
+// FlexibleHeightFor returns the reccomended height for this element based on
+// the given width in order to allow the text to wrap properly.
+func (element *Label) FlexibleHeightFor (width int) (height int) {
 	if element.wrap {
 		return element.drawer.ReccomendedHeightFor(width)
 	} else {
 		_, height = element.MinimumSize()
 		return
 	}
+}
+
+// OnFlexibleHeightChange sets a function to be called when the parameters
+// affecting this element's flexible height are changed.
+func (element *Label) OnFlexibleHeightChange (callback func ()) {
+	element.onFlexibleHeightChange = callback
 }
 
 // SetText sets the label's text.
@@ -59,7 +67,7 @@ func (element *Label) SetText (text string) {
 	
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -78,7 +86,7 @@ func (element *Label) SetWrap (wrap bool) {
 	
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -88,7 +96,9 @@ func (element *Label) updateMinimumSize () {
 		if em < 1 { em = theme.Padding() }
 		element.core.SetMinimumSize (
 			em, element.drawer.LineHeight().Round())
-		element.core.NotifyFlexibleHeightChange()
+		if element.onFlexibleHeightChange != nil {
+			element.onFlexibleHeightChange()
+		}
 	} else {
 		bounds := element.drawer.LayoutBounds()
 		element.core.SetMinimumSize(bounds.Dx(), bounds.Dy())

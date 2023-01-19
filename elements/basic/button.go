@@ -14,10 +14,13 @@ type Button struct {
 	pressed  bool
 	enabled  bool
 	selected bool
-	onClick func ()
 
 	text   string
 	drawer artist.TextDrawer
+	
+	onClick func ()
+	onSelectionRequest func () (granted bool)
+	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
 }
 
 // NewButton creates a new button with the specified label text.
@@ -41,7 +44,7 @@ func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {
 	element.pressed = true
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -50,7 +53,7 @@ func (element *Button) HandleMouseUp (x, y int, button tomo.Button) {
 	element.pressed = false
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 
 	within := image.Point { x, y }.
@@ -63,7 +66,7 @@ func (element *Button) HandleMouseUp (x, y int, button tomo.Button) {
 }
 
 func (element *Button) HandleMouseMove (x, y int) { }
-func (element *Button) HandleScroll (x, y int, deltaX, deltaY float64) { }
+func (element *Button) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Button) HandleKeyDown (
 	key tomo.Key,
@@ -75,7 +78,7 @@ func (element *Button) HandleKeyDown (
 		element.pressed = true
 		if element.core.HasImage() {
 			element.draw()
-			element.core.PushAll()
+			element.core.DamageAll()
 		}
 	}
 }
@@ -85,7 +88,7 @@ func (element *Button) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) {
 		element.pressed = false
 		if element.core.HasImage() {
 			element.draw()
-			element.core.PushAll()
+			element.core.DamageAll()
 		}
 		if !element.enabled { return }
 		if element.onClick != nil {
@@ -100,7 +103,9 @@ func (element *Button) Selected () (selected bool) {
 
 func (element *Button) Select () {
 	if !element.enabled { return }
-	element.core.RequestSelection()
+	if element.onSelectionRequest != nil {
+		element.onSelectionRequest()
+	}
 }
 
 func (element *Button) HandleSelection (
@@ -117,7 +122,7 @@ func (element *Button) HandleSelection (
 	element.selected = true
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 	return true
 }
@@ -126,8 +131,18 @@ func (element *Button) HandleDeselection () {
 	element.selected = false
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
+}
+
+func (element *Button) OnSelectionRequest (callback func () (granted bool)) {
+	element.onSelectionRequest = callback
+}
+
+func (element *Button) OnSelectionMotionRequest (
+	callback func (direction tomo.SelectionDirection) (granted bool),
+) {
+	element.onSelectionMotionRequest = callback
 }
 
 // OnClick sets the function to be called when the button is clicked.
@@ -141,7 +156,7 @@ func (element *Button) SetEnabled (enabled bool) {
 	element.enabled = enabled
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -157,7 +172,7 @@ func (element *Button) SetText (text string) {
 		theme.Padding() * 2 + textBounds.Dy())
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 

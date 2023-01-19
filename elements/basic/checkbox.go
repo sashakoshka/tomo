@@ -15,10 +15,13 @@ type Checkbox struct {
 	checked  bool
 	enabled  bool
 	selected bool
-	onClick func ()
 
 	text   string
 	drawer artist.TextDrawer
+	
+	onClick func ()
+	onSelectionRequest func () (granted bool)
+	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
 }
 
 // NewCheckbox creates a new cbeckbox with the specified label text.
@@ -41,7 +44,7 @@ func (element *Checkbox) HandleMouseDown (x, y int, button tomo.Button) {
 	element.pressed = true
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -57,7 +60,7 @@ func (element *Checkbox) HandleMouseUp (x, y int, button tomo.Button) {
 	
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 	if within && element.onClick != nil {
 		element.onClick()
@@ -76,7 +79,7 @@ func (element *Checkbox) HandleKeyDown (
 		element.pressed = true
 		if element.core.HasImage() {
 			element.draw()
-			element.core.PushAll()
+			element.core.DamageAll()
 		}
 	}
 }
@@ -87,7 +90,7 @@ func (element *Checkbox) HandleKeyUp (key tomo.Key, modifiers tomo.Modifiers) {
 		element.checked = !element.checked
 		if element.core.HasImage() {
 			element.draw()
-			element.core.PushAll()
+			element.core.DamageAll()
 		}
 		if element.onClick != nil {
 			element.onClick()
@@ -102,7 +105,10 @@ func (element *Checkbox) Selected () (selected bool) {
 
 // Select requests that this element be selected.
 func (element *Checkbox) Select () {
-	element.core.RequestSelection()
+	if !element.enabled { return }
+	if element.onSelectionRequest != nil {
+		element.onSelectionRequest()
+	}
 }
 
 func (element *Checkbox) HandleSelection (
@@ -119,7 +125,7 @@ func (element *Checkbox) HandleSelection (
 	element.selected = true
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 	return true
 }
@@ -128,8 +134,18 @@ func (element *Checkbox) HandleDeselection () {
 	element.selected = false
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
+}
+
+func (element *Checkbox) OnSelectionRequest (callback func () (granted bool)) {
+	element.onSelectionRequest = callback
+}
+
+func (element *Checkbox) OnSelectionMotionRequest (
+	callback func (direction tomo.SelectionDirection) (granted bool),
+) {
+	element.onSelectionMotionRequest = callback
 }
 
 // OnClick sets the function to be called when the checkbox is toggled.
@@ -148,7 +164,7 @@ func (element *Checkbox) SetEnabled (enabled bool) {
 	element.enabled = enabled
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -164,7 +180,7 @@ func (element *Checkbox) SetText (text string) {
 		textBounds.Dy())
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 

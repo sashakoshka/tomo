@@ -25,6 +25,9 @@ type TextBox struct {
 	
 	onKeyDown func (tomo.Key, tomo.Modifiers, bool) (bool)
 	onChange  func ()
+	onSelectionRequest func () (granted bool)
+	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
+	onScrollBoundsChange func ()
 }
 
 // NewTextBox creates a new text box with the specified placeholder text, and
@@ -119,7 +122,7 @@ func (element *TextBox) HandleKeyDown (
 	
 	if altered && element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -130,7 +133,9 @@ func (element *TextBox) Selected () (selected bool) {
 }
 
 func (element *TextBox) Select () {
-	element.core.RequestSelection()
+	if element.onSelectionRequest != nil {
+		element.onSelectionRequest()
+	}
 }
 
 func (element *TextBox) HandleSelection (
@@ -147,7 +152,7 @@ func (element *TextBox) HandleSelection (
 	element.selected = true
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 	return true
 }
@@ -156,8 +161,18 @@ func (element *TextBox) HandleDeselection () {
 	element.selected = false
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
+}
+
+func (element *TextBox) OnSelectionRequest (callback func () (granted bool)) {
+	element.onSelectionRequest = callback
+}
+
+func (element *TextBox) OnSelectionMotionRequest (
+	callback func (direction tomo.SelectionDirection) (granted bool),
+) {
+	element.onSelectionMotionRequest = callback
 }
 
 func (element *TextBox) SetEnabled (enabled bool) {
@@ -165,7 +180,7 @@ func (element *TextBox) SetEnabled (enabled bool) {
 	element.enabled = enabled
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -178,7 +193,7 @@ func (element *TextBox) SetPlaceholder (placeholder string) {
 	element.updateMinimumSize()
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -195,7 +210,7 @@ func (element *TextBox) SetValue (text string) {
 	
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -246,9 +261,11 @@ func (element *TextBox) ScrollTo (position image.Point) {
 
 	if element.core.HasImage () {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
-	element.core.NotifyContentBoundsChange()
+	if element.onScrollBoundsChange != nil {
+		element.onScrollBoundsChange()
+	}
 }
 
 // ScrollAxes returns the supported axes for scrolling.
@@ -286,7 +303,9 @@ func (element *TextBox) scrollToCursor () {
 		element.scroll -= minX - cursorPosition.X
 		if element.scroll < 0 { element.scroll = 0 }
 	}
-	element.core.NotifyContentBoundsChange()
+	if element.onScrollBoundsChange != nil {
+		element.onScrollBoundsChange()
+	}
 }
 
 func (element *TextBox) draw () {

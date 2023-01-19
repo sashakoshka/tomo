@@ -34,7 +34,7 @@ func (element *Spacer) SetLine (line bool) {
 	element.line = line
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 

@@ -34,7 +34,7 @@ func (element *ProgressBar) SetProgress (progress float64) {
 	element.progress = progress
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 

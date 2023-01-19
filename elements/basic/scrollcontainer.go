@@ -23,6 +23,8 @@ type ScrollContainer struct {
 		enabled bool
 		bounds image.Rectangle
 	}
+
+	// TODO event handlers
 }
 
 // NewScrollContainer creates a new scroll container with the specified scroll
@@ -52,23 +54,18 @@ func (element *ScrollContainer) Resize (width, height int) {
 func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 	// disown previous child if it exists
 	if element.child != nil {
-		element.child.SetParentHooks (tomo.ParentHooks { })
-		if previousChild, ok := element.child.(tomo.Selectable); ok {
-			if previousChild.Selected() {
-				previousChild.HandleDeselection()
-			}
-		}
+		element.clearChildEventHandlers(child)
 	}
 
 	// adopt new child
 	element.child = child
 	if child != nil {
-		child.SetParentHooks (tomo.ParentHooks {
+		// child.SetParentHooks (tomo.ParentHooks {
 			// Draw: window.childDrawCallback,
 			// MinimumSizeChange: window.childMinimumSizeChangeCallback,
 			// FlexibleHeightChange: window.resizeChildToFit,
 			// SelectionRequest: window.childSelectionRequestCallback,
-		})
+		// })
 
 		// TODO: somehow inform the core that we do not in fact want to
 		// redraw the element.
@@ -81,6 +78,21 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 				element.vertical.bounds.Min.X)
 			element.draw()
 		}
+	}
+}
+
+func (element *ScrollContainer) clearChildEventHandlers (child tomo.Element) {
+	child.OnDamage(nil)
+	child.OnMinimumSizeChange(nil)
+	if child0, ok := child.(tomo.Selectable); ok {
+		child0.OnSelectionRequest(nil)
+		child0.OnSelectionMotionRequest(nil)
+		if child0.Selected() {
+			child0.HandleDeselection()
+		}
+	}
+	if child0, ok := child.(tomo.Flexible); ok {
+		child0.OnFlexibleHeightChange(nil)
 	}
 }
 
