@@ -100,6 +100,31 @@ func (element *ScrollContainer) HandleKeyUp (key tomo.Key, modifiers tomo.Modifi
 	}
 }
 
+func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
+	if child, ok := element.child.(tomo.MouseTarget); ok {
+		child.HandleMouseDown(x, y, button)
+	}
+}
+
+func (element *ScrollContainer) HandleMouseUp (x, y int, button tomo.Button) {
+	if child, ok := element.child.(tomo.MouseTarget); ok {
+		child.HandleMouseUp(x, y, button)
+	}
+}
+
+func (element *ScrollContainer) HandleMouseMove (x, y int) {
+	if child, ok := element.child.(tomo.MouseTarget); ok {
+		child.HandleMouseMove(x, y)
+	}
+}
+
+func (element *ScrollContainer) HandleMouseScroll (
+	x, y int,
+	deltaX, deltaY float64,
+) {
+	// TODO: do not pass this down to the child 
+}
+
 func (element *ScrollContainer) Selected () (selected bool) {
 	return element.selected
 }
@@ -213,6 +238,13 @@ func (element *ScrollContainer) draw () {
 	artist.Paste(element.core, element.child, image.Point { })
 	element.drawHorizontalBar()
 	element.drawVerticalBar()
+	artist.FillRectangle (
+		element, theme.BackgroundPattern(),
+		image.Rect (
+			element.vertical.bounds.Min.X,
+			element.horizontal.bounds.Min.Y,
+			element.vertical.bounds.Max.X,
+			element.horizontal.bounds.Max.Y))
 }
 
 func (element *ScrollContainer) drawHorizontalBar () {

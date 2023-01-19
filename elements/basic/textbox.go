@@ -58,7 +58,7 @@ func (element *TextBox) HandleMouseDown (x, y int, button tomo.Button) {
 
 func (element *TextBox) HandleMouseUp (x, y int, button tomo.Button) { }
 func (element *TextBox) HandleMouseMove (x, y int) { }
-func (element *TextBox) HandleScroll (x, y int, deltaX, deltaY float64) { }
+func (element *TextBox) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *TextBox) HandleKeyDown (
 	key tomo.Key,

@@ -20,7 +20,7 @@ func run () {
 	textBox := basic.NewTextBox("", "sample text sample text")
 	scrollContainer := basic.NewScrollContainer(true, true)
 	scrollContainer.Adopt(textBox)
-	container.Adopt(scrollContainer, false)
+	container.Adopt(scrollContainer, true)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
