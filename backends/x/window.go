@@ -76,26 +76,39 @@ func (backend *Backend) NewWindow (
 }
 
 func (window *Window) Adopt (child tomo.Element) {
+	// disown previous child
 	if window.child != nil {
-		window.child.SetParentHooks (tomo.ParentHooks { })
-		if previousChild, ok := window.child.(tomo.Selectable); ok {
-			if previousChild.Selected() {
-				previousChild.HandleDeselection()
-			}
+		window.child.OnDamage(nil)
+		window.child.OnMinimumSizeChange(nil)
+	}
+	if previousChild, ok := window.child.(tomo.Flexible); ok {
+		previousChild.OnFlexibleHeightChange(nil)
+	}
+	if previousChild, ok := window.child.(tomo.Selectable); ok {
+		previousChild.OnSelectionRequest(nil)
+		previousChild.OnSelectionMotionRequest(nil)
+		if previousChild.Selected() {
+			previousChild.HandleDeselection()
 		}
 	}
+	
+	// adopt new child
 	window.child = child
-	if child != nil {
-		child.SetParentHooks (tomo.ParentHooks {
-			Draw: window.childDrawCallback,
-			MinimumSizeChange: window.childMinimumSizeChangeCallback,
-			FlexibleHeightChange: window.resizeChildToFit,
-			SelectionRequest: window.childSelectionRequestCallback,
-		})
-		
-		window.resizeChildToFit()
+	if newChild, ok := child.(tomo.Flexible); ok {
+		newChild.OnFlexibleHeightChange(window.resizeChildToFit)
 	}
-	window.childMinimumSizeChangeCallback(child.MinimumSize())
+	if newChild, ok := child.(tomo.Selectable); ok {
+		newChild.OnSelectionRequest(window.childSelectionRequestCallback)
+	}
+	if child != nil {
+		child.OnDamage(window.childDrawCallback)
+		child.OnMinimumSizeChange (func () {
+			window.childMinimumSizeChangeCallback (
+				child.MinimumSize())
+		})
+		window.resizeChildToFit()
+		window.childMinimumSizeChangeCallback(child.MinimumSize())
+	}
 }
 
 func (window *Window) Child () (child tomo.Element) {
@@ -204,7 +217,7 @@ func (window *Window) redrawChildEntirely () {
 func (window *Window) resizeChildToFit () {
 	window.skipChildDrawCallback = true
 	if child, ok := window.child.(tomo.Flexible); ok {
-		minimumHeight := child.MinimumHeightFor(window.metrics.width)
+		minimumHeight := child.FlexibleHeightFor(window.metrics.width)
 		minimumWidth, _ := child.MinimumSize()
 		
 		icccm.WmNormalHintsSet (
