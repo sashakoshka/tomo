@@ -19,8 +19,14 @@ type ParentHooks struct {
 	MinimumSizeChange func (width, height int)
 
 	// FlexibleHeightChange is called when the parameters affecting the
-	// element's expanding height have changed.
+	// element's felxible height have changed.
 	FlexibleHeightChange func ()
+
+	// ContentBoundsChange is called by scrollable elements when the
+	// element's content bounds have changed. When this function is called,
+	// the element will have already done any drawing necessary. This is
+	// only intended for updating things like scrollbar positions.
+	ContentBoundsChange func ()
 	
 	// SelectionRequest is called when the child element element wants
 	// itself to be selected. If the parent element chooses to grant the
