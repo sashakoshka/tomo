@@ -59,8 +59,6 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 		child0.OnSelectionRequest (func () (granted bool) {
 			return element.childSelectionRequestCallback(child0)
 		})
-	}
-	if child0, ok := child.(tomo.Selectable); ok {
 		child0.OnSelectionMotionRequest (
 			func (direction tomo.SelectionDirection) (granted bool) {
 				if element.onSelectionMotionRequest == nil { return }

@@ -273,6 +273,10 @@ func (element *TextBox) ScrollAxes () (horizontal, vertical bool) {
 	return true, false
 }
 
+func (element *TextBox) OnScrollBoundsChange (callback func ()) {
+	element.onScrollBoundsChange = callback
+}
+
 func (element *TextBox) updateMinimumSize () {
 	textBounds := element.placeholderDrawer.LayoutBounds()
 	element.core.SetMinimumSize (
