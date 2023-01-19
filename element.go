@@ -84,6 +84,14 @@ func (hooks ParentHooks) RunSelectionMotionRequest (
 	return
 }
 
+// RunContentBoundsChange runs the ContentBoundsChange hook if it is not nil. If
+// it is nil, it does nothing.
+func (hooks ParentHooks) RunContentBoundsChange () {
+	if hooks.ContentBoundsChange != nil {
+		hooks.ContentBoundsChange()
+	}
+}
+
 // Element represents a basic on-screen object.
 type Element interface {
 	// Element must implement the Canvas interface. Elements should start

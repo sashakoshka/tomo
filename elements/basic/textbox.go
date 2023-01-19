@@ -247,7 +247,9 @@ func (element *TextBox) ScrollTo (position image.Point) {
 	if element.core.HasImage () {
 		element.draw()
 		element.core.PushAll()
-	}}
+	}
+	element.core.NotifyContentBoundsChange()
+}
 
 // ScrollAxes returns the supported axes for scrolling.
 func (element *TextBox) ScrollAxes () (horizontal, vertical bool) {
@@ -284,6 +286,7 @@ func (element *TextBox) scrollToCursor () {
 		element.scroll -= minX - cursorPosition.X
 		if element.scroll < 0 { element.scroll = 0 }
 	}
+	element.core.NotifyContentBoundsChange()
 }
 
 func (element *TextBox) draw () {
@@ -311,7 +314,6 @@ func (element *TextBox) draw () {
 	} else {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
-		println(textBounds.String())
 		offset := image.Point {
 			X: theme.Padding() - element.scroll,
 			Y: theme.Padding(),

@@ -77,7 +77,7 @@ func (backend *Backend) NewWindow (
 
 func (window *Window) Adopt (child tomo.Element) {
 	if window.child != nil {
-		child.SetParentHooks (tomo.ParentHooks { })
+		window.child.SetParentHooks (tomo.ParentHooks { })
 		if previousChild, ok := window.child.(tomo.Selectable); ok {
 			if previousChild.Selected() {
 				previousChild.HandleDeselection()

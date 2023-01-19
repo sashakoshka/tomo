@@ -149,6 +149,12 @@ func (control CoreControl) NotifyFlexibleHeightChange () {
 	control.core.hooks.RunFlexibleHeightChange()
 }
 
+// NotifyContentBoundsChange notifies the parent element that this element's
+// inner content bounds or scroll position have changed.
+func (control CoreControl) NotifyContentBoundsChange () {
+	control.core.hooks.RunContentBoundsChange()
+}
+
 // ConstrainSize contstrains the specified width and height to the minimum width
 // and height, and returns wether or not anything ended up being constrained.
 func (control CoreControl) ConstrainSize (
