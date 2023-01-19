@@ -122,7 +122,7 @@ func (window *Window) handleButtonPress (
 			sum := scrollSum { }
 			sum.add(buttonEvent.Detail)
 			window.compressScrollSum(buttonEvent, &sum)
-			child.HandleScroll (
+			child.HandleMouseScroll (
 				int(buttonEvent.EventX),
 				int(buttonEvent.EventY),
 				float64(sum.x), float64(sum.y))
