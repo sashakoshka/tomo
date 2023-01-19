@@ -122,7 +122,7 @@ func (element *ScrollContainer) HandleMouseScroll (
 	x, y int,
 	deltaX, deltaY float64,
 ) {
-	// TODO: do not pass this down to the child 
+	// TODO: use this to scroll. do not pass this down to the child
 }
 
 func (element *ScrollContainer) Selected () (selected bool) {
@@ -228,31 +228,35 @@ func (element *ScrollContainer) recalculate () {
 	}
 
 	// move the bars to the edge of the element
-	horizontal.bounds = horizontal.bounds.Add (
-		bounds.Max.Sub(horizontal.bounds.Max))
-	vertical.bounds = vertical.bounds.Add (
-		bounds.Max.Sub(vertical.bounds.Max))
+	horizontal.bounds.Min.Y += bounds.Max.Y - horizontal.bounds.Dy()
+	horizontal.bounds.Max.Y += bounds.Max.Y
+	vertical.bounds.Min.X += bounds.Max.X - vertical.bounds.Dx()
+	vertical.bounds.Max.X += bounds.Max.X
 }
 
 func (element *ScrollContainer) draw () {
 	artist.Paste(element.core, element.child, image.Point { })
-	element.drawHorizontalBar()
-	element.drawVerticalBar()
 	artist.FillRectangle (
-		element, theme.BackgroundPattern(),
+		element, theme.DeadPattern(),
 		image.Rect (
 			element.vertical.bounds.Min.X,
 			element.horizontal.bounds.Min.Y,
 			element.vertical.bounds.Max.X,
 			element.horizontal.bounds.Max.Y))
+	element.drawHorizontalBar()
+	element.drawVerticalBar()
 }
 
 func (element *ScrollContainer) drawHorizontalBar () {
-	
+	artist.FillRectangle (
+		element, theme.SunkenPattern(),
+		element.horizontal.bounds)
 }
 
 func (element *ScrollContainer) drawVerticalBar () {
-	
+	artist.FillRectangle (
+		element, theme.SunkenPattern(),
+		element.vertical.bounds)
 }
 
 func (element *ScrollContainer) updateMinimumSize () {

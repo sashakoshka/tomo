@@ -34,9 +34,14 @@ var sunkenPattern = artist.NewMultiBorder (
 	},
 	artist.Border { Stroke: artist.NewUniform(hex(0x97a09cFF)) })
 
+var deadPattern = artist.NewMultiBorder (
+	artist.Border { Weight: 1, Stroke: strokePattern },
+	artist.Border { Stroke: artist.NewUniform(hex(0x97a09cFF)) })
+
 func AccentPattern () (artist.Pattern) { return accentPattern }
 func BackgroundPattern () (artist.Pattern) { return backgroundPattern }
 func SunkenPattern () (artist.Pattern) { return sunkenPattern}
+func DeadPattern () (artist.Pattern) { return deadPattern }
 func ForegroundPattern (enabled bool) (artist.Pattern) {
 	if enabled {
 		return foregroundPattern
