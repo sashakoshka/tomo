@@ -2,96 +2,6 @@ package tomo
 
 import "image"
 
-// ParentHooks is a struct that contains callbacks that let child elements send
-// information to their parent element without the child element knowing
-// anything about the parent element or containing any reference to it. When a
-// parent element adopts a child element, it must set these callbacks. They are
-// allowed to be nil.
-type ParentHooks struct {
-	// Draw is called when a part of the child element's surface is updated.
-	// The updated region will be passed to the callback as a sub-image.
-	Draw func (region Canvas)
-
-	// MinimumSizeChange is called when the child element's minimum width
-	// and/or height changes. When this function is called, the element will
-	// have already been resized and there is no need to send it a resize
-	// event.
-	MinimumSizeChange func (width, height int)
-
-	// FlexibleHeightChange is called when the parameters affecting the
-	// element's felxible height have changed.
-	FlexibleHeightChange func ()
-
-	// ContentBoundsChange is called by scrollable elements when the
-	// element's content bounds have changed. When this function is called,
-	// the element will have already done any drawing necessary. This is
-	// only intended for updating things like scrollbar positions.
-	ContentBoundsChange func ()
-	
-	// SelectionRequest is called when the child element element wants
-	// itself to be selected. If the parent element chooses to grant the
-	// request, it must send the child element a selection event and return
-	// true.
-	SelectionRequest func () (granted bool)
-
-	// SelectionMotionRequest is called when the child element wants the
-	// parent element to select the previous/next element in relation to it.
-	SelectionMotionRequest func (direction SelectionDirection) (granted bool)
-}
-
-// RunDraw runs the Draw hook if it is not nil. If it is nil, it does nothing.
-func (hooks ParentHooks) RunDraw (region Canvas) {
-	if hooks.Draw != nil {
-		hooks.Draw(region)
-	}
-}
-
-// RunMinimumSizeChange runs the MinimumSizeChange hook if it is not nil. If it
-// is nil, it does nothing.
-func (hooks ParentHooks) RunMinimumSizeChange (width, height int) {
-	if hooks.MinimumSizeChange != nil {
-		hooks.MinimumSizeChange(width, height)
-	}
-}
-
-// RunFlexibleHeightChange runs the ExpandingHeightChange hook if it is not
-// nil. If it is nil, it does nothing.
-func (hooks ParentHooks) RunFlexibleHeightChange () {
-	if hooks.FlexibleHeightChange != nil {
-		hooks.FlexibleHeightChange()
-	}
-}
-
-// RunSelectionRequest runs the SelectionRequest hook if it is not nil. If it is
-// nil, it does nothing.
-func (hooks ParentHooks) RunSelectionRequest () (granted bool) {
-	if hooks.SelectionRequest != nil {
-		granted = hooks.SelectionRequest()
-	}
-	return
-}
-
-// RunSelectionMotionRequest runs the SelectionMotionRequest hook if it is not
-// nil. If it is nil, it does nothing.
-func (hooks ParentHooks) RunSelectionMotionRequest (
-	direction SelectionDirection,
-) (
-	granted bool,
-) {
-	if hooks.SelectionMotionRequest != nil {
-		granted = hooks.SelectionMotionRequest(direction)
-	}
-	return
-}
-
-// RunContentBoundsChange runs the ContentBoundsChange hook if it is not nil. If
-// it is nil, it does nothing.
-func (hooks ParentHooks) RunContentBoundsChange () {
-	if hooks.ContentBoundsChange != nil {
-		hooks.ContentBoundsChange()
-	}
-}
-
 // Element represents a basic on-screen object.
 type Element interface {
 	// Element must implement the Canvas interface. Elements should start
@@ -109,11 +19,13 @@ type Element interface {
 	// element's parent.
 	Resize (width, height int)
 
-	// SetParentHooks gives the element callbacks that let it send
-	// information to its parent element without it knowing anything about
-	// the parent element or containing any reference to it. When a parent
-	// element adopts a child element, it must set these callbacks.
-	SetParentHooks (callbacks ParentHooks)
+	// OnDamage sets a function to be called when an area of the element is
+	// drawn on and should be pushed to the screen.
+	OnDamage (callback func (region Canvas))
+
+	// OnMinimumSizeChange sets a function to be called when the element's
+	// minimum size is changed.
+	OnMinimumSizeChange (callback func ())
 }
 
 // SelectionDirection represents a keyboard navigation direction.
@@ -156,6 +68,18 @@ type Selectable interface {
 	// HandleDeselection causes this element to mark itself and all of its
 	// children as deselected.
 	HandleDeselection ()
+
+	// OnSelectionRequest sets a function to be called when this element
+	// wants its parent element to select it. Parent elements should return
+	// true if the request was granted, and false if it was not.
+	OnSelectionRequest (func () (granted bool))
+
+	// OnSelectionMotionRequest sets a function to be called when this
+	// element wants its parent element to select the element behind or in
+	// front of it, depending on the specified direction. Parent elements
+	// should return true if the request was granted, and false if it was
+	// not.
+	OnSelectionMotionRequest (func (SelectionDirection) (granted bool))
 }
 
 // KeyboardTarget represents an element that can receive keyboard input.
@@ -196,7 +120,7 @@ type MouseTarget interface {
 
 	// HandleScroll is called when the mouse is scrolled. The X and Y
 	// direction of the scroll event are passed as deltaX and deltaY.
-	HandleScroll (x, y int, deltaX, deltaY float64)
+	HandleMouseScroll (x, y int, deltaX, deltaY float64)
 }
 
 // Flexible represents an element who's preferred minimum height can change in
@@ -204,10 +128,10 @@ type MouseTarget interface {
 type Flexible interface {
 	Element
 
-	// HeightForWidth returns what the element's minimum height would be if
-	// resized to a specified width. This does not actually alter the state
-	// of the element in any way, but it may perform significant work, so it
-	// should be called sparingly.
+	// FlexibleHeightFor returns what the element's minimum height would be
+	// if resized to a specified width. This does not actually alter the
+	// state of the element in any way, but it may perform significant work,
+	// so it should be called sparingly.
 	//
 	// It is reccomended that parent containers check for this interface and
 	// take this method's value into account in order to support things like
@@ -217,7 +141,11 @@ type Flexible interface {
 	//
 	// It is important to note that if a parent container checks for
 	// flexible chilren, it itself will likely need to be flexible.
-	MinimumHeightFor (width int) (height int)
+	FlexibleHeightFor (width int) (height int)
+
+	// OnFlexibleHeightChange sets a function to be called when the
+	// parameters affecting this element's flexible height are changed.
+	OnFlexibleHeightChange (callback func ())
 }
 
 // Scrollable represents an element that can be scrolled. It acts as a viewport
@@ -238,4 +166,8 @@ type Scrollable interface {
 
 	// ScrollAxes returns the supported axes for scrolling.
 	ScrollAxes () (horizontal, vertical bool)
+
+	// OnScrollBoundsChange sets a function to be called when the element's
+	// ScrollContentBounds or ScrollViewportBounds are changed.
+	OnScrollBoundsChange (callback func ())
 }
