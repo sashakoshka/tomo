@@ -68,7 +68,7 @@ func (element *Checkbox) HandleMouseUp (x, y int, button tomo.Button) {
 }
 
 func (element *Checkbox) HandleMouseMove (x, y int) { }
-func (element *Checkbox) HandleScroll (x, y int, deltaX, deltaY float64) { }
+func (element *Checkbox) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Checkbox) HandleKeyDown (
 	key tomo.Key,

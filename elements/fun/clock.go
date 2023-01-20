@@ -34,7 +34,7 @@ func (element *AnalogClock) SetTime (newTime time.Time) {
 	element.time = newTime
 	if element.core.HasImage() {
 		element.draw()
-		element.core.PushAll()
+		element.core.DamageAll()
 	}
 }
 
@@ -67,10 +67,14 @@ func (element *AnalogClock) draw () {
 		0, 0.7, (second - 15) / 30 * math.Pi)
 }
 
-// MinimumHeightFor constrains the clock's minimum size to a 1:1 aspect ratio.
-func (element *AnalogClock) MinimumHeightFor (width int) (height int) {
+// FlexibleHeightFor constrains the clock's minimum size to a 1:1 aspect ratio.
+func (element *AnalogClock) FlexibleHeightFor (width int) (height int) {
 	return width
 }
+
+// OnFlexibleHeightChange sets a function to be calle dwhen the parameters
+// affecting the clock's flexible height change.
+func (element *AnalogClock) OnFlexibleHeightChange (func ()) { }
 
 func (element *AnalogClock) radialLine (
 	source artist.Pattern,
