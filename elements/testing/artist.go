@@ -59,10 +59,9 @@ func (element *Artist) Resize (width, height int) {
 		artist.FillRectangle (
 			element,
 			artist.Striped {
-				First:  uhex(0xFF8800FF),
-				Second: uhex(0x0088FFFF),
+				First:  artist.Border { Stroke: uhex(0xFF8800FF), Weight: 7 },
+				Second: artist.Border { Stroke: uhex(0x0088FFFF), Weight: 2 },
 				Direction: artist.StripeDirection(x),
-				Weight: 3,
 				
 			},
 			element.cellAt(x, 1))
