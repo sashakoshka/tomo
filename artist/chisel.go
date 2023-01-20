@@ -13,9 +13,17 @@ func (chiseled Chiseled) AtWhen (x, y, width, height int) (c color.RGBA) {
 	var highlighted bool
 	// FIXME: this doesn't work quite right, the
 	// slope of the line is somewhat off.
-	bottomCorner :=
-		float64(x) < float64(y) *
-		(float64(width) / float64(height))
+	// bottomCorner :=
+		// float64(x) < float64(y) *
+		// (float64(width) / float64(height))
+	bottomCorner := false
+
+	if width > height {
+		bottomCorner = y > height / 2
+	} else {
+		bottomCorner = x < width / 2
+	}
+	
 	if bottomCorner {
 		highlighted = float64(x) < float64(height) - float64(y)
 	} else {
