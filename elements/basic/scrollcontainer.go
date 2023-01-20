@@ -88,7 +88,7 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 			element.child.Resize (
 				element.childWidth,
 				element.childHeight)
-			element.draw()
+			element.core.DamageAll()
 		}
 	}
 }
@@ -339,10 +339,11 @@ func (element *ScrollContainer) updateMinimumSize () {
 func (element *ScrollContainer) childScrollBoundsChangeCallback () {
 	element.horizontal.enabled,
 	element.vertical.enabled = element.child.ScrollAxes()
-	
 	if element.core.HasImage() {
 		element.recalculate()
 		element.drawHorizontalBar()
 		element.drawVerticalBar()
+		element.core.DamageRegion(element.horizontal.gutter)
+		element.core.DamageRegion(element.vertical.gutter)
 	}
 }

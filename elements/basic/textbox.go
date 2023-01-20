@@ -49,6 +49,9 @@ func (element *TextBox) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	element.scrollToCursor()
 	element.draw()
+	if element.onScrollBoundsChange != nil {
+		element.onScrollBoundsChange()
+	}
 }
 
 func (element *TextBox) HandleMouseDown (x, y int, button tomo.Button) {
@@ -69,6 +72,7 @@ func (element *TextBox) HandleKeyDown (
 		return
 	}
 
+	scrollMemory := element.scroll
 	altered     := true
 	textChanged := false
 	switch {
@@ -118,6 +122,11 @@ func (element *TextBox) HandleKeyDown (
 
 	if altered {
 		element.scrollToCursor()
+	}
+
+	if (textChanged || scrollMemory != element.scroll) &&
+		element.onScrollBoundsChange != nil {
+		element.onScrollBoundsChange()
 	}
 	
 	if altered && element.core.HasImage () {
@@ -306,9 +315,6 @@ func (element *TextBox) scrollToCursor () {
 	} else if cursorPosition.X < minX {
 		element.scroll -= minX - cursorPosition.X
 		if element.scroll < 0 { element.scroll = 0 }
-	}
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
 	}
 }
 
