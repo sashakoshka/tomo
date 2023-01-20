@@ -68,11 +68,7 @@ func (element *Button) HandleMouseUp (x, y int, button tomo.Button) {
 func (element *Button) HandleMouseMove (x, y int) { }
 func (element *Button) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
-func (element *Button) HandleKeyDown (
-	key tomo.Key,
-	modifiers tomo.Modifiers,
-	repeated bool,
-) {
+func (element *Button) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
 	if !element.enabled { return }
 	if key == tomo.KeyEnter {
 		element.pressed = true

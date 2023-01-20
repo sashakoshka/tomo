@@ -86,12 +86,12 @@ type Selectable interface {
 type KeyboardTarget interface {
 	Element
 
-	// HandleKeyDown is called when a key is pressed down while this element
-	// has keyboard focus. It is important to note that not every key down
-	// event is guaranteed to be paired with exactly one key up event. This
-	// is the reason a list of modifier keys held down at the time of the
-	// key press is given.
-	HandleKeyDown (key Key, modifiers Modifiers, repeated bool)
+	// HandleKeyDown is called when a key is pressed down or repeated while
+	// this element has keyboard focus. It is important to note that not
+	// every key down event is guaranteed to be paired with exactly one key
+	// up event. This is the reason a list of modifier keys held down at the
+	// time of the key press is given.
+	HandleKeyDown (key Key, modifiers Modifiers)
 
 	// HandleKeyUp is called when a key is released while this element has
 	// keyboard focus.

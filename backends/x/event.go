@@ -67,6 +67,23 @@ func (window *Window) handleConfigureNotify (
 	}
 }
 
+func (window *Window) modifiersFromState (
+	state uint16,
+) (
+	modifiers tomo.Modifiers,
+) {
+	return tomo.Modifiers {
+		Shift:
+			(state & xproto.ModMaskShift)                    > 0 ||
+			(state & window.backend.modifierMasks.shiftLock) > 0,
+		Control: (state & xproto.ModMaskControl)              > 0,
+		Alt:     (state & window.backend.modifierMasks.alt)   > 0,
+		Meta:    (state & window.backend.modifierMasks.meta)  > 0,
+		Super:   (state & window.backend.modifierMasks.super) > 0,
+		Hyper:   (state & window.backend.modifierMasks.hyper) > 0,
+	}
+}
+
 func (window *Window) handleKeyPress (
 	connection *xgbutil.XUtil,
 	event xevent.KeyPressEvent,
@@ -75,17 +92,8 @@ func (window *Window) handleKeyPress (
 	
 	keyEvent := *event.KeyPressEvent
 	key, numberPad := window.backend.keycodeToKey(keyEvent.Detail, keyEvent.State)
-	modifiers := tomo.Modifiers {
-		Shift:
-			(keyEvent.State & xproto.ModMaskShift)                    > 0 ||
-			(keyEvent.State & window.backend.modifierMasks.shiftLock) > 0,
-		Control: (keyEvent.State & xproto.ModMaskControl)              > 0,
-		Alt:     (keyEvent.State & window.backend.modifierMasks.alt)   > 0,
-		Meta:    (keyEvent.State & window.backend.modifierMasks.meta)  > 0,
-		Super:   (keyEvent.State & window.backend.modifierMasks.super) > 0,
-		Hyper:   (keyEvent.State & window.backend.modifierMasks.hyper) > 0,
-		NumberPad: numberPad,
-	}
+	modifiers := window.modifiersFromState(keyEvent.State)
+	modifiers.NumberPad = numberPad
 
 	if key == tomo.KeyTab && modifiers.Alt {
 		if child, ok := window.child.(tomo.Selectable); ok {
@@ -99,8 +107,7 @@ func (window *Window) handleKeyPress (
 			}
 		}
 	} else if child, ok := window.child.(tomo.KeyboardTarget); ok {
-		// FIXME: pass correct value for repeated
-		child.HandleKeyDown(key, modifiers, false)
+		child.HandleKeyDown(key, modifiers)
 	}
 }
 
@@ -111,18 +118,27 @@ func (window *Window) handleKeyRelease (
 	if window.child == nil { return }
 	
 	keyEvent := *event.KeyReleaseEvent
-	key, numberPad := window.backend.keycodeToKey(keyEvent.Detail, keyEvent.State)
-	modifiers := tomo.Modifiers {
-		Shift:
-			(keyEvent.State & xproto.ModMaskShift)                    > 0 ||
-			(keyEvent.State & window.backend.modifierMasks.shiftLock) > 0,
-		Control: (keyEvent.State & xproto.ModMaskControl)              > 0,
-		Alt:     (keyEvent.State & window.backend.modifierMasks.alt)   > 0,
-		Meta:    (keyEvent.State & window.backend.modifierMasks.meta)  > 0,
-		Super:   (keyEvent.State & window.backend.modifierMasks.super) > 0,
-		Hyper:   (keyEvent.State & window.backend.modifierMasks.hyper) > 0,
-		NumberPad: numberPad,
+
+	// do not process this event if it was generated from a key repeat
+	nextEvents := xevent.Peek(window.backend.connection)
+	if len(nextEvents) > 0 {
+		untypedEvent := nextEvents[0]
+		if untypedEvent.Err == nil {
+			typedEvent, ok :=
+				untypedEvent.Event.(xproto.KeyReleaseEvent)
+			
+			if ok && typedEvent.Detail == keyEvent.Detail &&
+				typedEvent.Event == keyEvent.Event &&
+				typedEvent.State == keyEvent.State {
+
+				return
+			}
+		}
 	}
+	
+	key, numberPad := window.backend.keycodeToKey(keyEvent.Detail, keyEvent.State)
+	modifiers := window.modifiersFromState(keyEvent.State)
+	modifiers.NumberPad = numberPad
 	
 	if child, ok := window.child.(tomo.KeyboardTarget); ok {
 		child.HandleKeyUp(key, modifiers)

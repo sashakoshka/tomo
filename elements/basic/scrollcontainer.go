@@ -93,13 +93,9 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 	}
 }
 
-func (element *ScrollContainer) HandleKeyDown (
-	key tomo.Key,
-	modifiers tomo.Modifiers,
-	repeated bool,
-) {
+func (element *ScrollContainer) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
 	if child, ok := element.child.(tomo.KeyboardTarget); ok {
-		child.HandleKeyDown(key, modifiers, repeated)
+		child.HandleKeyDown(key, modifiers)
 	}
 }
 

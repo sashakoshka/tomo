@@ -235,15 +235,11 @@ func (element *Container) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
 	child.HandleMouseScroll(x - childPosition.X, y - childPosition.Y, deltaX, deltaY)
 }
 
-func (element *Container) HandleKeyDown (
-	key tomo.Key,
-	modifiers tomo.Modifiers,
-	repeated bool,
-) {
+func (element *Container) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
 	element.forSelected (func (child tomo.Selectable) bool {
 		child0, handlesKeyboard := child.(tomo.KeyboardTarget)
 		if handlesKeyboard {
-			child0.HandleKeyDown(key, modifiers, repeated)
+			child0.HandleKeyDown(key, modifiers)
 		}
 		return true
 	})

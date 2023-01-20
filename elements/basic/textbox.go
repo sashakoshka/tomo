@@ -23,7 +23,7 @@ type TextBox struct {
 	placeholderDrawer artist.TextDrawer
 	valueDrawer       artist.TextDrawer
 	
-	onKeyDown func (tomo.Key, tomo.Modifiers, bool) (bool)
+	onKeyDown func (key tomo.Key, modifiers tomo.Modifiers) (handled bool)
 	onChange  func ()
 	onSelectionRequest func () (granted bool)
 	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
@@ -63,12 +63,8 @@ func (element *TextBox) HandleMouseUp (x, y int, button tomo.Button) { }
 func (element *TextBox) HandleMouseMove (x, y int) { }
 func (element *TextBox) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
-func (element *TextBox) HandleKeyDown (
-	key tomo.Key,
-	modifiers tomo.Modifiers,
-	repeated bool,
-) {
-	if element.onKeyDown != nil && element.onKeyDown(key, modifiers, repeated) {
+func (element *TextBox) HandleKeyDown(key tomo.Key, modifiers tomo.Modifiers) {
+	if element.onKeyDown != nil && element.onKeyDown(key, modifiers) {
 		return
 	}
 
@@ -232,11 +228,7 @@ func (element *TextBox) Filled () (filled bool) {
 }
 
 func (element *TextBox) OnKeyDown (
-	callback func (
-		key tomo.Key, modifiers tomo.Modifiers, repeated bool,
-	) (
-		handled bool,
-	),
+	callback func (key tomo.Key, modifiers tomo.Modifiers) (handled bool),
 ) {
 	element.onKeyDown = callback
 }
