@@ -18,7 +18,7 @@ func run () {
 	container.Adopt(basic.NewLabel("look at this non sense", false), false)
 
 	textBox := basic.NewTextBox("", "sample text sample text")
-	scrollContainer := basic.NewScrollContainer(true, true)
+	scrollContainer := basic.NewScrollContainer(true, false)
 	scrollContainer.Adopt(textBox)
 	container.Adopt(scrollContainer, true)
 	

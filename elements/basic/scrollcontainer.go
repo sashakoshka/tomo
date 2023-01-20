@@ -12,16 +12,22 @@ type ScrollContainer struct {
 	*core.Core
 	core core.CoreControl
 	selected bool
+	
 	child tomo.Scrollable
-
+	childWidth, childHeight int
+	
 	horizontal struct {
+		exists bool
 		enabled bool
-		bounds image.Rectangle
+		gutter image.Rectangle
+		bar image.Rectangle
 	}
 
 	vertical struct {
+		exists bool
 		enabled bool
-		bounds image.Rectangle
+		gutter image.Rectangle
+		bar image.Rectangle
 	}
 
 	onSelectionRequest func () (granted bool)
@@ -34,8 +40,8 @@ func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 	element = &ScrollContainer { }
 	element.Core, element.core = core.NewCore(element)
 	element.updateMinimumSize()
-	element.horizontal.enabled = horizontal
-	element.vertical.enabled   = vertical
+	element.horizontal.exists = horizontal
+	element.vertical.exists   = vertical
 	return
 }
 
@@ -44,8 +50,8 @@ func (element *ScrollContainer) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	element.recalculate()
 	element.child.Resize (
-		element.vertical.bounds.Min.X,
-		element.horizontal.bounds.Min.Y)
+		element.childWidth,
+		element.childHeight)
 	element.draw()
 }
 
@@ -63,6 +69,7 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 	if child != nil {
 		child.OnDamage(element.childDamageCallback)
 		child.OnMinimumSizeChange(element.updateMinimumSize)
+		child.OnScrollBoundsChange(element.childScrollBoundsChangeCallback)
 		if newChild, ok := child.(tomo.Selectable); ok {
 			newChild.OnSelectionRequest (
 				element.childSelectionRequestCallback)
@@ -73,12 +80,14 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 		// TODO: somehow inform the core that we do not in fact want to
 		// redraw the element.
 		element.updateMinimumSize()
+		
+		element.horizontal.enabled,
+		element.vertical.enabled = element.child.ScrollAxes()
 
 		if element.core.HasImage() {
-			element.recalculate()
 			element.child.Resize (
-				element.horizontal.bounds.Min.X,
-				element.vertical.bounds.Min.X)
+				element.childWidth,
+				element.childHeight)
 			element.draw()
 		}
 	}
@@ -192,9 +201,10 @@ func (element *ScrollContainer) childSelectionMotionRequestCallback (
 	return element.onSelectionMotionRequest(direction)
 }
 
-func (element *ScrollContainer) clearChildEventHandlers (child tomo.Element) {
+func (element *ScrollContainer) clearChildEventHandlers (child tomo.Scrollable) {
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
+	child.OnScrollBoundsChange(nil)
 	if child0, ok := child.(tomo.Selectable); ok {
 		child0.OnSelectionRequest(nil)
 		child0.OnSelectionMotionRequest(nil)
@@ -213,25 +223,71 @@ func (element *ScrollContainer) recalculate () {
 	bounds     := element.Bounds()
 	thickness  := theme.Padding() * 2
 
+	// calculate child size
+	element.childWidth  = bounds.Dx()
+	element.childHeight = bounds.Dy()
+
 	// reset bounds
-	horizontal.bounds = image.Rectangle { }
-	vertical.bounds   = image.Rectangle { }
+	horizontal.gutter = image.Rectangle { }
+	vertical.gutter   = image.Rectangle { }
+	horizontal.bar    = image.Rectangle { }
+	vertical.bar      = image.Rectangle { }
 
-	// if enabled, give substance to the bars
-	if horizontal.enabled {
-		horizontal.bounds.Max.X = bounds.Max.X - thickness
-		horizontal.bounds.Max.Y = thickness
+	// if enabled, give substance to the gutters
+	if horizontal.exists {
+		horizontal.gutter.Min.Y = bounds.Max.Y - thickness
+		horizontal.gutter.Max.X = bounds.Max.X
+		horizontal.gutter.Max.Y = bounds.Max.Y
+		if vertical.exists {
+			horizontal.gutter.Max.X -= thickness
+		}
+		element.childHeight -= thickness
 	}
-	if vertical.enabled {
-		vertical.bounds.Max.X = thickness
-		vertical.bounds.Max.Y = bounds.Max.Y - thickness
+	if vertical.exists {
+		vertical.gutter.Min.X = bounds.Max.X - thickness
+		vertical.gutter.Max.X = bounds.Max.X
+		vertical.gutter.Max.Y = bounds.Max.Y
+		if horizontal.exists {
+			vertical.gutter.Max.Y -= thickness
+		}
+		element.childWidth -= thickness
 	}
 
-	// move the bars to the edge of the element
-	horizontal.bounds.Min.Y += bounds.Max.Y - horizontal.bounds.Dy()
-	horizontal.bounds.Max.Y += bounds.Max.Y
-	vertical.bounds.Min.X += bounds.Max.X - vertical.bounds.Dx()
-	vertical.bounds.Max.X += bounds.Max.X
+	// if enabled, calculate the positions of the bars
+	contentBounds  := element.child.ScrollContentBounds()
+	viewportBounds := element.child.ScrollViewportBounds()
+	if horizontal.exists && horizontal.enabled {
+		horizontal.bar.Min.Y = horizontal.gutter.Min.Y
+		horizontal.bar.Max.Y = horizontal.gutter.Max.Y
+
+		scale := float64(horizontal.gutter.Dx()) /
+			float64(contentBounds.Dx())
+		horizontal.bar.Min.X = int(float64(viewportBounds.Min.X) * scale)
+		horizontal.bar.Max.X = int(float64(viewportBounds.Max.X) * scale)
+		
+		horizontal.bar.Min.X += horizontal.gutter.Min.X
+		horizontal.bar.Max.X += horizontal.gutter.Min.X
+	}
+	if vertical.exists && vertical.enabled {
+		vertical.bar.Min.X = vertical.gutter.Min.X
+		vertical.bar.Max.X = vertical.gutter.Max.X
+
+		scale := float64(vertical.gutter.Dy()) /
+			float64(contentBounds.Dy())
+		vertical.bar.Min.Y = int(float64(viewportBounds.Min.Y) * scale)
+		vertical.bar.Max.Y = int(float64(viewportBounds.Max.Y) * scale)
+		
+		vertical.bar.Min.Y += vertical.gutter.Min.Y
+		vertical.bar.Max.Y += vertical.gutter.Min.Y
+	}
+
+	// if the scroll bars are out of bounds, don't display them.
+	if !horizontal.bar.In(horizontal.gutter) {
+		horizontal.bar = image.Rectangle { }
+	}
+	if !vertical.bar.In(vertical.gutter) {
+		vertical.bar = image.Rectangle { }
+	}
 }
 
 func (element *ScrollContainer) draw () {
@@ -239,24 +295,34 @@ func (element *ScrollContainer) draw () {
 	artist.FillRectangle (
 		element, theme.DeadPattern(),
 		image.Rect (
-			element.vertical.bounds.Min.X,
-			element.horizontal.bounds.Min.Y,
-			element.vertical.bounds.Max.X,
-			element.horizontal.bounds.Max.Y))
+			element.vertical.gutter.Min.X,
+			element.horizontal.gutter.Min.Y,
+			element.vertical.gutter.Max.X,
+			element.horizontal.gutter.Max.Y))
 	element.drawHorizontalBar()
 	element.drawVerticalBar()
 }
 
 func (element *ScrollContainer) drawHorizontalBar () {
 	artist.FillRectangle (
-		element, theme.SunkenPattern(),
-		element.horizontal.bounds)
+		element,
+		theme.ScrollGutterPattern(true, element.horizontal.enabled),
+		element.horizontal.gutter)
+	artist.FillRectangle (
+		element,
+		theme.ScrollBarPattern(true, element.horizontal.enabled),
+		element.horizontal.bar)
 }
 
 func (element *ScrollContainer) drawVerticalBar () {
 	artist.FillRectangle (
-		element, theme.SunkenPattern(),
-		element.vertical.bounds)
+		element,
+		theme.ScrollGutterPattern(false, element.vertical.enabled),
+		element.vertical.gutter)
+	artist.FillRectangle (
+		element,
+		theme.ScrollBarPattern(false, element.vertical.enabled),
+		element.vertical.bar)
 }
 
 func (element *ScrollContainer) updateMinimumSize () {
@@ -268,4 +334,15 @@ func (element *ScrollContainer) updateMinimumSize () {
 		height += childHeight
 	}
 	element.core.SetMinimumSize(width, height)
+}
+
+func (element *ScrollContainer) childScrollBoundsChangeCallback () {
+	element.horizontal.enabled,
+	element.vertical.enabled = element.child.ScrollAxes()
+	
+	if element.core.HasImage() {
+		element.recalculate()
+		element.drawHorizontalBar()
+		element.drawVerticalBar()
+	}
 }

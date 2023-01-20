@@ -168,6 +168,6 @@ type Scrollable interface {
 	ScrollAxes () (horizontal, vertical bool)
 
 	// OnScrollBoundsChange sets a function to be called when the element's
-	// ScrollContentBounds or ScrollViewportBounds are changed.
+	// ScrollContentBounds, ScrollViewportBounds, or ScrollAxes are changed.
 	OnScrollBoundsChange (callback func ())
 }
