@@ -53,6 +53,20 @@ func (element *Artist) Resize (width, height int) {
 			artist.Border { Stroke: uhex(0x0000FFFF), Weight: 5 },
 			),
 		element.cellAt(2, 0))
+
+	// 0, 1 - 0, 3
+	for x := 0; x < 4; x ++ {
+		artist.FillRectangle (
+			element,
+			artist.Striped {
+				First:  uhex(0xFF8800FF),
+				Second: uhex(0x0088FFFF),
+				Direction: artist.StripeDirection(x),
+				Weight: 3,
+				
+			},
+			element.cellAt(x, 1))
+	}
 }
 
 func (element *Artist) cellAt (x, y int) (image.Rectangle) {
