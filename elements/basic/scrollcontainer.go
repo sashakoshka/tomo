@@ -131,7 +131,10 @@ func (element *ScrollContainer) HandleMouseScroll (
 	x, y int,
 	deltaX, deltaY float64,
 ) {
-	// TODO: use this to scroll. do not pass this down to the child
+	scrollPoint := element.child.ScrollViewportBounds().Min.Add(image.Pt (
+		int(deltaX),
+		int(deltaY)))
+	element.child.ScrollTo(scrollPoint)
 }
 
 func (element *ScrollContainer) Selected () (selected bool) {
@@ -282,10 +285,10 @@ func (element *ScrollContainer) recalculate () {
 	}
 
 	// if the scroll bars are out of bounds, don't display them.
-	if !horizontal.bar.In(horizontal.gutter) {
+	if horizontal.bar.Dx() >= horizontal.gutter.Dx() {
 		horizontal.bar = image.Rectangle { }
 	}
-	if !vertical.bar.In(vertical.gutter) {
+	if vertical.bar.Dy() >= vertical.gutter.Dy() {
 		vertical.bar = image.Rectangle { }
 	}
 }

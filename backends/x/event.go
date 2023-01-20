@@ -10,17 +10,36 @@ type scrollSum struct {
 	x, y int
 }
 
-func (sum *scrollSum) add (button xproto.Button) {
-	switch button {
-	case 4:
-		sum.y --
-	case 5:
-		sum.y ++
-	case 6:
-		sum.x --
-	case 7:
-		sum.x ++
+const scrollDistance = 16
+
+func (sum *scrollSum) add (button xproto.Button, window *Window, state uint16) {
+	shift := 
+		(state & xproto.ModMaskShift)                    > 0 ||
+		(state & window.backend.modifierMasks.shiftLock) > 0
+	if shift {
+		switch button {
+		case 4:
+			sum.x -= scrollDistance
+		case 5:
+			sum.x += scrollDistance
+		case 6:
+			sum.y -= scrollDistance
+		case 7:
+			sum.y += scrollDistance
+		}
+	} else {
+		switch button {
+		case 4:
+			sum.y -= scrollDistance
+		case 5:
+			sum.y += scrollDistance
+		case 6:
+			sum.x -= scrollDistance
+		case 7:
+			sum.x += scrollDistance
+		}
 	}
+
 }
 
 func (window *Window) handleConfigureNotify (
@@ -52,7 +71,7 @@ func (window *Window) handleKeyPress (
 	connection *xgbutil.XUtil,
 	event xevent.KeyPressEvent,
 ) {
-	if window.child == nil { return}
+	if window.child == nil { return }
 	
 	keyEvent := *event.KeyPressEvent
 	key, numberPad := window.backend.keycodeToKey(keyEvent.Detail, keyEvent.State)
@@ -120,7 +139,7 @@ func (window *Window) handleButtonPress (
 		buttonEvent := *event.ButtonPressEvent
 		if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
 			sum := scrollSum { }
-			sum.add(buttonEvent.Detail)
+			sum.add(buttonEvent.Detail, window, buttonEvent.State)
 			window.compressScrollSum(buttonEvent, &sum)
 			child.HandleMouseScroll (
 				int(buttonEvent.EventX),
@@ -212,7 +231,7 @@ func (window *Window) compressScrollSum (
 			typedEvent.Detail >= 4 &&
 			typedEvent.Detail <= 7 {
 
-			sum.add(typedEvent.Detail)
+			sum.add(typedEvent.Detail, window, typedEvent.State)
 			defer func (index int) {
 				xevent.DequeueAt(window.backend.connection, index)
 			} (index)
