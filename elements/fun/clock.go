@@ -42,7 +42,7 @@ func (element *AnalogClock) draw () {
 	bounds := element.core.Bounds()
 
 	artist.FillRectangle (
-		element.core,
+		element,
 		theme.SunkenPattern(),
 		bounds)
 

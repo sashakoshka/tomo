@@ -2,14 +2,14 @@ package artist
 
 import "image/color"
 
-// Chiseled is a pattern that has a highlight section and a shadow section.
-type Chiseled struct {
+// Beveled is a pattern that has a highlight section and a shadow section.
+type Beveled struct {
 	Highlight Pattern
 	Shadow    Pattern
 }
 
 // AtWhen satisfies the Pattern interface.
-func (chiseled Chiseled) AtWhen (x, y, width, height int) (c color.RGBA) {
+func (pattern Beveled) AtWhen (x, y, width, height int) (c color.RGBA) {
 	var highlighted  bool
 	var bottomCorner bool
 	
@@ -26,8 +26,8 @@ func (chiseled Chiseled) AtWhen (x, y, width, height int) (c color.RGBA) {
 	}
 
 	if highlighted {
-		return chiseled.Highlight.AtWhen(x, y, width, height)
+		return pattern.Highlight.AtWhen(x, y, width, height)
 	} else {
-		return chiseled.Shadow.AtWhen(x, y, width, height)
+		return pattern.Shadow.AtWhen(x, y, width, height)
 	}
 }

@@ -27,7 +27,7 @@ var sunkenPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
-		Pattern: artist.Chiseled {
+		Pattern: artist.Beveled {
 			Highlight: artist.NewUniform(hex(0x3b534eFF)),
 			Shadow:    artist.NewUniform(hex(0x97a09cFF)),
 		},

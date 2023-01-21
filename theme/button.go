@@ -6,7 +6,7 @@ var buttonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
-		Pattern: artist.Chiseled {
+		Pattern: artist.Beveled {
 			Highlight: artist.NewUniform(hex(0xCCD5D2FF)),
 			Shadow:    artist.NewUniform(hex(0x4B5B59FF)),
 		},
@@ -16,7 +16,7 @@ var selectedButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
-		Pattern: artist.Chiseled {
+		Pattern: artist.Beveled {
 			Highlight: artist.NewUniform(hex(0xCCD5D2FF)),
 			Shadow:    artist.NewUniform(hex(0x4B5B59FF)),
 		},
@@ -27,7 +27,7 @@ var pressedButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
-		Pattern: artist.Chiseled {
+		Pattern: artist.Beveled {
 			Highlight: artist.NewUniform(hex(0x4B5B59FF)),
 			Shadow:    artist.NewUniform(hex(0x8D9894FF)),
 		},
@@ -37,7 +37,7 @@ var pressedSelectedButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
-		Pattern: artist.Chiseled {
+		Pattern: artist.Beveled {
 			Highlight: artist.NewUniform(hex(0x4B5B59FF)),
 			Shadow:    artist.NewUniform(hex(0x8D9894FF)),
 		},

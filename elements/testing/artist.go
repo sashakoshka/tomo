@@ -20,7 +20,7 @@ type Artist struct {
 func NewArtist () (element *Artist) {
 	element = &Artist { }
 	element.Core, element.core = core.NewCore(element)
-	element.core.SetMinimumSize(400, 400)
+	element.core.SetMinimumSize(400, 480)
 	return
 }
 
@@ -28,14 +28,14 @@ func (element *Artist) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	bounds := element.Bounds()
 	element.cellBounds.Max.X = bounds.Dx() / 4
-	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 4
+	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 5
 
 	drawStart := time.Now()
 
 	// 0, 0
 	artist.FillRectangle (
 		element,
-		artist.Chiseled {
+		artist.Beveled {
 			Highlight: artist.NewUniform(hex(0xFF0000FF)),
 			Shadow:    artist.NewUniform(hex(0x0000FFFF)),
 		},
@@ -107,6 +107,16 @@ func (element *Artist) Resize (width, height int) {
 			x, element.cellAt(x, 3))
 	}
 
+	// 0, 4
+	artist.FillEllipse (
+		element, 
+		artist.Beveled {
+			Highlight: artist.NewUniform(hex(0xFF0000FF)),
+			Shadow:    artist.NewUniform(hex(0x0000FFFF)),
+		},
+		element.cellAt(0, 4))
+	
+	// how long did that take to render?
 	drawTime := time.Since(drawStart)
 	textDrawer := artist.TextDrawer { }
 	textDrawer.SetFace(defaultfont.FaceRegular)
