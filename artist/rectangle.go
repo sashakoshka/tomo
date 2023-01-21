@@ -38,16 +38,21 @@ func FillRectangle (
 	updatedRegion image.Rectangle,
 ) {
 	data, stride := destination.Buffer()
-	realWidth, realHeight := bounds.Dx(), bounds.Dy()
+	realBounds := bounds
 	bounds = bounds.Canon().Intersect(destination.Bounds()).Canon()
 	if bounds.Empty() { return }
 	updatedRegion = bounds
+
+	realWidth, realHeight := realBounds.Dx(), realBounds.Dy()
+	patternOffset := realBounds.Min.Sub(bounds.Min)
 
 	width, height := bounds.Dx(), bounds.Dy()
 	for y := 0; y < height; y ++ {
 	for x := 0; x < width;  x ++ {
 		data[x + bounds.Min.X + (y + bounds.Min.Y) * stride] =
-			source.AtWhen(x, y, realWidth, realHeight)
+			source.AtWhen (
+				x - patternOffset.X, y - patternOffset.Y,
+				realWidth, realHeight)
 	}}
 	return
 }
