@@ -2,34 +2,24 @@ package artist
 
 import "image/color"
 
-// StripeDirection specifies the direction of stripes.
-type StripeDirection int
-
-const (
-	StripeDirectionVertical StripeDirection = iota
-	StripeDirectionDiagonalRight
-	StripeDirectionHorizontal
-	StripeDirectionDiagonalLeft
-)
-
 // Striped is a pattern that produces stripes of two alternating colors.
 type Striped struct {
-	First     Stroke
-	Second    Stroke
-	Direction StripeDirection
+	First  Stroke
+	Second Stroke
+	Orientation
 }
 
 // AtWhen satisfies the Pattern interface.
 func (pattern Striped) AtWhen (x, y, width, height int) (c color.RGBA) {
 	position := 0
-	switch pattern.Direction {
-	case StripeDirectionVertical:
+	switch pattern.Orientation {
+	case OrientationVertical:
 		position = x
-	case StripeDirectionDiagonalRight:
+	case OrientationDiagonalRight:
 		position = x + y
-	case StripeDirectionHorizontal:
+	case OrientationHorizontal:
 		position = y
-	case StripeDirectionDiagonalLeft:
+	case OrientationDiagonalLeft:
 		position = x - y
 	}
 
@@ -40,8 +30,8 @@ func (pattern Striped) AtWhen (x, y, width, height int) (c color.RGBA) {
 	}
 	
 	if position < pattern.First.Weight {
-		return pattern.First.Pattern.AtWhen(x, y, width, height)
+		return pattern.First.AtWhen(x, y, width, height)
 	} else {
-		return pattern.Second.Pattern.AtWhen(x, y, width, height)
+		return pattern.Second.AtWhen(x, y, width, height)
 	}
 }

@@ -75,7 +75,7 @@ func (element *Artist) Resize (width, height int) {
 			artist.Striped {
 				First:  artist.Stroke { Pattern: uhex(0xFF8800FF), Weight: 7 },
 				Second: artist.Stroke { Pattern: uhex(0x0088FFFF), Weight: 2 },
-				Direction: artist.StripeDirection(x),
+				Orientation: artist.Orientation(x),
 				
 			},
 			element.cellAt(x, 1))
@@ -107,14 +107,17 @@ func (element *Artist) Resize (width, height int) {
 			x, element.cellAt(x, 3))
 	}
 
-	// 0, 4
-	artist.FillEllipse (
-		element, 
-		artist.Beveled {
-			Highlight: artist.NewUniform(hex(0xFF0000FF)),
-			Shadow:    artist.NewUniform(hex(0x0000FFFF)),
-		},
-		element.cellAt(0, 4))
+	// 0, 4 - 3, 4
+	for x := 0; x < 4; x ++ {
+		artist.FillEllipse (
+			element, 
+			artist.Split {
+				First:  artist.NewUniform(hex(0xFF0000FF)),
+				Second: artist.NewUniform(hex(0x0000FFFF)),
+				Orientation: artist.Orientation(x),
+			},
+			element.cellAt(x, 4))
+	}
 	
 	// how long did that take to render?
 	drawTime := time.Since(drawStart)
