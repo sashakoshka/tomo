@@ -20,7 +20,7 @@ type Artist struct {
 func NewArtist () (element *Artist) {
 	element = &Artist { }
 	element.Core, element.core = core.NewCore(element)
-	element.core.SetMinimumSize(400, 300)
+	element.core.SetMinimumSize(400, 400)
 	return
 }
 
@@ -28,7 +28,7 @@ func (element *Artist) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	bounds := element.Bounds()
 	element.cellBounds.Max.X = bounds.Dx() / 4
-	element.cellBounds.Max.Y = bounds.Dy() / 4
+	element.cellBounds.Max.Y = (bounds.Dy() - 64) / 4
 
 	drawStart := time.Now()
 
@@ -90,10 +90,10 @@ func (element *Artist) Resize (width, height int) {
 	textDrawer := artist.TextDrawer { }
 	textDrawer.SetFace(defaultfont.FaceRegular)
 	textDrawer.SetText ([]rune (fmt.Sprintf (
-		"%dms\n%dns",
+		"%dms\n%dus",
 		drawTime.Milliseconds(),
-		drawTime.Nanoseconds())))
-	textDrawer.Draw(element, uhex(0x000000FF), image.Pt(8, 16))
+		drawTime.Microseconds())))
+	textDrawer.Draw(element, uhex(0xFFFFFFFF), image.Pt(8, bounds.Max.Y - 24))
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
