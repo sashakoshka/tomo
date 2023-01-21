@@ -1,8 +1,11 @@
 package testing
 
+import "fmt"
+import "time"
 import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // Artist is an element that displays shapes and patterns drawn by the artist
@@ -26,6 +29,8 @@ func (element *Artist) Resize (width, height int) {
 	bounds := element.Bounds()
 	element.cellBounds.Max.X = bounds.Dx() / 4
 	element.cellBounds.Max.Y = bounds.Dy() / 4
+
+	drawStart := time.Now()
 
 	// 0, 0
 	artist.FillRectangle (
@@ -80,6 +85,15 @@ func (element *Artist) Resize (width, height int) {
 	for x := 0; x < 4; x ++ {
 		element.lines(x + 1, element.cellAt(x, 2))
 	}
+
+	drawTime := time.Since(drawStart)
+	textDrawer := artist.TextDrawer { }
+	textDrawer.SetFace(defaultfont.FaceRegular)
+	textDrawer.SetText ([]rune (fmt.Sprintf (
+		"%dms\n%dns",
+		drawTime.Milliseconds(),
+		drawTime.Nanoseconds())))
+	textDrawer.Draw(element, uhex(0x000000FF), image.Pt(8, 16))
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
