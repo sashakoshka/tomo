@@ -272,10 +272,7 @@ func (window *Window) compressMotionNotify (
 		typedEvent, ok := untypedEvent.Event.(xproto.MotionNotifyEvent)
 		if !ok { continue }
 
-		if firstEvent.Event == typedEvent.Event &&
-			typedEvent.Detail >= 4 &&
-			typedEvent.Detail <= 7 {
-
+		if firstEvent.Event == typedEvent.Event {
 			lastEvent = typedEvent
 			defer func (index int) {
 				xevent.DequeueAt(window.backend.connection, index)
