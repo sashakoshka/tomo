@@ -3,10 +3,15 @@ package artist
 import "image"
 import "image/color"
 
-// Border represents a border that can be fed to MultiBorder.
-type Border struct {
+// Stroke represents a stoke that has a weight and a pattern.
+type Stroke struct {
 	Weight int
-	Stroke Pattern
+	Pattern
+}
+
+type borderInternal struct {
+	weight int
+	stroke Pattern
 	bounds image.Rectangle
 	dx, dy int
 }
@@ -15,15 +20,20 @@ type Border struct {
 // be inset within one another. The final border is treated as a fill color, and
 // its weight does not matter.
 type MultiBorder struct {
-	borders []Border
+	borders []borderInternal
 	lastWidth, lastHeight int
 	maxBorder int
 }
 
 // NewMultiBorder creates a new MultiBorder pattern from the given list of
 // borders.
-func NewMultiBorder (borders ...Border) (multi *MultiBorder) {
-	return &MultiBorder { borders: borders }
+func NewMultiBorder (borders ...Stroke) (multi *MultiBorder) {
+	internalBorders := make([]borderInternal, len(borders))
+	for index, border := range borders {
+		internalBorders[index].weight = border.Weight
+		internalBorders[index].stroke = border.Pattern
+	}
+	return &MultiBorder { borders: internalBorders }
 }
 
 // AtWhen satisfies the Pattern interface.
@@ -35,7 +45,7 @@ func (multi *MultiBorder) AtWhen (x, y, width, height int) (c color.RGBA) {
 	for index := multi.maxBorder; index >= 0; index -- {
 		border := multi.borders[index]
 		if point.In(border.bounds) {
-			return border.Stroke.AtWhen (
+			return border.stroke.AtWhen (
 				point.X - border.bounds.Min.X,
 				point.Y - border.bounds.Min.Y,
 				border.dx, border.dy)
@@ -52,7 +62,7 @@ func (multi *MultiBorder) recalculate (width, height int) {
 		multi.borders[index].bounds = bounds
 		multi.borders[index].dx = bounds.Dx()
 		multi.borders[index].dy = bounds.Dy()
-		bounds = bounds.Inset(border.Weight)
+		bounds = bounds.Inset(border.weight)
 		if bounds.Empty() { break }
 	}
 }

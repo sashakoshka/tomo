@@ -46,11 +46,11 @@ func (element *Artist) Resize (width, height int) {
 	artist.FillRectangle (
 		element,
 		artist.NewMultiBorder (
-			artist.Border { Stroke: uhex(0xFF0000FF), Weight: 1 },
-			artist.Border { Stroke: uhex(0x888800FF), Weight: 2 },
-			artist.Border { Stroke: uhex(0x00FF00FF), Weight: 3 },
-			artist.Border { Stroke: uhex(0x008888FF), Weight: 4 },
-			artist.Border { Stroke: uhex(0x0000FFFF), Weight: 5 },
+			artist.Stroke { Pattern: uhex(0xFF0000FF), Weight: 1 },
+			artist.Stroke { Pattern: uhex(0x888800FF), Weight: 2 },
+			artist.Stroke { Pattern: uhex(0x00FF00FF), Weight: 3 },
+			artist.Stroke { Pattern: uhex(0x008888FF), Weight: 4 },
+			artist.Stroke { Pattern: uhex(0x0000FFFF), Weight: 5 },
 			),
 		element.cellAt(2, 0))
 
@@ -59,8 +59,8 @@ func (element *Artist) Resize (width, height int) {
 		artist.FillRectangle (
 			element,
 			artist.Striped {
-				First:  artist.Border { Stroke: uhex(0xFF8800FF), Weight: 7 },
-				Second: artist.Border { Stroke: uhex(0x0088FFFF), Weight: 2 },
+				First:  artist.Stroke { Pattern: uhex(0xFF8800FF), Weight: 7 },
+				Second: artist.Stroke { Pattern: uhex(0x0088FFFF), Weight: 2 },
 				Direction: artist.StripeDirection(x),
 				
 			},

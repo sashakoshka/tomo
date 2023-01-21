@@ -14,8 +14,8 @@ const (
 
 // Striped is a pattern that produces stripes of two alternating colors.
 type Striped struct {
-	First     Border
-	Second    Border
+	First     Stroke
+	Second    Stroke
 	Direction StripeDirection
 }
 
@@ -40,8 +40,8 @@ func (pattern Striped) AtWhen (x, y, width, height int) (c color.RGBA) {
 	}
 	
 	if position < pattern.First.Weight {
-		return pattern.First.Stroke.AtWhen(x, y, width, height)
+		return pattern.First.Pattern.AtWhen(x, y, width, height)
 	} else {
-		return pattern.Second.Stroke.AtWhen(x, y, width, height)
+		return pattern.Second.Pattern.AtWhen(x, y, width, height)
 	}
 }

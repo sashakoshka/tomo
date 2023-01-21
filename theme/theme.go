@@ -24,19 +24,19 @@ var weakForegroundPattern = artist.NewUniform(color.Gray16 { 0x4444 })
 var strokePattern         = artist.NewUniform(color.Gray16 { 0x0000 })
 
 var sunkenPattern = artist.NewMultiBorder (
-	artist.Border { Weight: 1, Stroke: strokePattern },
-	artist.Border {
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke {
 		Weight: 1,
-		Stroke: artist.Chiseled {
+		Pattern: artist.Chiseled {
 			Highlight: artist.NewUniform(hex(0x3b534eFF)),
 			Shadow:    artist.NewUniform(hex(0x97a09cFF)),
 		},
 	},
-	artist.Border { Stroke: artist.NewUniform(hex(0x97a09cFF)) })
+	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 
 var deadPattern = artist.NewMultiBorder (
-	artist.Border { Weight: 1, Stroke: strokePattern },
-	artist.Border { Stroke: artist.NewUniform(hex(0x97a09cFF)) })
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 
 func AccentPattern () (artist.Pattern) { return accentPattern }
 func BackgroundPattern () (artist.Pattern) { return backgroundPattern }
