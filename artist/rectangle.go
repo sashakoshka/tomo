@@ -88,7 +88,3 @@ func StrokeRectangle (
 		insetBounds.Max.X, insetBounds.Min.Y,
 		bounds.Max.X, insetBounds.Max.Y))
 }
-
-// TODO: FillEllipse
-
-// TODO: StrokeEllipse

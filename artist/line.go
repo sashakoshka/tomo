@@ -129,8 +129,8 @@ func squareAround (
 	source Pattern,
 	x, y, patternWidth, patternHeight, diameter int,
 ) {
-	minY := y - diameter
-	minX := x - diameter
+	minY := y - diameter + 1
+	minX := x - diameter + 1
 	maxY := y + diameter
 	maxX := x + diameter
 	for y = minY; y < maxY; y ++ {

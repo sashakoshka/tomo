@@ -28,7 +28,7 @@ func (element *Artist) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	bounds := element.Bounds()
 	element.cellBounds.Max.X = bounds.Dx() / 4
-	element.cellBounds.Max.Y = (bounds.Dy() - 64) / 4
+	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 4
 
 	drawStart := time.Now()
 
@@ -85,6 +85,9 @@ func (element *Artist) Resize (width, height int) {
 	for x := 0; x < 4; x ++ {
 		element.lines(x + 1, element.cellAt(x, 2))
 	}
+
+	// 0, 3
+	artist.FillEllipse(element, uhex(0x00FF00FF), element.cellAt(0, 3))
 
 	drawTime := time.Since(drawStart)
 	textDrawer := artist.TextDrawer { }
