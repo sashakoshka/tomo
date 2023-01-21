@@ -23,8 +23,8 @@ func FillEllipse (
 	width, height := bounds.Dx(), bounds.Dy()
 	for y := 0; y < height; y ++ {
 	for x := 0; x < width;  x ++ {
-		xf := float64(x) / float64(realWidth)  - 0.5
-		yf := float64(y) / float64(realHeight) - 0.5
+		xf := (float64(x) + 0.5) / float64(realWidth)  - 0.5
+		yf := (float64(y) + 0.5) / float64(realHeight) - 0.5
 		if math.Sqrt(xf * xf + yf * yf) <= 0.5 {
 			data[x + bounds.Min.X + (y + bounds.Min.Y) * stride] =
 				source.AtWhen(x, y, realWidth, realHeight)
@@ -44,11 +44,7 @@ func StrokeEllipse (
 	if weight < 1 { return }
 
 	data, stride := destination.Buffer()
-	bounds = bounds.Canon().Inset(weight)
-	radii := image.Pt (
-		bounds.Dx() / 2,
-		bounds.Dy() / 2)
-	center := bounds.Min.Add(radii)
+	bounds = bounds.Canon().Inset(weight - 1)
 	width, height := bounds.Dx(), bounds.Dy()
 
 	context := ellipsePlottingContext {
@@ -60,6 +56,14 @@ func StrokeEllipse (
 		weight: weight,
 		bounds: bounds,
 	}
+	
+	bounds.Max.X -= 1
+	bounds.Max.Y -= 1
+
+	radii := image.Pt (
+		bounds.Dx() / 2,
+		bounds.Dy() / 2)
+	center := bounds.Min.Add(radii)
 
 	x := float64(0)
 	y := float64(radii.Y)

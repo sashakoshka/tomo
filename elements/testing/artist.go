@@ -87,10 +87,16 @@ func (element *Artist) Resize (width, height int) {
 	}
 
 	// 0, 3
+	artist.StrokeRectangle (
+		element,uhex(0x888888FF), 1,
+		element.cellAt(0, 3))
 	artist.FillEllipse(element, uhex(0x00FF00FF), element.cellAt(0, 3))
 
-	// 1, 3
+	// 1, 3 - 3, 3
 	for x := 1; x < 4; x ++ {
+		artist.StrokeRectangle (
+			element,uhex(0x888888FF), 1,
+			element.cellAt(x, 3))
 		artist.StrokeEllipse (
 			element,
 			[]artist.Pattern {
