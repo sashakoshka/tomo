@@ -19,6 +19,8 @@ type ScrollContainer struct {
 	horizontal struct {
 		exists bool
 		enabled bool
+		dragging bool
+		dragOffset image.Point
 		gutter image.Rectangle
 		bar image.Rectangle
 	}
@@ -26,6 +28,8 @@ type ScrollContainer struct {
 	vertical struct {
 		exists bool
 		enabled bool
+		dragging bool
+		dragOffset image.Point
 		gutter image.Rectangle
 		bar image.Rectangle
 	}
@@ -106,19 +110,40 @@ func (element *ScrollContainer) HandleKeyUp (key tomo.Key, modifiers tomo.Modifi
 }
 
 func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
-	if child, ok := element.child.(tomo.MouseTarget); ok {
+	point := image.Pt(x, y)
+	if point.In(element.horizontal.gutter) {
+		element.horizontal.dragging = true
+		element.dragHorizontalBar(point)
+		
+	} else if point.In(element.vertical.gutter) {
+		element.vertical.dragging = true
+		element.dragVerticalBar(point)
+		
+	} else if child, ok := element.child.(tomo.MouseTarget); ok {
 		child.HandleMouseDown(x, y, button)
 	}
 }
 
 func (element *ScrollContainer) HandleMouseUp (x, y int, button tomo.Button) {
-	if child, ok := element.child.(tomo.MouseTarget); ok {
+	if element.horizontal.dragging {
+		element.horizontal.dragging = false
+		
+	} else if element.vertical.dragging {
+		element.vertical.dragging = false
+		
+	} else if child, ok := element.child.(tomo.MouseTarget); ok {
 		child.HandleMouseUp(x, y, button)
 	}
 }
 
 func (element *ScrollContainer) HandleMouseMove (x, y int) {
-	if child, ok := element.child.(tomo.MouseTarget); ok {
+	if element.horizontal.dragging {
+		element.dragHorizontalBar(image.Pt(x, y))
+		
+	} else if element.vertical.dragging {
+		element.dragVerticalBar(image.Pt(x, y))
+		
+	} else if child, ok := element.child.(tomo.MouseTarget); ok {
 		child.HandleMouseMove(x, y)
 	}
 }
@@ -322,6 +347,26 @@ func (element *ScrollContainer) drawVerticalBar () {
 		element,
 		theme.ScrollBarPattern(false, element.vertical.enabled),
 		element.vertical.bar)
+}
+
+func (element *ScrollContainer) dragHorizontalBar (mousePosition image.Point) {
+	scrollX :=
+		float64(element.child.ScrollContentBounds().Dx()) /
+		float64(element.horizontal.gutter.Dx()) *
+		float64 (
+			mousePosition.X - element.horizontal.bar.Dx() / 2)
+	scrollY := element.child.ScrollViewportBounds().Min.Y
+	element.child.ScrollTo(image.Pt(int(scrollX), scrollY))
+}
+
+func (element *ScrollContainer) dragVerticalBar (mousePosition image.Point) {
+	scrollY :=
+		float64(element.child.ScrollContentBounds().Dy()) /
+		float64(element.vertical.gutter.Dy()) *
+		float64 (
+			mousePosition.Y - element.vertical.bar.Dy() / 2)
+	scrollX := element.child.ScrollViewportBounds().Min.X
+	element.child.ScrollTo(image.Pt(scrollX, int(scrollY)))
 }
 
 func (element *ScrollContainer) updateMinimumSize () {
