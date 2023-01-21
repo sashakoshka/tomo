@@ -249,16 +249,25 @@ func (element *TextBox) ScrollViewportBounds () (bounds image.Rectangle) {
 	return image.Rect (
 		element.scroll,
 		0,
-		element.scroll + element.Bounds().Inset(theme.Padding()).Dx(),
+		element.scroll + element.scrollViewportWidth(),
 		0)
+}
+
+func (element *TextBox) scrollViewportWidth () (width int) {
+	return element.Bounds().Inset(theme.Padding()).Dx()
 }
 
 // ScrollTo scrolls the viewport to the specified point relative to
 // ScrollBounds.
 func (element *TextBox) ScrollTo (position image.Point) {
+	// constrain to minimum
 	element.scroll = position.X
 	if element.scroll < 0 { element.scroll = 0 }
-	// TODO: constrain to max
+	
+	// constrain to maximum
+	contentBounds := element.ScrollContentBounds()
+	maxPosition   := contentBounds.Max.X - element.scrollViewportWidth()
+	if element.scroll > maxPosition { element.scroll = maxPosition }
 
 	if element.core.HasImage () {
 		element.draw()

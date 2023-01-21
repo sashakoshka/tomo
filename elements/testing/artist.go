@@ -131,7 +131,7 @@ func (element *Artist) Resize (width, height int) {
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
-	bounds = bounds.Inset(8)
+	bounds = bounds.Inset(4)
 	c := uhex(0xFFFFFFFF)
 	artist.Line(element, c, weight, bounds.Min, bounds.Max)
 	artist.Line (
