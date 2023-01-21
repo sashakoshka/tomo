@@ -23,7 +23,7 @@ var foregroundPattern     = artist.NewUniform(color.Gray16 { 0x0000 })
 var weakForegroundPattern = artist.NewUniform(color.Gray16 { 0x4444 })
 var strokePattern         = artist.NewUniform(color.Gray16 { 0x0000 })
 
-var sunkenPattern = artist.NewMultiBorder (
+var sunkenPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
@@ -34,7 +34,7 @@ var sunkenPattern = artist.NewMultiBorder (
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 
-var deadPattern = artist.NewMultiBorder (
+var deadPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 

@@ -2,7 +2,7 @@ package theme
 
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
-var buttonPattern = artist.NewMultiBorder (
+var buttonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
@@ -12,7 +12,7 @@ var buttonPattern = artist.NewMultiBorder (
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x8D9894FF)) })
-var selectedButtonPattern = artist.NewMultiBorder (
+var selectedButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
@@ -23,7 +23,7 @@ var selectedButtonPattern = artist.NewMultiBorder (
 	},
 	artist.Stroke { Weight: 1, Pattern: accentPattern },
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x8D9894FF)) })
-var pressedButtonPattern = artist.NewMultiBorder (
+var pressedButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
@@ -33,7 +33,7 @@ var pressedButtonPattern = artist.NewMultiBorder (
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x8D9894FF)) })
-var pressedSelectedButtonPattern = artist.NewMultiBorder (
+var pressedSelectedButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
 		Weight: 1,
@@ -43,7 +43,7 @@ var pressedSelectedButtonPattern = artist.NewMultiBorder (
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x8D9894FF)) })
-var disabledButtonPattern = artist.NewMultiBorder (
+var disabledButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: weakForegroundPattern },
 	artist.Stroke { Pattern: backgroundPattern })
 

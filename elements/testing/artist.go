@@ -45,7 +45,7 @@ func (element *Artist) Resize (width, height int) {
 	// 2, 0
 	artist.FillRectangle (
 		element,
-		artist.NewMultiBorder (
+		artist.NewMultiBordered (
 			artist.Stroke { Pattern: uhex(0xFF0000FF), Weight: 1 },
 			artist.Stroke { Pattern: uhex(0x888800FF), Weight: 2 },
 			artist.Stroke { Pattern: uhex(0x00FF00FF), Weight: 3 },
@@ -53,6 +53,15 @@ func (element *Artist) Resize (width, height int) {
 			artist.Stroke { Pattern: uhex(0x0000FFFF), Weight: 5 },
 			),
 		element.cellAt(2, 0))
+
+	// 3, 0
+	artist.FillRectangle (
+		element,
+		artist.Bordered {
+			Stroke: artist.Stroke { Pattern: uhex(0x0000FFFF), Weight: 5 },
+			Fill: uhex(0xFF0000FF),
+		},
+		element.cellAt(3, 0))
 
 	// 0, 1 - 0, 3
 	for x := 0; x < 4; x ++ {
