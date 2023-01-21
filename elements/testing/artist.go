@@ -75,6 +75,44 @@ func (element *Artist) Resize (width, height int) {
 			},
 			element.cellAt(x, 1))
 	}
+
+	for x := 0; x < 4; x ++ {
+		element.lines(x, element.cellAt(x, 2))
+	}
+}
+
+func (element *Artist) lines (weight int, bounds image.Rectangle) {
+	bounds = bounds.Inset(8)
+	c := uhex(0xFFFFFFFF)
+	artist.Line(element, c, weight, bounds.Min, bounds.Max)
+	artist.Line (
+		element, c, weight,
+		image.Pt(bounds.Max.X, bounds.Min.Y),
+		image.Pt(bounds.Min.X, bounds.Max.Y))
+	artist.Line (
+		element, c, weight,
+		image.Pt(bounds.Max.X, bounds.Min.Y + 16),
+		image.Pt(bounds.Min.X, bounds.Max.Y - 16))
+	artist.Line (
+		element, c, weight,
+		image.Pt(bounds.Min.X, bounds.Min.Y + 16),
+		image.Pt(bounds.Max.X, bounds.Max.Y - 16))
+	artist.Line (
+		element, c, weight,
+		image.Pt(bounds.Min.X + 20, bounds.Min.Y),
+		image.Pt(bounds.Max.X - 20, bounds.Max.Y))
+	artist.Line (
+		element, c, weight,
+		image.Pt(bounds.Max.X - 20, bounds.Min.Y),
+		image.Pt(bounds.Min.X + 20, bounds.Max.Y))
+	artist.Line (
+		element, c, weight,
+		image.Pt(bounds.Min.X, bounds.Min.Y + bounds.Dy() / 2),
+		image.Pt(bounds.Max.X, bounds.Min.Y + bounds.Dy() / 2))
+	artist.Line (
+		element, c, weight,
+		image.Pt(bounds.Min.X + bounds.Dx() / 2, bounds.Min.Y),
+		image.Pt(bounds.Min.X + bounds.Dx() / 2, bounds.Max.Y))
 }
 
 func (element *Artist) cellAt (x, y int) (image.Rectangle) {
