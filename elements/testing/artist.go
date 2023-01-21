@@ -63,7 +63,7 @@ func (element *Artist) Resize (width, height int) {
 		},
 		element.cellAt(3, 0))
 
-	// 0, 1 - 0, 3
+	// 0, 1 - 3, 1
 	for x := 0; x < 4; x ++ {
 		artist.FillRectangle (
 			element,
@@ -76,8 +76,9 @@ func (element *Artist) Resize (width, height int) {
 			element.cellAt(x, 1))
 	}
 
+	// 0, 2 - 3, 2
 	for x := 0; x < 4; x ++ {
-		element.lines(x, element.cellAt(x, 2))
+		element.lines(x + 1, element.cellAt(x, 2))
 	}
 }
 

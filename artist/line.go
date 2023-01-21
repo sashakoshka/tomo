@@ -1,7 +1,10 @@
 package artist
 
 import "image"
+import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
+
+// TODO: draw thick lines more efficiently
 
 // Line draws a line from one point to another with the specified weight and
 // pattern.
@@ -14,7 +17,6 @@ func Line (
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	// TODO: respect weight
 	
 	updatedRegion = image.Rectangle { Min: min, Max: max }.Canon()
 	updatedRegion.Max.X ++
@@ -68,7 +70,8 @@ func lineLow (
 
 	for x := min.X; x < max.X; x ++ {
 		if !(image.Point { x, y }).In(bounds) { break }
-		data[x + y * stride] = source.AtWhen(x, y, width, height)
+		squareAround(data, stride, source, x, y, width, height, weight)
+		// data[x + y * stride] = source.AtWhen(x, y, width, height)
 		if D > 0 {
 			y += yi
 			D += 2 * (deltaY - deltaX)
@@ -103,7 +106,8 @@ func lineHigh (
 
 	for y := min.Y; y < max.Y; y ++ {
 		if !(image.Point { x, y }).In(bounds) { break }
-		data[x + y * stride] = source.AtWhen(x, y, width, height)
+		squareAround(data, stride, source, x, y, width, height, weight)
+		// data[x + y * stride] = source.AtWhen(x, y, width, height)
 		if D > 0 {
 			x += xi
 			D += 2 * (deltaX - deltaY)
@@ -117,4 +121,21 @@ func abs (in int) (out int) {
 	if in < 0 { in *= -1}
 	out = in
 	return
+}
+
+func squareAround (
+	data   []color.RGBA,
+	stride int,
+	source Pattern,
+	x, y, patternWidth, patternHeight, diameter int,
+) {
+	minY := y - diameter
+	minX := x - diameter
+	maxY := y + diameter
+	maxX := x + diameter
+	for y = minY; y < maxY; y ++ {
+	for x = minX; x < maxX; x ++ {
+		data[x + y * stride] =
+			source.AtWhen(x, y, patternWidth, patternHeight)
+	}}
 }
