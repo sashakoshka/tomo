@@ -89,6 +89,18 @@ func (element *Artist) Resize (width, height int) {
 	// 0, 3
 	artist.FillEllipse(element, uhex(0x00FF00FF), element.cellAt(0, 3))
 
+	// 1, 3
+	for x := 1; x < 4; x ++ {
+		artist.StrokeEllipse (
+			element,
+			[]artist.Pattern {
+				uhex(0xFF0000FF),
+				uhex(0x00FF00FF),
+				uhex(0xFF00FFFF),
+			} [x - 1],
+			x, element.cellAt(x, 3))
+	}
+
 	drawTime := time.Since(drawStart)
 	textDrawer := artist.TextDrawer { }
 	textDrawer.SetFace(defaultfont.FaceRegular)
