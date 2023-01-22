@@ -117,11 +117,27 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
 			point.Sub(element.horizontal.bar.Min).X
 		element.dragHorizontalBar(point)
 		
+	} else if point.In(element.horizontal.gutter) {
+		// FIXME: x backend and scroll container should pull these
+		// values from the same place
+		if x > element.horizontal.bar.Min.X {
+			element.scrollChildBy(16, 0)
+		} else {
+			element.scrollChildBy(-16, 0)
+		}
+		
 	} else if point.In(element.vertical.bar) {
 		element.vertical.dragging = true
 		element.vertical.dragOffset =
 			point.Sub(element.vertical.bar.Min).Y
 		element.dragVerticalBar(point)
+		
+	} else if point.In(element.vertical.gutter) {
+		if y > element.vertical.bar.Min.Y {
+			element.scrollChildBy(0, 16)
+		} else {
+			element.scrollChildBy(0, -16)
+		}
 		
 	} else if child, ok := element.child.(tomo.MouseTarget); ok {
 		child.HandleMouseDown(x, y, button)
@@ -160,9 +176,14 @@ func (element *ScrollContainer) HandleMouseScroll (
 	x, y int,
 	deltaX, deltaY float64,
 ) {
-	scrollPoint := element.child.ScrollViewportBounds().Min.Add(image.Pt (
-		int(deltaX),
-		int(deltaY)))
+	element.scrollChildBy(int(deltaX), int(deltaY))
+}
+
+func (element *ScrollContainer) scrollChildBy (x, y int) {
+	if element.child == nil { return }
+	scrollPoint :=
+		element.child.ScrollViewportBounds().Min.
+		Add(image.Pt(x, y))
 	element.child.ScrollTo(scrollPoint)
 }
 
