@@ -274,7 +274,7 @@ func (element *ScrollContainer) recalculate () {
 	horizontal := &element.horizontal
 	vertical   := &element.vertical
 	bounds     := element.Bounds()
-	thickness  := theme.Padding() * 2
+	thickness  := theme.ScrollBarWidth()
 
 	// calculate child size
 	element.childWidth  = bounds.Dx()
@@ -401,8 +401,8 @@ func (element *ScrollContainer) dragVerticalBar (mousePosition image.Point) {
 }
 
 func (element *ScrollContainer) updateMinimumSize () {
-	width  := theme.Padding() * 2
-	height := theme.Padding() * 2
+	width  := theme.ScrollBarWidth()
+	height := theme.ScrollBarWidth()
 	if element.child != nil {
 		childWidth, childHeight := element.child.MinimumSize()
 		width  += childWidth

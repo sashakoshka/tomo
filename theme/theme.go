@@ -32,7 +32,17 @@ var sunkenPattern = artist.NewMultiBordered (
 			Shadow:    artist.NewUniform(hex(0x97a09cFF)),
 		},
 	},
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
+	// artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) },
+	artist.Stroke { Pattern: artist.Striped {
+		First: artist.Stroke {
+			Weight: 2,
+			Pattern: artist.NewUniform(hex(0x97a09cFF)),
+		},
+		Second: artist.Stroke {
+			Weight: 1,
+			Pattern: artist.NewUniform(hex(0x6e8079FF)),
+		},
+	}})
 
 var raisedPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
@@ -107,6 +117,10 @@ func FontFaceBoldItalic () font.Face {
 // text should be offset from its container on all sides by this amount.
 func Padding () int {
 	return 8
+}
+
+func ScrollBarWidth () int {
+	return Padding() * 2
 }
 
 // SinkOffsetVector specifies a vector for things such as text to move by when a
