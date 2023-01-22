@@ -34,13 +34,43 @@ var sunkenPattern = artist.NewMultiBordered (
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 
+var raisedPattern = artist.NewMultiBordered (
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke {
+		Weight: 1,
+		Pattern: artist.Beveled {
+			Highlight: artist.NewUniform(hex(0xDBDBDBFF)),
+			Shadow:    artist.NewUniform(hex(0x383C3AFF)),
+		},
+	},
+	artist.Stroke { Pattern: artist.NewUniform(hex(0xAAAAAAFF)) })
+
+var selectedRaisedPattern = artist.NewMultiBordered (
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke {
+		Weight: 1,
+		Pattern: artist.Beveled {
+			Highlight: artist.NewUniform(hex(0xDBDBDBFF)),
+			Shadow:    artist.NewUniform(hex(0x383C3AFF)),
+		},
+	},
+	artist.Stroke { Weight: 1, Pattern: accentPattern },
+	artist.Stroke { Pattern: artist.NewUniform(hex(0xAAAAAAFF)) })
+
 var deadPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 
 func AccentPattern () (artist.Pattern) { return accentPattern }
 func BackgroundPattern () (artist.Pattern) { return backgroundPattern }
-func SunkenPattern () (artist.Pattern) { return sunkenPattern}
+func SunkenPattern () (artist.Pattern) { return sunkenPattern }
+func RaisedPattern (selected bool) (artist.Pattern) {
+	if selected {
+		return selectedRaisedPattern
+	} else {
+		return raisedPattern
+	}
+}
 func DeadPattern () (artist.Pattern) { return deadPattern }
 func ForegroundPattern (enabled bool) (artist.Pattern) {
 	if enabled {

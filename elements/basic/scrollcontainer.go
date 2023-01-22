@@ -131,9 +131,13 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
 func (element *ScrollContainer) HandleMouseUp (x, y int, button tomo.Button) {
 	if element.horizontal.dragging {
 		element.horizontal.dragging = false
+		element.drawHorizontalBar()
+		element.core.DamageRegion(element.horizontal.bar)
 		
 	} else if element.vertical.dragging {
 		element.vertical.dragging = false
+		element.drawVerticalBar()
+		element.core.DamageRegion(element.vertical.bar)
 		
 	} else if child, ok := element.child.(tomo.MouseTarget); ok {
 		child.HandleMouseUp(x, y, button)
@@ -338,7 +342,9 @@ func (element *ScrollContainer) drawHorizontalBar () {
 		element.horizontal.gutter)
 	artist.FillRectangle (
 		element,
-		theme.ScrollBarPattern(true, element.horizontal.enabled),
+		theme.ScrollBarPattern (
+			true, element.horizontal.enabled,
+			element.horizontal.dragging),
 		element.horizontal.bar)
 }
 
@@ -349,7 +355,9 @@ func (element *ScrollContainer) drawVerticalBar () {
 		element.vertical.gutter)
 	artist.FillRectangle (
 		element,
-		theme.ScrollBarPattern(false, element.vertical.enabled),
+		theme.ScrollBarPattern (
+			false, element.vertical.enabled,
+			element.vertical.dragging),
 		element.vertical.bar)
 }
 
