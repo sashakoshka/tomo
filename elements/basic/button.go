@@ -39,7 +39,7 @@ func (element *Button) Resize (width, height int) {
 
 func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {
 	if !element.enabled { return }
-	element.Select()
+	if !element.selected { element.Select() }
 	if button != tomo.ButtonLeft { return }
 	element.pressed = true
 	if element.core.HasImage() {

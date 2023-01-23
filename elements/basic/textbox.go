@@ -56,7 +56,7 @@ func (element *TextBox) Resize (width, height int) {
 
 func (element *TextBox) HandleMouseDown (x, y int, button tomo.Button) {
 	if !element.enabled { return }
-	element.Select()
+	if !element.selected { element.Select() }
 }
 
 func (element *TextBox) HandleMouseUp (x, y int, button tomo.Button) { }
