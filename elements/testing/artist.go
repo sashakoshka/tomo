@@ -20,7 +20,7 @@ type Artist struct {
 func NewArtist () (element *Artist) {
 	element = &Artist { }
 	element.Core, element.core = core.NewCore(element)
-	element.core.SetMinimumSize(400, 480)
+	element.core.SetMinimumSize(400, 512)
 	return
 }
 
@@ -28,7 +28,7 @@ func (element *Artist) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	bounds := element.Bounds()
 	element.cellBounds.Max.X = bounds.Dx() / 4
-	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 6
+	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 7
 
 	drawStart := time.Now()
 
@@ -190,6 +190,18 @@ func (element *Artist) Resize (width, height int) {
 			CellHeight: 23,
 		},
 		element.cellAt(3, 5))
+		
+	// 0, 6 - 3, 6
+	for x := 0; x < 4; x ++ {
+		artist.FillRectangle (
+			element, 
+			artist.Gradient {
+				First:  artist.NewUniform(hex(0xFF0000FF)),
+				Second: artist.NewUniform(hex(0x0000FFFF)),
+				Orientation: artist.Orientation(x),
+			},
+			element.cellAt(x, 6))
+	}
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
