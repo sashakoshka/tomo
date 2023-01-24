@@ -7,8 +7,8 @@ var listPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			Highlight: artist.NewUniform(hex(0x383C3AFF)),
-			Shadow:    artist.NewUniform(hex(0x999C99FF)),
+			artist.NewUniform(hex(0x383C3AFF)),
+			artist.NewUniform(hex(0x999C99FF)),
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x999C99FF)) })
@@ -28,8 +28,8 @@ var selectedListEntryPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			Highlight: artist.NewUniform(hex(0x3b534eFF)),
-			Shadow:    artist.NewUniform(hex(0x97a09cFF)),
+			artist.NewUniform(hex(0x3b534eFF)),
+			artist.NewUniform(hex(0x97a09cFF)),
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })

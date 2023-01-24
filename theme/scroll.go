@@ -7,8 +7,8 @@ var scrollGutterPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			Highlight: artist.NewUniform(hex(0x3b534eFF)),
-			Shadow:    artist.NewUniform(hex(0x6e8079FF)),
+			artist.NewUniform(hex(0x3b534eFF)),
+			artist.NewUniform(hex(0x6e8079FF)),
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x6e8079FF)) })
@@ -20,8 +20,8 @@ var scrollBarPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			Highlight: artist.NewUniform(hex(0xCCD5D2FF)),
-			Shadow:    artist.NewUniform(hex(0x4B5B59FF)),
+			artist.NewUniform(hex(0xCCD5D2FF)),
+			artist.NewUniform(hex(0x4B5B59FF)),
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x8D9894FF)) })
@@ -30,8 +30,8 @@ var pressedScrollBarPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			Highlight: artist.NewUniform(hex(0xCCD5D2FF)),
-			Shadow:    artist.NewUniform(hex(0x4B5B59FF)),
+			artist.NewUniform(hex(0xCCD5D2FF)),
+			artist.NewUniform(hex(0x4B5B59FF)),
 		},
 	},
 	artist.Stroke { Weight: 1, Pattern: artist.NewUniform(hex(0x8D9894FF)) },

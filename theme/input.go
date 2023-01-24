@@ -7,8 +7,8 @@ var inputPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			Highlight: artist.NewUniform(hex(0x89925AFF)),
-			Shadow:    artist.NewUniform(hex(0xD2CB9AFF)),
+			artist.NewUniform(hex(0x89925AFF)),
+			artist.NewUniform(hex(0xD2CB9AFF)),
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0xD2CB9AFF)) })

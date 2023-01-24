@@ -3,18 +3,15 @@ package artist
 import "image/color"
 
 // Beveled is a pattern that has a highlight section and a shadow section.
-type Beveled struct {
-	Highlight Pattern
-	Shadow    Pattern
-}
+type Beveled [2]Pattern
 
 // AtWhen satisfies the Pattern interface.
 func (pattern Beveled) AtWhen (x, y, width, height int) (c color.RGBA) {
 	return QuadBeveled {
-		pattern.Highlight,
-		pattern.Shadow,
-		pattern.Shadow,
-		pattern.Highlight,
+		pattern[0],
+		pattern[1],
+		pattern[1],
+		pattern[0],
 	}.AtWhen(x, y, width, height)
 }
 

@@ -28,8 +28,8 @@ var sunkenPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			Highlight: artist.NewUniform(hex(0x3b534eFF)),
-			Shadow:    artist.NewUniform(hex(0x97a09cFF)),
+			artist.NewUniform(hex(0x3b534eFF)),
+			artist.NewUniform(hex(0x97a09cFF)),
 		},
 	},
 	// artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) },
@@ -49,8 +49,8 @@ var raisedPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			Highlight: artist.NewUniform(hex(0xDBDBDBFF)),
-			Shadow:    artist.NewUniform(hex(0x383C3AFF)),
+			artist.NewUniform(hex(0xDBDBDBFF)),
+			artist.NewUniform(hex(0x383C3AFF)),
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0xAAAAAAFF)) })
@@ -60,8 +60,8 @@ var selectedRaisedPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			Highlight: artist.NewUniform(hex(0xDBDBDBFF)),
-			Shadow:    artist.NewUniform(hex(0x383C3AFF)),
+			artist.NewUniform(hex(0xDBDBDBFF)),
+			artist.NewUniform(hex(0x383C3AFF)),
 		},
 	},
 	artist.Stroke { Weight: 1, Pattern: accentPattern },

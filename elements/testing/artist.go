@@ -36,8 +36,8 @@ func (element *Artist) Resize (width, height int) {
 	artist.FillRectangle (
 		element,
 		artist.Beveled {
-			Highlight: artist.NewUniform(hex(0xFF0000FF)),
-			Shadow:    artist.NewUniform(hex(0x0000FFFF)),
+			artist.NewUniform(hex(0xFF0000FF)),
+			artist.NewUniform(hex(0x0000FFFF)),
 		},
 		element.cellAt(0, 0))
 
