@@ -29,7 +29,7 @@ func (pattern QuadBeveled) AtWhen (x, y, width, height int) (c color.RGBA) {
 	
 	switch {
 	case top && left:
-		if x > y { side = 0 } else { side = 3 }
+		if x < y { side = 3 } else { side = 0 }
 		
 	case top && right:
 		if width - x > y { side = 0 } else { side = 1 }
