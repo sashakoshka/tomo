@@ -175,6 +175,21 @@ func (element *Artist) Resize (width, height int) {
 			Spacing: 16,
 		},
 		element.cellAt(2, 5))
+		
+	// 3, 5
+	artist.FillRectangle (
+		element,
+		artist.Tiled {
+			Pattern: artist.QuadBeveled {
+				artist.NewUniform(hex(0x880000FF)),
+				artist.NewUniform(hex(0x00FF00FF)),
+				artist.NewUniform(hex(0x0000FFFF)),
+				artist.NewUniform(hex(0xFF00FFFF)),
+			},
+			CellWidth: 17,
+			CellHeight: 23,
+		},
+		element.cellAt(3, 5))
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
