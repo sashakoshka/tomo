@@ -28,22 +28,23 @@ func NewMouse () (element *Mouse) {
 
 func (element *Mouse) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
+	bounds := element.Bounds()
 	artist.FillRectangle (
 		element.core,
 		theme.AccentPattern(),
-		element.Bounds())
+		bounds)
 	artist.StrokeRectangle (
 		element.core,
 		artist.NewUniform(color.Black), 1,
-		element.Bounds())
-	artist.Line (
-		element.core, artist.NewUniform(color.White), 3,
-		image.Pt(1, 1),
-		image.Pt(width - 2, height - 2))
+		bounds)
 	artist.Line (
 		element.core, artist.NewUniform(color.White), 1,
-		image.Pt(1, height - 2),
-		image.Pt(width - 2, 1))
+		image.Pt(1, 1),
+		image.Pt(bounds.Dx() - 2, bounds.Dy() - 2))
+	artist.Line (
+		element.core, artist.NewUniform(color.White), 1,
+		image.Pt(1, bounds.Dy() - 2),
+		image.Pt(bounds.Dx() - 2, 1))
 }
 
 func (element *Mouse) HandleMouseDown (x, y int, button tomo.Button) {

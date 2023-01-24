@@ -359,6 +359,9 @@ func (element *List) selectUnderMouse (x, y int) (updated bool) {
 	if element.onSelectedEntryChange != nil {
 		element.onSelectedEntryChange(element.selectedEntry)
 	}
+	if element.selectedEntry >= 0 {
+		element.entries[element.selectedEntry].RunSelect()
+	}
 	return true
 }
 

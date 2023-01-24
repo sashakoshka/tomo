@@ -12,13 +12,13 @@ type ListEntry struct {
 	textPoint image.Point
 	text string
 	forcedMinimumWidth int
-	onClick func ()
+	onSelect func ()
 }
 
-func NewListEntry (text string, onClick func ()) (entry ListEntry) {
+func NewListEntry (text string, onSelect func ()) (entry ListEntry) {
 	entry = ListEntry  {
-		text:    text,
-		onClick: onClick,
+		text:     text,
+		onSelect: onSelect,
 	}
 	entry.drawer.SetText([]rune(text))
 	entry.drawer.SetFace(theme.FontFaceRegular())
@@ -60,6 +60,12 @@ func (entry *ListEntry) Draw (
 		destination,
 		theme.ForegroundPattern(true),
 		offset.Add(entry.textPoint))
+}
+
+func (entry *ListEntry) RunSelect () {
+	if entry.onSelect != nil {
+		entry.onSelect()
+	}
 }
 
 func (entry *ListEntry) Bounds () (bounds image.Rectangle) {

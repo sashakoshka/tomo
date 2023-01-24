@@ -123,6 +123,8 @@ func abs (in int) (out int) {
 	return
 }
 
+// TODO: this method of doing things sucks and can cause a segfault. we should
+// not be doing it this way
 func squareAround (
 	data   []color.RGBA,
 	stride int,
