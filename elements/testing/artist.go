@@ -20,7 +20,7 @@ type Artist struct {
 func NewArtist () (element *Artist) {
 	element = &Artist { }
 	element.Core, element.core = core.NewCore(element)
-	element.core.SetMinimumSize(400, 512)
+	element.core.SetMinimumSize(400, 600)
 	return
 }
 
@@ -28,7 +28,7 @@ func (element *Artist) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	bounds := element.Bounds()
 	element.cellBounds.Max.X = bounds.Dx() / 4
-	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 7
+	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 8
 
 	drawStart := time.Now()
 
@@ -202,6 +202,15 @@ func (element *Artist) Resize (width, height int) {
 			},
 			element.cellAt(x, 6))
 	}
+
+	// 0, 7
+	artist.FillEllipse (
+		element,
+		artist.EllipticallyBordered {
+			Fill: uhex(0xFF0000FF),
+			Stroke: artist.Stroke { Pattern: uhex(0x00FF00), Weight: 5 },
+		},
+		element.cellAt(0, 7))
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
