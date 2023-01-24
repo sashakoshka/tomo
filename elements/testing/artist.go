@@ -28,7 +28,7 @@ func (element *Artist) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	bounds := element.Bounds()
 	element.cellBounds.Max.X = bounds.Dx() / 4
-	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 5
+	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 6
 
 	drawStart := time.Now()
 
@@ -128,6 +128,17 @@ func (element *Artist) Resize (width, height int) {
 		drawTime.Milliseconds(),
 		drawTime.Microseconds())))
 	textDrawer.Draw(element, uhex(0xFFFFFFFF), image.Pt(8, bounds.Max.Y - 24))
+	
+	// 0, 5
+	artist.FillRectangle (
+		element,
+		artist.QuadBeveled {
+			artist.NewUniform(hex(0x880000FF)),
+			artist.NewUniform(hex(0x00FF00FF)),
+			artist.NewUniform(hex(0x0000FFFF)),
+			artist.NewUniform(hex(0xFF00FFFF)),
+		},
+		element.cellAt(0, 5))
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {

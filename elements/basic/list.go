@@ -11,11 +11,15 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 type List struct {
 	*core.Core
 	core core.CoreControl
+	
 	enabled bool
 	selected bool
+	pressed bool
+	
 	contentHeight int
 	forcedMinimumWidth  int
 	forcedMinimumHeight int
+	
 	selectedEntry int
 	scroll int
 	entries []ListEntry
@@ -28,7 +32,7 @@ type List struct {
 
 // NewList creates a new list element with the specified entries.
 func NewList (entries ...ListEntry) (element *List) {
-	element = &List { }
+	element = &List { enabled: true, selectedEntry: -1 }
 	element.Core, element.core = core.NewCore(element)
 	
 	element.entries = make([]ListEntry, len(entries))
@@ -71,16 +75,16 @@ func (element *List) HandleMouseDown (x, y int, button tomo.Button) {
 	if !element.enabled  { return }
 	if !element.selected { element.Select() }
 	if button != tomo.ButtonLeft { return }
-	
-	// if element.core.HasImage() {
-		// element.draw()
-		// element.core.DamageAll()
-	// }
+	element.pressed = true
+	if element.selectUnderMouse(x, y) && element.core.HasImage() {
+		element.draw()
+		element.core.DamageAll()
+	}
 }
 
 func (element *List) HandleMouseUp (x, y int, button tomo.Button) {
 	if button != tomo.ButtonLeft { return }
-	// element.pressed = false
+	element.pressed = false
 	// if element.core.HasImage() {
 		// element.draw()
 		// element.core.DamageAll()
@@ -95,7 +99,15 @@ func (element *List) HandleMouseUp (x, y int, button tomo.Button) {
 	// }
 }
 
-func (element *List) HandleMouseMove (x, y int) { }
+func (element *List) HandleMouseMove (x, y int) {
+	if element.pressed {
+		if element.selectUnderMouse(x, y) && element.core.HasImage() {
+			element.draw()
+			element.core.DamageAll()
+		}
+	}
+}
+
 func (element *List) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *List) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
@@ -324,6 +336,32 @@ func (element *List) Replace (index int, entry ListEntry) {
 	}
 }
 
+func (element *List) selectUnderMouse (x, y int) (updated bool) {
+	bounds := element.Bounds()
+	mousePoint := image.Pt(x, y)
+	dot := image.Pt (
+		bounds.Min.X + theme.Padding() / 2,
+		bounds.Min.Y - element.scroll + theme.Padding() / 2)
+	
+	newlySelectedEntryIndex := -1
+	for index, entry := range element.entries {
+		entryPosition := dot
+		dot.Y += entry.Bounds().Dy()
+		if entryPosition.Y > bounds.Max.Y { break }
+		if mousePoint.In(entry.Bounds().Add(entryPosition)) {
+			newlySelectedEntryIndex = index
+			break
+		}
+	}
+
+	if element.selectedEntry == newlySelectedEntryIndex { return false }
+	element.selectedEntry = newlySelectedEntryIndex
+	if element.onSelectedEntryChange != nil {
+		element.onSelectedEntryChange(element.selectedEntry)
+	}
+	return true
+}
+
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
 	entry.Collapse(element.forcedMinimumWidth)
 	return entry
@@ -332,7 +370,6 @@ func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
 func (element *List) updateMinimumSize () {
 	element.contentHeight = 0
 	for _, entry := range element.entries {
-		element.contentHeight += theme.Padding()
 		element.contentHeight += entry.Bounds().Dy()
 	}
 
@@ -340,11 +377,18 @@ func (element *List) updateMinimumSize () {
 	minimumHeight := element.forcedMinimumHeight
 
 	if minimumWidth == 0 {
-		
+		minimumWidth = theme.Padding()
+		for _, entry := range element.entries {
+			entryWidth := entry.Bounds().Dx()
+			if entryWidth > minimumWidth {
+				minimumWidth = entryWidth
+			}
+		}
+		minimumWidth += theme.Padding()
 	}
 
 	if minimumHeight == 0 {
-		minimumHeight = element.contentHeight
+		minimumHeight = element.contentHeight + theme.Padding() * 2
 	}
 
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
@@ -359,27 +403,21 @@ func (element *List) draw () {
 		bounds)
 
 	dot := image.Point {
-		bounds.Min.X + theme.Padding(),
-		bounds.Min.Y - element.scroll,
+		bounds.Min.X,
+		bounds.Min.Y - element.scroll + theme.Padding() / 2,
 	}
 	for index, entry := range element.entries {
-		dot.Y += theme.Padding()
 		entryPosition := dot
 		dot.Y += entry.Bounds().Dy()
 		if dot.Y < bounds.Min.Y { continue }
 		if entryPosition.Y > bounds.Max.Y { break }
 
-		selectionMarkerBounds := image.Rect (
-			theme.Padding() / 2,
-			entryPosition.Y - theme.Padding() / 2,
-			bounds.Dx() - theme.Padding() / 2,
-			entryPosition.Y + entry.Bounds().Dy() +
-			theme.Padding() / 2)
-		artist.FillRectangle (
-			element,
-			theme.ListEntryPattern(element.selectedEntry == index),
-			selectionMarkerBounds)
-		
+		if element.selectedEntry == index {
+			artist.FillRectangle (
+				element,
+				theme.ListEntryPattern(true),
+				entry.Bounds().Add(entryPosition))
+		}
 		entry.Draw (
 			element, entryPosition,
 			element.selectedEntry == index && element.selected)
