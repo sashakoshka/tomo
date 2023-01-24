@@ -112,8 +112,8 @@ func (element *Artist) Resize (width, height int) {
 		artist.FillEllipse (
 			element, 
 			artist.Split {
-				First:  artist.NewUniform(hex(0xFF0000FF)),
-				Second: artist.NewUniform(hex(0x0000FFFF)),
+				First:  uhex(0xFF0000FF),
+				Second: uhex(0x0000FFFF),
 				Orientation: artist.Orientation(x),
 			},
 			element.cellAt(x, 4))
@@ -133,10 +133,10 @@ func (element *Artist) Resize (width, height int) {
 	artist.FillRectangle (
 		element,
 		artist.QuadBeveled {
-			artist.NewUniform(hex(0x880000FF)),
-			artist.NewUniform(hex(0x00FF00FF)),
-			artist.NewUniform(hex(0x0000FFFF)),
-			artist.NewUniform(hex(0xFF00FFFF)),
+			uhex(0x880000FF),
+			uhex(0x00FF00FF),
+			uhex(0x0000FFFF),
+			uhex(0xFF00FFFF),
 		},
 		element.cellAt(0, 5))
 		
@@ -145,10 +145,10 @@ func (element *Artist) Resize (width, height int) {
 		element,
 		artist.Checkered {
 			First: artist.QuadBeveled {
-				artist.NewUniform(hex(0x880000FF)),
-				artist.NewUniform(hex(0x00FF00FF)),
-				artist.NewUniform(hex(0x0000FFFF)),
-				artist.NewUniform(hex(0xFF00FFFF)),
+				uhex(0x880000FF),
+				uhex(0x00FF00FF),
+				uhex(0x0000FFFF),
+				uhex(0xFF00FFFF),
 			},
 			Second: artist.Striped {
 				First:  artist.Stroke { Pattern: uhex(0xFF8800FF), Weight: 1 },
@@ -181,10 +181,10 @@ func (element *Artist) Resize (width, height int) {
 		element,
 		artist.Tiled {
 			Pattern: artist.QuadBeveled {
-				artist.NewUniform(hex(0x880000FF)),
-				artist.NewUniform(hex(0x00FF00FF)),
-				artist.NewUniform(hex(0x0000FFFF)),
-				artist.NewUniform(hex(0xFF00FFFF)),
+				uhex(0x880000FF),
+				uhex(0x00FF00FF),
+				uhex(0x0000FFFF),
+				uhex(0xFF00FFFF),
 			},
 			CellWidth: 17,
 			CellHeight: 23,
@@ -196,8 +196,8 @@ func (element *Artist) Resize (width, height int) {
 		artist.FillRectangle (
 			element, 
 			artist.Gradient {
-				First:  artist.NewUniform(hex(0xFF0000FF)),
-				Second: artist.NewUniform(hex(0x0000FFFF)),
+				First:  uhex(0xFF0000FF),
+				Second: uhex(0x0000FFFF),
 				Orientation: artist.Orientation(x),
 			},
 			element.cellAt(x, 6))
@@ -208,8 +208,8 @@ func (element *Artist) Resize (width, height int) {
 		element,
 		artist.EllipticallyBordered {
 			Fill: artist.Gradient {
-				First:  artist.NewUniform(hex(0x00FF00FF)),
-				Second: artist.NewUniform(hex(0x0000FFFF)),
+				First:  uhex(0x00FF00FF),
+				Second: uhex(0x0000FFFF),
 				Orientation: artist.OrientationVertical,
 			},
 			Stroke: artist.Stroke { Pattern: uhex(0x00FF00), Weight: 5 },
@@ -225,6 +225,33 @@ func (element *Artist) Resize (width, height int) {
 			Seed: 0,
 		},
 		element.cellAt(1, 7),
+	)
+
+	// 2, 7
+	artist.FillRectangle (
+		element,
+		artist.Noisy {
+			Low:  uhex(0x000000FF),
+			High: artist.Gradient {
+				First:  uhex(0x000000FF),
+				Second: uhex(0xFFFFFFFF),
+				Orientation: artist.OrientationVertical,
+			},
+			Seed: 0,
+		},
+		element.cellAt(2, 7),
+	)
+
+	// 3, 7
+	artist.FillRectangle (
+		element,
+		artist.Noisy {
+			Low:  uhex(0x000000FF),
+			High: uhex(0xFFFFFFFF),
+			Seed: 0,
+			Harsh: true,
+		},
+		element.cellAt(3, 7),
 	)
 }
 
