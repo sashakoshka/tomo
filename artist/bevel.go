@@ -32,13 +32,13 @@ func (pattern QuadBeveled) AtWhen (x, y, width, height int) (c color.RGBA) {
 		if x > y { side = 0 } else { side = 3 }
 		
 	case top && right:
-		if width - x < y { side = 1 } else { side = 0 }
+		if width - x > y { side = 0 } else { side = 1 }
 		
 	case bottom && left:
-		if x > height - y { side = 2 } else { side = 3 }
+		if x < height - y { side = 3 } else { side = 2 }
 		
 	case bottom && right:
-		if width - x < height - y { side = 1 } else { side = 2 }
+		if width - x > height - y { side = 2 } else { side = 1 }
 		
 	}
 
