@@ -207,7 +207,11 @@ func (element *Artist) Resize (width, height int) {
 	artist.FillEllipse (
 		element,
 		artist.EllipticallyBordered {
-			Fill: uhex(0xFF0000FF),
+			Fill: artist.Gradient {
+				First:  artist.NewUniform(hex(0x00FF00FF)),
+				Second: artist.NewUniform(hex(0x0000FFFF)),
+				Orientation: artist.OrientationVertical,
+			},
 			Stroke: artist.Stroke { Pattern: uhex(0x00FF00), Weight: 5 },
 		},
 		element.cellAt(0, 7))

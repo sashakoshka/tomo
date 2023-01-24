@@ -14,14 +14,14 @@ func (pattern Gradient) AtWhen (x, y, width, height int) (c color.RGBA) {
 	var position float64
 	switch pattern.Orientation {
 	case OrientationVertical:
-		position = float64(x) / float64(width)
+		position = float64(y) / float64(height)
 	case OrientationDiagonalRight:
-		position = (float64(x) / float64(width) +
+		position = (float64(width - x) / float64(width) +
 			float64(y) / float64(height)) / 2
 	case OrientationHorizontal:
-		position = float64(y) / float64(height)
+		position = float64(x) / float64(width)
 	case OrientationDiagonalLeft:
-		position = (float64(width - x) / float64(width) +
+		position = (float64(x) / float64(width) +
 			float64(y) / float64(height)) / 2
 	}
 
