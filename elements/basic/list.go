@@ -384,11 +384,10 @@ func (element *List) updateMinimumSize () {
 				minimumWidth = entryWidth
 			}
 		}
-		minimumWidth += theme.Padding()
 	}
 
 	if minimumHeight == 0 {
-		minimumHeight = element.contentHeight + theme.Padding() * 2
+		minimumHeight = element.contentHeight + theme.Padding()
 	}
 
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
