@@ -10,26 +10,12 @@ type Beveled struct {
 
 // AtWhen satisfies the Pattern interface.
 func (pattern Beveled) AtWhen (x, y, width, height int) (c color.RGBA) {
-	var highlighted  bool
-	var bottomCorner bool
-	
-	if width > height {
-		bottomCorner = y > height / 2
-	} else {
-		bottomCorner = x < width / 2
-	}
-	
-	if bottomCorner {
-		highlighted = float64(x) < float64(height) - float64(y)
-	} else {
-		highlighted = float64(width) - float64(x) > float64(y)
-	}
-
-	if highlighted {
-		return pattern.Highlight.AtWhen(x, y, width, height)
-	} else {
-		return pattern.Shadow.AtWhen(x, y, width, height)
-	}
+	return QuadBeveled {
+		pattern.Highlight,
+		pattern.Shadow,
+		pattern.Shadow,
+		pattern.Highlight,
+	}.AtWhen(x, y, width, height)
 }
 
 // QuadBeveled is like Beveled, but with four sides. A pattern can be specified
