@@ -139,6 +139,42 @@ func (element *Artist) Resize (width, height int) {
 			artist.NewUniform(hex(0xFF00FFFF)),
 		},
 		element.cellAt(0, 5))
+		
+	// 1, 5
+	artist.FillRectangle (
+		element,
+		artist.Checkered {
+			First: artist.QuadBeveled {
+				artist.NewUniform(hex(0x880000FF)),
+				artist.NewUniform(hex(0x00FF00FF)),
+				artist.NewUniform(hex(0x0000FFFF)),
+				artist.NewUniform(hex(0xFF00FFFF)),
+			},
+			Second: artist.Striped {
+				First:  artist.Stroke { Pattern: uhex(0xFF8800FF), Weight: 1 },
+				Second: artist.Stroke { Pattern: uhex(0x0088FFFF), Weight: 1 },
+				Orientation: artist.OrientationVertical,
+			},
+			CellWidth: 32,
+			CellHeight: 16,
+		},
+		element.cellAt(1, 5))
+	
+	// 2, 5
+	artist.FillRectangle (
+		element,
+		artist.Dotted {
+			Foreground: uhex(0x00FF00FF),
+			Background: artist.Checkered {
+				First:  uhex(0x444444FF),
+				Second: uhex(0x888888FF),
+				CellWidth: 16,
+				CellHeight: 16,
+			},
+			Size: 8,
+			Spacing: 16,
+		},
+		element.cellAt(2, 5))
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
