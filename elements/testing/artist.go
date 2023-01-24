@@ -215,6 +215,17 @@ func (element *Artist) Resize (width, height int) {
 			Stroke: artist.Stroke { Pattern: uhex(0x00FF00), Weight: 5 },
 		},
 		element.cellAt(0, 7))
+
+	// 1, 7
+	artist.FillRectangle (
+		element,
+		artist.Noisy {
+			Low:  uhex(0x000000FF),
+			High: uhex(0xFFFFFFFF),
+			Seed: 0,
+		},
+		element.cellAt(1, 7),
+	)
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
