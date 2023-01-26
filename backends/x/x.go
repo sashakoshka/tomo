@@ -79,6 +79,21 @@ func (backend *Backend) Do (callback func ()) {
 	backend.doChannel <- callback
 }
 
+// Copy puts data into the clipboard. This method is not yet implemented and
+// will do nothing!
+func (backend *Backend) Copy (data tomo.Data) {
+	backend.assert()
+	// TODO
+}
+
+// Paste returns the data currently in the clipboard. This method may
+// return nil. This method is not yet implemented and will do nothing!
+func (backend *Backend) Paste () (data tomo.Data) {
+	backend.assert()
+	// TODO
+	return
+}
+
 func (backend *Backend) assert () {
 	if backend == nil { panic("nil backend") }
 }

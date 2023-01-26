@@ -21,7 +21,7 @@ type Backend interface {
 	// interface.
 	NewWindow (width, height int) (window Window, err error)
 
-	// Copy puts data in the clipboard.
+	// Copy puts data into the clipboard.
 	Copy (data Data)
 
 	// Paste returns the data currently in the clipboard. This method may

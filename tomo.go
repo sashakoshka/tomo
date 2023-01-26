@@ -24,6 +24,7 @@ func Stop () {
 // Do executes the specified callback within the main thread as soon as
 // possible. This function can be safely called from other threads.
 func Do (callback func ()) {
+	if backend == nil { panic("no backend is running") }
 	backend.Do(callback)
 }
 
@@ -36,6 +37,18 @@ func NewWindow (width, height int) (window Window, err error) {
 		err = errors.New("no backend is running.")
 		return
 	}
-	window, err = backend.NewWindow(width, height)
-	return
+	return backend.NewWindow(width, height)
+}
+
+// Copy puts data into the clipboard.
+func Copy (data Data) {
+	if backend == nil { panic("no backend is running") }
+	backend.Copy(data)
+}
+
+// Paste returns the data currently in the clipboard. This method may
+// return nil.
+func Paste () (data Data) {
+	if backend == nil { panic("no backend is running") }
+	return backend.Paste()
 }
