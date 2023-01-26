@@ -58,8 +58,6 @@ func (element *List) Resize (width, height int) {
 	}
 }
 
-// TODO: handle keyboard and mouse events
-
 // Collapse forces a minimum width and height upon the list. If a zero value is
 // given for a dimension, its minimum will be determined by the list's content.
 // If the list's height goes beyond the forced size, it will need to be accessed
@@ -85,18 +83,6 @@ func (element *List) HandleMouseDown (x, y int, button tomo.Button) {
 func (element *List) HandleMouseUp (x, y int, button tomo.Button) {
 	if button != tomo.ButtonLeft { return }
 	element.pressed = false
-	// if element.core.HasImage() {
-		// element.draw()
-		// element.core.DamageAll()
-	// }
-// 
-	// within := image.Point { x, y }.
-		// In(element.Bounds())
-		// 
-	// if !element.enabled { return }
-	// if within && element.onClick != nil {
-		// element.onClick()
-	// }
 }
 
 func (element *List) HandleMouseMove (x, y int) {
@@ -112,7 +98,21 @@ func (element *List) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *List) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
 	if !element.enabled { return }
-	// TODO
+	
+	newIndex := element.selectedEntry
+	switch key {
+	case tomo.KeyLeft,  tomo.KeyUp:   newIndex --
+	case tomo.KeyRight, tomo.KeyDown: newIndex ++
+	default: return
+	}
+	
+	if newIndex < 0 { newIndex = len(element.entries) - 1 }
+	if newIndex >= len(element.entries) { newIndex = 0 }
+	
+	if element.selectEntry(newIndex) && element.core.HasImage () {
+		element.draw()
+		element.core.DamageAll()
+	}
 }
 
 func (element *List) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) { }
@@ -354,8 +354,12 @@ func (element *List) selectUnderMouse (x, y int) (updated bool) {
 		}
 	}
 
-	if element.selectedEntry == newlySelectedEntryIndex { return false }
-	element.selectedEntry = newlySelectedEntryIndex
+	return element.selectEntry(newlySelectedEntryIndex)
+}
+
+func (element *List) selectEntry (index int) (updated bool) {
+	if element.selectedEntry == index { return false }
+	element.selectedEntry = index
 	if element.onSelectedEntryChange != nil {
 		element.onSelectedEntryChange(element.selectedEntry)
 	}
@@ -401,7 +405,7 @@ func (element *List) draw () {
 
 	artist.FillRectangle (
 		element,
-		theme.ListPattern(),
+		theme.ListPattern(element.selected),
 		bounds)
 
 	dot := image.Point {

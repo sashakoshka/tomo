@@ -13,6 +13,11 @@ var listPattern = artist.NewMultiBordered (
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x999C99FF)) })
 
+var selectedListPattern = artist.NewMultiBordered (
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke { Weight: 1, Pattern: accentPattern },
+	artist.Stroke { Pattern: artist.NewUniform(hex(0x999C99FF)) })
+
 
 var listEntryPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: artist.QuadBeveled {
@@ -34,8 +39,12 @@ var selectedListEntryPattern = artist.NewMultiBordered (
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 
-func ListPattern () (pattern artist.Pattern) {
-	return listPattern
+func ListPattern (selected bool) (pattern artist.Pattern) {
+	if selected {
+		return selectedListPattern
+	} else {
+		return listPattern
+	}
 }
 
 func ListEntryPattern (selected bool) (pattern artist.Pattern) {
