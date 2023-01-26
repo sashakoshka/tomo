@@ -25,9 +25,9 @@ type List struct {
 	entries []ListEntry
 	
 	onSelectionRequest func () (granted bool)
-	onSelectedEntryChange func (index int)
 	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
 	onScrollBoundsChange func ()
+	onNoEntrySelected func ()
 }
 
 // NewList creates a new list element with the specified entries.
@@ -98,18 +98,20 @@ func (element *List) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *List) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
 	if !element.enabled { return }
-	
-	newIndex := element.selectedEntry
+
+	altered := false
 	switch key {
-	case tomo.KeyLeft,  tomo.KeyUp:   newIndex --
-	case tomo.KeyRight, tomo.KeyDown: newIndex ++
-	default: return
+	case tomo.KeyLeft, tomo.KeyUp:
+		altered = element.changeSelectionBy(-1)
+		
+	case tomo.KeyRight, tomo.KeyDown:
+		altered = element.changeSelectionBy(1)
+
+	case tomo.KeyEscape:
+		altered = element.selectEntry(-1)
 	}
 	
-	if newIndex < 0 { newIndex = len(element.entries) - 1 }
-	if newIndex >= len(element.entries) { newIndex = 0 }
-	
-	if element.selectEntry(newIndex) && element.core.HasImage () {
+	if altered && element.core.HasImage () {
 		element.draw()
 		element.core.DamageAll()
 	}
@@ -163,12 +165,6 @@ func (element *List) OnSelectionMotionRequest (
 	callback func (direction tomo.SelectionDirection) (granted bool),
 ) {
 	element.onSelectionMotionRequest = callback
-}
-
-// OnSelectedEntryChange sets the function to be called when the user selects an
-// entry in this list.
-func (element *List) OnSelectedEntryChange (callback func (index int)) {
-	element.onSelectedEntryChange = callback
 }
 
 // ScrollContentBounds returns the full content size of the element.
@@ -234,6 +230,13 @@ func (element *List) SetEnabled (enabled bool) {
 		element.draw()
 		element.core.DamageAll()
 	}
+}
+
+// OnNoEntrySelected sets a function to be called when the user chooses to
+// deselect the current selected entry by clicking on empty space within the
+// list or by pressing the escape key.
+func (element *List) OnNoEntrySelected (callback func ()) {
+	element.onNoEntrySelected = callback
 }
 
 // CountEntries returns the amount of entries in the list.
@@ -360,13 +363,21 @@ func (element *List) selectUnderMouse (x, y int) (updated bool) {
 func (element *List) selectEntry (index int) (updated bool) {
 	if element.selectedEntry == index { return false }
 	element.selectedEntry = index
-	if element.onSelectedEntryChange != nil {
-		element.onSelectedEntryChange(element.selectedEntry)
-	}
-	if element.selectedEntry >= 0 {
+	if element.selectedEntry < 0 {
+		if element.onNoEntrySelected != nil {
+			element.onNoEntrySelected()
+		}
+	} else {
 		element.entries[element.selectedEntry].RunSelect()
 	}
 	return true
+}
+
+func (element *List) changeSelectionBy (delta int) (updated bool) {
+	newIndex := element.selectedEntry + delta
+	if newIndex < 0 { newIndex = len(element.entries) - 1 }
+	if newIndex >= len(element.entries) { newIndex = 0 }
+	return element.selectEntry(newIndex)
 }
 
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {

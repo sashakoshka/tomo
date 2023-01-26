@@ -29,6 +29,9 @@ func run () {
 		})
 	}
 
+	intro := basic.NewLabel (
+		"The List element can be easily used as a sidebar. " +
+		"Click on entries to flip pages!", true)
 	button := basic.NewButton("I do nothing!")
 	button.OnClick (func () {
 		popups.NewDialog(popups.DialogKindInfo, "", "Sike!")
@@ -47,12 +50,11 @@ func run () {
 		basic.NewListEntry("mouse",  func () { turnPage(mouse) }),
 		basic.NewListEntry("input",  func () { turnPage(input) }),
 		basic.NewListEntry("form",   func () { turnPage(form) }))
+	list.OnNoEntrySelected(func () { turnPage (intro) })
 	list.Collapse(96, 0)
 	
 	container.Adopt(list, false)
-	turnPage (basic.NewLabel (
-		"The List element can be easily used as a sidebar. " +
-		"Click on entries to flip pages!", true))
+	turnPage(intro)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
