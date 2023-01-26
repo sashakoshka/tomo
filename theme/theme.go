@@ -32,7 +32,17 @@ var sunkenPattern = artist.NewMultiBordered (
 			artist.NewUniform(hex(0x97a09cFF)),
 		},
 	},
-	// artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) },
+	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
+
+var texturedSunkenPattern = artist.NewMultiBordered (
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke {
+		Weight: 1,
+		Pattern: artist.Beveled {
+			artist.NewUniform(hex(0x3b534eFF)),
+			artist.NewUniform(hex(0x97a09cFF)),
+		},
+	},
 	artist.Stroke { Pattern: artist.Striped {
 		First: artist.Stroke {
 			Weight: 2,
@@ -73,7 +83,16 @@ var deadPattern = artist.NewMultiBordered (
 
 func AccentPattern () (artist.Pattern) { return accentPattern }
 func BackgroundPattern () (artist.Pattern) { return backgroundPattern }
-func SunkenPattern () (artist.Pattern) { return sunkenPattern }
+func DeadPattern () (artist.Pattern) { return deadPattern }
+
+func SunkenPattern (textured bool) (artist.Pattern) {
+	if textured {
+		return texturedSunkenPattern
+	} else {
+		return sunkenPattern
+	}
+}
+
 func RaisedPattern (selected bool) (artist.Pattern) {
 	if selected {
 		return selectedRaisedPattern
@@ -81,7 +100,7 @@ func RaisedPattern (selected bool) (artist.Pattern) {
 		return raisedPattern
 	}
 }
-func DeadPattern () (artist.Pattern) { return deadPattern }
+
 func ForegroundPattern (enabled bool) (artist.Pattern) {
 	if enabled {
 		return foregroundPattern

@@ -43,7 +43,7 @@ func (element *ProgressBar) draw () {
 
 	artist.FillRectangle (
 		element.core,
-		theme.SunkenPattern(),
+		theme.SunkenPattern(false),
 		bounds)
 	meterBounds := image.Rect (
 		bounds.Min.X + 2, bounds.Min.Y + 2,

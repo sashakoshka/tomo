@@ -43,7 +43,7 @@ func (element *AnalogClock) draw () {
 
 	artist.FillRectangle (
 		element,
-		theme.SunkenPattern(),
+		theme.SunkenPattern(false),
 		bounds)
 
 	for hour := 0; hour < 12; hour ++ {
