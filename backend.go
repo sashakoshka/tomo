@@ -20,6 +20,13 @@ type Backend interface {
 	// and returns a struct representing it that fulfills the Window
 	// interface.
 	NewWindow (width, height int) (window Window, err error)
+
+	// Copy puts data in the clipboard.
+	Copy (data Data)
+
+	// Paste returns the data currently in the clipboard. This method may
+	// return nil.
+	Paste () (data Data)
 }
 
 // BackendFactory represents a function capable of constructing a backend
