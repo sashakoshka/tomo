@@ -271,34 +271,35 @@ func (element *Container) HandleSelection (direction tomo.SelectionDirection) (o
 
 	firstSelected := element.firstSelected()
 	if firstSelected < 0 {
-		found := false
+		// no element is currently selected, so we need to select either
+		// the first or last selectable element depending on the
+		// direction.
 		switch direction {
-		case tomo.SelectionDirectionBackward:
-			element.forSelectableBackward (func (child tomo.Selectable) bool {
-				if child.HandleSelection(direction) {
-					element.selected = true
-					found = true
-					return false
-				}
-				return true
-			})
-			return true
-		
 		case tomo.SelectionDirectionNeutral, tomo.SelectionDirectionForward:
-			element.forSelectable (func (child tomo.Selectable) bool {
-				if child.HandleSelection(direction) {
-					element.selected = true
-					found = true
-					return false
-				}
-				return true
-			})
+			// if we recieve a neutral or forward direction, select
+			// the first selectable element.
+			return element.selectFirstSelectableElement(direction)
+		
+		case tomo.SelectionDirectionBackward:
+			// if we recieve a backward direction, select the last
+			// selectable element.
+			return element.selectLastSelectableElement(direction)
 		}
-		return found
 	} else {
+		// an element is currently selected, so we need to move the
+		// selection in the specified direction
 		firstSelectedChild :=
 			element.children[firstSelected].Element.(tomo.Selectable)
-		
+
+		// before we move the selection, the currently selected child
+		// may also be able to move its selection. if the child is able
+		// to do that, we will let it and not move ours.
+		if firstSelectedChild.HandleSelection(direction) {
+			return true
+		}
+
+		// find the previous/next selectable element relative to the
+		// currently selected element, if it exists.
 		for index := firstSelected + int(direction);
 			index < len(element.children) && index >= 0;
 			index += int(direction) {
@@ -307,6 +308,8 @@ func (element *Container) HandleSelection (direction tomo.SelectionDirection) (o
 				element.children[index].
 				Element.(tomo.Selectable)
 			if selectable && child.HandleSelection(direction) {
+				// we have found one, so we now actually move
+				// the selection.
 				firstSelectedChild.HandleDeselection()
 				element.selected = true
 				return true
@@ -315,6 +318,38 @@ func (element *Container) HandleSelection (direction tomo.SelectionDirection) (o
 	}
 	
 	return false
+}
+
+func (element *Container) selectFirstSelectableElement (
+	direction tomo.SelectionDirection,
+) (
+	ok bool,
+) {
+	element.forSelectable (func (child tomo.Selectable) bool {
+		if child.HandleSelection(direction) {
+			element.selected = true
+			ok = true
+			return false
+		}
+		return true
+	})
+	return
+}
+
+func (element *Container) selectLastSelectableElement (
+	direction tomo.SelectionDirection,
+) (
+	ok bool,
+) {
+	element.forSelectableBackward (func (child tomo.Selectable) bool {
+		if child.HandleSelection(direction) {
+			element.selected = true
+			ok = true
+			return false
+		}
+		return true
+	})
+	return
 }
 
 func (element *Container) FlexibleHeightFor (width int) (height int) {
