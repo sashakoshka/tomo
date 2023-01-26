@@ -208,16 +208,7 @@ func (window *Window) reallocateCanvas () {
 }
 
 func (window *Window) redrawChildEntirely () {
-	data, stride := window.child.Buffer()
-	bounds := window.child.Bounds()
-	window.xCanvas.For (func (x, y int) (c xgraphics.BGRA) {
-		if !(image.Point { x, y }).In(bounds) { return }
-		rgba := data[x + y * stride]
-		c.R, c.G, c.B, c.A = rgba.R, rgba.G, rgba.B, rgba.A
-		return
-	})
-	
-	window.pushRegion(window.xCanvas.Bounds())
+	window.pushRegion(window.paste(window.child))
 }
 
 func (window *Window) resizeChildToFit () {
@@ -252,21 +243,23 @@ func (window *Window) resizeChildToFit () {
 
 func (window *Window) childDrawCallback (region tomo.Canvas) {
 	if window.skipChildDrawCallback { return }
+	window.pushRegion(window.paste(region))
+}
 
-	data, stride := region.Buffer()
-	bounds := region.Bounds()
+func (window *Window) paste (canvas tomo.Canvas) (updatedRegion image.Rectangle) {
+	data, stride := canvas.Buffer()
+	bounds := canvas.Bounds().Intersect(window.xCanvas.Bounds())
 	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
 	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
 		rgba := data[x + y * stride]
-		window.xCanvas.SetBGRA (x, y, xgraphics.BGRA {
-			R: rgba.R,
-			G: rgba.G,
-			B: rgba.B,
-			A: rgba.A,
-		})
+		index := x * 4 + y * window.xCanvas.Stride
+		window.xCanvas.Pix[index + 0] = rgba.B
+		window.xCanvas.Pix[index + 1] = rgba.G
+		window.xCanvas.Pix[index + 2] = rgba.R
+		window.xCanvas.Pix[index + 3] = rgba.A
 	}}
 
-	window.pushRegion(region.Bounds())
+	return bounds
 }
 
 func (window *Window) childMinimumSizeChangeCallback (width, height int) {
