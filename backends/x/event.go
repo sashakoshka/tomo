@@ -42,6 +42,14 @@ func (sum *scrollSum) add (button xproto.Button, window *Window, state uint16) {
 
 }
 
+func (window *Window) handleExpose (
+	connection *xgbutil.XUtil,
+	event xevent.ExposeEvent,
+) {
+	_ = window.compressExpose(*event.ExposeEvent)
+	window.redrawChildEntirely()
+}
+
 func (window *Window) handleConfigureNotify (
 	connection *xgbutil.XUtil,
 	event xevent.ConfigureNotifyEvent,
@@ -64,7 +72,27 @@ func (window *Window) handleConfigureNotify (
 		window.metrics.height = int(configureEvent.Height)
 		window.reallocateCanvas()
 		window.resizeChildToFit()
+
+		if !window.exposeEventFollows(configureEvent) {
+			window.redrawChildEntirely()
+		}
 	}
+}
+
+func (window *Window) exposeEventFollows (event xproto.ConfigureNotifyEvent) (found bool) {	
+	nextEvents := xevent.Peek(window.backend.connection)
+	if len(nextEvents) > 0 {
+		untypedEvent := nextEvents[0]
+		if untypedEvent.Err == nil {
+			typedEvent, ok :=
+				untypedEvent.Event.(xproto.ConfigureNotifyEvent)
+			
+			if ok && typedEvent.Window == event.Window {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (window *Window) modifiersFromState (
@@ -201,6 +229,32 @@ func (window *Window) handleMotionNotify (
 	}
 }
 
+func (window *Window) compressExpose (
+	firstEvent xproto.ExposeEvent,
+) (
+	lastEvent xproto.ExposeEvent,
+) {
+	window.backend.connection.Sync()
+	xevent.Read(window.backend.connection, false)
+	lastEvent = firstEvent
+	
+	for index, untypedEvent := range xevent.Peek(window.backend.connection) {
+		if untypedEvent.Err != nil { continue }
+		
+		typedEvent, ok := untypedEvent.Event.(xproto.ExposeEvent)
+		if !ok { continue }
+
+		// FIXME: union all areas into the last event
+		if firstEvent.Window == typedEvent.Window {
+			lastEvent = typedEvent
+			defer func (index int) {
+				xevent.DequeueAt(window.backend.connection, index)
+			} (index)
+		}
+	}
+
+	return
+}
 
 func (window *Window) compressConfigureNotify (
 	firstEvent xproto.ConfigureNotifyEvent,

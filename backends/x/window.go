@@ -39,6 +39,7 @@ func (backend *Backend) NewWindow (
 		backend.connection.RootWin(),
 		0, 0, width, height, 0)
 	err = window.xWindow.Listen (
+		xproto.EventMaskExposure,
 		xproto.EventMaskStructureNotify,
 		xproto.EventMaskPointerMotion,
 		xproto.EventMaskKeyPress,
@@ -50,7 +51,9 @@ func (backend *Backend) NewWindow (
 	window.xWindow.WMGracefulClose (func (xWindow *xwindow.Window) {
 		window.Close()
 	})
-	
+
+	xevent.ExposeFun(window.handleExpose).
+		Connect(backend.connection, window.xWindow.Id)
 	xevent.ConfigureNotifyFun(window.handleConfigureNotify).
 		Connect(backend.connection, window.xWindow.Id)
 	xevent.KeyPressFun(window.handleKeyPress).
@@ -108,6 +111,7 @@ func (window *Window) Adopt (child tomo.Element) {
 		})
 		window.resizeChildToFit()
 		window.childMinimumSizeChangeCallback(child.MinimumSize())
+		window.redrawChildEntirely()
 	}
 }
 
@@ -200,12 +204,14 @@ func (window *Window) reallocateCanvas () {
 			window.metrics.width,
 			window.metrics.height))
 	
-	window.xCanvas.XSurfaceSet(window.xWindow.Id)
+	window.xCanvas.CreatePixmap()
 }
 
 func (window *Window) redrawChildEntirely () {
 	data, stride := window.child.Buffer()
+	bounds := window.child.Bounds()
 	window.xCanvas.For (func (x, y int) (c xgraphics.BGRA) {
+		if !(image.Point { x, y }).In(bounds) { return }
 		rgba := data[x + y * stride]
 		c.R, c.G, c.B, c.A = rgba.R, rgba.G, rgba.B, rgba.A
 		return
@@ -235,13 +241,11 @@ func (window *Window) resizeChildToFit () {
 			window.child.Resize (
 				window.metrics.width,
 				window.metrics.height)
-				window.redrawChildEntirely()
 		}
 	} else {
 		window.child.Resize (
 			window.metrics.width,
 			window.metrics.height)
-			window.redrawChildEntirely()
 	}
 	window.skipChildDrawCallback = false
 }
@@ -310,6 +314,9 @@ func (window *Window) pushRegion (region image.Rectangle) {
 	image, ok := window.xCanvas.SubImage(region).(*xgraphics.Image)
 	if ok {
 		image.XDraw()
-		window.xCanvas.XPaint(window.xWindow.Id)
+		image.XExpPaint (
+			window.xWindow.Id,
+			image.Bounds().Min.X,
+			image.Bounds().Min.Y)
 	}
 }
