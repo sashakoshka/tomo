@@ -30,7 +30,7 @@ func run () {
 	disabledCheckbox.SetEnabled(false)
 	container.Adopt(disabledCheckbox, false)
 	vsync := basic.NewCheckbox("Enable vsync", false)
-	vsync.OnClick (func () {
+	vsync.OnToggle (func () {
 		if vsync.Value() {
 			popups.NewDialog (
 				popups.DialogKindInfo,

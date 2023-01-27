@@ -9,25 +9,29 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 // Checkbox is a toggle-able checkbox with a label.
 type Checkbox struct {
 	*core.Core
+	*core.SelectableCore
 	core core.CoreControl
-
-	pressed  bool
-	checked  bool
-	enabled  bool
-	selected bool
-
-	text   string
+	selectableControl core.SelectableCoreControl
 	drawer artist.TextDrawer
+
+	pressed bool
+	checked bool
+	text    string
 	
-	onClick func ()
-	onSelectionRequest func () (granted bool)
-	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
+	onToggle func ()
 }
 
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
-	element = &Checkbox { enabled: true, checked: checked }
+	element = &Checkbox { checked: checked }
 	element.Core, element.core = core.NewCore(element)
+	element.SelectableCore,
+	element.selectableControl = core.NewSelectableCore (func () {
+		if element.core.HasImage () {
+			element.draw()
+			element.core.DamageAll()
+		}
+	})
 	element.drawer.SetFace(theme.FontFaceRegular())
 	element.SetText(text)
 	return
@@ -40,6 +44,7 @@ func (element *Checkbox) Resize (width, height int) {
 }
 
 func (element *Checkbox) HandleMouseDown (x, y int, button tomo.Button) {
+	if !element.Enabled() { return }
 	element.Select()
 	element.pressed = true
 	if element.core.HasImage() {
@@ -49,7 +54,7 @@ func (element *Checkbox) HandleMouseDown (x, y int, button tomo.Button) {
 }
 
 func (element *Checkbox) HandleMouseUp (x, y int, button tomo.Button) {
-	if button != tomo.ButtonLeft { return }
+	if button != tomo.ButtonLeft || !element.pressed { return }
 
 	element.pressed = false
 	within := image.Point { x, y }.
@@ -62,8 +67,8 @@ func (element *Checkbox) HandleMouseUp (x, y int, button tomo.Button) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if within && element.onClick != nil {
-		element.onClick()
+	if within && element.onToggle != nil {
+		element.onToggle()
 	}
 }
 
@@ -88,65 +93,15 @@ func (element *Checkbox) HandleKeyUp (key tomo.Key, modifiers tomo.Modifiers) {
 			element.draw()
 			element.core.DamageAll()
 		}
-		if element.onClick != nil {
-			element.onClick()
+		if element.onToggle != nil {
+			element.onToggle()
 		}
 	}
 }
 
-// Selected returns whether or not this element is selected.
-func (element *Checkbox) Selected () (selected bool) {
-	return element.selected
-}
-
-// Select requests that this element be selected.
-func (element *Checkbox) Select () {
-	if !element.enabled { return }
-	if element.onSelectionRequest != nil {
-		element.onSelectionRequest()
-	}
-}
-
-func (element *Checkbox) HandleSelection (
-	direction tomo.SelectionDirection,
-) (
-	accepted bool,
-) {
-	direction = direction.Canon()
-	if !element.enabled { return false }
-	if element.selected && direction != tomo.SelectionDirectionNeutral {
-		return false
-	}
-	
-	element.selected = true
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-	return true
-}
-
-func (element *Checkbox) HandleDeselection () {
-	element.selected = false
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-}
-
-func (element *Checkbox) OnSelectionRequest (callback func () (granted bool)) {
-	element.onSelectionRequest = callback
-}
-
-func (element *Checkbox) OnSelectionMotionRequest (
-	callback func (direction tomo.SelectionDirection) (granted bool),
-) {
-	element.onSelectionMotionRequest = callback
-}
-
-// OnClick sets the function to be called when the checkbox is toggled.
-func (element *Checkbox) OnClick (callback func ()) {
-	element.onClick = callback
+// OnToggle sets the function to be called when the checkbox is toggled.
+func (element *Checkbox) OnToggle (callback func ()) {
+	element.onToggle = callback
 }
 
 // Value reports whether or not the checkbox is currently checked.
@@ -156,12 +111,7 @@ func (element *Checkbox) Value () (checked bool) {
 
 // SetEnabled sets whether this checkbox can be toggled or not.
 func (element *Checkbox) SetEnabled (enabled bool) {
-	if element.enabled == enabled { return }
-	element.enabled = enabled
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
+	element.selectableControl.SetEnabled(enabled)
 }
 
 // SetText sets the checkbox's label text.
@@ -171,9 +121,15 @@ func (element *Checkbox) SetText (text string) {
 	element.text = text
 	element.drawer.SetText([]rune(text))
 	textBounds := element.drawer.LayoutBounds()
-	element.core.SetMinimumSize (
-		textBounds.Dy() + theme.Padding() + textBounds.Dx(),
-		textBounds.Dy())
+	
+	if text == "" {
+		element.core.SetMinimumSize(textBounds.Dy(), textBounds.Dy())
+	} else {
+		element.core.SetMinimumSize (
+			textBounds.Dy() + theme.Padding() + textBounds.Dx(),
+			textBounds.Dy())
+	}
+	
 	if element.core.HasImage () {
 		element.draw()
 		element.core.DamageAll()
@@ -188,16 +144,10 @@ func (element *Checkbox) draw () {
 	artist.FillRectangle (
 		element.core,
 		theme.ButtonPattern (
-			element.enabled,
+			element.Enabled(),
 			element.Selected(),
 			element.pressed),
 		boxBounds)
-		
-	innerBounds := bounds
-	innerBounds.Min.X += theme.Padding()
-	innerBounds.Min.Y += theme.Padding()
-	innerBounds.Max.X -= theme.Padding()
-	innerBounds.Max.Y -= theme.Padding()
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
@@ -207,7 +157,7 @@ func (element *Checkbox) draw () {
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := theme.ForegroundPattern(element.enabled)
+	foreground := theme.ForegroundPattern(element.Enabled())
 	element.drawer.Draw(element.core, foreground, offset)
 	
 	if element.checked {
@@ -217,7 +167,7 @@ func (element *Checkbox) draw () {
 		}
 		artist.FillRectangle (
 			element.core,
-			theme.ForegroundPattern(element.enabled),
+			theme.ForegroundPattern(element.Enabled()),
 			checkBounds)
 	}
 }

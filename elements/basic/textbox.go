@@ -10,11 +10,10 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 // TextBox is a single-line text input.
 type TextBox struct {
 	*core.Core
+	*core.SelectableCore
 	core core.CoreControl
+	selectableControl core.SelectableCoreControl
 	
-	enabled  bool
-	selected bool
-
 	cursor int
 	scroll int
 	placeholder string
@@ -25,8 +24,6 @@ type TextBox struct {
 	
 	onKeyDown func (key tomo.Key, modifiers tomo.Modifiers) (handled bool)
 	onChange  func ()
-	onSelectionRequest func () (granted bool)
-	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
 	onScrollBoundsChange func ()
 }
 
@@ -34,8 +31,15 @@ type TextBox struct {
 // a value. When the value is empty, the placeholder will be displayed in gray
 // text.
 func NewTextBox (placeholder, value string) (element *TextBox) {
-	element = &TextBox { enabled: true }
+	element = &TextBox { }
 	element.Core, element.core = core.NewCore(element)
+	element.SelectableCore,
+	element.selectableControl = core.NewSelectableCore (func () {
+		if element.core.HasImage () {
+			element.draw()
+			element.core.DamageAll()
+		}
+	})
 	element.placeholderDrawer.SetFace(theme.FontFaceRegular())
 	element.valueDrawer.SetFace(theme.FontFaceRegular())
 	element.placeholder = placeholder
@@ -55,8 +59,8 @@ func (element *TextBox) Resize (width, height int) {
 }
 
 func (element *TextBox) HandleMouseDown (x, y int, button tomo.Button) {
-	if !element.enabled { return }
-	if !element.selected { element.Select() }
+	if !element.Enabled()  { return }
+	if !element.Selected() { element.Select() }
 }
 
 func (element *TextBox) HandleMouseUp (x, y int, button tomo.Button) { }
@@ -132,62 +136,6 @@ func (element *TextBox) HandleKeyDown(key tomo.Key, modifiers tomo.Modifiers) {
 }
 
 func (element *TextBox) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) { }
-
-func (element *TextBox) Selected () (selected bool) {
-	return element.selected
-}
-
-func (element *TextBox) Select () {
-	if element.onSelectionRequest != nil {
-		element.onSelectionRequest()
-	}
-}
-
-func (element *TextBox) HandleSelection (
-	direction tomo.SelectionDirection,
-) (
-	accepted bool,
-) {
-	direction = direction.Canon()
-	if !element.enabled { return false }
-	if element.selected && direction != tomo.SelectionDirectionNeutral {
-		return false
-	}
-	
-	element.selected = true
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-	return true
-}
-
-func (element *TextBox) HandleDeselection () {
-	element.selected = false
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-}
-
-func (element *TextBox) OnSelectionRequest (callback func () (granted bool)) {
-	element.onSelectionRequest = callback
-}
-
-func (element *TextBox) OnSelectionMotionRequest (
-	callback func (direction tomo.SelectionDirection) (granted bool),
-) {
-	element.onSelectionMotionRequest = callback
-}
-
-func (element *TextBox) SetEnabled (enabled bool) {
-	if element.enabled == enabled { return }
-	element.enabled = enabled
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
-}
 
 func (element *TextBox) SetPlaceholder (placeholder string) {
 	if element.placeholder == placeholder { return }
@@ -325,11 +273,11 @@ func (element *TextBox) draw () {
 	artist.FillRectangle (
 		element.core,
 		theme.InputPattern (
-			element.enabled,
+			element.Enabled(),
 			element.Selected()),
 		bounds)
 
-	if len(element.text) == 0 && !element.selected {
+	if len(element.text) == 0 && !element.Selected() {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
 		offset := image.Point {
@@ -348,13 +296,13 @@ func (element *TextBox) draw () {
 			X: theme.Padding() - element.scroll,
 			Y: theme.Padding(),
 		}
-		foreground := theme.ForegroundPattern(element.enabled)
+		foreground := theme.ForegroundPattern(element.Enabled())
 		element.valueDrawer.Draw (
 			element.core,
 			foreground,
 			offset.Sub(textBounds.Min))
 
-		if element.selected {
+		if element.Selected() {
 			// cursor
 			cursorPosition := element.valueDrawer.PositionOf (
 				element.cursor)

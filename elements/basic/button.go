@@ -9,24 +9,28 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 // Button is a clickable button.
 type Button struct {
 	*core.Core
+	*core.SelectableCore
 	core core.CoreControl
-	
-	pressed  bool
-	enabled  bool
-	selected bool
-
-	text   string
+	selectableControl core.SelectableCoreControl
 	drawer artist.TextDrawer
+
+	pressed bool
+	text    string
 	
 	onClick func ()
-	onSelectionRequest func () (granted bool)
-	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
 }
 
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
-	element = &Button { enabled: true }
+	element = &Button { }
 	element.Core, element.core = core.NewCore(element)
+	element.SelectableCore,
+	element.selectableControl = core.NewSelectableCore (func () {
+		if element.core.HasImage () {
+			element.draw()
+			element.core.DamageAll()
+		}
+	})
 	element.drawer.SetFace(theme.FontFaceRegular())
 	element.SetText(text)
 	return
@@ -38,8 +42,8 @@ func (element *Button) Resize (width, height int) {
 }
 
 func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {
-	if !element.enabled { return }
-	if !element.selected { element.Select() }
+	if !element.Enabled()  { return }
+	if !element.Selected() { element.Select() }
 	if button != tomo.ButtonLeft { return }
 	element.pressed = true
 	if element.core.HasImage() {
@@ -59,7 +63,7 @@ func (element *Button) HandleMouseUp (x, y int, button tomo.Button) {
 	within := image.Point { x, y }.
 		In(element.Bounds())
 		
-	if !element.enabled { return }
+	if !element.Enabled() { return }
 	if within && element.onClick != nil {
 		element.onClick()
 	}
@@ -69,7 +73,7 @@ func (element *Button) HandleMouseMove (x, y int) { }
 func (element *Button) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Button) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
-	if !element.enabled { return }
+	if !element.Enabled() { return }
 	if key == tomo.KeyEnter {
 		element.pressed = true
 		if element.core.HasImage() {
@@ -86,59 +90,11 @@ func (element *Button) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) {
 			element.draw()
 			element.core.DamageAll()
 		}
-		if !element.enabled { return }
+		if !element.Enabled() { return }
 		if element.onClick != nil {
 			element.onClick()
 		}
 	}
-}
-
-func (element *Button) Selected () (selected bool) {
-	return element.selected
-}
-
-func (element *Button) Select () {
-	if !element.enabled { return }
-	if element.onSelectionRequest != nil {
-		element.onSelectionRequest()
-	}
-}
-
-func (element *Button) HandleSelection (
-	direction tomo.SelectionDirection,
-) (
-	accepted bool,
-) {
-	direction = direction.Canon()
-	if !element.enabled { return false }
-	if element.selected && direction != tomo.SelectionDirectionNeutral {
-		return false
-	}
-	
-	element.selected = true
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-	return true
-}
-
-func (element *Button) HandleDeselection () {
-	element.selected = false
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-}
-
-func (element *Button) OnSelectionRequest (callback func () (granted bool)) {
-	element.onSelectionRequest = callback
-}
-
-func (element *Button) OnSelectionMotionRequest (
-	callback func (direction tomo.SelectionDirection) (granted bool),
-) {
-	element.onSelectionMotionRequest = callback
 }
 
 // OnClick sets the function to be called when the button is clicked.
@@ -148,12 +104,7 @@ func (element *Button) OnClick (callback func ()) {
 
 // SetEnabled sets whether this button can be clicked or not.
 func (element *Button) SetEnabled (enabled bool) {
-	if element.enabled == enabled { return }
-	element.enabled = enabled
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
+	element.selectableControl.SetEnabled(enabled)
 }
 
 // SetText sets the button's label text.
@@ -178,7 +129,7 @@ func (element *Button) draw () {
 	artist.FillRectangle (
 		element.core,
 		theme.ButtonPattern (
-			element.enabled,
+			element.Enabled(),
 			element.Selected(),
 			element.pressed),
 		bounds)
@@ -204,6 +155,6 @@ func (element *Button) draw () {
 		offset = offset.Add(theme.SinkOffsetVector())
 	}
 
-	foreground := theme.ForegroundPattern(element.enabled)
+	foreground := theme.ForegroundPattern(element.Enabled())
 	element.drawer.Draw(element.core, foreground, offset)
 }

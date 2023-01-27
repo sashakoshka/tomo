@@ -10,10 +10,10 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 // List is an element that contains several objects that a user can select.
 type List struct {
 	*core.Core
+	*core.SelectableCore
 	core core.CoreControl
-	
-	enabled bool
-	selected bool
+	selectableControl core.SelectableCoreControl
+
 	pressed bool
 	
 	contentHeight int
@@ -24,16 +24,21 @@ type List struct {
 	scroll int
 	entries []ListEntry
 	
-	onSelectionRequest func () (granted bool)
-	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
 	onScrollBoundsChange func ()
 	onNoEntrySelected func ()
 }
 
 // NewList creates a new list element with the specified entries.
 func NewList (entries ...ListEntry) (element *List) {
-	element = &List { enabled: true, selectedEntry: -1 }
+	element = &List { selectedEntry: -1 }
 	element.Core, element.core = core.NewCore(element)
+	element.SelectableCore,
+	element.selectableControl = core.NewSelectableCore (func () {
+		if element.core.HasImage () {
+			element.draw()
+			element.core.DamageAll()
+		}
+	})
 	
 	element.entries = make([]ListEntry, len(entries))
 	for index, entry := range entries {
@@ -70,8 +75,8 @@ func (element *List) Collapse (width, height int) {
 }
 
 func (element *List) HandleMouseDown (x, y int, button tomo.Button) {
-	if !element.enabled  { return }
-	if !element.selected { element.Select() }
+	if !element.Enabled()  { return }
+	if !element.Selected() { element.Select() }
 	if button != tomo.ButtonLeft { return }
 	element.pressed = true
 	if element.selectUnderMouse(x, y) && element.core.HasImage() {
@@ -97,7 +102,7 @@ func (element *List) HandleMouseMove (x, y int) {
 func (element *List) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *List) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
-	if !element.enabled { return }
+	if !element.Enabled() { return }
 
 	altered := false
 	switch key {
@@ -118,54 +123,6 @@ func (element *List) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
 }
 
 func (element *List) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) { }
-
-func (element *List) Selected () (selected bool) {
-	return element.selected
-}
-
-func (element *List) Select () {
-	if !element.enabled { return }
-	if element.onSelectionRequest != nil {
-		element.onSelectionRequest()
-	}
-}
-
-func (element *List) HandleSelection (
-	direction tomo.SelectionDirection,
-) (
-	accepted bool,
-) {
-	direction = direction.Canon()
-	if !element.enabled { return false }
-	if element.selected && direction != tomo.SelectionDirectionNeutral {
-		return false
-	}
-	
-	element.selected = true
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-	return true
-}
-
-func (element *List) HandleDeselection () {
-	element.selected = false
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-}
-
-func (element *List) OnSelectionRequest (callback func () (granted bool)) {
-	element.onSelectionRequest = callback
-}
-
-func (element *List) OnSelectionMotionRequest (
-	callback func (direction tomo.SelectionDirection) (granted bool),
-) {
-	element.onSelectionMotionRequest = callback
-}
 
 // ScrollContentBounds returns the full content size of the element.
 func (element *List) ScrollContentBounds () (bounds image.Rectangle) {
@@ -220,16 +177,6 @@ func (element *List) maxScrollHeight () (height int) {
 
 func (element *List) OnScrollBoundsChange (callback func ()) {
 	element.onScrollBoundsChange = callback
-}
-
-// SetEnabled sets whether this list can be interacted with or not.
-func (element *List) SetEnabled (enabled bool) {
-	if element.enabled == enabled { return }
-	element.enabled = enabled
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
 }
 
 // OnNoEntrySelected sets a function to be called when the user chooses to
@@ -416,7 +363,7 @@ func (element *List) draw () {
 
 	artist.FillRectangle (
 		element,
-		theme.ListPattern(element.selected),
+		theme.ListPattern(element.Selected()),
 		bounds)
 
 	dot := image.Point {
@@ -437,6 +384,6 @@ func (element *List) draw () {
 		}
 		entry.Draw (
 			element, entryPosition,
-			element.selectedEntry == index && element.selected)
+			element.selectedEntry == index && element.Selected())
 	}
 }
