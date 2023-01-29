@@ -33,22 +33,19 @@ func (entry *ListEntry) Collapse (width int) {
 }
 
 func (entry *ListEntry) updateBounds () {
-	padding := theme.Padding()
-	
 	entry.bounds = image.Rectangle { }
-	entry.bounds.Max.Y = entry.drawer.LineHeight().Round() + padding
+	entry.bounds.Max.Y = entry.drawer.LineHeight().Round()
 	if entry.forcedMinimumWidth > 0 {
 		entry.bounds.Max.X = entry.forcedMinimumWidth
 	} else {
-		entry.bounds.Max.X =
-			entry.drawer.LayoutBounds().Dx() + padding * 2
+		entry.bounds.Max.X = entry.drawer.LayoutBounds().Dx()
 	}
 	
 	_, inset := theme.ItemPattern(theme.PatternState { })
 	entry.bounds.Max.Y += inset[0] + inset[2]
 	
 	entry.textPoint =
-		image.Pt(inset[3] + padding, inset[0] + padding / 2).
+		image.Pt(inset[3], inset[0]).
 		Sub(entry.drawer.LayoutBounds().Min)
 }
 

@@ -165,7 +165,7 @@ func (element *List) ScrollAxes () (horizontal, vertical bool) {
 
 func (element *List) scrollViewportHeight () (height int) {
 	_, inset := theme.ListPattern(theme.PatternState { })
-	return element.Bounds().Dy() - theme.Padding() - inset[0] - inset[2]
+	return element.Bounds().Dy() - inset[0] - inset[2]
 }
 
 func (element *List) maxScrollHeight () (height int) {
@@ -288,11 +288,12 @@ func (element *List) Replace (index int, entry ListEntry) {
 }
 
 func (element *List) selectUnderMouse (x, y int) (updated bool) {
-	bounds := element.Bounds()
+	_, inset := theme.ListPattern(theme.PatternState { })
+	bounds := inset.Apply(element.Bounds())
 	mousePoint := image.Pt(x, y)
 	dot := image.Pt (
-		bounds.Min.X + theme.Padding() / 2,
-		bounds.Min.Y - element.scroll + theme.Padding() / 2)
+		bounds.Min.X,
+		bounds.Min.Y - element.scroll)
 	
 	newlySelectedEntryIndex := -1
 	for index, entry := range element.entries {
@@ -344,7 +345,6 @@ func (element *List) updateMinimumSize () {
 	minimumHeight := element.forcedMinimumHeight
 
 	if minimumWidth == 0 {
-		minimumWidth = theme.Padding()
 		for _, entry := range element.entries {
 			entryWidth := entry.Bounds().Dx()
 			if entryWidth > minimumWidth {
@@ -354,9 +354,8 @@ func (element *List) updateMinimumSize () {
 	}
 
 	if minimumHeight == 0 {
-		minimumHeight = element.contentHeight + theme.Padding()
+		minimumHeight = element.contentHeight
 	}
-
 
 	_, inset := theme.ListPattern(theme.PatternState { })
 	minimumWidth  += inset[1] + inset[3]
@@ -377,7 +376,7 @@ func (element *List) draw () {
 	bounds = inset.Apply(bounds)
 	dot := image.Point {
 		bounds.Min.X,
-		bounds.Min.Y - element.scroll + theme.Padding() / 2,
+		bounds.Min.Y - element.scroll,
 	}
 	for index, entry := range element.entries {
 		entryPosition := dot
