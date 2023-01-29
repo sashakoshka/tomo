@@ -114,9 +114,9 @@ func (element *Button) SetText (text string) {
 	element.text = text
 	element.drawer.SetText([]rune(text))
 	textBounds := element.drawer.LayoutBounds()
-	element.core.SetMinimumSize (
-		theme.Padding() * 2 + textBounds.Dx(),
-		theme.Padding() * 2 + textBounds.Dy())
+	_, inset := theme.ButtonPattern(theme.PatternState { })
+	minimumSize := inset.Inverse().Apply(textBounds).Inset(-theme.Padding())
+	element.core.SetMinimumSize(minimumSize.Dx(), minimumSize.Dy())
 	if element.core.HasImage () {
 		element.draw()
 		element.core.DamageAll()
@@ -126,24 +126,20 @@ func (element *Button) SetText (text string) {
 func (element *Button) draw () {
 	bounds := element.core.Bounds()
 
-	artist.FillRectangle (
-		element.core,
-		theme.ButtonPattern (
-			element.Enabled(),
-			element.Selected(),
-			element.pressed),
-		bounds)
+	pattern, inset := theme.ButtonPattern(theme.PatternState {
+		Disabled: !element.Enabled(),
+		Selected: element.Selected(),
+		Pressed:  element.pressed,
+	})
+
+	artist.FillRectangle(element.core, pattern, bounds)
 		
-	innerBounds := bounds
-	innerBounds.Min.X += theme.Padding()
-	innerBounds.Min.Y += theme.Padding()
-	innerBounds.Max.X -= theme.Padding()
-	innerBounds.Max.Y -= theme.Padding()
+	innerBounds := inset.Apply(bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
-		X: theme.Padding() + (innerBounds.Dx() - textBounds.Dx()) / 2,
-		Y: theme.Padding() + (innerBounds.Dy() - textBounds.Dy()) / 2,
+		X: innerBounds.Min.X + (innerBounds.Dx() - textBounds.Dx()) / 2,
+		Y: innerBounds.Min.X + (innerBounds.Dy() - textBounds.Dy()) / 2,
 	}
 
 	// account for the fact that the bounding rectangle will be shifted over
@@ -151,10 +147,8 @@ func (element *Button) draw () {
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	if element.pressed {
-		offset = offset.Add(theme.SinkOffsetVector())
-	}
-
-	foreground := theme.ForegroundPattern(element.Enabled())
+	foreground, _ := theme.ForegroundPattern (theme.PatternState {
+		Disabled: !element.Enabled(),
+	})
 	element.drawer.Draw(element.core, foreground, offset)
 }

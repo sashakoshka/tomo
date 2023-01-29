@@ -41,16 +41,13 @@ func (element *ProgressBar) SetProgress (progress float64) {
 func (element *ProgressBar) draw () {
 	bounds := element.core.Bounds()
 
-	artist.FillRectangle (
-		element.core,
-		theme.SunkenPattern(false),
-		bounds)
+	pattern, inset := theme.SunkenPattern(theme.PatternState { })
+	artist.FillRectangle(element.core, pattern, bounds)
+	bounds = inset.Apply(bounds)
 	meterBounds := image.Rect (
-		bounds.Min.X + 2, bounds.Min.Y + 2,
-		bounds.Min.X - 1 + int(float64(bounds.Dx()) * element.progress),
-		bounds.Dy() - 1)
-	artist.FillRectangle (
-		element.core,
-		theme.AccentPattern(),
-		meterBounds)
+		bounds.Min.X, bounds.Min.Y,
+		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
+		bounds.Max.Y)
+	accent, _ := theme.AccentPattern(theme.PatternState { })
+	artist.FillRectangle(element.core, accent, meterBounds)
 }

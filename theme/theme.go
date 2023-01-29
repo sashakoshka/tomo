@@ -1,6 +1,5 @@
 package theme
 
-import "image"
 import "image/color"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
@@ -81,34 +80,6 @@ var deadPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 
-func AccentPattern () (artist.Pattern) { return accentPattern }
-func BackgroundPattern () (artist.Pattern) { return backgroundPattern }
-func DeadPattern () (artist.Pattern) { return deadPattern }
-
-func SunkenPattern (textured bool) (artist.Pattern) {
-	if textured {
-		return texturedSunkenPattern
-	} else {
-		return sunkenPattern
-	}
-}
-
-func RaisedPattern (selected bool) (artist.Pattern) {
-	if selected {
-		return selectedRaisedPattern
-	} else {
-		return raisedPattern
-	}
-}
-
-func ForegroundPattern (enabled bool) (artist.Pattern) {
-	if enabled {
-		return foregroundPattern
-	} else {
-		return weakForegroundPattern
-	}
-}
-
 // TODO: load fonts from an actual source instead of using defaultfont
 
 // FontFaceRegular returns the font face to be used for normal text.
@@ -138,12 +109,8 @@ func Padding () int {
 	return 8
 }
 
-func ScrollBarWidth () int {
+// HandleWidth returns how large grab handles should typically be. This is
+// important for accessibility reasons.
+func HandleWidth () int {
 	return Padding() * 2
-}
-
-// SinkOffsetVector specifies a vector for things such as text to move by when a
-// "sinking in" effect is desired, such as a button label during a button press.
-func SinkOffsetVector () image.Point {
-	return image.Point { 1, 1 }
 }

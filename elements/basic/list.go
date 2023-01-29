@@ -164,7 +164,8 @@ func (element *List) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *List) scrollViewportHeight () (height int) {
-	return element.Bounds().Dy() - theme.Padding()
+	_, inset := theme.ListPattern(theme.PatternState { })
+	return element.Bounds().Dy() - theme.Padding() - inset[0] - inset[2]
 }
 
 func (element *List) maxScrollHeight () (height int) {
@@ -328,7 +329,8 @@ func (element *List) changeSelectionBy (delta int) (updated bool) {
 }
 
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
-	entry.Collapse(element.forcedMinimumWidth)
+	_, inset := theme.ListPattern(theme.PatternState { })
+	entry.Collapse(element.forcedMinimumWidth - inset[3] - inset[1])
 	return entry
 }
 
@@ -355,17 +357,24 @@ func (element *List) updateMinimumSize () {
 		minimumHeight = element.contentHeight + theme.Padding()
 	}
 
+
+	_, inset := theme.ListPattern(theme.PatternState { })
+	minimumWidth  += inset[1] + inset[3]
+	minimumHeight += inset[0] + inset[2]
+
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
 }
 
 func (element *List) draw () {
 	bounds := element.Bounds()
 
-	artist.FillRectangle (
-		element,
-		theme.ListPattern(element.Selected()),
-		bounds)
+	pattern, inset := theme.ListPattern(theme.PatternState {
+		Disabled: !element.Enabled(),
+		Selected: element.Selected(),
+	})
+	artist.FillRectangle(element.core, pattern, bounds)
 
+	bounds = inset.Apply(bounds)
 	dot := image.Point {
 		bounds.Min.X,
 		bounds.Min.Y - element.scroll + theme.Padding() / 2,
@@ -377,9 +386,12 @@ func (element *List) draw () {
 		if entryPosition.Y > bounds.Max.Y { break }
 
 		if element.selectedEntry == index {
+			pattern, _ := theme.ItemPattern(theme.PatternState {
+				On: true,
+			})
 			artist.FillRectangle (
 				element,
-				theme.ListEntryPattern(true),
+				pattern,
 				entry.Bounds().Add(entryPosition))
 		}
 		entry.Draw (

@@ -237,11 +237,12 @@ func (element *TextBox) OnScrollBoundsChange (callback func ()) {
 
 func (element *TextBox) updateMinimumSize () {
 	textBounds := element.placeholderDrawer.LayoutBounds()
+	_, inset := theme.InputPattern(theme.PatternState { })
 	element.core.SetMinimumSize (
 		textBounds.Dx() +
-		theme.Padding() * 2,
+		theme.Padding() * 2 + inset[3] + inset[1],
 		element.placeholderDrawer.LineHeight().Round() +
-		theme.Padding() * 2)
+		theme.Padding() * 2 + inset[0] + inset[2])
 }
 
 func (element *TextBox) runOnChange () {
@@ -270,21 +271,23 @@ func (element *TextBox) scrollToCursor () {
 func (element *TextBox) draw () {
 	bounds := element.core.Bounds()
 
-	artist.FillRectangle (
-		element.core,
-		theme.InputPattern (
-			element.Enabled(),
-			element.Selected()),
-		bounds)
+	// FIXME: take index into account
+	pattern, inset := theme.InputPattern(theme.PatternState {
+		Disabled: !element.Enabled(),
+		Selected: element.Selected(),
+	})
+	artist.FillRectangle(element.core, pattern, bounds)
 
 	if len(element.text) == 0 && !element.Selected() {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
 		offset := image.Point {
-			X: theme.Padding(),
-			Y: theme.Padding(),
+			X: theme.Padding() + inset[3],
+			Y: theme.Padding() + inset[0],
 		}
-		foreground := theme.ForegroundPattern(false)
+		foreground, _ := theme.ForegroundPattern(theme.PatternState {
+			Disabled: true,
+		})
 		element.placeholderDrawer.Draw (
 			element.core,
 			foreground,
@@ -293,10 +296,12 @@ func (element *TextBox) draw () {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
 		offset := image.Point {
-			X: theme.Padding() - element.scroll,
-			Y: theme.Padding(),
+			X: theme.Padding() + inset[3] - element.scroll,
+			Y: theme.Padding() + inset[0],
 		}
-		foreground := theme.ForegroundPattern(element.Enabled())
+		foreground, _ := theme.ForegroundPattern(theme.PatternState {
+			Disabled: !element.Enabled(),
+		})
 		element.valueDrawer.Draw (
 			element.core,
 			foreground,
@@ -306,9 +311,10 @@ func (element *TextBox) draw () {
 			// cursor
 			cursorPosition := element.valueDrawer.PositionOf (
 				element.cursor)
+			foreground, _ := theme.ForegroundPattern(theme.PatternState { })
 			artist.Line (
 				element.core,
-				theme.ForegroundPattern(true), 1,
+				foreground, 1,
 				cursorPosition.Add(offset),
 				image.Pt (
 					cursorPosition.X,

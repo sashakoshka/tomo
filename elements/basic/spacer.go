@@ -42,14 +42,14 @@ func (element *Spacer) draw () {
 	bounds := element.core.Bounds()
 
 	if element.line {
-		artist.FillRectangle (
-			element.core,
-			theme.ForegroundPattern(false),
-			bounds)
+		pattern, _ := theme.ForegroundPattern(theme.PatternState {
+			Disabled: true,
+		})
+		artist.FillRectangle(element.core, pattern, bounds)
 	} else {
-		artist.FillRectangle (
-			element.core,
-			theme.BackgroundPattern(),
-			bounds)
+		pattern, _ := theme.BackgroundPattern(theme.PatternState {
+			Disabled: true,
+		})
+		artist.FillRectangle(element.core, pattern, bounds)
 	}
 }

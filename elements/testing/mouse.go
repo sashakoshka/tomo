@@ -29,10 +29,8 @@ func NewMouse () (element *Mouse) {
 func (element *Mouse) Resize (width, height int) {
 	element.core.AllocateCanvas(width, height)
 	bounds := element.Bounds()
-	artist.FillRectangle (
-		element.core,
-		theme.AccentPattern(),
-		bounds)
+	pattern, _ := theme.AccentPattern(theme.PatternState { })
+	artist.FillRectangle(element.core, pattern, bounds)
 	artist.StrokeRectangle (
 		element.core,
 		artist.NewUniform(color.Black), 1,

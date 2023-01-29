@@ -140,14 +140,15 @@ func (element *Checkbox) draw () {
 	bounds := element.core.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy())
 
-	artist.FillRectangle ( element.core, theme.BackgroundPattern(), bounds)
-	artist.FillRectangle (
-		element.core,
-		theme.ButtonPattern (
-			element.Enabled(),
-			element.Selected(),
-			element.pressed),
-		boxBounds)
+	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState { })
+	artist.FillRectangle ( element.core, backgroundPattern, bounds)
+
+	pattern, inset := theme.ButtonPattern(theme.PatternState {
+		Disabled: !element.Enabled(),
+		Selected: element.Selected(),
+		Pressed:  element.pressed,
+	})
+	artist.FillRectangle(element.core, pattern, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
@@ -157,17 +158,13 @@ func (element *Checkbox) draw () {
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := theme.ForegroundPattern(element.Enabled())
+	foreground, _ := theme.ForegroundPattern (theme.PatternState {
+		Disabled: !element.Enabled(),
+	})
 	element.drawer.Draw(element.core, foreground, offset)
 	
 	if element.checked {
-		checkBounds := boxBounds.Inset(4)
-		if element.pressed {
-			checkBounds = checkBounds.Add(theme.SinkOffsetVector())
-		}
-		artist.FillRectangle (
-			element.core,
-			theme.ForegroundPattern(element.Enabled()),
-			checkBounds)
+		checkBounds := inset.Apply(boxBounds).Inset(2)
+		artist.FillRectangle(element.core, foreground, checkBounds)
 	}
 }

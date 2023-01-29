@@ -19,15 +19,3 @@ var selectedInputPattern = artist.NewMultiBordered (
 var disabledInputPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: weakForegroundPattern },
 	artist.Stroke { Pattern: backgroundPattern })
-
-func InputPattern (enabled, selected bool) (artist.Pattern) {
-	if enabled {
-		if selected {
-			return selectedInputPattern
-		} else {
-			return inputPattern
-		}
-	} else {
-		return disabledInputPattern
-	}
-}

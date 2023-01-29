@@ -22,6 +22,7 @@ type ScrollContainer struct {
 		dragging bool
 		dragOffset int
 		gutter image.Rectangle
+		track image.Rectangle
 		bar image.Rectangle
 	}
 
@@ -31,6 +32,7 @@ type ScrollContainer struct {
 		dragging bool
 		dragOffset int
 		gutter image.Rectangle
+		track image.Rectangle
 		bar image.Rectangle
 	}
 
@@ -271,10 +273,12 @@ func (element *ScrollContainer) clearChildEventHandlers (child tomo.Scrollable) 
 }
 
 func (element *ScrollContainer) recalculate () {
+	_, gutterInset := theme.GutterPattern(theme.PatternState { })
+
 	horizontal := &element.horizontal
 	vertical   := &element.vertical
 	bounds     := element.Bounds()
-	thickness  := theme.ScrollBarWidth()
+	thickness  := theme.HandleWidth() + gutterInset[3] + gutterInset[1]
 
 	// calculate child size
 	element.childWidth  = bounds.Dx()
@@ -295,6 +299,7 @@ func (element *ScrollContainer) recalculate () {
 			horizontal.gutter.Max.X -= thickness
 		}
 		element.childHeight -= thickness
+		horizontal.track = gutterInset.Apply(horizontal.gutter)
 	}
 	if vertical.exists {
 		vertical.gutter.Min.X = bounds.Max.X - thickness
@@ -304,49 +309,51 @@ func (element *ScrollContainer) recalculate () {
 			vertical.gutter.Max.Y -= thickness
 		}
 		element.childWidth -= thickness
+		vertical.track = gutterInset.Apply(vertical.gutter)
 	}
 
 	// if enabled, calculate the positions of the bars
 	contentBounds  := element.child.ScrollContentBounds()
 	viewportBounds := element.child.ScrollViewportBounds()
 	if horizontal.exists && horizontal.enabled {
-		horizontal.bar.Min.Y = horizontal.gutter.Min.Y
-		horizontal.bar.Max.Y = horizontal.gutter.Max.Y
+		horizontal.bar.Min.Y = horizontal.track.Min.Y
+		horizontal.bar.Max.Y = horizontal.track.Max.Y
 
-		scale := float64(horizontal.gutter.Dx()) /
+		scale := float64(horizontal.track.Dx()) /
 			float64(contentBounds.Dx())
 		horizontal.bar.Min.X = int(float64(viewportBounds.Min.X) * scale)
 		horizontal.bar.Max.X = int(float64(viewportBounds.Max.X) * scale)
 		
-		horizontal.bar.Min.X += horizontal.gutter.Min.X
-		horizontal.bar.Max.X += horizontal.gutter.Min.X
+		horizontal.bar.Min.X += horizontal.track.Min.X
+		horizontal.bar.Max.X += horizontal.track.Min.X
 	}
 	if vertical.exists && vertical.enabled {
-		vertical.bar.Min.X = vertical.gutter.Min.X
-		vertical.bar.Max.X = vertical.gutter.Max.X
+		vertical.bar.Min.X = vertical.track.Min.X
+		vertical.bar.Max.X = vertical.track.Max.X
 
-		scale := float64(vertical.gutter.Dy()) /
+		scale := float64(vertical.track.Dy()) /
 			float64(contentBounds.Dy())
 		vertical.bar.Min.Y = int(float64(viewportBounds.Min.Y) * scale)
 		vertical.bar.Max.Y = int(float64(viewportBounds.Max.Y) * scale)
 		
-		vertical.bar.Min.Y += vertical.gutter.Min.Y
-		vertical.bar.Max.Y += vertical.gutter.Min.Y
+		vertical.bar.Min.Y += vertical.track.Min.Y
+		vertical.bar.Max.Y += vertical.track.Min.Y
 	}
 
 	// if the scroll bars are out of bounds, don't display them.
-	if horizontal.bar.Dx() >= horizontal.gutter.Dx() {
+	if horizontal.bar.Dx() >= horizontal.track.Dx() {
 		horizontal.bar = image.Rectangle { }
 	}
-	if vertical.bar.Dy() >= vertical.gutter.Dy() {
+	if vertical.bar.Dy() >= vertical.track.Dy() {
 		vertical.bar = image.Rectangle { }
 	}
 }
 
 func (element *ScrollContainer) draw () {
 	artist.Paste(element.core, element.child, image.Point { })
+	deadPattern, _ := theme.DeadPattern(theme.PatternState { })
 	artist.FillRectangle (
-		element, theme.DeadPattern(),
+		element, deadPattern,
 		image.Rect (
 			element.vertical.gutter.Min.X,
 			element.horizontal.gutter.Min.Y,
@@ -357,35 +364,35 @@ func (element *ScrollContainer) draw () {
 }
 
 func (element *ScrollContainer) drawHorizontalBar () {
-	artist.FillRectangle (
-		element,
-		theme.ScrollGutterPattern(true, element.horizontal.enabled),
-		element.horizontal.gutter)
-	artist.FillRectangle (
-		element,
-		theme.ScrollBarPattern (
-			true, element.horizontal.enabled,
-			element.horizontal.dragging),
-		element.horizontal.bar)
+	gutterPattern, _ := theme.GutterPattern (theme.PatternState {
+		Disabled: !element.horizontal.enabled,
+	})
+	artist.FillRectangle(element, gutterPattern, element.horizontal.gutter)
+	
+	handlePattern, _ := theme.HandlePattern (theme.PatternState {
+		Disabled: !element.horizontal.enabled,
+		Pressed:  element.horizontal.dragging,
+	})
+	artist.FillRectangle(element, handlePattern, element.horizontal.bar)
 }
 
 func (element *ScrollContainer) drawVerticalBar () {
-	artist.FillRectangle (
-		element,
-		theme.ScrollGutterPattern(false, element.vertical.enabled),
-		element.vertical.gutter)
-	artist.FillRectangle (
-		element,
-		theme.ScrollBarPattern (
-			false, element.vertical.enabled,
-			element.vertical.dragging),
-		element.vertical.bar)
+	gutterPattern, _ := theme.GutterPattern (theme.PatternState {
+		Disabled: !element.vertical.enabled,
+	})
+	artist.FillRectangle(element, gutterPattern, element.vertical.gutter)
+	
+	handlePattern, _ := theme.HandlePattern (theme.PatternState {
+		Disabled: !element.vertical.enabled,
+		Pressed:  element.vertical.dragging,
+	})
+	artist.FillRectangle(element, handlePattern, element.vertical.bar)
 }
 
 func (element *ScrollContainer) dragHorizontalBar (mousePosition image.Point) {
 	scrollX :=
 		float64(element.child.ScrollContentBounds().Dx()) /
-		float64(element.horizontal.gutter.Dx()) *
+		float64(element.horizontal.track.Dx()) *
 		float64(mousePosition.X - element.horizontal.dragOffset)
 	scrollY := element.child.ScrollViewportBounds().Min.Y
 	element.child.ScrollTo(image.Pt(int(scrollX), scrollY))
@@ -394,15 +401,18 @@ func (element *ScrollContainer) dragHorizontalBar (mousePosition image.Point) {
 func (element *ScrollContainer) dragVerticalBar (mousePosition image.Point) {
 	scrollY :=
 		float64(element.child.ScrollContentBounds().Dy()) /
-		float64(element.vertical.gutter.Dy()) *
+		float64(element.vertical.track.Dy()) *
 		float64(mousePosition.Y - element.vertical.dragOffset)
 	scrollX := element.child.ScrollViewportBounds().Min.X
 	element.child.ScrollTo(image.Pt(scrollX, int(scrollY)))
 }
 
 func (element *ScrollContainer) updateMinimumSize () {
-	width  := theme.ScrollBarWidth()
-	height := theme.ScrollBarWidth()
+	_, gutterInset := theme.GutterPattern(theme.PatternState { })
+	thickness  := theme.HandleWidth() + gutterInset[3] + gutterInset[1]
+	
+	width  := thickness
+	height := thickness
 	if element.child != nil {
 		childWidth, childHeight := element.child.MinimumSize()
 		width  += childWidth

@@ -44,8 +44,11 @@ func (entry *ListEntry) updateBounds () {
 			entry.drawer.LayoutBounds().Dx() + padding * 2
 	}
 	
+	_, inset := theme.ItemPattern(theme.PatternState { })
+	entry.bounds.Max.Y += inset[0] + inset[2]
+	
 	entry.textPoint =
-		image.Pt(padding, padding / 2).
+		image.Pt(inset[3] + padding, inset[0] + padding / 2).
 		Sub(entry.drawer.LayoutBounds().Min)
 }
 
@@ -56,9 +59,10 @@ func (entry *ListEntry) Draw (
 ) (
 	updatedRegion image.Rectangle,
 ) {
+	foreground, _ := theme.ForegroundPattern (theme.PatternState { })
 	return entry.drawer.Draw (
 		destination,
-		theme.ForegroundPattern(true),
+		foreground,
 		offset.Add(entry.textPoint))
 }
 

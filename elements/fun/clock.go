@@ -41,14 +41,17 @@ func (element *AnalogClock) SetTime (newTime time.Time) {
 func (element *AnalogClock) draw () {
 	bounds := element.core.Bounds()
 
-	artist.FillRectangle (
-		element,
-		theme.SunkenPattern(false),
-		bounds)
+	pattern, inset := theme.SunkenPattern(theme.PatternState { })
+	artist.FillRectangle(element, pattern, bounds)
+
+	bounds = inset.Apply(bounds)
+
+	foreground, _ := theme.ForegroundPattern(theme.PatternState { })
+	accent,     _ := theme.AccentPattern(theme.PatternState { })
 
 	for hour := 0; hour < 12; hour ++ {
 		element.radialLine (
-			theme.ForegroundPattern(true),
+			foreground,
 			0.8, 0.9, float64(hour) / 6 * math.Pi)
 	}
 
@@ -56,15 +59,9 @@ func (element *AnalogClock) draw () {
 	minute := float64(element.time.Minute()) + second / 60
 	hour   := float64(element.time.Hour())   + minute / 60
 
-	element.radialLine (
-		theme.ForegroundPattern(true),
-		0, 0.5, (hour - 3) / 6 * math.Pi)
-	element.radialLine (
-		theme.ForegroundPattern(true),
-		0, 0.7, (minute - 15) / 30 * math.Pi)
-	element.radialLine (
-		theme.AccentPattern(),
-		0, 0.7, (second - 15) / 30 * math.Pi)
+	element.radialLine(foreground, 0, 0.5, (hour   - 3)  / 6  * math.Pi)
+	element.radialLine(foreground, 0, 0.7, (minute - 15) / 30 * math.Pi)
+	element.radialLine(accent,     0, 0.7, (second - 15) / 30 * math.Pi)
 }
 
 // FlexibleHeightFor constrains the clock's minimum size to a 1:1 aspect ratio.

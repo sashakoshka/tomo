@@ -473,10 +473,8 @@ func (element *Container) recalculate () {
 func (element *Container) draw () {
 	bounds := element.core.Bounds()
 
-	artist.FillRectangle (
-		element.core,
-		theme.BackgroundPattern(),
-		bounds)
+	pattern, _ := theme.BackgroundPattern(theme.PatternState { })
+	artist.FillRectangle(element.core, pattern, bounds)
 
 	for _, entry := range element.children {
 		artist.Paste(element.core, entry, entry.Position)

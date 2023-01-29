@@ -38,19 +38,3 @@ var selectedListEntryPattern = artist.NewMultiBordered (
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
-
-func ListPattern (selected bool) (pattern artist.Pattern) {
-	if selected {
-		return selectedListPattern
-	} else {
-		return listPattern
-	}
-}
-
-func ListEntryPattern (selected bool) (pattern artist.Pattern) {
-	if selected {
-		return selectedListEntryPattern
-	} else {
-		return listEntryPattern
-	}
-}

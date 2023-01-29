@@ -46,23 +46,3 @@ var pressedSelectedButtonPattern = artist.NewMultiBordered (
 var disabledButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: weakForegroundPattern },
 	artist.Stroke { Pattern: backgroundPattern })
-
-func ButtonPattern (enabled, selected, pressed bool) (artist.Pattern) {
-	if enabled {
-		if pressed {
-			if selected {
-				return pressedSelectedButtonPattern
-			} else {
-				return pressedButtonPattern
-			}
-		} else {
-			if selected {
-				return selectedButtonPattern
-			} else {
-				return buttonPattern
-			}
-		}
-	} else {
-		return disabledButtonPattern
-	}
-}
