@@ -28,58 +28,61 @@ type Element interface {
 	OnMinimumSizeChange (callback func ())
 }
 
-// SelectionDirection represents a keyboard navigation direction.
-type SelectionDirection int
+// KeynavDirection represents a keyboard navigation direction.
+type KeynavDirection int
 
 const (
-	SelectionDirectionNeutral  SelectionDirection =  0
-	SelectionDirectionBackward SelectionDirection = -1
-	SelectionDirectionForward  SelectionDirection =  1
+	KeynavDirectionNeutral  KeynavDirection =  0
+	KeynavDirectionBackward KeynavDirection = -1
+	KeynavDirectionForward  KeynavDirection =  1
 )
 
 // Canon returns a well-formed direction.
-func (direction SelectionDirection) Canon () (canon SelectionDirection) {
+func (direction KeynavDirection) Canon () (canon KeynavDirection) {
 	if direction > 0 {
-		return SelectionDirectionForward
+		return KeynavDirectionForward
 	} else if direction == 0 {
-		return SelectionDirectionNeutral
+		return KeynavDirectionNeutral
 	} else {
-		return SelectionDirectionBackward
+		return KeynavDirectionBackward
 	}
 }
 
-// Selectable represents an element that has keyboard navigation support. This
+// Focusable represents an element that has keyboard navigation support. This
 // includes inputs, buttons, sliders, etc. as well as any elements that have
 // children (so keyboard navigation events can be propagated downward).
-type Selectable interface {
+type Focusable interface {
 	Element
 
-	// Selected returns whether or not this element is currently selected.
-	Selected () (selected bool)
+	// Focused returns whether or not this element is currently focused.
+	Focused () (selected bool)
 
-	// Select selects this element, if its parent element grants the
+	// Focus focuses this element, if its parent element grants the
 	// request.
-	Select ()
+	Focus ()
 
-	// HandleSelection causes this element to mark itself as selected, if it
-	// can currently be. Otherwise, it will return false and do nothing.
-	HandleSelection (direction SelectionDirection) (accepted bool)
+	// HandleFocus causes this element to mark itself as focused. If the
+	// element does not have children, it is disabled, or there are no more
+	// selectable children in the given direction, it should return false
+	// and do nothing. Otherwise, it should select itself and any children
+	// (if applicable) and return true.
+	HandleFocus (direction KeynavDirection) (accepted bool)
 
 	// HandleDeselection causes this element to mark itself and all of its
-	// children as deselected.
-	HandleDeselection ()
+	// children as unfocused.
+	HandleUnfocus ()
 
-	// OnSelectionRequest sets a function to be called when this element
-	// wants its parent element to select it. Parent elements should return
-	// true if the request was granted, and false if it was not.
-	OnSelectionRequest (func () (granted bool))
+	// OnFocusRequest sets a function to be called when this element wants
+	// its parent element to focus it. Parent elements should return true if
+	// the request was granted, and false if it was not.
+	OnFocusRequest (func () (granted bool))
 
-	// OnSelectionMotionRequest sets a function to be called when this
-	// element wants its parent element to select the element behind or in
+	// OnFocusMotionRequest sets a function to be called when this
+	// element wants its parent element to focus the element behind or in
 	// front of it, depending on the specified direction. Parent elements
 	// should return true if the request was granted, and false if it was
 	// not.
-	OnSelectionMotionRequest (func (SelectionDirection) (granted bool))
+	OnFocusMotionRequest (func (direction KeynavDirection) (granted bool))
 }
 
 // KeyboardTarget represents an element that can receive keyboard input.

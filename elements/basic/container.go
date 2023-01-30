@@ -14,16 +14,16 @@ type Container struct {
 	*core.Core
 	core core.CoreControl
 
-	layout     tomo.Layout
-	children   []tomo.LayoutEntry
-	drags      [10]tomo.MouseTarget
-	warping    bool
-	selected   bool
-	selectable bool
-	flexible   bool
+	layout    tomo.Layout
+	children  []tomo.LayoutEntry
+	drags     [10]tomo.MouseTarget
+	warping   bool
+	focused   bool
+	focusable bool
+	flexible  bool
 	
-	onSelectionRequest func () (granted bool)
-	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
+	onFocusRequest func () (granted bool)
+	onFocusMotionRequest func (tomo.KeynavDirection) (granted bool)
 	onFlexibleHeightChange func ()
 }
 
@@ -57,14 +57,14 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 	if child0, ok := child.(tomo.Flexible); ok {
 		child0.OnFlexibleHeightChange(element.updateMinimumSize)
 	}
-	if child0, ok := child.(tomo.Selectable); ok {
-		child0.OnSelectionRequest (func () (granted bool) {
-			return element.childSelectionRequestCallback(child0)
+	if child0, ok := child.(tomo.Focusable); ok {
+		child0.OnFocusRequest (func () (granted bool) {
+			return element.childFocusRequestCallback(child0)
 		})
-		child0.OnSelectionMotionRequest (
-			func (direction tomo.SelectionDirection) (granted bool) {
-				if element.onSelectionMotionRequest == nil { return }
-				return element.onSelectionMotionRequest(direction)
+		child0.OnFocusMotionRequest (
+			func (direction tomo.KeynavDirection) (granted bool) {
+				if element.onFocusMotionRequest == nil { return }
+				return element.onFocusMotionRequest(direction)
 			})
 	}
 
@@ -132,11 +132,11 @@ func (element *Container) Disown (child tomo.Element) {
 func (element *Container) clearChildEventHandlers (child tomo.Element) {
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
-	if child0, ok := child.(tomo.Selectable); ok {
-		child0.OnSelectionRequest(nil)
-		child0.OnSelectionMotionRequest(nil)
-		if child0.Selected() {
-			child0.HandleDeselection()
+	if child0, ok := child.(tomo.Focusable); ok {
+		child0.OnFocusRequest(nil)
+		child0.OnFocusMotionRequest(nil)
+		if child0.Focused() {
+			child0.HandleUnfocus()
 		}
 	}
 	if child0, ok := child.(tomo.Flexible); ok {
@@ -238,7 +238,7 @@ func (element *Container) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
 }
 
 func (element *Container) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
-	element.forSelected (func (child tomo.Selectable) bool {
+	element.forFocused (func (child tomo.Focusable) bool {
 		child0, handlesKeyboard := child.(tomo.KeyboardTarget)
 		if handlesKeyboard {
 			child0.HandleKeyDown(key, modifiers)
@@ -248,110 +248,13 @@ func (element *Container) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers)
 }
 
 func (element *Container) HandleKeyUp (key tomo.Key, modifiers tomo.Modifiers) {
-	element.forSelected (func (child tomo.Selectable) bool {
+	element.forFocused (func (child tomo.Focusable) bool {
 		child0, handlesKeyboard := child.(tomo.KeyboardTarget)
 		if handlesKeyboard {
 			child0.HandleKeyUp(key, modifiers)
 		}
 		return true
 	})
-}
-
-func (element *Container) Selected () (selected bool) {
-	return element.selected
-}
-
-func (element *Container) Select () {
-	if element.onSelectionRequest != nil {
-		element.onSelectionRequest()
-	}
-}
-
-func (element *Container) HandleSelection (direction tomo.SelectionDirection) (ok bool) {
-	if !element.selectable { return false }
-	direction = direction.Canon()
-
-	firstSelected := element.firstSelected()
-	if firstSelected < 0 {
-		// no element is currently selected, so we need to select either
-		// the first or last selectable element depending on the
-		// direction.
-		switch direction {
-		case tomo.SelectionDirectionNeutral, tomo.SelectionDirectionForward:
-			// if we recieve a neutral or forward direction, select
-			// the first selectable element.
-			return element.selectFirstSelectableElement(direction)
-		
-		case tomo.SelectionDirectionBackward:
-			// if we recieve a backward direction, select the last
-			// selectable element.
-			return element.selectLastSelectableElement(direction)
-		}
-	} else {
-		// an element is currently selected, so we need to move the
-		// selection in the specified direction
-		firstSelectedChild :=
-			element.children[firstSelected].Element.(tomo.Selectable)
-
-		// before we move the selection, the currently selected child
-		// may also be able to move its selection. if the child is able
-		// to do that, we will let it and not move ours.
-		if firstSelectedChild.HandleSelection(direction) {
-			return true
-		}
-
-		// find the previous/next selectable element relative to the
-		// currently selected element, if it exists.
-		for index := firstSelected + int(direction);
-			index < len(element.children) && index >= 0;
-			index += int(direction) {
-
-			child, selectable :=
-				element.children[index].
-				Element.(tomo.Selectable)
-			if selectable && child.HandleSelection(direction) {
-				// we have found one, so we now actually move
-				// the selection.
-				firstSelectedChild.HandleDeselection()
-				element.selected = true
-				return true
-			}
-		}
-	}
-	
-	return false
-}
-
-func (element *Container) selectFirstSelectableElement (
-	direction tomo.SelectionDirection,
-) (
-	ok bool,
-) {
-	element.forSelectable (func (child tomo.Selectable) bool {
-		if child.HandleSelection(direction) {
-			element.selected = true
-			ok = true
-			return false
-		}
-		return true
-	})
-	return
-}
-
-func (element *Container) selectLastSelectableElement (
-	direction tomo.SelectionDirection,
-) (
-	ok bool,
-) {
-	element.forSelectableBackward (func (child tomo.Selectable) bool {
-		if child.HandleSelection(direction) {
-			element.selected = true
-			ok = true
-			return false
-		}
-		return true
-	})
-	return
 }
 
 func (element *Container) FlexibleHeightFor (width int) (height int) {
@@ -362,37 +265,134 @@ func (element *Container) OnFlexibleHeightChange (callback func ()) {
 	element.onFlexibleHeightChange = callback
 }
 
-func (element *Container) HandleDeselection () {
-	element.selected = false
-	element.forSelected (func (child tomo.Selectable) bool {
-		child.HandleDeselection()
+func (element *Container) Focused () (focused bool) {
+	return element.focused
+}
+
+func (element *Container) Focus () {
+	if element.onFocusRequest != nil {
+		element.onFocusRequest()
+	}
+}
+
+func (element *Container) HandleFocus (direction tomo.KeynavDirection) (ok bool) {
+	if !element.focusable { return false }
+	direction = direction.Canon()
+
+	firstFocused := element.firstFocused()
+	if firstFocused < 0 {
+		// no element is currently focused, so we need to focus either
+		// the first or last focusable element depending on the
+		// direction.
+		switch direction {
+		case tomo.KeynavDirectionNeutral, tomo.KeynavDirectionForward:
+			// if we recieve a neutral or forward direction, focus
+			// the first focusable element.
+			return element.focusFirstFocusableElement(direction)
+		
+		case tomo.KeynavDirectionBackward:
+			// if we recieve a backward direction, focus the last
+			// focusable element.
+			return element.focusLastFocusableElement(direction)
+		}
+	} else {
+		// an element is currently focused, so we need to move the
+		// focus in the specified direction
+		firstFocusedChild :=
+			element.children[firstFocused].Element.(tomo.Focusable)
+
+		// before we move the focus, the currently focused child
+		// may also be able to move its focus. if the child is able
+		// to do that, we will let it and not move ours.
+		if firstFocusedChild.HandleFocus(direction) {
+			return true
+		}
+
+		// find the previous/next focusable element relative to the
+		// currently focused element, if it exists.
+		for index := firstFocused + int(direction);
+			index < len(element.children) && index >= 0;
+			index += int(direction) {
+
+			child, focusable :=
+				element.children[index].
+				Element.(tomo.Focusable)
+			if focusable && child.HandleFocus(direction) {
+				// we have found one, so we now actually move
+				// the focus.
+				firstFocusedChild.HandleUnfocus()
+				element.focused = true
+				return true
+			}
+		}
+	}
+	
+	return false
+}
+
+func (element *Container) focusFirstFocusableElement (
+	direction tomo.KeynavDirection,
+) (
+	ok bool,
+) {
+	element.forFocusable (func (child tomo.Focusable) bool {
+		if child.HandleFocus(direction) {
+			element.focused = true
+			ok = true
+			return false
+		}
+		return true
+	})
+	return
+}
+
+func (element *Container) focusLastFocusableElement (
+	direction tomo.KeynavDirection,
+) (
+	ok bool,
+) {
+	element.forFocusableBackward (func (child tomo.Focusable) bool {
+		if child.HandleFocus(direction) {
+			element.focused = true
+			ok = true
+			return false
+		}
+		return true
+	})
+	return
+}
+
+func (element *Container) HandleUnfocus () {
+	element.focused = false
+	element.forFocused (func (child tomo.Focusable) bool {
+		child.HandleUnfocus()
 		return true
 	})
 }
 
-func (element *Container) OnSelectionRequest (callback func () (granted bool)) {
-	element.onSelectionRequest = callback
+func (element *Container) OnFocusRequest (callback func () (granted bool)) {
+	element.onFocusRequest = callback
 }
 
-func (element *Container) OnSelectionMotionRequest (
-	callback func (direction tomo.SelectionDirection) (granted bool),
+func (element *Container) OnFocusMotionRequest (
+	callback func (direction tomo.KeynavDirection) (granted bool),
 ) {
-	element.onSelectionMotionRequest = callback
+	element.onFocusMotionRequest = callback
 }
 
-func (element *Container) forSelected (callback func (child tomo.Selectable) bool) {
+func (element *Container) forFocused (callback func (child tomo.Focusable) bool) {
 	for _, entry := range element.children {
-		child, selectable := entry.Element.(tomo.Selectable)
-		if selectable && child.Selected() {
+		child, focusable := entry.Element.(tomo.Focusable)
+		if focusable && child.Focused() {
 			if !callback(child) { break }
 		}
 	}
 }
 
-func (element *Container) forSelectable (callback func (child tomo.Selectable) bool) {
+func (element *Container) forFocusable (callback func (child tomo.Focusable) bool) {
 	for _, entry := range element.children {
-		child, selectable := entry.Element.(tomo.Selectable)
-		if selectable {
+		child, focusable := entry.Element.(tomo.Focusable)
+		if focusable {
 			if !callback(child) { break }
 		}
 	}
@@ -400,26 +400,26 @@ func (element *Container) forSelectable (callback func (child tomo.Selectable) b
 
 func (element *Container) forFlexible (callback func (child tomo.Flexible) bool) {
 	for _, entry := range element.children {
-		child, selectable := entry.Element.(tomo.Flexible)
-		if selectable {
+		child, flexible := entry.Element.(tomo.Flexible)
+		if flexible {
 			if !callback(child) { break }
 		}
 	}
 }
 
-func (element *Container) forSelectableBackward (callback func (child tomo.Selectable) bool) {
+func (element *Container) forFocusableBackward (callback func (child tomo.Focusable) bool) {
 	for index := len(element.children) - 1; index >= 0; index -- {
-		child, selectable := element.children[index].Element.(tomo.Selectable)
-		if selectable {
+		child, focusable := element.children[index].Element.(tomo.Focusable)
+		if focusable {
 			if !callback(child) { break }
 		}
 	}
 }
 
-func (element *Container) firstSelected () (index int) {
+func (element *Container) firstFocused () (index int) {
 	for currentIndex, entry := range element.children {
-		child, selectable := entry.Element.(tomo.Selectable)
-		if selectable && child.Selected() {
+		child, focusable := entry.Element.(tomo.Focusable)
+		if focusable && child.Focused() {
 			return currentIndex
 		}
 	}
@@ -427,9 +427,9 @@ func (element *Container) firstSelected () (index int) {
 }
 
 func (element *Container) reflectChildProperties () {
-	element.selectable = false
-	element.forSelectable (func (tomo.Selectable) bool {
-		element.selectable = true
+	element.focusable = false
+	element.forFocusable (func (tomo.Focusable) bool {
+		element.focusable = true
 		return false
 	})
 	element.flexible = false
@@ -437,22 +437,22 @@ func (element *Container) reflectChildProperties () {
 		element.flexible = true
 		return false
 	})
-	if !element.selectable {
-		element.selected = false
+	if !element.focusable {
+		element.focused = false
 	}
 }
 
-func (element *Container) childSelectionRequestCallback (
-	child tomo.Selectable,
+func (element *Container) childFocusRequestCallback (
+	child tomo.Focusable,
 ) (
 	granted bool,
 ) {
-	if element.onSelectionRequest != nil && element.onSelectionRequest() {
-		element.forSelected (func (child tomo.Selectable) bool {
-			child.HandleDeselection()
+	if element.onFocusRequest != nil && element.onFocusRequest() {
+		element.forFocused (func (child tomo.Focusable) bool {
+			child.HandleUnfocus()
 			return true
 		})
-		child.HandleSelection(tomo.SelectionDirectionNeutral)
+		child.HandleFocus(tomo.KeynavDirectionNeutral)
 		return true
 	} else {
 		return false

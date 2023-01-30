@@ -15,7 +15,7 @@ var scrollBarVerticalCase   = theme.C("basic", "scrollBarVertical")
 type ScrollContainer struct {
 	*core.Core
 	core core.CoreControl
-	selected bool
+	focused bool
 	
 	child tomo.Scrollable
 	childWidth, childHeight int
@@ -40,8 +40,8 @@ type ScrollContainer struct {
 		bar image.Rectangle
 	}
 
-	onSelectionRequest func () (granted bool)
-	onSelectionMotionRequest func (tomo.SelectionDirection) (granted bool)
+	onFocusRequest func () (granted bool)
+	onFocusMotionRequest func (tomo.KeynavDirection) (granted bool)
 }
 
 // NewScrollContainer creates a new scroll container with the specified scroll
@@ -80,11 +80,11 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 		child.OnDamage(element.childDamageCallback)
 		child.OnMinimumSizeChange(element.updateMinimumSize)
 		child.OnScrollBoundsChange(element.childScrollBoundsChangeCallback)
-		if newChild, ok := child.(tomo.Selectable); ok {
-			newChild.OnSelectionRequest (
-				element.childSelectionRequestCallback)
-			newChild.OnSelectionMotionRequest (
-				element.childSelectionMotionRequestCallback)
+		if newChild, ok := child.(tomo.Focusable); ok {
+			newChild.OnFocusRequest (
+				element.childFocusRequestCallback)
+			newChild.OnFocusMotionRequest (
+				element.childFocusMotionRequestCallback)
 		}
 
 		// TODO: somehow inform the core that we do not in fact want to
@@ -193,82 +193,80 @@ func (element *ScrollContainer) scrollChildBy (x, y int) {
 	element.child.ScrollTo(scrollPoint)
 }
 
-func (element *ScrollContainer) Selected () (selected bool) {
-	return element.selected
+func (element *ScrollContainer) Focused () (focused bool) {
+	return element.focused
 }
 
-func (element *ScrollContainer) Select () {
-	if element.onSelectionRequest != nil {
-		element.onSelectionRequest()
+func (element *ScrollContainer) Focus () {
+	if element.onFocusRequest != nil {
+		element.onFocusRequest()
 	}
 }
 
-func (element *ScrollContainer) HandleSelection (
-	direction tomo.SelectionDirection,
+func (element *ScrollContainer) HandleFocus (
+	direction tomo.KeynavDirection,
 ) (
 	accepted bool,
 ) {
-	if child, ok := element.child.(tomo.Selectable); ok {
-		element.selected = true
-		return child.HandleSelection(direction)
+	if child, ok := element.child.(tomo.Focusable); ok {
+		element.focused = true
+		return child.HandleFocus(direction)
 	} else {
-		element.selected = false
+		element.focused = false
 		return false
 	}
 }
 
-func (element *ScrollContainer) HandleDeselection () {
-	if child, ok := element.child.(tomo.Selectable); ok {
-		child.HandleDeselection()
+func (element *ScrollContainer) HandleUnfocus () {
+	if child, ok := element.child.(tomo.Focusable); ok {
+		child.HandleUnfocus()
 	}
-	element.selected = false
+	element.focused = false
 }
 
-func (element *ScrollContainer) OnSelectionRequest (callback func () (granted bool)) {
-	element.onSelectionRequest = callback
+func (element *ScrollContainer) OnFocusRequest (callback func () (granted bool)) {
+	element.onFocusRequest = callback
 }
 
-func (element *ScrollContainer) OnSelectionMotionRequest (
-	callback func (direction tomo.SelectionDirection) (granted bool),
+func (element *ScrollContainer) OnFocusMotionRequest (
+	callback func (direction tomo.KeynavDirection) (granted bool),
 ) {
-	element.onSelectionMotionRequest = callback
+	element.onFocusMotionRequest = callback
 }
 
 func (element *ScrollContainer) childDamageCallback (region tomo.Canvas) {
 	element.core.DamageRegion(artist.Paste(element, region, image.Point { }))
 }
 
-func (element *ScrollContainer) childSelectionRequestCallback () (granted bool) {
-	child, ok := element.child.(tomo.Selectable)
+func (element *ScrollContainer) childFocusRequestCallback () (granted bool) {
+	child, ok := element.child.(tomo.Focusable)
 	if !ok { return false }
-	if element.onSelectionRequest != nil && element.onSelectionRequest() {
-		child.HandleSelection(tomo.SelectionDirectionNeutral)
+	if element.onFocusRequest != nil && element.onFocusRequest() {
+		child.HandleFocus(tomo.KeynavDirectionNeutral)
 		return true
 	} else {
 		return false
 	}
 }
 
-func (element *ScrollContainer) childSelectionMotionRequestCallback (
-	direction tomo.SelectionDirection,
+func (element *ScrollContainer) childFocusMotionRequestCallback (
+	direction tomo.KeynavDirection,
 ) (
 	granted bool,
 ) {
-	if element.onSelectionMotionRequest == nil {
-		 return
-	}
-	return element.onSelectionMotionRequest(direction)
+	if element.onFocusMotionRequest == nil { return }
+	return element.onFocusMotionRequest(direction)
 }
 
 func (element *ScrollContainer) clearChildEventHandlers (child tomo.Scrollable) {
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
 	child.OnScrollBoundsChange(nil)
-	if child0, ok := child.(tomo.Selectable); ok {
-		child0.OnSelectionRequest(nil)
-		child0.OnSelectionMotionRequest(nil)
-		if child0.Selected() {
-			child0.HandleDeselection()
+	if child0, ok := child.(tomo.Focusable); ok {
+		child0.OnFocusRequest(nil)
+		child0.OnFocusMotionRequest(nil)
+		if child0.Focused() {
+			child0.HandleUnfocus()
 		}
 	}
 	if child0, ok := child.(tomo.Flexible); ok {

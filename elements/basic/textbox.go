@@ -12,9 +12,9 @@ var textBoxCase = theme.C("basic", "textBox")
 // TextBox is a single-line text input.
 type TextBox struct {
 	*core.Core
-	*core.SelectableCore
+	*core.FocusableCore
 	core core.CoreControl
-	selectableControl core.SelectableCoreControl
+	focusableControl core.FocusableCoreControl
 	
 	cursor int
 	scroll int
@@ -35,8 +35,8 @@ type TextBox struct {
 func NewTextBox (placeholder, value string) (element *TextBox) {
 	element = &TextBox { }
 	element.Core, element.core = core.NewCore(element)
-	element.SelectableCore,
-	element.selectableControl = core.NewSelectableCore (func () {
+	element.FocusableCore,
+	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
 			element.draw()
 			element.core.DamageAll()
@@ -61,8 +61,8 @@ func (element *TextBox) Resize (width, height int) {
 }
 
 func (element *TextBox) HandleMouseDown (x, y int, button tomo.Button) {
-	if !element.Enabled()  { return }
-	if !element.Selected() { element.Select() }
+	if !element.Enabled() { return }
+	if !element.Focused() { element.Focus() }
 }
 
 func (element *TextBox) HandleMouseUp (x, y int, button tomo.Button) { }
@@ -277,13 +277,13 @@ func (element *TextBox) draw () {
 
 	// FIXME: take index into account
 	pattern, inset := theme.InputPattern(theme.PatternState {
-		Case: textBoxCase,
+		Case:     textBoxCase,
 		Disabled: !element.Enabled(),
-		Selected: element.Selected(),
+		Focused:  element.Focused(),
 	})
 	artist.FillRectangle(element.core, pattern, bounds)
 
-	if len(element.text) == 0 && !element.Selected() {
+	if len(element.text) == 0 && !element.Focused() {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
 		offset := image.Point {
@@ -314,7 +314,7 @@ func (element *TextBox) draw () {
 			foreground,
 			offset.Sub(textBounds.Min))
 
-		if element.Selected() {
+		if element.Focused() {
 			// cursor
 			cursorPosition := element.valueDrawer.PositionOf (
 				element.cursor)

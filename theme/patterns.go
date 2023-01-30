@@ -31,9 +31,9 @@ type PatternState struct {
 	// question is capable of being toggled.
 	On bool
 
-	// Selected should be set to true if the element that is using this
-	// pattern is currently selected.
-	Selected bool
+	// Focused should be set to true if the element that is using this
+	// pattern is currently focused.
+	Focused bool
 
 	// Pressed should be set to true if the element that is using this
 	// pattern is being pressed down by the mouse. This is only necessary if
@@ -123,7 +123,7 @@ func InputPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 	if state.Disabled {
 		return disabledInputPattern, Inset { 1, 1, 1, 1 }
 	} else {
-		if state.Selected {
+		if state.Focused {
 			return selectedInputPattern, Inset { 1, 1, 1, 1 }
 		} else {
 			return inputPattern, Inset { 1, 1, 1, 1 }
@@ -133,7 +133,7 @@ func InputPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 
 // ListPattern returns a background pattern for a list of things.
 func ListPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
-	if state.Selected {
+	if state.Focused {
 		return selectedListPattern, Inset { 4, 4, 4, 4 }
 	} else {
 		return listPattern, Inset { 4, 4, 4, 4 }
@@ -142,10 +142,18 @@ func ListPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 
 // ItemPattern returns a background pattern for a list item.
 func ItemPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
-	if state.On {
-		return onListEntryPattern, Inset { 4, 4, 4, 4 }
+	if state.Focused {
+		if state.On {
+			return selectedOnListEntryPattern, Inset { 4, 4, 4, 4 }
+		} else {
+			return selectedListEntryPattern, Inset { 4, 4, 4, 4 }
+		}
 	} else {
-		return listEntryPattern, Inset { 4, 4, 4, 4 }
+		if state.On {
+			return onListEntryPattern, Inset { 4, 4, 4, 4 }
+		} else {
+			return listEntryPattern, Inset { 4, 4, 4, 4 }
+		}
 	}
 }
 
@@ -155,14 +163,14 @@ func ButtonPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 		return disabledButtonPattern, Inset { 1, 1, 1, 1 }
 	} else {
 		if state.Pressed {
-			if state.Selected {
+			if state.Focused {
 				return pressedSelectedButtonPattern, Inset {
 					2, 0, 0, 2 }
 			} else {
 				return pressedButtonPattern, Inset { 2, 0, 0, 2 }
 			}
 		} else {
-			if state.Selected {
+			if state.Focused {
 				return selectedButtonPattern, Inset { 1, 1, 1, 1 }
 			} else {
 				return buttonPattern, Inset { 1, 1, 1, 1 }
@@ -187,7 +195,7 @@ func HandlePattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 	if state.Disabled {
 		return disabledScrollBarPattern, Inset { 1, 1, 1, 1 }
 	} else {
-		if state.Selected {
+		if state.Focused {
 			if state.Pressed {
 				return pressedSelectedScrollBarPattern, Inset { 1, 1, 1, 1 }
 			} else {
@@ -212,7 +220,7 @@ func SunkenPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 // RaisedPattern returns a general purpose pattern that is raised up out of the
 // background.
 func RaisedPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
-	if state.Selected {
+	if state.Focused {
 		return selectedRaisedPattern, Inset { 1, 1, 1, 1 }
 	} else {
 		return raisedPattern, Inset { 1, 1, 1, 1 }

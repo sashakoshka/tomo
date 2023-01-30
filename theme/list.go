@@ -26,3 +26,9 @@ var listEntryPattern = artist.NewMultiBordered (
 
 var onListEntryPattern = artist.NewMultiBordered (
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x6e8079FF)) })
+
+var selectedListEntryPattern = artist.NewMultiBordered (
+	artist.Stroke { Pattern: artist.NewUniform(hex(0x999C99FF)) })
+
+var selectedOnListEntryPattern = artist.NewMultiBordered (
+	artist.Stroke { Pattern: artist.NewUniform(hex(0x6e8079FF)) })

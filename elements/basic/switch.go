@@ -12,9 +12,9 @@ var switchCase = theme.C("basic", "switch")
 // functionally identical to Checkbox, but plays a different semantic role.
 type Switch struct {
 	*core.Core
-	*core.SelectableCore
+	*core.FocusableCore
 	core core.CoreControl
-	selectableControl core.SelectableCoreControl
+	focusableControl core.FocusableCoreControl
 	drawer artist.TextDrawer
 
 	pressed bool
@@ -28,8 +28,8 @@ type Switch struct {
 func NewSwitch (text string, on bool) (element *Switch) {
 	element = &Switch { checked: on, text: text }
 	element.Core, element.core = core.NewCore(element)
-	element.SelectableCore,
-	element.selectableControl = core.NewSelectableCore (func () {
+	element.FocusableCore,
+	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
 			element.draw()
 			element.core.DamageAll()
@@ -49,7 +49,7 @@ func (element *Switch) Resize (width, height int) {
 
 func (element *Switch) HandleMouseDown (x, y int, button tomo.Button) {
 	if !element.Enabled() { return }
-	element.Select()
+	element.Focus()
 	element.pressed = true
 	if element.core.HasImage() {
 		element.draw()
@@ -115,7 +115,7 @@ func (element *Switch) Value () (on bool) {
 
 // SetEnabled sets whether this switch can be flipped or not.
 func (element *Switch) SetEnabled (enabled bool) {
-	element.selectableControl.SetEnabled(enabled)
+	element.focusableControl.SetEnabled(enabled)
 }
 
 // SetText sets the checkbox's label text.
@@ -171,7 +171,7 @@ func (element *Switch) draw () {
 	gutterPattern, _ := theme.GutterPattern(theme.PatternState {
 		Case: switchCase,
 		Disabled: !element.Enabled(),
-		Selected: element.Selected(),
+		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	})
 	artist.FillRectangle(element.core, gutterPattern, gutterBounds)
@@ -179,7 +179,7 @@ func (element *Switch) draw () {
 	handlePattern, _ := theme.HandlePattern(theme.PatternState {
 		Case: switchCase,
 		Disabled: !element.Enabled(),
-		Selected: element.Selected(),
+		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	})
 	artist.FillRectangle(element.core, handlePattern, handleBounds)

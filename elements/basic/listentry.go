@@ -55,14 +55,14 @@ func (entry *ListEntry) updateBounds () {
 func (entry *ListEntry) Draw (
 	destination tomo.Canvas,
 	offset image.Point,
-	selected bool,
+	focused bool,
 	on bool,
 ) (
 	updatedRegion image.Rectangle,
 ) {
 	pattern, _ := theme.ItemPattern(theme.PatternState {
 		Case: listEntryCase,
-		Selected: selected,
+		Focused: focused,
 		On: on,
 	})
 	artist.FillRectangle (
@@ -71,7 +71,7 @@ func (entry *ListEntry) Draw (
 		entry.Bounds().Add(offset))
 	foreground, _ := theme.ForegroundPattern (theme.PatternState {
 		Case: listEntryCase,
-		Selected: selected,
+		Focused: focused,
 		On: on,
 	})
 	return entry.drawer.Draw (

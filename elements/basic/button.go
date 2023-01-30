@@ -11,9 +11,9 @@ var buttonCase = theme.C("basic", "button")
 // Button is a clickable button.
 type Button struct {
 	*core.Core
-	*core.SelectableCore
+	*core.FocusableCore
 	core core.CoreControl
-	selectableControl core.SelectableCoreControl
+	focusableControl core.FocusableCoreControl
 	drawer artist.TextDrawer
 
 	pressed bool
@@ -26,8 +26,8 @@ type Button struct {
 func NewButton (text string) (element *Button) {
 	element = &Button { }
 	element.Core, element.core = core.NewCore(element)
-	element.SelectableCore,
-	element.selectableControl = core.NewSelectableCore (func () {
+	element.FocusableCore,
+	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
 			element.draw()
 			element.core.DamageAll()
@@ -45,7 +45,7 @@ func (element *Button) Resize (width, height int) {
 
 func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {
 	if !element.Enabled()  { return }
-	if !element.Selected() { element.Select() }
+	if !element.Focused() { element.Focus() }
 	if button != tomo.ButtonLeft { return }
 	element.pressed = true
 	if element.core.HasImage() {
@@ -106,7 +106,7 @@ func (element *Button) OnClick (callback func ()) {
 
 // SetEnabled sets whether this button can be clicked or not.
 func (element *Button) SetEnabled (enabled bool) {
-	element.selectableControl.SetEnabled(enabled)
+	element.focusableControl.SetEnabled(enabled)
 }
 
 // SetText sets the button's label text.
@@ -131,7 +131,7 @@ func (element *Button) draw () {
 	pattern, inset := theme.ButtonPattern(theme.PatternState {
 		Case: buttonCase,
 		Disabled: !element.Enabled(),
-		Selected: element.Selected(),
+		Focused: element.Focused(),
 		Pressed:  element.pressed,
 	})
 

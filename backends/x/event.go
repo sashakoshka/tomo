@@ -124,14 +124,14 @@ func (window *Window) handleKeyPress (
 	modifiers.NumberPad = numberPad
 
 	if key == tomo.KeyTab && modifiers.Alt {
-		if child, ok := window.child.(tomo.Selectable); ok {
-			direction := tomo.SelectionDirectionForward
+		if child, ok := window.child.(tomo.Focusable); ok {
+			direction := tomo.KeynavDirectionForward
 			if modifiers.Shift {
-				direction = tomo.SelectionDirectionBackward
+				direction = tomo.KeynavDirectionBackward
 			}
 
-			if !child.HandleSelection(direction) {
-				child.HandleDeselection()
+			if !child.HandleFocus(direction) {
+				child.HandleUnfocus()
 			}
 		}
 	} else if child, ok := window.child.(tomo.KeyboardTarget); ok {

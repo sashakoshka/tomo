@@ -2,110 +2,110 @@ package core
 
 import "git.tebibyte.media/sashakoshka/tomo"
 
-// SelectableCore is a struct that can be embedded into objects to make them
-// selectable, giving them the default selectability behavior.
-type SelectableCore struct {
-	selected bool
-	enabled  bool
-	drawSelectionChange func ()
-	onSelectionRequest func () (granted bool)
-	onSelectionMotionRequest func(tomo.SelectionDirection) (granted bool)
+// FocusableCore is a struct that can be embedded into objects to make them
+// focusable, giving them the default keynav behavior.
+type FocusableCore struct {
+	focused bool
+	enabled bool
+	drawFocusChange func ()
+	onFocusRequest func () (granted bool)
+	onFocusMotionRequest func(tomo.KeynavDirection) (granted bool)
 }
 
-// NewSelectableCore creates a new selectability core and its corresponding
-// control. If your element needs to visually update itself when it's selection
+// NewFocusableCore creates a new focusability core and its corresponding
+// control. If your element needs to visually update itself when it's focus
 // state changes (which it should), a callback to draw and push the update can
 // be specified. 
-func NewSelectableCore (
-	drawSelectionChange func (),
+func NewFocusableCore (
+	drawFocusChange func (),
 ) (	
-	core *SelectableCore,
-	control SelectableCoreControl,
+	core *FocusableCore,
+	control FocusableCoreControl,
 ) {
-	core = &SelectableCore {
-		drawSelectionChange: drawSelectionChange,
+	core = &FocusableCore {
+		drawFocusChange: drawFocusChange,
 		enabled: true,
 	}
-	control = SelectableCoreControl { core: core }
+	control = FocusableCoreControl { core: core }
 	return
 }
 
-// Selected returns whether or not this element is currently selected.
-func (core *SelectableCore) Selected () (selected bool) {
-	return core.selected
+// Focused returns whether or not this element is currently focused.
+func (core *FocusableCore) Focused () (focused bool) {
+	return core.focused
 }
 
-// Select selects this element, if its parent element grants the request.
-func (core *SelectableCore) Select () {
+// Focus focuses this element, if its parent element grants the request.
+func (core *FocusableCore) Focus () {
 	if !core.enabled { return }
-	if core.onSelectionRequest != nil {
-		core.onSelectionRequest()
+	if core.onFocusRequest != nil {
+		core.onFocusRequest()
 	}
 }
 
-// HandleSelection causes this element to mark itself as selected, if it can
+// HandleFocus causes this element to mark itself as focused, if it can
 // currently be. Otherwise, it will return false and do nothing.
-func (core *SelectableCore) HandleSelection (
-	direction tomo.SelectionDirection,
+func (core *FocusableCore) HandleFocus (
+	direction tomo.KeynavDirection,
 ) (
 	accepted bool,
 ) {
 	direction = direction.Canon()
 	if !core.enabled { return false }
-	if core.selected && direction != tomo.SelectionDirectionNeutral {
+	if core.focused && direction != tomo.KeynavDirectionNeutral {
 		return false
 	}
 	
-	core.selected = true
-	if core.drawSelectionChange != nil { core.drawSelectionChange() }
+	core.focused = true
+	if core.drawFocusChange != nil { core.drawFocusChange() }
 	return true
 }
 
-// HandleDeselection causes this element to mark itself as deselected.
-func (core *SelectableCore) HandleDeselection () {
-	core.selected = false
-	if core.drawSelectionChange != nil { core.drawSelectionChange() }
+// HandleUnfocus causes this element to mark itself as unfocused.
+func (core *FocusableCore) HandleUnfocus () {
+	core.focused = false
+	if core.drawFocusChange != nil { core.drawFocusChange() }
 }
 
-// OnSelectionRequest sets a function to be called when this element
-// wants its parent element to select it. Parent elements should return
+// OnFocusRequest sets a function to be called when this element
+// wants its parent element to focus it. Parent elements should return
 // true if the request was granted, and false if it was not.
-func (core *SelectableCore) OnSelectionRequest (callback func () (granted bool)) {
-	core.onSelectionRequest = callback
+func (core *FocusableCore) OnFocusRequest (callback func () (granted bool)) {
+	core.onFocusRequest = callback
 }
 
-// OnSelectionMotionRequest sets a function to be called when this
-// element wants its parent element to select the element behind or in
+// OnFocusMotionRequest sets a function to be called when this
+// element wants its parent element to focus the element behind or in
 // front of it, depending on the specified direction. Parent elements
 // should return true if the request was granted, and false if it was
 // not.
-func (core *SelectableCore) OnSelectionMotionRequest (
-	callback func (direction tomo.SelectionDirection) (granted bool),
+func (core *FocusableCore) OnFocusMotionRequest (
+	callback func (direction tomo.KeynavDirection) (granted bool),
 ) {
-	core.onSelectionMotionRequest = callback
+	core.onFocusMotionRequest = callback
 }
 
 // Enabled returns whether or not the element is enabled.
-func (core *SelectableCore) Enabled () (enabled bool) {
+func (core *FocusableCore) Enabled () (enabled bool) {
 	return core.enabled
 }
 
-// SelectableCoreControl is a struct that can be used to exert control over a
-// selectability core. It must not be directly embedded into an element, but
-// instead kept as a private member. When a SelectableCore struct is created, a
-// corresponding SelectableCoreControl struct is linked to it and returned
+// FocusableCoreControl is a struct that can be used to exert control over a
+// focusability core. It must not be directly embedded into an element, but
+// instead kept as a private member. When a FocusableCore struct is created, a
+// corresponding FocusableCoreControl struct is linked to it and returned
 // alongside it.
-type SelectableCoreControl struct {
-	core *SelectableCore
+type FocusableCoreControl struct {
+	core *FocusableCore
 }
 
-// SetEnabled sets whether the selectability core is enabled. If the state
-// changes, this will call drawSelectionChange.
-func (control SelectableCoreControl) SetEnabled (enabled bool) {
+// SetEnabled sets whether the focusability core is enabled. If the state
+// changes, this will call drawFocusChange.
+func (control FocusableCoreControl) SetEnabled (enabled bool) {
 	if control.core.enabled == enabled { return }
 	control.core.enabled = enabled
-	if !enabled { control.core.selected = false }
-	if control.core.drawSelectionChange != nil {
-		control.core.drawSelectionChange()
+	if !enabled { control.core.focused = false }
+	if control.core.drawFocusChange != nil {
+		control.core.drawFocusChange()
 	}
 }

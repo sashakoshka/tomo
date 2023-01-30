@@ -12,9 +12,9 @@ var listCase = theme.C("basic", "list")
 // List is an element that contains several objects that a user can select.
 type List struct {
 	*core.Core
-	*core.SelectableCore
+	*core.FocusableCore
 	core core.CoreControl
-	selectableControl core.SelectableCoreControl
+	focusableControl core.FocusableCoreControl
 
 	pressed bool
 	
@@ -34,8 +34,8 @@ type List struct {
 func NewList (entries ...ListEntry) (element *List) {
 	element = &List { selectedEntry: -1 }
 	element.Core, element.core = core.NewCore(element)
-	element.SelectableCore,
-	element.selectableControl = core.NewSelectableCore (func () {
+	element.FocusableCore,
+	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
 			element.draw()
 			element.core.DamageAll()
@@ -78,7 +78,7 @@ func (element *List) Collapse (width, height int) {
 
 func (element *List) HandleMouseDown (x, y int, button tomo.Button) {
 	if !element.Enabled()  { return }
-	if !element.Selected() { element.Select() }
+	if !element.Focused() { element.Focus() }
 	if button != tomo.ButtonLeft { return }
 	element.pressed = true
 	if element.selectUnderMouse(x, y) && element.core.HasImage() {
@@ -377,7 +377,7 @@ func (element *List) draw () {
 	pattern, inset := theme.ListPattern(theme.PatternState {
 		Case: listCase,
 		Disabled: !element.Enabled(),
-		Selected: element.Selected(),
+		Focused: element.Focused(),
 	})
 	artist.FillRectangle(element.core, pattern, bounds)
 
@@ -394,6 +394,6 @@ func (element *List) draw () {
 		if entryPosition.Y > bounds.Max.Y { break }
 		entry.Draw (
 			innerCanvas, entryPosition,
-			element.Selected(), element.selectedEntry == index)
+			element.Focused(), element.selectedEntry == index)
 	}
 }

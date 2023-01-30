@@ -11,9 +11,9 @@ var checkboxCase = theme.C("basic", "checkbox")
 // Checkbox is a toggle-able checkbox with a label.
 type Checkbox struct {
 	*core.Core
-	*core.SelectableCore
+	*core.FocusableCore
 	core core.CoreControl
-	selectableControl core.SelectableCoreControl
+	focusableControl core.FocusableCoreControl
 	drawer artist.TextDrawer
 
 	pressed bool
@@ -27,8 +27,8 @@ type Checkbox struct {
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked }
 	element.Core, element.core = core.NewCore(element)
-	element.SelectableCore,
-	element.selectableControl = core.NewSelectableCore (func () {
+	element.FocusableCore,
+	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
 			element.draw()
 			element.core.DamageAll()
@@ -47,7 +47,7 @@ func (element *Checkbox) Resize (width, height int) {
 
 func (element *Checkbox) HandleMouseDown (x, y int, button tomo.Button) {
 	if !element.Enabled() { return }
-	element.Select()
+	element.Focus()
 	element.pressed = true
 	if element.core.HasImage() {
 		element.draw()
@@ -113,7 +113,7 @@ func (element *Checkbox) Value () (checked bool) {
 
 // SetEnabled sets whether this checkbox can be toggled or not.
 func (element *Checkbox) SetEnabled (enabled bool) {
-	element.selectableControl.SetEnabled(enabled)
+	element.focusableControl.SetEnabled(enabled)
 }
 
 // SetText sets the checkbox's label text.
@@ -150,7 +150,7 @@ func (element *Checkbox) draw () {
 	pattern, inset := theme.ButtonPattern(theme.PatternState {
 		Case: checkboxCase,
 		Disabled: !element.Enabled(),
-		Selected: element.Selected(),
+		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	})
 	artist.FillRectangle(element.core, pattern, boxBounds)

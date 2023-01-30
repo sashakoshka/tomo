@@ -15,9 +15,6 @@ type Core struct {
 		minimumHeight int
 	}
 
-	selectable bool
-	selected   bool
-
 	onMinimumSizeChange func ()
 	onDamage func (region tomo.Canvas)
 }

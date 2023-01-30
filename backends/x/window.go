@@ -87,11 +87,11 @@ func (window *Window) Adopt (child tomo.Element) {
 	if previousChild, ok := window.child.(tomo.Flexible); ok {
 		previousChild.OnFlexibleHeightChange(nil)
 	}
-	if previousChild, ok := window.child.(tomo.Selectable); ok {
-		previousChild.OnSelectionRequest(nil)
-		previousChild.OnSelectionMotionRequest(nil)
-		if previousChild.Selected() {
-			previousChild.HandleDeselection()
+	if previousChild, ok := window.child.(tomo.Focusable); ok {
+		previousChild.OnFocusRequest(nil)
+		previousChild.OnFocusMotionRequest(nil)
+		if previousChild.Focused() {
+			previousChild.HandleUnfocus()
 		}
 	}
 	
@@ -100,8 +100,8 @@ func (window *Window) Adopt (child tomo.Element) {
 	if newChild, ok := child.(tomo.Flexible); ok {
 		newChild.OnFlexibleHeightChange(window.resizeChildToFit)
 	}
-	if newChild, ok := child.(tomo.Selectable); ok {
-		newChild.OnSelectionRequest(window.childSelectionRequestCallback)
+	if newChild, ok := child.(tomo.Focusable); ok {
+		newChild.OnFocusRequest(window.childSelectionRequestCallback)
 	}
 	if child != nil {
 		child.OnDamage(window.childDrawCallback)
@@ -282,20 +282,20 @@ func (window *Window) childMinimumSizeChangeCallback (width, height int) {
 }
 
 func (window *Window) childSelectionRequestCallback () (granted bool) {
-	if child, ok := window.child.(tomo.Selectable); ok {
-		child.HandleSelection(tomo.SelectionDirectionNeutral)
+	if child, ok := window.child.(tomo.Focusable); ok {
+		child.HandleFocus(tomo.KeynavDirectionNeutral)
 	}
 	return true
 }
 
 func (window *Window) childSelectionMotionRequestCallback (
-	direction tomo.SelectionDirection,
+	direction tomo.KeynavDirection,
 ) (
 	granted bool,
 ) {
-	if child, ok := window.child.(tomo.Selectable); ok {
-		if !child.HandleSelection(direction) {
-			child.HandleDeselection()
+	if child, ok := window.child.(tomo.Focusable); ok {
+		if !child.HandleFocus(direction) {
+			child.HandleUnfocus()
 		}
 		return true
 	}
