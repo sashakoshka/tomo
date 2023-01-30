@@ -19,21 +19,21 @@ type Horizontal struct {
 // Arrange arranges a list of entries horizontally.
 func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	if layout.Pad {
-		width  -= theme.Padding() * 2
-		height -= theme.Padding() * 2
+		width  -= theme.Margin() * 2
+		height -= theme.Margin() * 2
 	}
 	// get width of expanding elements
 	expandingElementWidth := layout.expandingElementWidth(entries, width)
 	
 	x, y := 0, 0
 	if layout.Pad {
-		x += theme.Padding()
-		y += theme.Padding()
+		x += theme.Margin()
+		y += theme.Margin()
 	}
 
 	// set the size and position of each element
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { x += theme.Padding() }
+		if index > 0 && layout.Gap { x += theme.Margin() }
 		
 		entries[index].Position = image.Pt(x, y)
 		entryWidth := 0
@@ -64,13 +64,13 @@ func (layout Horizontal) MinimumSize (
 		}
 		width += entryWidth
 		if layout.Gap && index > 0 {
-			width += theme.Padding()
+			width += theme.Margin()
 		}
 	}
 
 	if layout.Pad {
-		width  += theme.Padding() * 2
-		height += theme.Padding() * 2
+		width  += theme.Margin() * 2
+		height += theme.Margin() * 2
 	}
 	return
 }
@@ -84,15 +84,15 @@ func (layout Horizontal) FlexibleHeightFor (
 	height int,
 ) {
 	if layout.Pad {
-		width -= theme.Padding() * 2
+		width -= theme.Margin() * 2
 	}
 	// get width of expanding elements
 	expandingElementWidth := layout.expandingElementWidth(entries, width)
 	
 	x, y := 0, 0
 	if layout.Pad {
-		x += theme.Padding()
-		y += theme.Padding()
+		x += theme.Margin()
+		y += theme.Margin()
 	}
 
 	// set the size and position of each element
@@ -107,11 +107,11 @@ func (layout Horizontal) FlexibleHeightFor (
 		if entryHeight > height { height = entryHeight }
 		
 		x += entryWidth
-		if index > 0 && layout.Gap { x += theme.Padding() }
+		if index > 0 && layout.Gap { x += theme.Margin() }
 	}
 
 	if layout.Pad {
-		height += theme.Padding() * 2
+		height += theme.Margin() * 2
 	}
 	return
 }
@@ -134,7 +134,7 @@ func (layout Horizontal) expandingElementWidth (
 			freeSpace -= entryMinWidth
 		}
 		if index > 0 && layout.Gap {
-			freeSpace -= theme.Padding()
+			freeSpace -= theme.Margin()
 		}
 	}
 	

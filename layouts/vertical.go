@@ -19,8 +19,8 @@ type Vertical struct {
 // Arrange arranges a list of entries vertically.
 func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	if layout.Pad {
-		width  -= theme.Padding() * 2
-		height -= theme.Padding() * 2
+		width  -= theme.Margin() * 2
+		height -= theme.Margin() * 2
 	}
 	freeSpace := height
 	expandingElements := 0
@@ -44,7 +44,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 			freeSpace -= entryMinHeight
 		}
 		if index > 0 && layout.Gap {
-			freeSpace -= theme.Padding()
+			freeSpace -= theme.Margin()
 		}
 	}
 	expandingElementHeight := 0
@@ -54,13 +54,13 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	
 	x, y := 0, 0
 	if layout.Pad {
-		x += theme.Padding()
-		y += theme.Padding()
+		x += theme.Margin()
+		y += theme.Margin()
 	}
 
 	// set the size and position of each element
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { y += theme.Padding() }
+		if index > 0 && layout.Gap { y += theme.Margin() }
 		
 		entries[index].Position = image.Pt(x, y)
 		entryHeight := 0
@@ -91,13 +91,13 @@ func (layout Vertical) MinimumSize (
 		}
 		height += entryHeight
 		if layout.Gap && index > 0 {
-			height += theme.Padding()
+			height += theme.Margin()
 		}
 	}
 
 	if layout.Pad {
-		width  += theme.Padding() * 2
-		height += theme.Padding() * 2
+		width  += theme.Margin() * 2
+		height += theme.Margin() * 2
 	}
 	return
 }
@@ -111,8 +111,8 @@ func (layout Vertical) FlexibleHeightFor (
 	height int,
 ) {
 	if layout.Pad {
-		width -= theme.Padding() * 2
-		height += theme.Padding() * 2
+		width -= theme.Margin() * 2
+		height += theme.Margin() * 2
 	}
 	
 	for index, entry := range entries {
@@ -125,7 +125,7 @@ func (layout Vertical) FlexibleHeightFor (
 		}
 		
 		if layout.Gap && index > 0 {
-			height += theme.Padding()
+			height += theme.Margin()
 		}
 	}
 	return

@@ -21,8 +21,8 @@ type Dialog struct {
 // Arrange arranges a list of entries into a dialog.
 func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	if layout.Pad {
-		width  -= theme.Padding() * 2
-		height -= theme.Padding() * 2
+		width  -= theme.Margin() * 2
+		height -= theme.Margin() * 2
 	}
 
 	controlRowWidth, controlRowHeight := 0, 0
@@ -34,12 +34,12 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	if len(entries) > 0 {
 		entries[0].Position = image.Point { }
 		if layout.Pad {
-			entries[0].Position.X += theme.Padding()
-			entries[0].Position.Y += theme.Padding()
+			entries[0].Position.X += theme.Margin()
+			entries[0].Position.Y += theme.Margin()
 		}
 		mainHeight := height - controlRowHeight
 		if layout.Gap {
-			mainHeight -= theme.Padding()
+			mainHeight -= theme.Margin()
 		}
 		mainBounds := entries[0].Bounds()
 		if mainBounds.Dy() != mainHeight ||
@@ -62,7 +62,7 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 				freeSpace -= entryMinWidth
 			}
 			if index > 0 && layout.Gap {
-				freeSpace -= theme.Padding()
+				freeSpace -= theme.Margin()
 			}
 		}
 		expandingElementWidth := 0
@@ -76,14 +76,14 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 			x = width - controlRowWidth
 		}
 		if layout.Pad {
-			x += theme.Padding()
-			y += theme.Padding()
+			x += theme.Margin()
+			y += theme.Margin()
 		}
 		height -= controlRowHeight
 
 		// set the size and position of each element in the control row
 		for index, entry := range entries[1:] {
-			if index > 0 && layout.Gap { x += theme.Padding() }
+			if index > 0 && layout.Gap { x += theme.Margin() }
 			
 			entries[index + 1].Position = image.Pt(x, y)
 			entryWidth := 0
@@ -118,7 +118,7 @@ func (layout Dialog) MinimumSize (
 	}
 
 	if len(entries) > 1 {
-		if layout.Gap { height += theme.Padding() }
+		if layout.Gap { height += theme.Margin() }
 		additionalWidth,
 		additionalHeight := layout.minimumSizeOfControlRow(entries[1:])
 		height += additionalHeight
@@ -128,8 +128,8 @@ func (layout Dialog) MinimumSize (
 	}
 
 	if layout.Pad {
-		width  += theme.Padding() * 2
-		height += theme.Padding() * 2
+		width  += theme.Margin() * 2
+		height += theme.Margin() * 2
 	}
 	return
 }
@@ -143,7 +143,7 @@ func (layout Dialog) FlexibleHeightFor (
 	height int,
 ) {
 	if layout.Pad {
-		width -= theme.Padding() * 2
+		width -= theme.Margin() * 2
 	}
 	
 	if len(entries) > 0 {
@@ -157,13 +157,13 @@ func (layout Dialog) FlexibleHeightFor (
 	}
 
 	if len(entries) > 1 {
-		if layout.Gap { height += theme.Padding() }
+		if layout.Gap { height += theme.Margin() }
 		_, additionalHeight := layout.minimumSizeOfControlRow(entries[1:])
 		height += additionalHeight
 	}
 
 	if layout.Pad {
-		height += theme.Padding() * 2
+		height += theme.Margin() * 2
 	}
 	return
 }
@@ -182,7 +182,7 @@ func (layout Dialog) minimumSizeOfControlRow (
 		}
 		width += entryWidth
 		if layout.Gap && index > 0 {
-			width += theme.Padding()
+			width += theme.Margin()
 		}
 	}
 	return

@@ -41,4 +41,3 @@ var focusedOnListEntryPattern = artist.Padded {
 	Fill:   uhex(0x6e8079FF),
 	Sides:  []int { 0, 1, 0, 1 },
 }
-
