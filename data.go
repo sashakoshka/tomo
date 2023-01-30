@@ -2,18 +2,9 @@ package tomo
 
 import "io"
 
-// Data represents drag-and-drop, selection, or clipboard data.
-type Data interface {
-	io.Reader
-
-	// Mime returns the MIME type of the data, such as text/plain,
-	// text/html, image/png, etc.
-	Mime () (mimeType Mime)
-
-	// Convert attempts to convert the data to another MIME type. If the
-	// data could not be converted, it should return an error.
-	Convert (to Mime) (converted Data, err error)
-}
+// Data represents arbitrary polymorphic data that can be used for data transfer
+// between applications.
+type Data map[Mime] io.ReadCloser
 
 // Mime represents a MIME type.
 type Mime struct {
@@ -23,3 +14,7 @@ type Mime struct {
 	// Mime { Type: "text", Subtype: "html" }
 	Type, Subtype string
 }
+
+var MimePlain = Mime { "text", "plain" }
+
+var MimeFile = Mime { "text", "uri-list" }

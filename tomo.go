@@ -48,7 +48,7 @@ func Copy (data Data) {
 
 // Paste returns the data currently in the clipboard. This method may
 // return nil.
-func Paste () (data Data) {
+func Paste (accept []Mime) (Data) {
 	if backend == nil { panic("no backend is running") }
-	return backend.Paste()
+	return backend.Paste(accept)
 }

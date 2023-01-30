@@ -22,11 +22,10 @@ type Backend interface {
 	NewWindow (width, height int) (window Window, err error)
 
 	// Copy puts data into the clipboard.
-	Copy (data Data)
+	Copy (Data)
 
-	// Paste returns the data currently in the clipboard. This method may
-	// return nil.
-	Paste () (data Data)
+	// Paste returns the data currently in the clipboard.
+	Paste (accept []Mime) (Data)
 }
 
 // BackendFactory represents a function capable of constructing a backend

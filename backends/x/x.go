@@ -88,7 +88,7 @@ func (backend *Backend) Copy (data tomo.Data) {
 
 // Paste returns the data currently in the clipboard. This method may
 // return nil. This method is not yet implemented and will do nothing!
-func (backend *Backend) Paste () (data tomo.Data) {
+func (backend *Backend) Paste (accept []tomo.Mime) (data tomo.Data) {
 	backend.assert()
 	// TODO
 	return
