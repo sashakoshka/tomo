@@ -7,6 +7,8 @@ import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+var textBoxCase = theme.C("basic", "textBox")
+
 // TextBox is a single-line text input.
 type TextBox struct {
 	*core.Core
@@ -237,7 +239,9 @@ func (element *TextBox) OnScrollBoundsChange (callback func ()) {
 
 func (element *TextBox) updateMinimumSize () {
 	textBounds := element.placeholderDrawer.LayoutBounds()
-	_, inset := theme.InputPattern(theme.PatternState { })
+	_, inset := theme.InputPattern(theme.PatternState {
+		Case: textBoxCase,
+	})
 	element.core.SetMinimumSize (
 		textBounds.Dx() +
 		theme.Padding() * 2 + inset[3] + inset[1],
@@ -273,6 +277,7 @@ func (element *TextBox) draw () {
 
 	// FIXME: take index into account
 	pattern, inset := theme.InputPattern(theme.PatternState {
+		Case: textBoxCase,
 		Disabled: !element.Enabled(),
 		Selected: element.Selected(),
 	})
@@ -286,6 +291,7 @@ func (element *TextBox) draw () {
 			Y: theme.Padding() + inset[0],
 		}
 		foreground, _ := theme.ForegroundPattern(theme.PatternState {
+			Case: textBoxCase,
 			Disabled: true,
 		})
 		element.placeholderDrawer.Draw (
@@ -300,6 +306,7 @@ func (element *TextBox) draw () {
 			Y: theme.Padding() + inset[0],
 		}
 		foreground, _ := theme.ForegroundPattern(theme.PatternState {
+			Case: textBoxCase,
 			Disabled: !element.Enabled(),
 		})
 		element.valueDrawer.Draw (
@@ -311,7 +318,9 @@ func (element *TextBox) draw () {
 			// cursor
 			cursorPosition := element.valueDrawer.PositionOf (
 				element.cursor)
-			foreground, _ := theme.ForegroundPattern(theme.PatternState { })
+			foreground, _ := theme.ForegroundPattern(theme.PatternState {
+				Case: textBoxCase,
+			})
 			artist.Line (
 				element.core,
 				foreground, 1,

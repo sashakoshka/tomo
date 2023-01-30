@@ -5,6 +5,8 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
+var listEntryCase = theme.C("basic", "listEntry")
+
 // ListEntry is an item that can be added to a list.
 type ListEntry struct {
 	drawer artist.TextDrawer
@@ -41,7 +43,8 @@ func (entry *ListEntry) updateBounds () {
 		entry.bounds.Max.X = entry.drawer.LayoutBounds().Dx()
 	}
 	
-	_, inset := theme.ItemPattern(theme.PatternState { })
+	_, inset := theme.ItemPattern(theme.PatternState {
+	})
 	entry.bounds.Max.Y += inset[0] + inset[2]
 	
 	entry.textPoint =
@@ -56,7 +59,9 @@ func (entry *ListEntry) Draw (
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	foreground, _ := theme.ForegroundPattern (theme.PatternState { })
+	foreground, _ := theme.ForegroundPattern (theme.PatternState {
+		Case: listEntryCase,
+	})
 	return entry.drawer.Draw (
 		destination,
 		foreground,

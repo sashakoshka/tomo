@@ -4,6 +4,8 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+var spacerCase = theme.C("basic", "spacer")
+
 // Spacer can be used to put space between two elements..
 type Spacer struct {
 	*core.Core
@@ -43,11 +45,13 @@ func (element *Spacer) draw () {
 
 	if element.line {
 		pattern, _ := theme.ForegroundPattern(theme.PatternState {
+			Case: spacerCase,
 			Disabled: true,
 		})
 		artist.FillRectangle(element.core, pattern, bounds)
 	} else {
 		pattern, _ := theme.BackgroundPattern(theme.PatternState {
+			Case: spacerCase,
 			Disabled: true,
 		})
 		artist.FillRectangle(element.core, pattern, bounds)

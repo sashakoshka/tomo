@@ -6,6 +6,8 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+var checkboxCase = theme.C("basic", "checkbox")
+
 // Checkbox is a toggle-able checkbox with a label.
 type Checkbox struct {
 	*core.Core
@@ -140,10 +142,13 @@ func (element *Checkbox) draw () {
 	bounds := element.core.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy())
 
-	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState { })
+	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
+		Case: checkboxCase,
+	})
 	artist.FillRectangle ( element.core, backgroundPattern, bounds)
 
 	pattern, inset := theme.ButtonPattern(theme.PatternState {
+		Case: checkboxCase,
 		Disabled: !element.Enabled(),
 		Selected: element.Selected(),
 		Pressed:  element.pressed,
@@ -159,6 +164,7 @@ func (element *Checkbox) draw () {
 	offset.X -= textBounds.Min.X
 
 	foreground, _ := theme.ForegroundPattern (theme.PatternState {
+		Case: checkboxCase,
 		Disabled: !element.Enabled(),
 	})
 	element.drawer.Draw(element.core, foreground, offset)

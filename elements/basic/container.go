@@ -6,6 +6,8 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+var containerCase = theme.C("basic", "container")
+
 // Container is an element capable of containg other elements, and arranging
 // them in a layout.
 type Container struct {
@@ -473,7 +475,9 @@ func (element *Container) recalculate () {
 func (element *Container) draw () {
 	bounds := element.core.Bounds()
 
-	pattern, _ := theme.BackgroundPattern(theme.PatternState { })
+	pattern, _ := theme.BackgroundPattern (theme.PatternState {
+		Case: containerCase,
+	})
 	artist.FillRectangle(element.core, pattern, bounds)
 
 	for _, entry := range element.children {

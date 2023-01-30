@@ -5,6 +5,8 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+var labelCase = theme.C("basic", "label")
+
 // Label is a simple text box.
 type Label struct {
 	*core.Core
@@ -108,12 +110,16 @@ func (element *Label) updateMinimumSize () {
 func (element *Label) draw () {
 	bounds := element.core.Bounds()
 
-	pattern, _ := theme.BackgroundPattern(theme.PatternState { })
+	pattern, _ := theme.BackgroundPattern(theme.PatternState {
+		Case: labelCase,
+	})
 	artist.FillRectangle(element.core, pattern, bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 
-	foreground, _ := theme.ForegroundPattern (theme.PatternState { })
+	foreground, _ := theme.ForegroundPattern (theme.PatternState {
+		Case: labelCase,
+	})
 	element.drawer.Draw (element.core, foreground, image.Point {
 		X: 0 - textBounds.Min.X,
 		Y: 0 - textBounds.Min.Y,

@@ -6,6 +6,8 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+var switchCase = theme.C("basic", "switch")
+
 // Switch is a toggle-able on/off switch with an optional label. It is
 // functionally identical to Checkbox, but plays a different semantic role.
 type Switch struct {
@@ -147,7 +149,9 @@ func (element *Switch) draw () {
 	bounds := element.core.Bounds()
 	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy())
 	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy())
-	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState { })
+	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
+		Case: switchCase,
+	})
 	artist.FillRectangle ( element.core, backgroundPattern, bounds)
 
 	if element.checked {
@@ -165,6 +169,7 @@ func (element *Switch) draw () {
 	}
 
 	gutterPattern, _ := theme.GutterPattern(theme.PatternState {
+		Case: switchCase,
 		Disabled: !element.Enabled(),
 		Selected: element.Selected(),
 		Pressed:  element.pressed,
@@ -172,6 +177,7 @@ func (element *Switch) draw () {
 	artist.FillRectangle(element.core, gutterPattern, gutterBounds)
 	
 	handlePattern, _ := theme.HandlePattern(theme.PatternState {
+		Case: switchCase,
 		Disabled: !element.Enabled(),
 		Selected: element.Selected(),
 		Pressed:  element.pressed,
@@ -187,6 +193,7 @@ func (element *Switch) draw () {
 	offset.X -= textBounds.Min.X
 
 	foreground, _ := theme.ForegroundPattern (theme.PatternState {
+		Case: switchCase,
 		Disabled: !element.Enabled(),
 	})
 	element.drawer.Draw(element.core, foreground, offset)

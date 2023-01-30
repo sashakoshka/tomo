@@ -6,6 +6,8 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+var buttonCase = theme.C("basic", "button")
+
 // Button is a clickable button.
 type Button struct {
 	*core.Core
@@ -114,7 +116,7 @@ func (element *Button) SetText (text string) {
 	element.text = text
 	element.drawer.SetText([]rune(text))
 	textBounds := element.drawer.LayoutBounds()
-	_, inset := theme.ButtonPattern(theme.PatternState { })
+	_, inset := theme.ButtonPattern(theme.PatternState { Case: buttonCase })
 	minimumSize := inset.Inverse().Apply(textBounds).Inset(-theme.Padding())
 	element.core.SetMinimumSize(minimumSize.Dx(), minimumSize.Dy())
 	if element.core.HasImage () {
@@ -127,6 +129,7 @@ func (element *Button) draw () {
 	bounds := element.core.Bounds()
 
 	pattern, inset := theme.ButtonPattern(theme.PatternState {
+		Case: buttonCase,
 		Disabled: !element.Enabled(),
 		Selected: element.Selected(),
 		Pressed:  element.pressed,
@@ -148,6 +151,7 @@ func (element *Button) draw () {
 	offset.X -= textBounds.Min.X
 
 	foreground, _ := theme.ForegroundPattern (theme.PatternState {
+		Case: buttonCase,
 		Disabled: !element.Enabled(),
 	})
 	element.drawer.Draw(element.core, foreground, offset)

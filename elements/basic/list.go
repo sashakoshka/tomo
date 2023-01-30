@@ -7,6 +7,8 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+var listCase = theme.C("basic", "list")
+
 // List is an element that contains several objects that a user can select.
 type List struct {
 	*core.Core
@@ -164,7 +166,9 @@ func (element *List) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *List) scrollViewportHeight () (height int) {
-	_, inset := theme.ListPattern(theme.PatternState { })
+	_, inset := theme.ListPattern(theme.PatternState {
+		Case: listCase,
+	})
 	return element.Bounds().Dy() - inset[0] - inset[2]
 }
 
@@ -330,7 +334,9 @@ func (element *List) changeSelectionBy (delta int) (updated bool) {
 }
 
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
-	_, inset := theme.ListPattern(theme.PatternState { })
+	_, inset := theme.ListPattern(theme.PatternState {
+		Case: listCase,
+	})
 	entry.Collapse(element.forcedMinimumWidth - inset[3] - inset[1])
 	return entry
 }
@@ -357,7 +363,9 @@ func (element *List) updateMinimumSize () {
 		minimumHeight = element.contentHeight
 	}
 
-	_, inset := theme.ListPattern(theme.PatternState { })
+	_, inset := theme.ListPattern(theme.PatternState {
+		Case: listCase,
+	})
 	minimumWidth  += inset[1] + inset[3]
 	minimumHeight += inset[0] + inset[2]
 
@@ -368,6 +376,7 @@ func (element *List) draw () {
 	bounds := element.Bounds()
 
 	pattern, inset := theme.ListPattern(theme.PatternState {
+		Case: listCase,
 		Disabled: !element.Enabled(),
 		Selected: element.Selected(),
 	})
@@ -386,6 +395,7 @@ func (element *List) draw () {
 
 		if element.selectedEntry == index {
 			pattern, _ := theme.ItemPattern(theme.PatternState {
+				Case: listEntryCase,
 				On: true,
 			})
 			artist.FillRectangle (

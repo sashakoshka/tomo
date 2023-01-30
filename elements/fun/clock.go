@@ -7,6 +7,8 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+var clockCase = theme.C("fun", "clock")
+
 // AnalogClock can display the time of day in an analog format.
 type AnalogClock struct {
 	*core.Core
@@ -41,13 +43,19 @@ func (element *AnalogClock) SetTime (newTime time.Time) {
 func (element *AnalogClock) draw () {
 	bounds := element.core.Bounds()
 
-	pattern, inset := theme.SunkenPattern(theme.PatternState { })
+	pattern, inset := theme.SunkenPattern(theme.PatternState {
+		Case: clockCase,
+	})
 	artist.FillRectangle(element, pattern, bounds)
 
 	bounds = inset.Apply(bounds)
 
-	foreground, _ := theme.ForegroundPattern(theme.PatternState { })
-	accent,     _ := theme.AccentPattern(theme.PatternState { })
+	foreground, _ := theme.ForegroundPattern(theme.PatternState {
+		Case: clockCase,
+	})
+	accent, _ := theme.AccentPattern(theme.PatternState {
+		Case: clockCase,
+	})
 
 	for hour := 0; hour < 12; hour ++ {
 		element.radialLine (
