@@ -25,14 +25,14 @@ func run () {
 		container.Adopt(basic.NewLabel("Draw here:", false), false)
 		container.Adopt(testing.NewMouse(), true)
 		container.Adopt(okButton, false)
-		okButton.Select()
+		okButton.Focus()
 	})
 	okButton.OnClick(tomo.Stop)
 	
 	container.Adopt(label, true)
 	container.Adopt(button, false)
 	container.Adopt(okButton, false)
-	okButton.Select()
+	okButton.Focus()
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

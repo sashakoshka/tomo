@@ -22,7 +22,7 @@ func run () {
 	container.Adopt(cancel, false)
 	okButton := basic.NewButton("OK")
 	container.Adopt(okButton, false)
-	okButton.Select()
+	okButton.Focus()
 		
 	window.OnClose(tomo.Stop)
 	window.Show()

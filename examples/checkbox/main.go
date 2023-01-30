@@ -42,7 +42,7 @@ func run () {
 	button := basic.NewButton("What")
 	button.OnClick(tomo.Stop)
 	container.Adopt(button, false)
-	button.Select()
+	button.Focus()
 		
 	window.OnClose(tomo.Stop)
 	window.Show()

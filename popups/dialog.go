@@ -43,7 +43,7 @@ func NewDialog (
 		button := basic.NewButton("OK")
 		button.OnClick(window.Close)
 		container.Adopt(button, false)
-		button.Select()
+		button.Focus()
 	} else {
 		var button *basic.Button
 		for _, buttonDescriptor := range buttons {
@@ -55,7 +55,7 @@ func NewDialog (
 			})
 			container.Adopt(button, false)
 		}
-		button.Select()
+		button.Focus()
 	}
 	
 	window.Show()

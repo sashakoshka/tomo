@@ -27,7 +27,7 @@ func run () {
 			"You are wacky")
 	})
 	container.Adopt(infoButton, false)
-	infoButton.Select()
+	infoButton.Focus()
 	
 	questionButton := basic.NewButton("popups.DialogKindQuestion")
 	questionButton.OnClick (func () {

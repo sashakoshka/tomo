@@ -35,7 +35,7 @@ func run () {
 				container.Adopt(button0, false)
 				container.Adopt(button1, false)
 				container.Adopt(button2, false)
-				button0.Select()
+				button0.Focus()
 			})
 		},
 		"wet": func () {
@@ -52,7 +52,7 @@ func run () {
 				container.Adopt(label, true)
 				container.Adopt(button0, false)
 				container.Adopt(button1, false)
-				button0.Select()				
+				button0.Focus()				
 			})
 		},
 		"house": func () {
@@ -69,7 +69,7 @@ func run () {
 				container.Adopt(label, true)
 				container.Adopt(button1, false)
 				container.Adopt(button0, false)
-				button1.Select()
+				button1.Focus()
 			})
 		},
 		"inside": func () {
@@ -86,7 +86,7 @@ func run () {
 			container.Warp (func () {	
 				container.Adopt(label, true)
 				container.Adopt(button0, false)
-				button0.Select()
+				button0.Focus()
 			})
 		},
 		"bear": func () {
@@ -103,7 +103,7 @@ func run () {
 				container.Adopt(label, true)
 				container.Adopt(button0, false)
 				container.Adopt(button1, false)
-				button0.Select()
+				button0.Focus()
 			})
 		},
 	}
