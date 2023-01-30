@@ -7,28 +7,38 @@ var listPattern = artist.NewMultiBordered (
 	artist.Stroke {
 		Weight: 1,
 		Pattern: artist.Beveled {
-			artist.NewUniform(hex(0x383C3AFF)),
-			artist.NewUniform(hex(0x999C99FF)),
+			uhex(0x383C3AFF),
+			uhex(0x999C99FF),
 		},
 	},
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x999C99FF)) })
+	artist.Stroke { Pattern: uhex(0x999C99FF) })
 
-var selectedListPattern = artist.NewMultiBordered (
+var focusedListPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke { Weight: 1, Pattern: accentPattern },
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x999C99FF)) })
+	artist.Stroke { Pattern: uhex(0x999C99FF) })
 
-// TODO: make these better, making use of the padded pattern. also, create
-// selected variations for both of these.
+var listEntryPattern = artist.Padded {
+	Stroke: uhex(0x383C3AFF),
+	Fill:   uhex(0x999C99FF),
+	Sides:  []int { 0, 0, 0, 1 },
+}
 
-var listEntryPattern = artist.NewMultiBordered (
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x999C99FF)) })
+var onListEntryPattern = artist.Padded {
+	Stroke: uhex(0x383C3AFF),
+	Fill:   uhex(0x6e8079FF),
+	Sides:  []int { 0, 0, 0, 1 },
+}
 
-var onListEntryPattern = artist.NewMultiBordered (
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x6e8079FF)) })
+var focusedListEntryPattern = artist.Padded {
+	Stroke: accentPattern,
+	Fill:   uhex(0x999C99FF),
+	Sides:  []int { 0, 1, 0, 1 },
+}
 
-var selectedListEntryPattern = artist.NewMultiBordered (
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x999C99FF)) })
+var focusedOnListEntryPattern = artist.Padded {
+	Stroke: accentPattern,
+	Fill:   uhex(0x6e8079FF),
+	Sides:  []int { 0, 1, 0, 1 },
+}
 
-var selectedOnListEntryPattern = artist.NewMultiBordered (
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x6e8079FF)) })

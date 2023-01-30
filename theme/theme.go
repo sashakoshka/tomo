@@ -16,6 +16,10 @@ func hex (color uint32) (c color.RGBA) {
 	return
 }
 
+func uhex (color uint32) (pattern artist.Pattern) {
+	return artist.NewUniform(hex(color))
+}
+
 var accentPattern         = artist.NewUniform(hex(0x408090FF))
 var backgroundPattern     = artist.NewUniform(color.Gray16 { 0xAAAA })
 var foregroundPattern     = artist.NewUniform(color.Gray16 { 0x0000 })
@@ -42,15 +46,20 @@ var texturedSunkenPattern = artist.NewMultiBordered (
 			artist.NewUniform(hex(0x97a09cFF)),
 		},
 	},
-	artist.Stroke { Pattern: artist.Striped {
-		First: artist.Stroke {
-			Weight: 2,
-			Pattern: artist.NewUniform(hex(0x97a09cFF)),
-		},
-		Second: artist.Stroke {
-			Weight: 1,
-			Pattern: artist.NewUniform(hex(0x6e8079FF)),
-		},
+	// artist.Stroke { Pattern: artist.Striped {
+		// First: artist.Stroke {
+			// Weight: 2,
+			// Pattern: artist.NewUniform(hex(0x97a09cFF)),
+		// },
+		// Second: artist.Stroke {
+			// Weight: 1,
+			// Pattern: artist.NewUniform(hex(0x6e8079FF)),
+		// },
+	// }})
+	
+	artist.Stroke { Pattern: artist.Noisy {
+		Low:  artist.NewUniform(hex(0x97a09cFF)),
+		High: artist.NewUniform(hex(0x6e8079FF)),
 	}})
 
 var raisedPattern = artist.NewMultiBordered (

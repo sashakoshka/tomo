@@ -134,27 +134,32 @@ func InputPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 // ListPattern returns a background pattern for a list of things.
 func ListPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 	if state.Focused {
-		return selectedListPattern, Inset { 4, 4, 4, 4 }
+		pattern = focusedListPattern
+		inset = Inset { 2, 1, 2, 1 }
 	} else {
-		return listPattern, Inset { 4, 4, 4, 4 }
+		pattern = listPattern
+		inset = Inset { 2, 1, 1, 1 }
 	}
+	return
 }
 
 // ItemPattern returns a background pattern for a list item.
 func ItemPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 	if state.Focused {
 		if state.On {
-			return selectedOnListEntryPattern, Inset { 4, 4, 4, 4 }
+			pattern = focusedOnListEntryPattern
 		} else {
-			return selectedListEntryPattern, Inset { 4, 4, 4, 4 }
+			pattern = focusedListEntryPattern
 		}
 	} else {
 		if state.On {
-			return onListEntryPattern, Inset { 4, 4, 4, 4 }
+			pattern = onListEntryPattern
 		} else {
-			return listEntryPattern, Inset { 4, 4, 4, 4 }
+			pattern = listEntryPattern
 		}
 	}
+	inset = Inset { 4, 6, 4, 6 }
+	return
 }
 
 // ButtonPattern returns a pattern to be displayed on buttons.
