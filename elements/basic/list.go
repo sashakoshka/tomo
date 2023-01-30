@@ -366,7 +366,6 @@ func (element *List) updateMinimumSize () {
 	_, inset := theme.ListPattern(theme.PatternState {
 		Case: listCase,
 	})
-	minimumWidth  += inset[1] + inset[3]
 	minimumHeight += inset[0] + inset[2]
 
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
@@ -387,24 +386,14 @@ func (element *List) draw () {
 		bounds.Min.X,
 		bounds.Min.Y - element.scroll,
 	}
+	innerCanvas := tomo.Cut(element, bounds)
 	for index, entry := range element.entries {
 		entryPosition := dot
 		dot.Y += entry.Bounds().Dy()
 		if dot.Y < bounds.Min.Y { continue }
 		if entryPosition.Y > bounds.Max.Y { break }
-
-		if element.selectedEntry == index {
-			pattern, _ := theme.ItemPattern(theme.PatternState {
-				Case: listEntryCase,
-				On: true,
-			})
-			artist.FillRectangle (
-				element,
-				pattern,
-				entry.Bounds().Add(entryPosition))
-		}
 		entry.Draw (
-			element, entryPosition,
-			element.selectedEntry == index && element.Selected())
+			innerCanvas, entryPosition,
+			element.Selected(), element.selectedEntry == index)
 	}
 }

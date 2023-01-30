@@ -63,7 +63,7 @@ type Inset [4]int
 // further, an empty rectangle near its center will be returned.
 func (inset Inset) Apply (bigger image.Rectangle) (smaller image.Rectangle) {
 	smaller = bigger
-	if smaller.Dx() < inset[3] + inset[0] {
+	if smaller.Dx() < inset[3] + inset[1] {
 		smaller.Min.X = (smaller.Min.X + smaller.Max.X) / 2
 		smaller.Max.X = smaller.Min.X
 	} else {
@@ -71,7 +71,7 @@ func (inset Inset) Apply (bigger image.Rectangle) (smaller image.Rectangle) {
 		smaller.Max.X -= inset[1]
 	}
 
-	if smaller.Dy() < inset[1] + inset[2] {
+	if smaller.Dy() < inset[0] + inset[2] {
 		smaller.Min.Y = (smaller.Min.Y + smaller.Max.Y) / 2
 		smaller.Max.Y = smaller.Min.Y
 	} else {
@@ -131,24 +131,21 @@ func InputPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 	}
 }
 
-// TODO: for list and item patterns, have all that bizarre padding/2 information
-// in the insets.
-
 // ListPattern returns a background pattern for a list of things.
 func ListPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 	if state.Selected {
-		return selectedListPattern, Inset { 4, 0, 4, 0 }
+		return selectedListPattern, Inset { 4, 4, 4, 4 }
 	} else {
-		return listPattern, Inset { 4, 0, 4, 0 }
+		return listPattern, Inset { 4, 4, 4, 4 }
 	}
 }
 
 // ItemPattern returns a background pattern for a list item.
 func ItemPattern (state PatternState) (pattern artist.Pattern, inset Inset) {
 	if state.On {
-		return selectedListEntryPattern, Inset { 4, 8, 4, 8 }
+		return onListEntryPattern, Inset { 4, 4, 4, 4 }
 	} else {
-		return listEntryPattern, Inset { 4, 8, 4, 8 }
+		return listEntryPattern, Inset { 4, 4, 4, 4 }
 	}
 }
 

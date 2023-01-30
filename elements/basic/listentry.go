@@ -56,11 +56,23 @@ func (entry *ListEntry) Draw (
 	destination tomo.Canvas,
 	offset image.Point,
 	selected bool,
+	on bool,
 ) (
 	updatedRegion image.Rectangle,
 ) {
+	pattern, _ := theme.ItemPattern(theme.PatternState {
+		Case: listEntryCase,
+		Selected: selected,
+		On: on,
+	})
+	artist.FillRectangle (
+		destination,
+		pattern,
+		entry.Bounds().Add(offset))
 	foreground, _ := theme.ForegroundPattern (theme.PatternState {
 		Case: listEntryCase,
+		Selected: selected,
+		On: on,
 	})
 	return entry.drawer.Draw (
 		destination,

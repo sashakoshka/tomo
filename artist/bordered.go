@@ -86,3 +86,26 @@ func (multi *MultiBordered) recalculate (width, height int) {
 		if bounds.Empty() { break }
 	}
 }
+
+// Padded is a pattern that surrounds a central fill pattern with a border that
+// can have a different width for each side.
+type Padded struct {
+	Fill   Pattern
+	Stroke Pattern
+	Sides []int
+}
+
+// AtWhen satisfies the Pattern interface.
+func (pattern Padded) AtWhen (x, y, width, height int) (c color.RGBA) {
+	innerBounds := image.Rect (
+		pattern.Sides[3], pattern.Sides[0],
+		width - pattern.Sides[1], height - pattern.Sides[2])
+	if (image.Point { x, y }).In (innerBounds) {
+		return pattern.Fill.AtWhen (
+			x - pattern.Sides[3],
+			y - pattern.Sides[0],
+			innerBounds.Dx(), innerBounds.Dy())
+	} else {
+		return pattern.Stroke.AtWhen(x, y, width, height)
+	}
+}
