@@ -207,7 +207,7 @@ func (element *Container) redoAll () {
 	})
 	artist.FillRectangle(element, pattern, bounds)
 
-	// resize all elements, having them draw onto us
+	// cut our canvas up and give peices to child elements
 	for _, entry := range element.children {
 		entry.DrawTo(tomo.Cut(element, entry.Bounds))
 	}
@@ -217,31 +217,27 @@ func (element *Container) HandleMouseDown (x, y int, button tomo.Button) {
 	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(tomo.MouseTarget)
 	if !handlesMouse { return }
 	element.drags[button] = child
-	childPosition := element.childPosition(child)
-	child.HandleMouseDown(x - childPosition.X, y - childPosition.Y, button)
+	child.HandleMouseDown(x, y, button)
 }
 
 func (element *Container) HandleMouseUp (x, y int, button tomo.Button) {
 	child := element.drags[button]
 	if child == nil { return }
 	element.drags[button] = nil
-	childPosition := element.childPosition(child)
-	child.HandleMouseUp(x - childPosition.X, y - childPosition.Y, button)
+	child.HandleMouseUp(x, y, button)
 }
 
 func (element *Container) HandleMouseMove (x, y int) {
 	for _, child := range element.drags {
 		if child == nil { continue }
-		childPosition := element.childPosition(child)
-		child.HandleMouseMove(x - childPosition.X, y - childPosition.Y)
+		child.HandleMouseMove(x, y)
 	}
 }
 
 func (element *Container) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
 	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(tomo.MouseTarget)
 	if !handlesMouse { return }
-	childPosition := element.childPosition(child)
-	child.HandleMouseScroll(x - childPosition.X, y - childPosition.Y, deltaX, deltaY)
+	child.HandleMouseScroll(x, y, deltaX, deltaY)
 }
 
 func (element *Container) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
@@ -475,6 +471,5 @@ func (element *Container) updateMinimumSize () {
 }
 
 func (element *Container) recalculate () {
-	bounds := element.Bounds()
-	element.layout.Arrange(element.children, bounds.Dx(), bounds.Dy())
+	element.layout.Arrange(element.children, element.Bounds())
 }

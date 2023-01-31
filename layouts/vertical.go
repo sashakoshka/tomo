@@ -17,22 +17,21 @@ type Vertical struct {
 }
 
 // Arrange arranges a list of entries vertically.
-func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
+func (layout Vertical) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle) {
 	if layout.Pad {
-		width  -= theme.Margin() * 2
-		height -= theme.Margin() * 2
+		bounds = bounds.Inset(theme.Margin())
 	}
-	freeSpace := height
-	expandingElements := 0
 
 	// count the number of expanding elements and the amount of free space
 	// for them to collectively occupy, while gathering minimum heights.
+	freeSpace := bounds.Dy()
 	minimumHeights := make([]int, len(entries))
+	expandingElements := 0
 	for index, entry := range entries {
 		var entryMinHeight int
 
 		if child, flexible := entry.Element.(tomo.Flexible); flexible {
-			entryMinHeight = child.FlexibleHeightFor(width)
+			entryMinHeight = child.FlexibleHeightFor(bounds.Dx())
 		} else {
 			_, entryMinHeight = entry.MinimumSize()
 		}
@@ -47,34 +46,32 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 			freeSpace -= theme.Margin()
 		}
 	}
+	
 	expandingElementHeight := 0
 	if expandingElements > 0 {
 		expandingElementHeight = freeSpace / expandingElements
 	}
 	
-	x, y := 0, 0
-	if layout.Pad {
-		x += theme.Margin()
-		y += theme.Margin()
-	}
+	dot := bounds.Min
 
 	// set the size and position of each element
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { y += theme.Margin() }
+		if index > 0 && layout.Gap { dot.Y += theme.Margin() }
 		
-		entries[index].Bounds.Min = image.Pt(x, y)
+		entry.Bounds.Min = dot
 		entryHeight := 0
 		if entry.Expand {
 			entryHeight = expandingElementHeight
 		} else {
 			entryHeight = minimumHeights[index]
 		}
-		y += entryHeight
+		dot.Y += entryHeight
 		entryBounds := entry.Bounds
-		if entryBounds.Dx() != width || entryBounds.Dy() != entryHeight {
+		if entryBounds.Dx() != bounds.Dx() || entryBounds.Dy() != entryHeight {
 			entry.Bounds.Max = entryBounds.Min.Add (
-				image.Pt(width, entryHeight))
+				image.Pt(bounds.Dx(), entryHeight))
 		}
+		entries[index] = entry
 	}
 }
 

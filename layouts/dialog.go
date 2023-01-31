@@ -96,7 +96,7 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 			entryBounds := entry.Bounds
 			if entryBounds.Dy() != controlRowHeight ||
 				entryBounds.Dx() != entryWidth {
-				entry.Bounds.Max = entryBounds.Min.Add (
+				entries[index].Bounds.Max = entryBounds.Min.Add (
 					image.Pt(entryWidth, controlRowHeight))
 			}
 		}

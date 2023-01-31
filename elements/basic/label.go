@@ -1,6 +1,5 @@
 package basic
 
-import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -119,8 +118,5 @@ func (element *Label) draw () {
 	foreground, _ := theme.ForegroundPattern (theme.PatternState {
 		Case: labelCase,
 	})
-	element.drawer.Draw (element, foreground, image.Point {
-		X: 0 - textBounds.Min.X,
-		Y: 0 - textBounds.Min.Y,
-	})
+	element.drawer.Draw (element, foreground, bounds.Min.Sub(textBounds.Min))
 }

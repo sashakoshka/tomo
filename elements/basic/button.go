@@ -137,7 +137,7 @@ func (element *Button) draw () {
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
 		X: innerBounds.Min.X + (innerBounds.Dx() - textBounds.Dx()) / 2,
-		Y: innerBounds.Min.X + (innerBounds.Dy() - textBounds.Dy()) / 2,
+		Y: innerBounds.Min.Y + (innerBounds.Dy() - textBounds.Dy()) / 2,
 	}
 
 	// account for the fact that the bounding rectangle will be shifted over
