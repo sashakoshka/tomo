@@ -18,8 +18,6 @@ type Dialog struct {
 	Pad bool
 }
 
-// FIXME
-
 // Arrange arranges a list of entries into a dialog.
 func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle) {
 	if layout.Pad { bounds = bounds.Inset(theme.Margin()) }
@@ -31,20 +29,14 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle
 	}
 
 	if len(entries) > 0 {
-		entries[0].Bounds.Min = image.Point { }
-		if layout.Pad {
-			entries[0].Bounds.Min.X += theme.Margin()
-			entries[0].Bounds.Min.Y += theme.Margin()
-		}
+		main := entries[0]
+		main.Bounds.Min = bounds.Min
 		mainHeight := bounds.Dy() - controlRowHeight
 		if layout.Gap {
 			mainHeight -= theme.Margin()
 		}
-		mainBounds := entries[0].Bounds
-		if mainBounds.Dy() != mainHeight || mainBounds.Dx() != bounds.Dx() {
-			entries[0].Bounds.Max =
-				mainBounds.Min.Add(image.Pt(bounds.Dx(), mainHeight))
-		}
+		main.Bounds.Max = main.Bounds.Min.Add(image.Pt(bounds.Dx(), mainHeight))
+		entries[0] = main
 	}
 
 	if len(entries) > 1 {
@@ -70,34 +62,30 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle
 		}
 
 		// determine starting position and dimensions for control row
-		x, y := 0, bounds.Dy() - controlRowHeight
+		dot := image.Pt(bounds.Min.X, bounds.Max.Y - controlRowHeight)
 		if expandingElements == 0 {
-			x = bounds.Dx() - controlRowWidth
+			dot.X = bounds.Max.X - controlRowWidth
 		}
-		if layout.Pad {
-			x += theme.Margin()
-			y += theme.Margin()
-		}
-		bounds.Max.Y -= controlRowHeight
 
 		// set the size and position of each element in the control row
 		for index, entry := range entries[1:] {
-			if index > 0 && layout.Gap { x += theme.Margin() }
+			if index > 0 && layout.Gap { dot.X += theme.Margin() }
 			
-			entries[index + 1].Bounds.Min = image.Pt(x, y)
+			entry.Bounds.Min = dot
 			entryWidth := 0
 			if entry.Expand {
 				entryWidth = expandingElementWidth
 			} else {
 				entryWidth, _ = entry.MinimumSize()
 			}
-			x += entryWidth
+			dot.X += entryWidth
 			entryBounds := entry.Bounds
 			if entryBounds.Dy() != controlRowHeight ||
 				entryBounds.Dx() != entryWidth {
-				entries[index].Bounds.Max = entryBounds.Min.Add (
+				entry.Bounds.Max = entryBounds.Min.Add (
 					image.Pt(entryWidth, controlRowHeight))
 			}
+			entries[index + 1] = entry
 		}
 	}
 

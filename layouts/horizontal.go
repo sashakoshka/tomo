@@ -36,11 +36,7 @@ func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, bounds image.Recta
 			entryWidth, _ = entry.MinimumSize()
 		}
 		dot.X += entryWidth
-		entryBounds := entry.Bounds
-		if entryBounds.Dy() != bounds.Dy() || entryBounds.Dx() != entryWidth {
-			entry.Bounds.Max = entryBounds.Min.Add (
-				image.Pt(entryWidth, bounds.Dy()))
-		}
+		entry.Bounds.Max = entry.Bounds.Min.Add(image.Pt(entryWidth, bounds.Dy()))
 
 		entries[index] = entry
 	}

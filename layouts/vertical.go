@@ -64,10 +64,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, bounds image.Rectang
 		}
 		dot.Y += entryHeight
 		entryBounds := entry.Bounds
-		if entryBounds.Dx() != bounds.Dx() || entryBounds.Dy() != entryHeight {
-			entry.Bounds.Max = entryBounds.Min.Add (
-				image.Pt(bounds.Dx(), entryHeight))
-		}
+		entry.Bounds.Max = entryBounds.Min.Add(image.Pt(bounds.Dx(), entryHeight))
 		entries[index] = entry
 	}
 }
