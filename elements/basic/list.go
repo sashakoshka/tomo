@@ -376,7 +376,7 @@ func (element *List) draw () {
 		Disabled: !element.Enabled(),
 		Focused: element.Focused(),
 	})
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 
 	bounds = inset.Apply(bounds)
 	dot := image.Point {

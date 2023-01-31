@@ -201,11 +201,11 @@ func (element *Container) redoAll () {
 	element.recalculate()
 
 	// draw a background
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 	pattern, _ := theme.BackgroundPattern (theme.PatternState {
 		Case: containerCase,
 	})
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 
 	// resize all elements, having them draw onto us
 	for _, entry := range element.children {

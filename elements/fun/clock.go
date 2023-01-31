@@ -35,7 +35,7 @@ func (element *AnalogClock) SetTime (newTime time.Time) {
 }
 
 func (element *AnalogClock) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	pattern, inset := theme.SunkenPattern(theme.PatternState {
 		Case: clockCase,
@@ -81,7 +81,7 @@ func (element *AnalogClock) radialLine (
 	outer  float64,
 	radian float64,
 ) {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 	width  := float64(bounds.Dx()) / 2
 	height := float64(bounds.Dy()) / 2
 	min := image.Pt (
@@ -91,5 +91,5 @@ func (element *AnalogClock) radialLine (
 		int(math.Cos(radian) * outer * width + width),
 		int(math.Sin(radian) * outer * height + height))
 	// println(min.String(), max.String())
-	artist.Line(element.core, source, 1, min, max)
+	artist.Line(element, source, 1, min, max)
 }

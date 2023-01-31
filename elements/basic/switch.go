@@ -140,13 +140,13 @@ func (element *Switch) calculateMinimumSize () {
 }
 
 func (element *Switch) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy())
 	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy())
 	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
 		Case: switchCase,
 	})
-	artist.FillRectangle ( element.core, backgroundPattern, bounds)
+	artist.FillRectangle (element, backgroundPattern, bounds)
 
 	if element.checked {
 		handleBounds.Min.X += bounds.Dy()
@@ -168,7 +168,7 @@ func (element *Switch) draw () {
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	})
-	artist.FillRectangle(element.core, gutterPattern, gutterBounds)
+	artist.FillRectangle(element, gutterPattern, gutterBounds)
 	
 	handlePattern, _ := theme.HandlePattern(theme.PatternState {
 		Case: switchCase,
@@ -176,7 +176,7 @@ func (element *Switch) draw () {
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	})
-	artist.FillRectangle(element.core, handlePattern, handleBounds)
+	artist.FillRectangle(element, handlePattern, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
@@ -190,5 +190,5 @@ func (element *Switch) draw () {
 		Case: switchCase,
 		Disabled: !element.Enabled(),
 	})
-	element.drawer.Draw(element.core, foreground, offset)
+	element.drawer.Draw(element, foreground, offset)
 }

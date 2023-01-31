@@ -65,6 +65,9 @@ func (core *Core) MinimumSize () (width, height int) {
 // overridden.
 func (core *Core) DrawTo (canvas tomo.Canvas) {
 	core.canvas = canvas
+	if core.drawSizeChange != nil {
+		core.drawSizeChange()
+	}
 }
 
 // OnDamage fulfils the tomo.Element interface. This should not need to be
@@ -84,28 +87,27 @@ func (core *Core) OnMinimumSizeChange (callback func ()) {
 // instead kept as a private member. When a Core struct is created, a
 // corresponding CoreControl struct is linked to it and returned alongside it.
 type CoreControl struct {
-	tomo.BasicCanvas
 	core *Core
 }
 
 // HasImage returns true if the core has an allocated image buffer, and false if
 // it doesn't.
 func (control CoreControl) HasImage () (has bool) {
-	return control.core.canvas != nil
+	return control.core.canvas != nil && !control.core.canvas.Bounds().Empty()
 }
 
 // DamageRegion pushes the selected region of pixels to the parent element. This
 // does not need to be called when responding to a resize event.
 func (control CoreControl) DamageRegion (bounds image.Rectangle) {
 	if control.core.onDamage != nil {
-		control.core.onDamage(tomo.Cut(control, bounds))
+		control.core.onDamage(tomo.Cut(control.core, bounds))
 	}
 }
 
 // DamageAll pushes all pixels to the parent element. This does not need to be
 // called when redrawing in response to a change in size.
 func (control CoreControl) DamageAll () {
-	control.DamageRegion(control.Bounds())
+	control.DamageRegion(control.core.Bounds())
 }
 
 // SetMinimumSize sets the minimum size of this element, notifying the parent

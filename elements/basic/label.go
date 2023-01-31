@@ -107,19 +107,19 @@ func (element *Label) updateMinimumSize () {
 }
 
 func (element *Label) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	pattern, _ := theme.BackgroundPattern(theme.PatternState {
 		Case: labelCase,
 	})
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 
 	foreground, _ := theme.ForegroundPattern (theme.PatternState {
 		Case: labelCase,
 	})
-	element.drawer.Draw (element.core, foreground, image.Point {
+	element.drawer.Draw (element, foreground, image.Point {
 		X: 0 - textBounds.Min.X,
 		Y: 0 - textBounds.Min.Y,
 	})

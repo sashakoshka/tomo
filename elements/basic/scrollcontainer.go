@@ -358,7 +358,7 @@ func (element *ScrollContainer) recalculate () {
 }
 
 func (element *ScrollContainer) draw () {
-	artist.Paste(element.core, element.child, image.Point { })
+	artist.Paste(element, element.child, image.Point { })
 	deadPattern, _ := theme.DeadPattern(theme.PatternState {
 		Case: scrollContainerCase,
 	})

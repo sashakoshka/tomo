@@ -29,17 +29,17 @@ func NewMouse () (element *Mouse) {
 func (element *Mouse) draw () {
 	bounds := element.Bounds()
 	pattern, _ := theme.AccentPattern(theme.PatternState { })
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 	artist.StrokeRectangle (
-		element.core,
+		element,
 		artist.NewUniform(color.Black), 1,
 		bounds)
 	artist.Line (
-		element.core, artist.NewUniform(color.White), 1,
+		element, artist.NewUniform(color.White), 1,
 		image.Pt(1, 1),
 		image.Pt(bounds.Dx() - 2, bounds.Dy() - 2))
 	artist.Line (
-		element.core, artist.NewUniform(color.White), 1,
+		element, artist.NewUniform(color.White), 1,
 		image.Pt(1, bounds.Dy() - 2),
 		image.Pt(bounds.Dx() - 2, 1))
 }
@@ -53,7 +53,7 @@ func (element *Mouse) HandleMouseUp (x, y int, button tomo.Button) {
 	element.drawing = false
 	mousePos := image.Pt(x, y)
 	element.core.DamageRegion (artist.Line (
-		element.core, element.color, 1,
+		element, element.color, 1,
 		element.lastMousePos, mousePos))
 	element.lastMousePos = mousePos
 }
@@ -62,7 +62,7 @@ func (element *Mouse) HandleMouseMove (x, y int) {
 	if !element.drawing { return }
 	mousePos := image.Pt(x, y)
 	element.core.DamageRegion (artist.Line (
-		element.core, element.color, 1,
+		element, element.color, 1,
 		element.lastMousePos, mousePos))
 	element.lastMousePos = mousePos
 }

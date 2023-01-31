@@ -133,13 +133,13 @@ func (element *Checkbox) SetText (text string) {
 }
 
 func (element *Checkbox) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy())
 
 	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
 		Case: checkboxCase,
 	})
-	artist.FillRectangle ( element.core, backgroundPattern, bounds)
+	artist.FillRectangle(element, backgroundPattern, bounds)
 
 	pattern, inset := theme.ButtonPattern(theme.PatternState {
 		Case: checkboxCase,
@@ -147,7 +147,7 @@ func (element *Checkbox) draw () {
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	})
-	artist.FillRectangle(element.core, pattern, boxBounds)
+	artist.FillRectangle(element, pattern, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
@@ -161,10 +161,10 @@ func (element *Checkbox) draw () {
 		Case: checkboxCase,
 		Disabled: !element.Enabled(),
 	})
-	element.drawer.Draw(element.core, foreground, offset)
+	element.drawer.Draw(element, foreground, offset)
 	
 	if element.checked {
 		checkBounds := inset.Apply(boxBounds).Inset(2)
-		artist.FillRectangle(element.core, foreground, checkBounds)
+		artist.FillRectangle(element, foreground, checkBounds)
 	}
 }

@@ -34,19 +34,19 @@ func (element *Spacer) SetLine (line bool) {
 }
 
 func (element *Spacer) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	if element.line {
 		pattern, _ := theme.ForegroundPattern(theme.PatternState {
 			Case: spacerCase,
 			Disabled: true,
 		})
-		artist.FillRectangle(element.core, pattern, bounds)
+		artist.FillRectangle(element, pattern, bounds)
 	} else {
 		pattern, _ := theme.BackgroundPattern(theme.PatternState {
 			Case: spacerCase,
 			Disabled: true,
 		})
-		artist.FillRectangle(element.core, pattern, bounds)
+		artist.FillRectangle(element, pattern, bounds)
 	}
 }

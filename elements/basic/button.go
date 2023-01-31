@@ -121,7 +121,7 @@ func (element *Button) SetText (text string) {
 }
 
 func (element *Button) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	pattern, inset := theme.ButtonPattern(theme.PatternState {
 		Case: buttonCase,
@@ -130,7 +130,7 @@ func (element *Button) draw () {
 		Pressed:  element.pressed,
 	})
 
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 		
 	innerBounds := inset.Apply(bounds)
 
@@ -149,5 +149,5 @@ func (element *Button) draw () {
 		Case: buttonCase,
 		Disabled: !element.Enabled(),
 	})
-	element.drawer.Draw(element.core, foreground, offset)
+	element.drawer.Draw(element, foreground, offset)
 }
