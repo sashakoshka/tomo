@@ -25,7 +25,7 @@ type Button struct {
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
 	element = &Button { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -36,11 +36,6 @@ func NewButton (text string) (element *Button) {
 	element.drawer.SetFace(theme.FontFaceRegular())
 	element.SetText(text)
 	return
-}
-
-func (element *Button) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 }
 
 func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {

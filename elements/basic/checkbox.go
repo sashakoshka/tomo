@@ -26,7 +26,7 @@ type Checkbox struct {
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -37,12 +37,6 @@ func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element.drawer.SetFace(theme.FontFaceRegular())
 	element.SetText(text)
 	return
-}
-
-// Resize changes this element's size.
-func (element *Checkbox) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 }
 
 func (element *Checkbox) HandleMouseDown (x, y int, button tomo.Button) {

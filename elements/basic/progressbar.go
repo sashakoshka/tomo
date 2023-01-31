@@ -16,15 +16,8 @@ type ProgressBar struct {
 // level.
 func NewProgressBar (progress float64) (element *ProgressBar) {
 	element = &ProgressBar { progress: progress }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(theme.Padding() * 2, theme.Padding() * 2)
-	return
-}
-
-// Resize resizes the progress bar.
-func (element *ProgressBar) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 	return
 }
 

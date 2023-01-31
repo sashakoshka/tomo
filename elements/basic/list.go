@@ -33,7 +33,7 @@ type List struct {
 // NewList creates a new list element with the specified entries.
 func NewList (entries ...ListEntry) (element *List) {
 	element = &List { selectedEntry: -1 }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -51,10 +51,7 @@ func NewList (entries ...ListEntry) (element *List) {
 	return
 }
 
-// Resize changes the element's size.
-func (element *List) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	
+func (element *List) handleResize () {
 	for index, entry := range element.entries {
 		element.entries[index] = element.resizeEntryToFit(entry)
 	}

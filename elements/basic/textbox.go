@@ -34,7 +34,7 @@ type TextBox struct {
 // text.
 func NewTextBox (placeholder, value string) (element *TextBox) {
 	element = &TextBox { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -51,8 +51,7 @@ func NewTextBox (placeholder, value string) (element *TextBox) {
 	return
 }
 
-func (element *TextBox) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
+func (element *TextBox) handleResize () {
 	element.scrollToCursor()
 	element.draw()
 	if element.onScrollBoundsChange != nil {

@@ -48,20 +48,16 @@ type ScrollContainer struct {
 // bars.
 func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 	element = &ScrollContainer { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.handleResize)
 	element.updateMinimumSize()
 	element.horizontal.exists = horizontal
 	element.vertical.exists   = vertical
 	return
 }
 
-// Resize resizes the scroll box.
-func (element *ScrollContainer) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
+func (element *ScrollContainer) handleResize () {
 	element.recalculate()
-	element.child.Resize (
-		element.childWidth,
-		element.childHeight)
+	element.child.DrawTo(tomo.Cut(element, element.child.Bounds()))
 	element.draw()
 }
 
@@ -95,10 +91,7 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 		element.vertical.enabled = element.child.ScrollAxes()
 
 		if element.core.HasImage() {
-			element.child.Resize (
-				element.childWidth,
-				element.childHeight)
-			element.core.DamageAll()
+			element.child.DrawTo(tomo.Cut(element, element.child.Bounds()))
 		}
 	}
 }
@@ -259,6 +252,7 @@ func (element *ScrollContainer) childFocusMotionRequestCallback (
 }
 
 func (element *ScrollContainer) clearChildEventHandlers (child tomo.Scrollable) {
+	child.DrawTo(nil)
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
 	child.OnScrollBoundsChange(nil)

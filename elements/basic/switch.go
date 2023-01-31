@@ -27,7 +27,7 @@ type Switch struct {
 // NewSwitch creates a new switch with the specified label text.
 func NewSwitch (text string, on bool) (element *Switch) {
 	element = &Switch { checked: on, text: text }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -39,12 +39,6 @@ func NewSwitch (text string, on bool) (element *Switch) {
 	element.drawer.SetText([]rune(text))
 	element.calculateMinimumSize()
 	return
-}
-
-// Resize changes this element's size.
-func (element *Switch) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 }
 
 func (element *Switch) HandleMouseDown (x, y int, button tomo.Button) {

@@ -18,15 +18,8 @@ type Spacer struct {
 // will appear as a line.
 func NewSpacer (line bool) (element *Spacer) {
 	element = &Spacer { line: line }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(1, 1)
-	return
-}
-
-// Resize resizes the label and re-wraps the text if wrapping is enabled.
-func (element *Spacer) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 	return
 }
 

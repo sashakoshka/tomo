@@ -30,7 +30,7 @@ type Container struct {
 // NewContainer creates a new container.
 func NewContainer (layout tomo.Layout) (element *Container) {
 	element = &Container { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.redoAll)
 	element.SetLayout(layout)
 	return
 }
@@ -39,8 +39,7 @@ func NewContainer (layout tomo.Layout) (element *Container) {
 func (element *Container) SetLayout (layout tomo.Layout) {
 	element.layout = layout
 	if element.core.HasImage() {
-		element.recalculate()
-		element.draw()
+		element.redoAll()
 		element.core.DamageAll()
 	}
 }
@@ -51,7 +50,7 @@ func (element *Container) SetLayout (layout tomo.Layout) {
 func (element *Container) Adopt (child tomo.Element, expand bool) {
 	// set event handlers
 	child.OnDamage (func (region tomo.Canvas) {
-		element.drawChildRegion(child, region)
+		element.core.DamageRegion(region.Bounds())
 	})
 	child.OnMinimumSizeChange(element.updateMinimumSize)
 	if child0, ok := child.(tomo.Flexible); ok {
@@ -78,8 +77,7 @@ func (element *Container) Adopt (child tomo.Element, expand bool) {
 	element.updateMinimumSize()
 	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
-		element.recalculate()
-		element.draw()
+		element.redoAll()
 		element.core.DamageAll()
 	}
 }
@@ -101,8 +99,7 @@ func (element *Container) Warp (callback func ()) {
 	// and redraw every time, because although that is the most likely use
 	// case, it is not the only one.
 	if element.core.HasImage() {
-		element.recalculate()
-		element.draw()
+		element.redoAll()
 		element.core.DamageAll()
 	}
 }
@@ -123,13 +120,13 @@ func (element *Container) Disown (child tomo.Element) {
 	element.updateMinimumSize()
 	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
-		element.recalculate()
-		element.draw()
+		element.redoAll()
 		element.core.DamageAll()
 	}
 }
 
 func (element *Container) clearChildEventHandlers (child tomo.Element) {
+	child.DrawTo(nil)
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
 	if child0, ok := child.(tomo.Focusable); ok {
@@ -151,8 +148,7 @@ func (element *Container) DisownAll () {
 	element.updateMinimumSize()
 	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
-		element.recalculate()
-		element.draw()
+		element.redoAll()
 		element.core.DamageAll()
 	}
 }
@@ -182,7 +178,7 @@ func (element *Container) Child (index int) (child tomo.Element) {
 // there are no children at the coordinates, this method will return nil.
 func (element *Container) ChildAt (point image.Point) (child tomo.Element) {
 	for _, entry := range element.children {
-		if point.In(entry.Bounds().Add(entry.Position)) {
+		if point.In(entry.Bounds) {
 			child = entry.Element
 		}
 	}
@@ -192,7 +188,7 @@ func (element *Container) ChildAt (point image.Point) (child tomo.Element) {
 func (element *Container) childPosition (child tomo.Element) (position image.Point) {
 	for _, entry := range element.children {
 		if entry.Element == child {
-			position = entry.Position
+			position = entry.Bounds.Min
 			break
 		}
 	}
@@ -200,10 +196,21 @@ func (element *Container) childPosition (child tomo.Element) (position image.Poi
 	return
 }
 
-func (element *Container) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
+func (element *Container) redoAll () {
+	// do a layout
 	element.recalculate()
-	element.draw()
+
+	// draw a background
+	bounds := element.core.Bounds()
+	pattern, _ := theme.BackgroundPattern (theme.PatternState {
+		Case: containerCase,
+	})
+	artist.FillRectangle(element.core, pattern, bounds)
+
+	// resize all elements, having them draw onto us
+	for _, entry := range element.children {
+		entry.DrawTo(tomo.Cut(element, entry.Bounds))
+	}
 }
 
 func (element *Container) HandleMouseDown (x, y int, button tomo.Button) {
@@ -470,29 +477,4 @@ func (element *Container) updateMinimumSize () {
 func (element *Container) recalculate () {
 	bounds := element.Bounds()
 	element.layout.Arrange(element.children, bounds.Dx(), bounds.Dy())
-}
-
-func (element *Container) draw () {
-	bounds := element.core.Bounds()
-
-	pattern, _ := theme.BackgroundPattern (theme.PatternState {
-		Case: containerCase,
-	})
-	artist.FillRectangle(element.core, pattern, bounds)
-
-	for _, entry := range element.children {
-		artist.Paste(element.core, entry, entry.Position)
-	}
-}
-
-func (element *Container) drawChildRegion (child tomo.Element, region tomo.Canvas) {
-	if element.warping { return }
-	for _, entry := range element.children {
-		if entry.Element == child {
-			artist.Paste(element.core, region, entry.Position)
-			element.core.DamageRegion (
-				region.Bounds().Add(entry.Position))
-			break
-		}
-	}
 }
