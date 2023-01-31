@@ -17,37 +17,33 @@ type Horizontal struct {
 }
 
 // Arrange arranges a list of entries horizontally.
-func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, width, height int) {
-	if layout.Pad {
-		width  -= theme.Margin() * 2
-		height -= theme.Margin() * 2
-	}
-	// get width of expanding elements
-	expandingElementWidth := layout.expandingElementWidth(entries, width)
+func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle) {
+	if layout.Pad { bounds = bounds.Inset(theme.Margin()) }
 	
-	x, y := 0, 0
-	if layout.Pad {
-		x += theme.Margin()
-		y += theme.Margin()
-	}
+	// get width of expanding elements
+	expandingElementWidth := layout.expandingElementWidth(entries, bounds.Dx())
+	
+	dot := bounds.Min
 
 	// set the size and position of each element
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { x += theme.Margin() }
+		if index > 0 && layout.Gap { dot.X += theme.Margin() }
 		
-		entries[index].Bounds.Min = image.Pt(x, y)
+		entry.Bounds.Min = dot
 		entryWidth := 0
 		if entry.Expand {
 			entryWidth = expandingElementWidth
 		} else {
 			entryWidth, _ = entry.MinimumSize()
 		}
-		x += entryWidth
+		dot.X += entryWidth
 		entryBounds := entry.Bounds
-		if entryBounds.Dy() != height || entryBounds.Dx() != entryWidth {
-			entries[index].Bounds.Max = entryBounds.Min.Add (
-				image.Pt(entryWidth, height))
+		if entryBounds.Dy() != bounds.Dy() || entryBounds.Dx() != entryWidth {
+			entry.Bounds.Max = entryBounds.Min.Add (
+				image.Pt(entryWidth, bounds.Dy()))
 		}
+
+		entries[index] = entry
 	}
 }
 

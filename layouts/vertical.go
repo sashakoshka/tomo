@@ -18,9 +18,7 @@ type Vertical struct {
 
 // Arrange arranges a list of entries vertically.
 func (layout Vertical) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle) {
-	if layout.Pad {
-		bounds = bounds.Inset(theme.Margin())
-	}
+	if layout.Pad { bounds = bounds.Inset(theme.Margin()) }
 
 	// count the number of expanding elements and the amount of free space
 	// for them to collectively occupy, while gathering minimum heights.
