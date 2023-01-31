@@ -6,7 +6,7 @@ import "image"
 // it can be arranged by a Layout.
 type LayoutEntry struct {
 	Element
-	Position image.Point
+	Bounds image.Rectangle
 	Expand bool
 }
 

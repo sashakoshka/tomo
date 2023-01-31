@@ -35,7 +35,7 @@ func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, width, height int)
 	for index, entry := range entries {
 		if index > 0 && layout.Gap { x += theme.Margin() }
 		
-		entries[index].Position = image.Pt(x, y)
+		entries[index].Bounds.Min = image.Pt(x, y)
 		entryWidth := 0
 		if entry.Expand {
 			entryWidth = expandingElementWidth
@@ -43,9 +43,10 @@ func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, width, height int)
 			entryWidth, _ = entry.MinimumSize()
 		}
 		x += entryWidth
-		entryBounds := entry.Bounds()
+		entryBounds := entry.Bounds
 		if entryBounds.Dy() != height || entryBounds.Dx() != entryWidth {
-			entry.Resize(entryWidth, height)
+			entry.Bounds.Max = entryBounds.Min.Add (
+				image.Pt(entryWidth, height))
 		}
 	}
 }

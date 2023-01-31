@@ -62,7 +62,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	for index, entry := range entries {
 		if index > 0 && layout.Gap { y += theme.Margin() }
 		
-		entries[index].Position = image.Pt(x, y)
+		entries[index].Bounds.Min = image.Pt(x, y)
 		entryHeight := 0
 		if entry.Expand {
 			entryHeight = expandingElementHeight
@@ -70,9 +70,10 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, width, height int) {
 			entryHeight = minimumHeights[index]
 		}
 		y += entryHeight
-		entryBounds := entry.Bounds()
+		entryBounds := entry.Bounds
 		if entryBounds.Dx() != width || entryBounds.Dy() != entryHeight {
-			entry.Resize(width, entryHeight)
+			entry.Bounds.Max = entryBounds.Min.Add (
+				image.Pt(width, entryHeight))
 		}
 	}
 }

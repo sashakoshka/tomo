@@ -32,19 +32,19 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	}
 
 	if len(entries) > 0 {
-		entries[0].Position = image.Point { }
+		entries[0].Bounds.Min = image.Point { }
 		if layout.Pad {
-			entries[0].Position.X += theme.Margin()
-			entries[0].Position.Y += theme.Margin()
+			entries[0].Bounds.Min.X += theme.Margin()
+			entries[0].Bounds.Min.Y += theme.Margin()
 		}
 		mainHeight := height - controlRowHeight
 		if layout.Gap {
 			mainHeight -= theme.Margin()
 		}
-		mainBounds := entries[0].Bounds()
-		if mainBounds.Dy() != mainHeight ||
-			mainBounds.Dx() != width {
-			entries[0].Resize(width, mainHeight)
+		mainBounds := entries[0].Bounds
+		if mainBounds.Dy() != mainHeight || mainBounds.Dx() != width {
+			entries[0].Bounds.Max =
+				mainBounds.Min.Add(image.Pt(width, mainHeight))
 		}
 	}
 
@@ -85,7 +85,7 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 		for index, entry := range entries[1:] {
 			if index > 0 && layout.Gap { x += theme.Margin() }
 			
-			entries[index + 1].Position = image.Pt(x, y)
+			entries[index + 1].Bounds.Min = image.Pt(x, y)
 			entryWidth := 0
 			if entry.Expand {
 				entryWidth = expandingElementWidth
@@ -93,10 +93,11 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 				entryWidth, _ = entry.MinimumSize()
 			}
 			x += entryWidth
-			entryBounds := entry.Bounds()
+			entryBounds := entry.Bounds
 			if entryBounds.Dy() != controlRowHeight ||
 				entryBounds.Dx() != entryWidth {
-				entry.Resize(entryWidth, controlRowHeight)
+				entry.Bounds.Max = entryBounds.Min.Add (
+					image.Pt(entryWidth, controlRowHeight))
 			}
 		}
 	}
