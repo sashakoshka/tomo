@@ -36,12 +36,12 @@ func (element *Mouse) draw () {
 		bounds)
 	artist.Line (
 		element, artist.NewUniform(color.White), 1,
-		image.Pt(1, 1),
-		image.Pt(bounds.Dx() - 2, bounds.Dy() - 2))
+		bounds.Min.Add(image.Pt(1, 1)),
+		bounds.Min.Add(image.Pt(bounds.Dx() - 2, bounds.Dy() - 2)))
 	artist.Line (
 		element, artist.NewUniform(color.White), 1,
-		image.Pt(1, bounds.Dy() - 2),
-		image.Pt(bounds.Dx() - 2, 1))
+		bounds.Min.Add(image.Pt(1, bounds.Dy() - 2)),
+		bounds.Min.Add(image.Pt(bounds.Dx() - 2, 1)))
 }
 
 func (element *Mouse) HandleMouseDown (x, y int, button tomo.Button) {

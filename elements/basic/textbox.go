@@ -258,6 +258,7 @@ func (element *TextBox) scrollToCursor () {
 	if !element.core.HasImage() { return }
 
 	bounds := element.Bounds().Inset(theme.Padding())
+	bounds = bounds.Sub(bounds.Min)
 	bounds.Max.X -= element.valueDrawer.Em().Round()
 	cursorPosition := element.valueDrawer.PositionOf(element.cursor)
 	cursorPosition.X -= element.scroll
@@ -285,10 +286,10 @@ func (element *TextBox) draw () {
 	if len(element.text) == 0 && !element.Focused() {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
-		offset := image.Point {
+		offset := bounds.Min.Add (image.Point {
 			X: theme.Padding() + inset[3],
 			Y: theme.Padding() + inset[0],
-		}
+		})
 		foreground, _ := theme.ForegroundPattern(theme.PatternState {
 			Case: textBoxCase,
 			Disabled: true,
@@ -300,10 +301,10 @@ func (element *TextBox) draw () {
 	} else {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
-		offset := image.Point {
+		offset := bounds.Min.Add (image.Point {
 			X: theme.Padding() + inset[3] - element.scroll,
 			Y: theme.Padding() + inset[0],
-		}
+		})
 		foreground, _ := theme.ForegroundPattern(theme.PatternState {
 			Case: textBoxCase,
 			Disabled: !element.Enabled(),

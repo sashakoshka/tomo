@@ -134,7 +134,7 @@ func (element *Checkbox) SetText (text string) {
 
 func (element *Checkbox) draw () {
 	bounds := element.Bounds()
-	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy())
+	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 
 	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
 		Case: checkboxCase,
@@ -150,9 +150,9 @@ func (element *Checkbox) draw () {
 	artist.FillRectangle(element, pattern, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
-	offset := image.Point {
+	offset := bounds.Min.Add(image.Point {
 		X: bounds.Dy() + theme.Padding(),
-	}
+	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X

@@ -22,10 +22,9 @@ func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, bounds image.Recta
 	
 	// get width of expanding elements
 	expandingElementWidth := layout.expandingElementWidth(entries, bounds.Dx())
-	
-	dot := bounds.Min
 
 	// set the size and position of each element
+	dot := bounds.Min
 	for index, entry := range entries {
 		if index > 0 && layout.Gap { dot.X += theme.Margin() }
 		

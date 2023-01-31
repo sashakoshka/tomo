@@ -50,9 +50,8 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, bounds image.Rectang
 		expandingElementHeight = freeSpace / expandingElements
 	}
 	
-	dot := bounds.Min
-
 	// set the size and position of each element
+	dot := bounds.Min
 	for index, entry := range entries {
 		if index > 0 && layout.Gap { dot.Y += theme.Margin() }
 		

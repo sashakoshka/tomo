@@ -84,12 +84,12 @@ func (element *AnalogClock) radialLine (
 	bounds := element.Bounds()
 	width  := float64(bounds.Dx()) / 2
 	height := float64(bounds.Dy()) / 2
-	min := image.Pt (
+	min := element.Bounds().Min.Add(image.Pt (
 		int(math.Cos(radian) * inner * width + width),
-		int(math.Sin(radian) * inner * height + height))
-	max := image.Pt (
+		int(math.Sin(radian) * inner * height + height)))
+	max := element.Bounds().Min.Add(image.Pt (
 		int(math.Cos(radian) * outer * width + width),
-		int(math.Sin(radian) * outer * height + height))
+		int(math.Sin(radian) * outer * height + height)))
 	// println(min.String(), max.String())
 	artist.Line(element, source, 1, min, max)
 }

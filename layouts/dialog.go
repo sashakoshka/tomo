@@ -18,13 +18,12 @@ type Dialog struct {
 	Pad bool
 }
 
-// Arrange arranges a list of entries into a dialog.
-func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
-	if layout.Pad {
-		width  -= theme.Margin() * 2
-		height -= theme.Margin() * 2
-	}
+// FIXME
 
+// Arrange arranges a list of entries into a dialog.
+func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle) {
+	if layout.Pad { bounds = bounds.Inset(theme.Margin()) }
+	
 	controlRowWidth, controlRowHeight := 0, 0
 	if len(entries) > 1 {
 		controlRowWidth,
@@ -37,19 +36,19 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 			entries[0].Bounds.Min.X += theme.Margin()
 			entries[0].Bounds.Min.Y += theme.Margin()
 		}
-		mainHeight := height - controlRowHeight
+		mainHeight := bounds.Dy() - controlRowHeight
 		if layout.Gap {
 			mainHeight -= theme.Margin()
 		}
 		mainBounds := entries[0].Bounds
-		if mainBounds.Dy() != mainHeight || mainBounds.Dx() != width {
+		if mainBounds.Dy() != mainHeight || mainBounds.Dx() != bounds.Dx() {
 			entries[0].Bounds.Max =
-				mainBounds.Min.Add(image.Pt(width, mainHeight))
+				mainBounds.Min.Add(image.Pt(bounds.Dx(), mainHeight))
 		}
 	}
 
 	if len(entries) > 1 {
-		freeSpace := width
+		freeSpace := bounds.Dx()
 		expandingElements := 0
 
 		// count the number of expanding elements and the amount of free
@@ -71,15 +70,15 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 		}
 
 		// determine starting position and dimensions for control row
-		x, y := 0, height - controlRowHeight
+		x, y := 0, bounds.Dy() - controlRowHeight
 		if expandingElements == 0 {
-			x = width - controlRowWidth
+			x = bounds.Dx() - controlRowWidth
 		}
 		if layout.Pad {
 			x += theme.Margin()
 			y += theme.Margin()
 		}
-		height -= controlRowHeight
+		bounds.Max.Y -= controlRowHeight
 
 		// set the size and position of each element in the control row
 		for index, entry := range entries[1:] {

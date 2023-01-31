@@ -141,8 +141,8 @@ func (element *Switch) calculateMinimumSize () {
 
 func (element *Switch) draw () {
 	bounds := element.Bounds()
-	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy())
-	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy())
+	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
+	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy()).Add(bounds.Min)
 	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
 		Case: switchCase,
 	})
@@ -179,9 +179,9 @@ func (element *Switch) draw () {
 	artist.FillRectangle(element, handlePattern, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
-	offset := image.Point {
+	offset := bounds.Min.Add(image.Point {
 		X: bounds.Dy() * 2 + theme.Padding(),
-	}
+	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X

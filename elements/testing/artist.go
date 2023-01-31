@@ -26,8 +26,8 @@ func NewArtist () (element *Artist) {
 
 func (element *Artist) draw () {
 	bounds := element.Bounds()
-	element.cellBounds.Max.X = bounds.Dx() / 5
-	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 8
+	element.cellBounds.Max.X = bounds.Min.X + bounds.Dx() / 5
+	element.cellBounds.Max.Y = bounds.Min.Y + (bounds.Dy() - 48) / 8
 
 	drawStart := time.Now()
 

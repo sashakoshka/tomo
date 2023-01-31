@@ -57,7 +57,7 @@ func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 
 func (element *ScrollContainer) handleResize () {
 	element.recalculate()
-	element.child.DrawTo(tomo.Cut(element, element.child.Bounds()))
+	element.resizeChildToFit()
 	element.draw()
 }
 
@@ -91,7 +91,7 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 		element.vertical.enabled = element.child.ScrollAxes()
 
 		if element.core.HasImage() {
-			element.child.DrawTo(tomo.Cut(element, element.child.Bounds()))
+			element.resizeChildToFit()
 		}
 	}
 }
@@ -113,7 +113,8 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
 	if point.In(element.horizontal.bar) {
 		element.horizontal.dragging = true
 		element.horizontal.dragOffset =
-			point.Sub(element.horizontal.bar.Min).X
+			x - element.horizontal.bar.Min.X +
+			element.Bounds().Min.X
 		element.dragHorizontalBar(point)
 		
 	} else if point.In(element.horizontal.gutter) {
@@ -128,7 +129,8 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
 	} else if point.In(element.vertical.bar) {
 		element.vertical.dragging = true
 		element.vertical.dragOffset =
-			point.Sub(element.vertical.bar.Min).Y
+			y - element.vertical.bar.Min.Y +
+				element.Bounds().Min.Y
 		element.dragVerticalBar(point)
 		
 	} else if point.In(element.vertical.gutter) {
@@ -268,6 +270,14 @@ func (element *ScrollContainer) clearChildEventHandlers (child tomo.Scrollable) 
 	}
 }
 
+func (element *ScrollContainer) resizeChildToFit () {
+	childBounds := image.Rect (
+		0, 0,
+		element.childWidth,
+		element.childHeight).Add(element.Bounds().Min)
+	element.child.DrawTo(tomo.Cut(element, childBounds))
+}
+
 func (element *ScrollContainer) recalculate () {
 	_, gutterInsetHorizontal := theme.GutterPattern(theme.PatternState {
 		Case: scrollBarHorizontalCase,
@@ -300,6 +310,7 @@ func (element *ScrollContainer) recalculate () {
 
 	// if enabled, give substance to the gutters
 	if horizontal.exists {
+		horizontal.gutter.Min.X = bounds.Min.X
 		horizontal.gutter.Min.Y = bounds.Max.Y - thicknessHorizontal
 		horizontal.gutter.Max.X = bounds.Max.X
 		horizontal.gutter.Max.Y = bounds.Max.Y
@@ -312,6 +323,7 @@ func (element *ScrollContainer) recalculate () {
 	if vertical.exists {
 		vertical.gutter.Min.X = bounds.Max.X - thicknessVertical
 		vertical.gutter.Max.X = bounds.Max.X
+		vertical.gutter.Min.Y = bounds.Min.Y
 		vertical.gutter.Max.Y = bounds.Max.Y
 		if horizontal.exists {
 			vertical.gutter.Max.Y -= thicknessHorizontal
