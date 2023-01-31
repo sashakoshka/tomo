@@ -20,14 +20,13 @@ type Mouse struct {
 // NewMouse creates a new mouse test element.
 func NewMouse () (element *Mouse) {
 	element = &Mouse { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(32, 32)
 	element.color = artist.NewUniform(color.Black)
 	return
 }
 
-func (element *Mouse) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
+func (element *Mouse) draw () {
 	bounds := element.Bounds()
 	pattern, _ := theme.AccentPattern(theme.PatternState { })
 	artist.FillRectangle(element.core, pattern, bounds)

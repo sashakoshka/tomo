@@ -19,13 +19,12 @@ type Artist struct {
 // NewArtist creates a new artist test element.
 func NewArtist () (element *Artist) {
 	element = &Artist { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(480, 600)
 	return
 }
 
-func (element *Artist) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
+func (element *Artist) draw () {
 	bounds := element.Bounds()
 	element.cellBounds.Max.X = bounds.Dx() / 5
 	element.cellBounds.Max.Y = (bounds.Dy() - 48) / 8
