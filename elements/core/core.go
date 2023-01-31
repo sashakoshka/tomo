@@ -7,21 +7,21 @@ import "git.tebibyte.media/sashakoshka/tomo"
 // Core is a struct that implements some core functionality common to most
 // widgets. It is meant to be embedded directly into a struct.
 type Core struct {
-	canvas tomo.BasicCanvas
-	parent tomo.Element
+	canvas tomo.Canvas
 
 	metrics struct {
 		minimumWidth  int
 		minimumHeight int
 	}
 
+	drawSizeChange func ()
 	onMinimumSizeChange func ()
 	onDamage func (region tomo.Canvas)
 }
 
 // NewCore creates a new element core and its corresponding control.
-func NewCore (parent tomo.Element) (core *Core, control CoreControl) {
-	core    = &Core { parent: parent }
+func NewCore (drawSizeChange func ()) (core *Core, control CoreControl) {
+	core    = &Core { drawSizeChange: drawSizeChange }
 	control = CoreControl { core: core }
 	return
 }
@@ -33,21 +33,25 @@ func (core *Core) ColorModel () (model color.Model) {
 
 // ColorModel fulfills the draw.Image interface.
 func (core *Core) At (x, y int) (pixel color.Color) {
+	if core.canvas == nil { return }
 	return core.canvas.At(x, y)
 }
 
 // ColorModel fulfills the draw.Image interface.
 func (core *Core) Bounds () (bounds image.Rectangle) {
+	if core.canvas == nil { return }
 	return core.canvas.Bounds()
 }
 
 // ColorModel fulfills the draw.Image interface.
 func (core *Core) Set (x, y int, c color.Color) () {
+	if core.canvas == nil { return }
 	core.canvas.Set(x, y, c)
 }
 
 // Buffer fulfills the tomo.Canvas interface.
 func (core *Core) Buffer () (data []color.RGBA, stride int) {
+	if core.canvas == nil { return }
 	return core.canvas.Buffer()
 }
 
@@ -55,6 +59,12 @@ func (core *Core) Buffer () (data []color.RGBA, stride int) {
 // overridden.
 func (core *Core) MinimumSize () (width, height int) {
 	return core.metrics.minimumWidth, core.metrics.minimumHeight
+}
+
+// DrawTo fulfills the tomo.Element interface. This should not need to be
+// overridden.
+func (core *Core) DrawTo (canvas tomo.Canvas) {
+	core.canvas = canvas
 }
 
 // OnDamage fulfils the tomo.Element interface. This should not need to be
@@ -81,7 +91,7 @@ type CoreControl struct {
 // HasImage returns true if the core has an allocated image buffer, and false if
 // it doesn't.
 func (control CoreControl) HasImage () (has bool) {
-	return !control.Bounds().Empty()
+	return control.core.canvas != nil
 }
 
 // DamageRegion pushes the selected region of pixels to the parent element. This
@@ -93,16 +103,9 @@ func (control CoreControl) DamageRegion (bounds image.Rectangle) {
 }
 
 // DamageAll pushes all pixels to the parent element. This does not need to be
-// called when responding to a resize event.
+// called when redrawing in response to a change in size.
 func (control CoreControl) DamageAll () {
 	control.DamageRegion(control.Bounds())
-}
-
-// AllocateCanvas resizes the canvas, constraining the width and height so that
-// they are not less than the specified minimum width and height.
-func (control *CoreControl) AllocateCanvas (width, height int) {
-	control.core.canvas = tomo.NewBasicCanvas(width, height)
-	control.BasicCanvas = control.core.canvas
 }
 
 // SetMinimumSize sets the minimum size of this element, notifying the parent
@@ -118,18 +121,6 @@ func (control CoreControl) SetMinimumSize (width, height int) {
 	core.metrics.minimumHeight = height
 	if control.core.onMinimumSizeChange != nil {
 		control.core.onMinimumSizeChange()
-	}
-
-	// if there is an image buffer, and the current size is less
-	// than this new minimum size, send core.parent a resize event.
-	if control.HasImage() {
-		bounds := control.Bounds()
-		imageWidth,
-		imageHeight,
-		constrained := control.ConstrainSize(bounds.Dx(), bounds.Dy())
-		if constrained {
-			core.parent.Resize(imageWidth, imageHeight)
-		}
 	}
 }
 

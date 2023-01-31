@@ -15,9 +15,10 @@ type Element interface {
 	// instead of the offending dimension(s).
 	MinimumSize () (width, height int)
 
-	// Resize resizes the element. This should only be called by the
-	// element's parent.
-	Resize (width, height int)
+	// DrawTo sets this element's canvas. This should only be called by the
+	// parent element. This is typically a region of the parent element's
+	// canvas.
+	DrawTo (canvas Canvas)
 
 	// OnDamage sets a function to be called when an area of the element is
 	// drawn on and should be pushed to the screen.
