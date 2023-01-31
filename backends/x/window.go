@@ -13,6 +13,7 @@ type Window struct {
 	backend *Backend
 	xWindow *xwindow.Window
 	xCanvas *xgraphics.Image
+	canvas  tomo.BasicCanvas
 	child   tomo.Element
 	onClose func ()
 	skipChildDrawCallback bool
@@ -194,6 +195,9 @@ func (window *Window) OnClose (callback func ()) {
 }
 
 func (window *Window) reallocateCanvas () {
+	window.canvas = tomo.NewBasicCanvas (
+		window.metrics.width,
+		window.metrics.height)
 	if window.xCanvas != nil {
 		window.xCanvas.Destroy()
 	}
@@ -203,12 +207,12 @@ func (window *Window) reallocateCanvas () {
 			0, 0,
 			window.metrics.width,
 			window.metrics.height))
-	
 	window.xCanvas.CreatePixmap()
 }
 
 func (window *Window) redrawChildEntirely () {
 	window.pushRegion(window.paste(window.child))
+	
 }
 
 func (window *Window) resizeChildToFit () {
@@ -228,15 +232,10 @@ func (window *Window) resizeChildToFit () {
 				
 		if window.metrics.height >= minimumHeight &&
 			window.metrics.width >= minimumWidth {
-
-			window.child.Resize (
-				window.metrics.width,
-				window.metrics.height)
+			window.child.DrawTo(window.canvas)
 		}
 	} else {
-		window.child.Resize (
-			window.metrics.width,
-			window.metrics.height)
+		window.child.DrawTo(window.canvas)
 	}
 	window.skipChildDrawCallback = false
 }
