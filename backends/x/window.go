@@ -195,19 +195,31 @@ func (window *Window) OnClose (callback func ()) {
 }
 
 func (window *Window) reallocateCanvas () {
-	window.canvas = tomo.NewBasicCanvas (
-		window.metrics.width,
-		window.metrics.height)
+	window.canvas.Reallocate(window.metrics.width, window.metrics.height)
+
+	previousWidth, previousHeight := 0, 0
 	if window.xCanvas != nil {
-		window.xCanvas.Destroy()
+		previousWidth  = window.xCanvas.Bounds().Dx()
+		previousHeight = window.xCanvas.Bounds().Dy()
 	}
-	window.xCanvas = xgraphics.New (
-		window.backend.connection,
-		image.Rect (
-			0, 0,
-			window.metrics.width,
-			window.metrics.height))
-	window.xCanvas.CreatePixmap()
+	
+	newWidth  := window.metrics.width
+	newHeight := window.metrics.height
+	larger    := newWidth > previousWidth || newHeight > previousHeight
+	smaller   := newWidth < previousWidth / 2 || newHeight < previousHeight / 2
+	if larger || smaller {
+		if window.xCanvas != nil {
+			window.xCanvas.Destroy()
+		}
+		window.xCanvas = xgraphics.New (
+			window.backend.connection,
+			image.Rect (
+				0, 0,
+				(newWidth  / 64) * 64 + 64,
+				(newHeight / 64) * 64 + 64))
+		window.xCanvas.CreatePixmap()
+	}
+	
 }
 
 func (window *Window) redrawChildEntirely () {

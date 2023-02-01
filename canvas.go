@@ -61,6 +61,22 @@ func (canvas BasicCanvas) Buffer () (data []color.RGBA, stride int) {
 	return canvas.pix, canvas.stride
 }
 
+// Reallocate efficiently reallocates the canvas. The data within will be
+// garbage. This method will do nothing if this is a cut image.
+func (canvas *BasicCanvas) Reallocate (width, height int) {
+	previousLen := len(canvas.pix)
+	newLen := width * height
+	bigger  := newLen > previousLen
+	smaller := newLen < previousLen / 2
+	if bigger || smaller {
+		canvas.pix = make (
+			[]color.RGBA,
+			((height * width) / 4096) * 4096 + 4096)
+	}
+	canvas.stride = width
+	canvas.rect = image.Rect(0, 0, width, height)
+}
+
 // Cut returns a sub-canvas of a given canvas.
 func Cut (canvas Canvas, bounds image.Rectangle) (reduced BasicCanvas) {
 	// println(canvas.Bounds().String(), bounds.String())
