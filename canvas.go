@@ -64,6 +64,8 @@ func (canvas BasicCanvas) Buffer () (data []color.RGBA, stride int) {
 // Reallocate efficiently reallocates the canvas. The data within will be
 // garbage. This method will do nothing if this is a cut image.
 func (canvas *BasicCanvas) Reallocate (width, height int) {
+	if canvas.rect.Min != (image.Point { }) { return }
+
 	previousLen := len(canvas.pix)
 	newLen := width * height
 	bigger  := newLen > previousLen
