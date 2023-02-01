@@ -63,6 +63,7 @@ func (canvas BasicCanvas) Buffer () (data []color.RGBA, stride int) {
 
 // Cut returns a sub-canvas of a given canvas.
 func Cut (canvas Canvas, bounds image.Rectangle) (reduced BasicCanvas) {
+	// println(canvas.Bounds().String(), bounds.String())
 	bounds = bounds.Intersect(canvas.Bounds())
 	if bounds.Empty() { return }
 	reduced.rect = bounds

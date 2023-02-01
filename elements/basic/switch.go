@@ -27,7 +27,7 @@ type Switch struct {
 // NewSwitch creates a new switch with the specified label text.
 func NewSwitch (text string, on bool) (element *Switch) {
 	element = &Switch { checked: on, text: text }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -39,12 +39,6 @@ func NewSwitch (text string, on bool) (element *Switch) {
 	element.drawer.SetText([]rune(text))
 	element.calculateMinimumSize()
 	return
-}
-
-// Resize changes this element's size.
-func (element *Switch) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 }
 
 func (element *Switch) HandleMouseDown (x, y int, button tomo.Button) {
@@ -146,13 +140,13 @@ func (element *Switch) calculateMinimumSize () {
 }
 
 func (element *Switch) draw () {
-	bounds := element.core.Bounds()
-	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy())
-	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy())
+	bounds := element.Bounds()
+	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
+	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy()).Add(bounds.Min)
 	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
 		Case: switchCase,
 	})
-	artist.FillRectangle ( element.core, backgroundPattern, bounds)
+	artist.FillRectangle (element, backgroundPattern, bounds)
 
 	if element.checked {
 		handleBounds.Min.X += bounds.Dy()
@@ -174,7 +168,7 @@ func (element *Switch) draw () {
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	})
-	artist.FillRectangle(element.core, gutterPattern, gutterBounds)
+	artist.FillRectangle(element, gutterPattern, gutterBounds)
 	
 	handlePattern, _ := theme.HandlePattern(theme.PatternState {
 		Case: switchCase,
@@ -182,12 +176,12 @@ func (element *Switch) draw () {
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	})
-	artist.FillRectangle(element.core, handlePattern, handleBounds)
+	artist.FillRectangle(element, handlePattern, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
-	offset := image.Point {
+	offset := bounds.Min.Add(image.Point {
 		X: bounds.Dy() * 2 + theme.Padding(),
-	}
+	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
@@ -196,5 +190,5 @@ func (element *Switch) draw () {
 		Case: switchCase,
 		Disabled: !element.Enabled(),
 	})
-	element.drawer.Draw(element.core, foreground, offset)
+	element.drawer.Draw(element, foreground, offset)
 }

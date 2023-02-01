@@ -19,12 +19,9 @@ type Dialog struct {
 }
 
 // Arrange arranges a list of entries into a dialog.
-func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
-	if layout.Pad {
-		width  -= theme.Margin() * 2
-		height -= theme.Margin() * 2
-	}
-
+func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle) {
+	if layout.Pad { bounds = bounds.Inset(theme.Margin()) }
+	
 	controlRowWidth, controlRowHeight := 0, 0
 	if len(entries) > 1 {
 		controlRowWidth,
@@ -32,24 +29,18 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 	}
 
 	if len(entries) > 0 {
-		entries[0].Position = image.Point { }
-		if layout.Pad {
-			entries[0].Position.X += theme.Margin()
-			entries[0].Position.Y += theme.Margin()
-		}
-		mainHeight := height - controlRowHeight
+		main := entries[0]
+		main.Bounds.Min = bounds.Min
+		mainHeight := bounds.Dy() - controlRowHeight
 		if layout.Gap {
 			mainHeight -= theme.Margin()
 		}
-		mainBounds := entries[0].Bounds()
-		if mainBounds.Dy() != mainHeight ||
-			mainBounds.Dx() != width {
-			entries[0].Resize(width, mainHeight)
-		}
+		main.Bounds.Max = main.Bounds.Min.Add(image.Pt(bounds.Dx(), mainHeight))
+		entries[0] = main
 	}
 
 	if len(entries) > 1 {
-		freeSpace := width
+		freeSpace := bounds.Dx()
 		expandingElements := 0
 
 		// count the number of expanding elements and the amount of free
@@ -71,33 +62,30 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, width, height int) {
 		}
 
 		// determine starting position and dimensions for control row
-		x, y := 0, height - controlRowHeight
+		dot := image.Pt(bounds.Min.X, bounds.Max.Y - controlRowHeight)
 		if expandingElements == 0 {
-			x = width - controlRowWidth
+			dot.X = bounds.Max.X - controlRowWidth
 		}
-		if layout.Pad {
-			x += theme.Margin()
-			y += theme.Margin()
-		}
-		height -= controlRowHeight
 
 		// set the size and position of each element in the control row
 		for index, entry := range entries[1:] {
-			if index > 0 && layout.Gap { x += theme.Margin() }
+			if index > 0 && layout.Gap { dot.X += theme.Margin() }
 			
-			entries[index + 1].Position = image.Pt(x, y)
+			entry.Bounds.Min = dot
 			entryWidth := 0
 			if entry.Expand {
 				entryWidth = expandingElementWidth
 			} else {
 				entryWidth, _ = entry.MinimumSize()
 			}
-			x += entryWidth
-			entryBounds := entry.Bounds()
+			dot.X += entryWidth
+			entryBounds := entry.Bounds
 			if entryBounds.Dy() != controlRowHeight ||
 				entryBounds.Dx() != entryWidth {
-				entry.Resize(entryWidth, controlRowHeight)
+				entry.Bounds.Max = entryBounds.Min.Add (
+					image.Pt(entryWidth, controlRowHeight))
 			}
+			entries[index + 1] = entry
 		}
 	}
 

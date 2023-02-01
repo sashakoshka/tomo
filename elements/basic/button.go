@@ -25,7 +25,7 @@ type Button struct {
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
 	element = &Button { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -36,11 +36,6 @@ func NewButton (text string) (element *Button) {
 	element.drawer.SetFace(theme.FontFaceRegular())
 	element.SetText(text)
 	return
-}
-
-func (element *Button) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 }
 
 func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {
@@ -126,7 +121,7 @@ func (element *Button) SetText (text string) {
 }
 
 func (element *Button) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	pattern, inset := theme.ButtonPattern(theme.PatternState {
 		Case: buttonCase,
@@ -135,14 +130,14 @@ func (element *Button) draw () {
 		Pressed:  element.pressed,
 	})
 
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 		
 	innerBounds := inset.Apply(bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
 		X: innerBounds.Min.X + (innerBounds.Dx() - textBounds.Dx()) / 2,
-		Y: innerBounds.Min.X + (innerBounds.Dy() - textBounds.Dy()) / 2,
+		Y: innerBounds.Min.Y + (innerBounds.Dy() - textBounds.Dy()) / 2,
 	}
 
 	// account for the fact that the bounding rectangle will be shifted over
@@ -154,5 +149,5 @@ func (element *Button) draw () {
 		Case: buttonCase,
 		Disabled: !element.Enabled(),
 	})
-	element.drawer.Draw(element.core, foreground, offset)
+	element.drawer.Draw(element, foreground, offset)
 }

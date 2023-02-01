@@ -48,20 +48,16 @@ type ScrollContainer struct {
 // bars.
 func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 	element = &ScrollContainer { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.handleResize)
 	element.updateMinimumSize()
 	element.horizontal.exists = horizontal
 	element.vertical.exists   = vertical
 	return
 }
 
-// Resize resizes the scroll box.
-func (element *ScrollContainer) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
+func (element *ScrollContainer) handleResize () {
 	element.recalculate()
-	element.child.Resize (
-		element.childWidth,
-		element.childHeight)
+	element.resizeChildToFit()
 	element.draw()
 }
 
@@ -95,10 +91,7 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 		element.vertical.enabled = element.child.ScrollAxes()
 
 		if element.core.HasImage() {
-			element.child.Resize (
-				element.childWidth,
-				element.childHeight)
-			element.core.DamageAll()
+			element.resizeChildToFit()
 		}
 	}
 }
@@ -120,7 +113,8 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
 	if point.In(element.horizontal.bar) {
 		element.horizontal.dragging = true
 		element.horizontal.dragOffset =
-			point.Sub(element.horizontal.bar.Min).X
+			x - element.horizontal.bar.Min.X +
+			element.Bounds().Min.X
 		element.dragHorizontalBar(point)
 		
 	} else if point.In(element.horizontal.gutter) {
@@ -135,7 +129,8 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
 	} else if point.In(element.vertical.bar) {
 		element.vertical.dragging = true
 		element.vertical.dragOffset =
-			point.Sub(element.vertical.bar.Min).Y
+			y - element.vertical.bar.Min.Y +
+				element.Bounds().Min.Y
 		element.dragVerticalBar(point)
 		
 	} else if point.In(element.vertical.gutter) {
@@ -259,6 +254,7 @@ func (element *ScrollContainer) childFocusMotionRequestCallback (
 }
 
 func (element *ScrollContainer) clearChildEventHandlers (child tomo.Scrollable) {
+	child.DrawTo(nil)
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
 	child.OnScrollBoundsChange(nil)
@@ -272,6 +268,14 @@ func (element *ScrollContainer) clearChildEventHandlers (child tomo.Scrollable) 
 	if child0, ok := child.(tomo.Flexible); ok {
 		child0.OnFlexibleHeightChange(nil)
 	}
+}
+
+func (element *ScrollContainer) resizeChildToFit () {
+	childBounds := image.Rect (
+		0, 0,
+		element.childWidth,
+		element.childHeight).Add(element.Bounds().Min)
+	element.child.DrawTo(tomo.Cut(element, childBounds))
 }
 
 func (element *ScrollContainer) recalculate () {
@@ -306,6 +310,7 @@ func (element *ScrollContainer) recalculate () {
 
 	// if enabled, give substance to the gutters
 	if horizontal.exists {
+		horizontal.gutter.Min.X = bounds.Min.X
 		horizontal.gutter.Min.Y = bounds.Max.Y - thicknessHorizontal
 		horizontal.gutter.Max.X = bounds.Max.X
 		horizontal.gutter.Max.Y = bounds.Max.Y
@@ -318,6 +323,7 @@ func (element *ScrollContainer) recalculate () {
 	if vertical.exists {
 		vertical.gutter.Min.X = bounds.Max.X - thicknessVertical
 		vertical.gutter.Max.X = bounds.Max.X
+		vertical.gutter.Min.Y = bounds.Min.Y
 		vertical.gutter.Max.Y = bounds.Max.Y
 		if horizontal.exists {
 			vertical.gutter.Max.Y -= thicknessHorizontal
@@ -364,7 +370,7 @@ func (element *ScrollContainer) recalculate () {
 }
 
 func (element *ScrollContainer) draw () {
-	artist.Paste(element.core, element.child, image.Point { })
+	artist.Paste(element, element.child, image.Point { })
 	deadPattern, _ := theme.DeadPattern(theme.PatternState {
 		Case: scrollContainerCase,
 	})

@@ -19,15 +19,9 @@ type AnalogClock struct {
 // NewAnalogClock creates a new analog clock that displays the specified time.
 func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 	element = &AnalogClock { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(64, 64)
 	return
-}
-
-// Resize changes the size of the clock.
-func (element *AnalogClock) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 }
 
 // SetTime changes the time that the clock displays.
@@ -41,7 +35,7 @@ func (element *AnalogClock) SetTime (newTime time.Time) {
 }
 
 func (element *AnalogClock) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	pattern, inset := theme.SunkenPattern(theme.PatternState {
 		Case: clockCase,
@@ -87,15 +81,15 @@ func (element *AnalogClock) radialLine (
 	outer  float64,
 	radian float64,
 ) {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 	width  := float64(bounds.Dx()) / 2
 	height := float64(bounds.Dy()) / 2
-	min := image.Pt (
+	min := element.Bounds().Min.Add(image.Pt (
 		int(math.Cos(radian) * inner * width + width),
-		int(math.Sin(radian) * inner * height + height))
-	max := image.Pt (
+		int(math.Sin(radian) * inner * height + height)))
+	max := element.Bounds().Min.Add(image.Pt (
 		int(math.Cos(radian) * outer * width + width),
-		int(math.Sin(radian) * outer * height + height))
+		int(math.Sin(radian) * outer * height + height)))
 	// println(min.String(), max.String())
-	artist.Line(element.core, source, 1, min, max)
+	artist.Line(element, source, 1, min, max)
 }

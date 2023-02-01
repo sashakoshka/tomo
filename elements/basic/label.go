@@ -1,6 +1,5 @@
 package basic
 
-import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -23,7 +22,7 @@ type Label struct {
 // wrapped.
 func NewLabel (text string, wrap bool) (element *Label) {
 	element = &Label {  }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.handleResize)
 	face := theme.FontFaceRegular()
 	element.drawer.SetFace(face)
 	element.SetWrap(wrap)
@@ -31,12 +30,11 @@ func NewLabel (text string, wrap bool) (element *Label) {
 	return
 }
 
-// Resize resizes the label and re-wraps the text if wrapping is enabled.
-func (element *Label) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
+func (element *Label) handleResize () {
+	bounds := element.Bounds()
 	if element.wrap {
-		element.drawer.SetMaxWidth(width)
-		element.drawer.SetMaxHeight(height)
+		element.drawer.SetMaxWidth(bounds.Dx())
+		element.drawer.SetMaxHeight(bounds.Dy())
 	}
 	element.draw()
 	return
@@ -108,20 +106,17 @@ func (element *Label) updateMinimumSize () {
 }
 
 func (element *Label) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	pattern, _ := theme.BackgroundPattern(theme.PatternState {
 		Case: labelCase,
 	})
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 
 	foreground, _ := theme.ForegroundPattern (theme.PatternState {
 		Case: labelCase,
 	})
-	element.drawer.Draw (element.core, foreground, image.Point {
-		X: 0 - textBounds.Min.X,
-		Y: 0 - textBounds.Min.Y,
-	})
+	element.drawer.Draw (element, foreground, bounds.Min.Sub(textBounds.Min))
 }

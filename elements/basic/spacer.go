@@ -18,15 +18,8 @@ type Spacer struct {
 // will appear as a line.
 func NewSpacer (line bool) (element *Spacer) {
 	element = &Spacer { line: line }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(1, 1)
-	return
-}
-
-// Resize resizes the label and re-wraps the text if wrapping is enabled.
-func (element *Spacer) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 	return
 }
 
@@ -41,19 +34,19 @@ func (element *Spacer) SetLine (line bool) {
 }
 
 func (element *Spacer) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	if element.line {
 		pattern, _ := theme.ForegroundPattern(theme.PatternState {
 			Case: spacerCase,
 			Disabled: true,
 		})
-		artist.FillRectangle(element.core, pattern, bounds)
+		artist.FillRectangle(element, pattern, bounds)
 	} else {
 		pattern, _ := theme.BackgroundPattern(theme.PatternState {
 			Case: spacerCase,
 			Disabled: true,
 		})
-		artist.FillRectangle(element.core, pattern, bounds)
+		artist.FillRectangle(element, pattern, bounds)
 	}
 }

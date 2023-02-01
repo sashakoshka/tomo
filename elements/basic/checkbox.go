@@ -26,7 +26,7 @@ type Checkbox struct {
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -37,12 +37,6 @@ func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element.drawer.SetFace(theme.FontFaceRegular())
 	element.SetText(text)
 	return
-}
-
-// Resize changes this element's size.
-func (element *Checkbox) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 }
 
 func (element *Checkbox) HandleMouseDown (x, y int, button tomo.Button) {
@@ -139,13 +133,13 @@ func (element *Checkbox) SetText (text string) {
 }
 
 func (element *Checkbox) draw () {
-	bounds := element.core.Bounds()
-	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy())
+	bounds := element.Bounds()
+	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 
 	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
 		Case: checkboxCase,
 	})
-	artist.FillRectangle ( element.core, backgroundPattern, bounds)
+	artist.FillRectangle(element, backgroundPattern, bounds)
 
 	pattern, inset := theme.ButtonPattern(theme.PatternState {
 		Case: checkboxCase,
@@ -153,12 +147,12 @@ func (element *Checkbox) draw () {
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	})
-	artist.FillRectangle(element.core, pattern, boxBounds)
+	artist.FillRectangle(element, pattern, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
-	offset := image.Point {
+	offset := bounds.Min.Add(image.Point {
 		X: bounds.Dy() + theme.Padding(),
-	}
+	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
@@ -167,10 +161,10 @@ func (element *Checkbox) draw () {
 		Case: checkboxCase,
 		Disabled: !element.Enabled(),
 	})
-	element.drawer.Draw(element.core, foreground, offset)
+	element.drawer.Draw(element, foreground, offset)
 	
 	if element.checked {
 		checkBounds := inset.Apply(boxBounds).Inset(2)
-		artist.FillRectangle(element.core, foreground, checkBounds)
+		artist.FillRectangle(element, foreground, checkBounds)
 	}
 }

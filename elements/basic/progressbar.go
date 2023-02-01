@@ -16,15 +16,8 @@ type ProgressBar struct {
 // level.
 func NewProgressBar (progress float64) (element *ProgressBar) {
 	element = &ProgressBar { progress: progress }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(theme.Padding() * 2, theme.Padding() * 2)
-	return
-}
-
-// Resize resizes the progress bar.
-func (element *ProgressBar) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
-	element.draw()
 	return
 }
 
@@ -39,15 +32,15 @@ func (element *ProgressBar) SetProgress (progress float64) {
 }
 
 func (element *ProgressBar) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	pattern, inset := theme.SunkenPattern(theme.PatternState { })
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 	bounds = inset.Apply(bounds)
 	meterBounds := image.Rect (
 		bounds.Min.X, bounds.Min.Y,
 		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
 		bounds.Max.Y)
 	accent, _ := theme.AccentPattern(theme.PatternState { })
-	artist.FillRectangle(element.core, accent, meterBounds)
+	artist.FillRectangle(element, accent, meterBounds)
 }

@@ -20,29 +20,28 @@ type Mouse struct {
 // NewMouse creates a new mouse test element.
 func NewMouse () (element *Mouse) {
 	element = &Mouse { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(32, 32)
 	element.color = artist.NewUniform(color.Black)
 	return
 }
 
-func (element *Mouse) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
+func (element *Mouse) draw () {
 	bounds := element.Bounds()
 	pattern, _ := theme.AccentPattern(theme.PatternState { })
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 	artist.StrokeRectangle (
-		element.core,
+		element,
 		artist.NewUniform(color.Black), 1,
 		bounds)
 	artist.Line (
-		element.core, artist.NewUniform(color.White), 1,
-		image.Pt(1, 1),
-		image.Pt(bounds.Dx() - 2, bounds.Dy() - 2))
+		element, artist.NewUniform(color.White), 1,
+		bounds.Min.Add(image.Pt(1, 1)),
+		bounds.Min.Add(image.Pt(bounds.Dx() - 2, bounds.Dy() - 2)))
 	artist.Line (
-		element.core, artist.NewUniform(color.White), 1,
-		image.Pt(1, bounds.Dy() - 2),
-		image.Pt(bounds.Dx() - 2, 1))
+		element, artist.NewUniform(color.White), 1,
+		bounds.Min.Add(image.Pt(1, bounds.Dy() - 2)),
+		bounds.Min.Add(image.Pt(bounds.Dx() - 2, 1)))
 }
 
 func (element *Mouse) HandleMouseDown (x, y int, button tomo.Button) {
@@ -54,7 +53,7 @@ func (element *Mouse) HandleMouseUp (x, y int, button tomo.Button) {
 	element.drawing = false
 	mousePos := image.Pt(x, y)
 	element.core.DamageRegion (artist.Line (
-		element.core, element.color, 1,
+		element, element.color, 1,
 		element.lastMousePos, mousePos))
 	element.lastMousePos = mousePos
 }
@@ -63,7 +62,7 @@ func (element *Mouse) HandleMouseMove (x, y int) {
 	if !element.drawing { return }
 	mousePos := image.Pt(x, y)
 	element.core.DamageRegion (artist.Line (
-		element.core, element.color, 1,
+		element, element.color, 1,
 		element.lastMousePos, mousePos))
 	element.lastMousePos = mousePos
 }

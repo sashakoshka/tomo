@@ -6,7 +6,7 @@ import "image"
 // it can be arranged by a Layout.
 type LayoutEntry struct {
 	Element
-	Position image.Point
+	Bounds image.Rectangle
 	Expand bool
 }
 
@@ -17,7 +17,7 @@ type Layout interface {
 	// and changes the position of the entiries in the slice so that they
 	// are properly laid out. The given width and height should not be less
 	// than what is returned by MinimumSize.
-	Arrange (entries []LayoutEntry, width, height int)
+	Arrange (entries []LayoutEntry, bounds image.Rectangle)
 
 	// MinimumSize returns the minimum width and height that the layout
 	// needs to properly arrange the given slice of layout entries.

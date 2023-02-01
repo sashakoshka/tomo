@@ -34,7 +34,7 @@ type TextBox struct {
 // text.
 func NewTextBox (placeholder, value string) (element *TextBox) {
 	element = &TextBox { }
-	element.Core, element.core = core.NewCore(element)
+	element.Core, element.core = core.NewCore(element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -51,8 +51,7 @@ func NewTextBox (placeholder, value string) (element *TextBox) {
 	return
 }
 
-func (element *TextBox) Resize (width, height int) {
-	element.core.AllocateCanvas(width, height)
+func (element *TextBox) handleResize () {
 	element.scrollToCursor()
 	element.draw()
 	if element.onScrollBoundsChange != nil {
@@ -258,7 +257,8 @@ func (element *TextBox) runOnChange () {
 func (element *TextBox) scrollToCursor () {
 	if !element.core.HasImage() { return }
 
-	bounds := element.core.Bounds().Inset(theme.Padding())
+	bounds := element.Bounds().Inset(theme.Padding())
+	bounds = bounds.Sub(bounds.Min)
 	bounds.Max.X -= element.valueDrawer.Em().Round()
 	cursorPosition := element.valueDrawer.PositionOf(element.cursor)
 	cursorPosition.X -= element.scroll
@@ -273,7 +273,7 @@ func (element *TextBox) scrollToCursor () {
 }
 
 func (element *TextBox) draw () {
-	bounds := element.core.Bounds()
+	bounds := element.Bounds()
 
 	// FIXME: take index into account
 	pattern, inset := theme.InputPattern(theme.PatternState {
@@ -281,36 +281,36 @@ func (element *TextBox) draw () {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 	})
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.FillRectangle(element, pattern, bounds)
 
 	if len(element.text) == 0 && !element.Focused() {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
-		offset := image.Point {
+		offset := bounds.Min.Add (image.Point {
 			X: theme.Padding() + inset[3],
 			Y: theme.Padding() + inset[0],
-		}
+		})
 		foreground, _ := theme.ForegroundPattern(theme.PatternState {
 			Case: textBoxCase,
 			Disabled: true,
 		})
 		element.placeholderDrawer.Draw (
-			element.core,
+			element,
 			foreground,
 			offset.Sub(textBounds.Min))
 	} else {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
-		offset := image.Point {
+		offset := bounds.Min.Add (image.Point {
 			X: theme.Padding() + inset[3] - element.scroll,
 			Y: theme.Padding() + inset[0],
-		}
+		})
 		foreground, _ := theme.ForegroundPattern(theme.PatternState {
 			Case: textBoxCase,
 			Disabled: !element.Enabled(),
 		})
 		element.valueDrawer.Draw (
-			element.core,
+			element,
 			foreground,
 			offset.Sub(textBounds.Min))
 
@@ -322,7 +322,7 @@ func (element *TextBox) draw () {
 				Case: textBoxCase,
 			})
 			artist.Line (
-				element.core,
+				element,
 				foreground, 1,
 				cursorPosition.Add(offset),
 				image.Pt (
