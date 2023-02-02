@@ -7,14 +7,16 @@ import "github.com/jezek/xgbutil/icccm"
 import "github.com/jezek/xgbutil/xevent"
 import "github.com/jezek/xgbutil/xwindow"
 import "github.com/jezek/xgbutil/xgraphics"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 type Window struct {
 	backend *Backend
 	xWindow *xwindow.Window
 	xCanvas *xgraphics.Image
-	canvas  tomo.BasicCanvas
-	child   tomo.Element
+	canvas  canvas.BasicCanvas
+	child   elements.Element
 	onClose func ()
 	skipChildDrawCallback bool
 
@@ -27,7 +29,7 @@ type Window struct {
 func (backend *Backend) NewWindow (
 	width, height int,
 ) (
-	output tomo.Window,
+	output elements.Window,
 	err error,
 ) {
 	if backend == nil { panic("nil backend") }
@@ -79,16 +81,16 @@ func (backend *Backend) NewWindow (
 	return
 }
 
-func (window *Window) Adopt (child tomo.Element) {
+func (window *Window) Adopt (child elements.Element) {
 	// disown previous child
 	if window.child != nil {
 		window.child.OnDamage(nil)
 		window.child.OnMinimumSizeChange(nil)
 	}
-	if previousChild, ok := window.child.(tomo.Flexible); ok {
+	if previousChild, ok := window.child.(elements.Flexible); ok {
 		previousChild.OnFlexibleHeightChange(nil)
 	}
-	if previousChild, ok := window.child.(tomo.Focusable); ok {
+	if previousChild, ok := window.child.(elements.Focusable); ok {
 		previousChild.OnFocusRequest(nil)
 		previousChild.OnFocusMotionRequest(nil)
 		if previousChild.Focused() {
@@ -98,10 +100,10 @@ func (window *Window) Adopt (child tomo.Element) {
 	
 	// adopt new child
 	window.child = child
-	if newChild, ok := child.(tomo.Flexible); ok {
+	if newChild, ok := child.(elements.Flexible); ok {
 		newChild.OnFlexibleHeightChange(window.resizeChildToFit)
 	}
-	if newChild, ok := child.(tomo.Focusable); ok {
+	if newChild, ok := child.(elements.Focusable); ok {
 		newChild.OnFocusRequest(window.childSelectionRequestCallback)
 	}
 	if child != nil {
@@ -116,7 +118,7 @@ func (window *Window) Adopt (child tomo.Element) {
 	}
 }
 
-func (window *Window) Child () (child tomo.Element) {
+func (window *Window) Child () (child elements.Element) {
 	child = window.child
 	return
 }
@@ -229,7 +231,7 @@ func (window *Window) redrawChildEntirely () {
 
 func (window *Window) resizeChildToFit () {
 	window.skipChildDrawCallback = true
-	if child, ok := window.child.(tomo.Flexible); ok {
+	if child, ok := window.child.(elements.Flexible); ok {
 		minimumHeight := child.FlexibleHeightFor(window.metrics.width)
 		minimumWidth, _ := child.MinimumSize()
 		
@@ -252,12 +254,12 @@ func (window *Window) resizeChildToFit () {
 	window.skipChildDrawCallback = false
 }
 
-func (window *Window) childDrawCallback (region tomo.Canvas) {
+func (window *Window) childDrawCallback (region canvas.Canvas) {
 	if window.skipChildDrawCallback { return }
 	window.pushRegion(window.paste(region))
 }
 
-func (window *Window) paste (canvas tomo.Canvas) (updatedRegion image.Rectangle) {
+func (window *Window) paste (canvas canvas.Canvas) (updatedRegion image.Rectangle) {
 	data, stride := canvas.Buffer()
 	bounds := canvas.Bounds().Intersect(window.xCanvas.Bounds())
 	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
@@ -293,18 +295,18 @@ func (window *Window) childMinimumSizeChangeCallback (width, height int) {
 }
 
 func (window *Window) childSelectionRequestCallback () (granted bool) {
-	if child, ok := window.child.(tomo.Focusable); ok {
-		child.HandleFocus(tomo.KeynavDirectionNeutral)
+	if child, ok := window.child.(elements.Focusable); ok {
+		child.HandleFocus(input.KeynavDirectionNeutral)
 	}
 	return true
 }
 
 func (window *Window) childSelectionMotionRequestCallback (
-	direction tomo.KeynavDirection,
+	direction input.KeynavDirection,
 ) (
 	granted bool,
 ) {
-	if child, ok := window.child.(tomo.Focusable); ok {
+	if child, ok := window.child.(elements.Focusable); ok {
 		if !child.HandleFocus(direction) {
 			child.HandleUnfocus()
 		}

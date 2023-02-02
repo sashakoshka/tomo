@@ -3,64 +3,64 @@ package x
 import "unicode"
 import "github.com/jezek/xgb/xproto"
 import "github.com/jezek/xgbutil/keybind"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 
 // when making changes to this file, look at keysymdef.h and
 // https://tronche.com/gui/x/xlib/input/keyboard-encoding.html
 
-var buttonCodeTable = map[xproto.Keysym] tomo.Key {
-	0xFFFFFF: tomo.KeyNone,
+var buttonCodeTable = map[xproto.Keysym] input.Key {
+	0xFFFFFF: input.KeyNone,
 
-	0xFF63: tomo.KeyInsert,
-	0xFF67: tomo.KeyMenu,
-	0xFF61: tomo.KeyPrintScreen,
-	0xFF6B: tomo.KeyPause,
-	0xFFE5: tomo.KeyCapsLock,
-	0xFF14: tomo.KeyScrollLock,
-	0xFF7F: tomo.KeyNumLock,
-	0xFF08: tomo.KeyBackspace,
-	0xFF09: tomo.KeyTab,
-	0xFE20: tomo.KeyTab,
-	0xFF0D: tomo.KeyEnter,
-	0xFF1B: tomo.KeyEscape,
+	0xFF63: input.KeyInsert,
+	0xFF67: input.KeyMenu,
+	0xFF61: input.KeyPrintScreen,
+	0xFF6B: input.KeyPause,
+	0xFFE5: input.KeyCapsLock,
+	0xFF14: input.KeyScrollLock,
+	0xFF7F: input.KeyNumLock,
+	0xFF08: input.KeyBackspace,
+	0xFF09: input.KeyTab,
+	0xFE20: input.KeyTab,
+	0xFF0D: input.KeyEnter,
+	0xFF1B: input.KeyEscape,
 	
-	0xFF52: tomo.KeyUp,
-	0xFF54: tomo.KeyDown,
-	0xFF51: tomo.KeyLeft,
-	0xFF53: tomo.KeyRight,
-	0xFF55: tomo.KeyPageUp,
-	0xFF56: tomo.KeyPageDown,
-	0xFF50: tomo.KeyHome,
-	0xFF57: tomo.KeyEnd,
+	0xFF52: input.KeyUp,
+	0xFF54: input.KeyDown,
+	0xFF51: input.KeyLeft,
+	0xFF53: input.KeyRight,
+	0xFF55: input.KeyPageUp,
+	0xFF56: input.KeyPageDown,
+	0xFF50: input.KeyHome,
+	0xFF57: input.KeyEnd,
 	
-	0xFFE1: tomo.KeyLeftShift,
-	0xFFE2: tomo.KeyRightShift,
-	0xFFE3: tomo.KeyLeftControl,
-	0xFFE4: tomo.KeyRightControl,
+	0xFFE1: input.KeyLeftShift,
+	0xFFE2: input.KeyRightShift,
+	0xFFE3: input.KeyLeftControl,
+	0xFFE4: input.KeyRightControl,
 
-	0xFFE7: tomo.KeyLeftMeta,
-	0xFFE8: tomo.KeyRightMeta,
-	0xFFE9: tomo.KeyLeftAlt,
-	0xFFEA: tomo.KeyRightAlt,
-	0xFFEB: tomo.KeyLeftSuper,
-	0xFFEC: tomo.KeyRightSuper,
-	0xFFED: tomo.KeyLeftHyper,
-	0xFFEE: tomo.KeyRightHyper,
+	0xFFE7: input.KeyLeftMeta,
+	0xFFE8: input.KeyRightMeta,
+	0xFFE9: input.KeyLeftAlt,
+	0xFFEA: input.KeyRightAlt,
+	0xFFEB: input.KeyLeftSuper,
+	0xFFEC: input.KeyRightSuper,
+	0xFFED: input.KeyLeftHyper,
+	0xFFEE: input.KeyRightHyper,
 	
-	0xFFFF: tomo.KeyDelete,
+	0xFFFF: input.KeyDelete,
 	
-	0xFFBE: tomo.KeyF1,
-	0xFFBF: tomo.KeyF2,
-	0xFFC0: tomo.KeyF3,
-	0xFFC1: tomo.KeyF4,
-	0xFFC2: tomo.KeyF5,
-	0xFFC3: tomo.KeyF6,
-	0xFFC4: tomo.KeyF7,
-	0xFFC5: tomo.KeyF8,
-	0xFFC6: tomo.KeyF9,
-	0xFFC7: tomo.KeyF10,
-	0xFFC8: tomo.KeyF11,
-	0xFFC9: tomo.KeyF12,
+	0xFFBE: input.KeyF1,
+	0xFFBF: input.KeyF2,
+	0xFFC0: input.KeyF3,
+	0xFFC1: input.KeyF4,
+	0xFFC2: input.KeyF5,
+	0xFFC3: input.KeyF6,
+	0xFFC4: input.KeyF7,
+	0xFFC5: input.KeyF8,
+	0xFFC6: input.KeyF9,
+	0xFFC7: input.KeyF10,
+	0xFFC8: input.KeyF11,
+	0xFFC9: input.KeyF12,
 
 	// TODO: send this whenever a compose key, dead key, etc is pressed,
 	// and then send the resulting character while witholding the key
@@ -68,46 +68,46 @@ var buttonCodeTable = map[xproto.Keysym] tomo.Key {
 	// concerned, a magical key with the final character was pressed and the
 	// KeyDead key is just so that the program might provide some visual
 	// feedback to the user while input is being waited for.
-	0xFF20: tomo.KeyDead,
+	0xFF20: input.KeyDead,
 }
 
-var keypadCodeTable = map[xproto.Keysym] tomo.Key {
-	0xff80: tomo.Key(' '),
-	0xff89: tomo.KeyTab,
-	0xff8d: tomo.KeyEnter,
-	0xff91: tomo.KeyF1,
-	0xff92: tomo.KeyF2,
-	0xff93: tomo.KeyF3,
-	0xff94: tomo.KeyF4,
-	0xff95: tomo.KeyHome,
-	0xff96: tomo.KeyLeft,
-	0xff97: tomo.KeyUp,
-	0xff98: tomo.KeyRight,
-	0xff99: tomo.KeyDown,
-	0xff9a: tomo.KeyPageUp,
-	0xff9b: tomo.KeyPageDown,
-	0xff9c: tomo.KeyEnd,
-	0xff9d: tomo.KeyHome,
-	0xff9e: tomo.KeyInsert,
-	0xff9f: tomo.KeyDelete,
-	0xffbd: tomo.Key('='),
-	0xffaa: tomo.Key('*'),
-	0xffab: tomo.Key('+'),
-	0xffac: tomo.Key(','),
-	0xffad: tomo.Key('-'),
-	0xffae: tomo.Key('.'),
-	0xffaf: tomo.Key('/'),
+var keypadCodeTable = map[xproto.Keysym] input.Key {
+	0xff80: input.Key(' '),
+	0xff89: input.KeyTab,
+	0xff8d: input.KeyEnter,
+	0xff91: input.KeyF1,
+	0xff92: input.KeyF2,
+	0xff93: input.KeyF3,
+	0xff94: input.KeyF4,
+	0xff95: input.KeyHome,
+	0xff96: input.KeyLeft,
+	0xff97: input.KeyUp,
+	0xff98: input.KeyRight,
+	0xff99: input.KeyDown,
+	0xff9a: input.KeyPageUp,
+	0xff9b: input.KeyPageDown,
+	0xff9c: input.KeyEnd,
+	0xff9d: input.KeyHome,
+	0xff9e: input.KeyInsert,
+	0xff9f: input.KeyDelete,
+	0xffbd: input.Key('='),
+	0xffaa: input.Key('*'),
+	0xffab: input.Key('+'),
+	0xffac: input.Key(','),
+	0xffad: input.Key('-'),
+	0xffae: input.Key('.'),
+	0xffaf: input.Key('/'),
 
-	0xffb0: tomo.Key('0'),
-	0xffb1: tomo.Key('1'),
-	0xffb2: tomo.Key('2'),
-	0xffb3: tomo.Key('3'),
-	0xffb4: tomo.Key('4'),
-	0xffb5: tomo.Key('5'),
-	0xffb6: tomo.Key('6'),
-	0xffb7: tomo.Key('7'),
-	0xffb8: tomo.Key('8'),
-	0xffb9: tomo.Key('9'),
+	0xffb0: input.Key('0'),
+	0xffb1: input.Key('1'),
+	0xffb2: input.Key('2'),
+	0xffb3: input.Key('3'),
+	0xffb4: input.Key('4'),
+	0xffb5: input.Key('5'),
+	0xffb6: input.Key('6'),
+	0xffb7: input.Key('7'),
+	0xffb8: input.Key('8'),
+	0xffb9: input.Key('9'),
 }
 
 // initializeKeymapInformation grabs keyboard mapping information from the X
@@ -168,7 +168,7 @@ func (backend *Backend) keycodeToKey (
 	keycode xproto.Keycode,
 	state   uint16,
 ) (
-	button    tomo.Key,
+	button    input.Key,
 	numberPad bool,
 ) {
 	// PARAGRAPH 3
@@ -359,7 +359,7 @@ func (backend *Backend) keycodeToKey (
 	if numberPad { return }
 
 	// otherwise, use the rune
-	button = tomo.Key(selectedRune)
+	button = input.Key(selectedRune)
 	
 	return
 }

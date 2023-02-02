@@ -1,8 +1,8 @@
-package layouts
+package basicLayouts
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Dialog arranges elements in the form of a dialog box. The first element is
 // positioned above as the main focus of the dialog, and is set to expand
@@ -19,13 +19,18 @@ type Dialog struct {
 }
 
 // Arrange arranges a list of entries into a dialog.
-func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle) {
-	if layout.Pad { bounds = bounds.Inset(theme.Margin()) }
+func (layout Dialog) Arrange (
+	entries []layouts.LayoutEntry,
+	margin int,
+	bounds image.Rectangle,
+) {
+	if layout.Pad { bounds = bounds.Inset(margin) }
 	
 	controlRowWidth, controlRowHeight := 0, 0
 	if len(entries) > 1 {
 		controlRowWidth,
-		controlRowHeight = layout.minimumSizeOfControlRow(entries[1:])
+		controlRowHeight = layout.minimumSizeOfControlRow (
+			entries[1:], margin)
 	}
 
 	if len(entries) > 0 {
@@ -33,7 +38,7 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle
 		main.Bounds.Min = bounds.Min
 		mainHeight := bounds.Dy() - controlRowHeight
 		if layout.Gap {
-			mainHeight -= theme.Margin()
+			mainHeight -= margin
 		}
 		main.Bounds.Max = main.Bounds.Min.Add(image.Pt(bounds.Dx(), mainHeight))
 		entries[0] = main
@@ -53,7 +58,7 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle
 				freeSpace -= entryMinWidth
 			}
 			if index > 0 && layout.Gap {
-				freeSpace -= theme.Margin()
+				freeSpace -= margin
 			}
 		}
 		expandingElementWidth := 0
@@ -69,7 +74,7 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle
 
 		// set the size and position of each element in the control row
 		for index, entry := range entries[1:] {
-			if index > 0 && layout.Gap { dot.X += theme.Margin() }
+			if index > 0 && layout.Gap { dot.X += margin }
 			
 			entry.Bounds.Min = dot
 			entryWidth := 0
@@ -95,7 +100,8 @@ func (layout Dialog) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle
 // MinimumSize returns the minimum width and height that will be needed to
 // arrange the given list of entries.
 func (layout Dialog) MinimumSize (
-	entries []tomo.LayoutEntry,
+	entries []layouts.LayoutEntry,
+	margin int,
 ) (
 	width, height int,
 ) {
@@ -106,9 +112,10 @@ func (layout Dialog) MinimumSize (
 	}
 
 	if len(entries) > 1 {
-		if layout.Gap { height += theme.Margin() }
+		if layout.Gap { height += margin }
 		additionalWidth,
-		additionalHeight := layout.minimumSizeOfControlRow(entries[1:])
+		additionalHeight := layout.minimumSizeOfControlRow (
+			entries[1:], margin)
 		height += additionalHeight
 		if additionalWidth > width {
 			width = additionalWidth
@@ -116,8 +123,8 @@ func (layout Dialog) MinimumSize (
 	}
 
 	if layout.Pad {
-		width  += theme.Margin() * 2
-		height += theme.Margin() * 2
+		width  += margin * 2
+		height += margin * 2
 	}
 	return
 }
@@ -125,18 +132,19 @@ func (layout Dialog) MinimumSize (
 // FlexibleHeightFor Returns the minimum height the layout needs to lay out the
 // specified elements at the given width, taking into account flexible elements.
 func (layout Dialog) FlexibleHeightFor (
-	entries []tomo.LayoutEntry,
+	entries []layouts.LayoutEntry,
+	margin int,
 	width int,
 ) (
 	height int,
 ) {
 	if layout.Pad {
-		width -= theme.Margin() * 2
+		width -= margin * 2
 	}
 	
 	if len(entries) > 0 {
 		mainChildHeight := 0
-		if child, flexible := entries[0].Element.(tomo.Flexible); flexible {
+		if child, flexible := entries[0].Element.(elements.Flexible); flexible {
 			mainChildHeight = child.FlexibleHeightFor(width)
 		} else {
 			_, mainChildHeight = entries[0].MinimumSize()
@@ -145,13 +153,14 @@ func (layout Dialog) FlexibleHeightFor (
 	}
 
 	if len(entries) > 1 {
-		if layout.Gap { height += theme.Margin() }
-		_, additionalHeight := layout.minimumSizeOfControlRow(entries[1:])
+		if layout.Gap { height += margin }
+		_, additionalHeight := layout.minimumSizeOfControlRow (
+			entries[1:], margin)
 		height += additionalHeight
 	}
 
 	if layout.Pad {
-		height += theme.Margin() * 2
+		height += margin * 2
 	}
 	return
 }
@@ -159,7 +168,8 @@ func (layout Dialog) FlexibleHeightFor (
 // TODO: possibly flatten this method to account for flexible elements within
 // the control row.
 func (layout Dialog) minimumSizeOfControlRow (
-	entries []tomo.LayoutEntry,
+	entries []layouts.LayoutEntry,
+	margin int,
 ) (
 	width, height int,
 ) {
@@ -170,7 +180,7 @@ func (layout Dialog) minimumSizeOfControlRow (
 		}
 		width += entryWidth
 		if layout.Gap && index > 0 {
-			width += theme.Margin()
+			width += margin
 		}
 	}
 	return

@@ -1,4 +1,4 @@
-package tomo
+package data
 
 import "io"
 

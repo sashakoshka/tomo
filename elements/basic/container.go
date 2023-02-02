@@ -1,9 +1,12 @@
-package basic
+package basicElements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 var containerCase = theme.C("basic", "container")
@@ -14,21 +17,21 @@ type Container struct {
 	*core.Core
 	core core.CoreControl
 
-	layout    tomo.Layout
-	children  []tomo.LayoutEntry
-	drags     [10]tomo.MouseTarget
+	layout    layouts.Layout
+	children  []layouts.LayoutEntry
+	drags     [10]elements.MouseTarget
 	warping   bool
 	focused   bool
 	focusable bool
 	flexible  bool
 	
 	onFocusRequest func () (granted bool)
-	onFocusMotionRequest func (tomo.KeynavDirection) (granted bool)
+	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
 	onFlexibleHeightChange func ()
 }
 
 // NewContainer creates a new container.
-func NewContainer (layout tomo.Layout) (element *Container) {
+func NewContainer (layout layouts.Layout) (element *Container) {
 	element = &Container { }
 	element.Core, element.core = core.NewCore(element.redoAll)
 	element.SetLayout(layout)
@@ -36,7 +39,7 @@ func NewContainer (layout tomo.Layout) (element *Container) {
 }
 
 // SetLayout sets the layout of this container.
-func (element *Container) SetLayout (layout tomo.Layout) {
+func (element *Container) SetLayout (layout layouts.Layout) {
 	element.layout = layout
 	if element.core.HasImage() {
 		element.redoAll()
@@ -47,28 +50,28 @@ func (element *Container) SetLayout (layout tomo.Layout) {
 // Adopt adds a new child element to the container. If expand is set to true,
 // the element will expand (instead of contract to its minimum size), in
 // whatever way is defined by the current layout.
-func (element *Container) Adopt (child tomo.Element, expand bool) {
+func (element *Container) Adopt (child elements.Element, expand bool) {
 	// set event handlers
-	child.OnDamage (func (region tomo.Canvas) {
+	child.OnDamage (func (region canvas.Canvas) {
 		element.core.DamageRegion(region.Bounds())
 	})
 	child.OnMinimumSizeChange(element.updateMinimumSize)
-	if child0, ok := child.(tomo.Flexible); ok {
+	if child0, ok := child.(elements.Flexible); ok {
 		child0.OnFlexibleHeightChange(element.updateMinimumSize)
 	}
-	if child0, ok := child.(tomo.Focusable); ok {
+	if child0, ok := child.(elements.Focusable); ok {
 		child0.OnFocusRequest (func () (granted bool) {
 			return element.childFocusRequestCallback(child0)
 		})
 		child0.OnFocusMotionRequest (
-			func (direction tomo.KeynavDirection) (granted bool) {
+			func (direction input.KeynavDirection) (granted bool) {
 				if element.onFocusMotionRequest == nil { return }
 				return element.onFocusMotionRequest(direction)
 			})
 	}
 
 	// add child
-	element.children = append (element.children, tomo.LayoutEntry {
+	element.children = append (element.children, layouts.LayoutEntry {
 		Element: child,
 		Expand:  expand,
 	})
@@ -106,7 +109,7 @@ func (element *Container) Warp (callback func ()) {
 
 // Disown removes the given child from the container if it is contained within
 // it.
-func (element *Container) Disown (child tomo.Element) {
+func (element *Container) Disown (child elements.Element) {
 	for index, entry := range element.children {
 		if entry.Element == child {
 			element.clearChildEventHandlers(entry.Element)
@@ -125,18 +128,18 @@ func (element *Container) Disown (child tomo.Element) {
 	}
 }
 
-func (element *Container) clearChildEventHandlers (child tomo.Element) {
+func (element *Container) clearChildEventHandlers (child elements.Element) {
 	child.DrawTo(nil)
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
-	if child0, ok := child.(tomo.Focusable); ok {
+	if child0, ok := child.(elements.Focusable); ok {
 		child0.OnFocusRequest(nil)
 		child0.OnFocusMotionRequest(nil)
 		if child0.Focused() {
 			child0.HandleUnfocus()
 		}
 	}
-	if child0, ok := child.(tomo.Flexible); ok {
+	if child0, ok := child.(elements.Flexible); ok {
 		child0.OnFlexibleHeightChange(nil)
 	}
 }
@@ -154,8 +157,8 @@ func (element *Container) DisownAll () {
 }
 
 // Children returns a slice containing this element's children.
-func (element *Container) Children () (children []tomo.Element) {
-	children = make([]tomo.Element, len(element.children))
+func (element *Container) Children () (children []elements.Element) {
+	children = make([]elements.Element, len(element.children))
 	for index, entry := range element.children {
 		children[index] = entry.Element
 	}
@@ -169,14 +172,14 @@ func (element *Container) CountChildren () (count int) {
 
 // Child returns the child at the specified index. If the index is out of
 // bounds, this method will return nil.
-func (element *Container) Child (index int) (child tomo.Element) {
+func (element *Container) Child (index int) (child elements.Element) {
 	if index < 0 || index > len(element.children) { return }
 	return element.children[index].Element
 }
 
 // ChildAt returns the child that contains the specified x and y coordinates. If
 // there are no children at the coordinates, this method will return nil.
-func (element *Container) ChildAt (point image.Point) (child tomo.Element) {
+func (element *Container) ChildAt (point image.Point) (child elements.Element) {
 	for _, entry := range element.children {
 		if point.In(entry.Bounds) {
 			child = entry.Element
@@ -185,7 +188,7 @@ func (element *Container) ChildAt (point image.Point) (child tomo.Element) {
 	return
 }
 
-func (element *Container) childPosition (child tomo.Element) (position image.Point) {
+func (element *Container) childPosition (child elements.Element) (position image.Point) {
 	for _, entry := range element.children {
 		if entry.Element == child {
 			position = entry.Bounds.Min
@@ -209,18 +212,18 @@ func (element *Container) redoAll () {
 
 	// cut our canvas up and give peices to child elements
 	for _, entry := range element.children {
-		entry.DrawTo(tomo.Cut(element, entry.Bounds))
+		entry.DrawTo(canvas.Cut(element, entry.Bounds))
 	}
 }
 
-func (element *Container) HandleMouseDown (x, y int, button tomo.Button) {
-	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(tomo.MouseTarget)
+func (element *Container) HandleMouseDown (x, y int, button input.Button) {
+	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(elements.MouseTarget)
 	if !handlesMouse { return }
 	element.drags[button] = child
 	child.HandleMouseDown(x, y, button)
 }
 
-func (element *Container) HandleMouseUp (x, y int, button tomo.Button) {
+func (element *Container) HandleMouseUp (x, y int, button input.Button) {
 	child := element.drags[button]
 	if child == nil { return }
 	element.drags[button] = nil
@@ -235,14 +238,14 @@ func (element *Container) HandleMouseMove (x, y int) {
 }
 
 func (element *Container) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
-	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(tomo.MouseTarget)
+	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(elements.MouseTarget)
 	if !handlesMouse { return }
 	child.HandleMouseScroll(x, y, deltaX, deltaY)
 }
 
-func (element *Container) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
-	element.forFocused (func (child tomo.Focusable) bool {
-		child0, handlesKeyboard := child.(tomo.KeyboardTarget)
+func (element *Container) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+	element.forFocused (func (child elements.Focusable) bool {
+		child0, handlesKeyboard := child.(elements.KeyboardTarget)
 		if handlesKeyboard {
 			child0.HandleKeyDown(key, modifiers)
 		}
@@ -250,9 +253,9 @@ func (element *Container) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers)
 	})
 }
 
-func (element *Container) HandleKeyUp (key tomo.Key, modifiers tomo.Modifiers) {
-	element.forFocused (func (child tomo.Focusable) bool {
-		child0, handlesKeyboard := child.(tomo.KeyboardTarget)
+func (element *Container) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
+	element.forFocused (func (child elements.Focusable) bool {
+		child0, handlesKeyboard := child.(elements.KeyboardTarget)
 		if handlesKeyboard {
 			child0.HandleKeyUp(key, modifiers)
 		}
@@ -261,7 +264,9 @@ func (element *Container) HandleKeyUp (key tomo.Key, modifiers tomo.Modifiers) {
 }
 
 func (element *Container) FlexibleHeightFor (width int) (height int) {
-	return element.layout.FlexibleHeightFor(element.children, width)
+	return element.layout.FlexibleHeightFor (
+		element.children,
+		theme.Margin(), width)
 }
 
 func (element *Container) OnFlexibleHeightChange (callback func ()) {
@@ -278,7 +283,7 @@ func (element *Container) Focus () {
 	}
 }
 
-func (element *Container) HandleFocus (direction tomo.KeynavDirection) (ok bool) {
+func (element *Container) HandleFocus (direction input.KeynavDirection) (ok bool) {
 	if !element.focusable { return false }
 	direction = direction.Canon()
 
@@ -288,12 +293,12 @@ func (element *Container) HandleFocus (direction tomo.KeynavDirection) (ok bool)
 		// the first or last focusable element depending on the
 		// direction.
 		switch direction {
-		case tomo.KeynavDirectionNeutral, tomo.KeynavDirectionForward:
+		case input.KeynavDirectionNeutral, input.KeynavDirectionForward:
 			// if we recieve a neutral or forward direction, focus
 			// the first focusable element.
 			return element.focusFirstFocusableElement(direction)
 		
-		case tomo.KeynavDirectionBackward:
+		case input.KeynavDirectionBackward:
 			// if we recieve a backward direction, focus the last
 			// focusable element.
 			return element.focusLastFocusableElement(direction)
@@ -302,7 +307,7 @@ func (element *Container) HandleFocus (direction tomo.KeynavDirection) (ok bool)
 		// an element is currently focused, so we need to move the
 		// focus in the specified direction
 		firstFocusedChild :=
-			element.children[firstFocused].Element.(tomo.Focusable)
+			element.children[firstFocused].Element.(elements.Focusable)
 
 		// before we move the focus, the currently focused child
 		// may also be able to move its focus. if the child is able
@@ -319,7 +324,7 @@ func (element *Container) HandleFocus (direction tomo.KeynavDirection) (ok bool)
 
 			child, focusable :=
 				element.children[index].
-				Element.(tomo.Focusable)
+				Element.(elements.Focusable)
 			if focusable && child.HandleFocus(direction) {
 				// we have found one, so we now actually move
 				// the focus.
@@ -334,11 +339,11 @@ func (element *Container) HandleFocus (direction tomo.KeynavDirection) (ok bool)
 }
 
 func (element *Container) focusFirstFocusableElement (
-	direction tomo.KeynavDirection,
+	direction input.KeynavDirection,
 ) (
 	ok bool,
 ) {
-	element.forFocusable (func (child tomo.Focusable) bool {
+	element.forFocusable (func (child elements.Focusable) bool {
 		if child.HandleFocus(direction) {
 			element.focused = true
 			ok = true
@@ -350,11 +355,11 @@ func (element *Container) focusFirstFocusableElement (
 }
 
 func (element *Container) focusLastFocusableElement (
-	direction tomo.KeynavDirection,
+	direction input.KeynavDirection,
 ) (
 	ok bool,
 ) {
-	element.forFocusableBackward (func (child tomo.Focusable) bool {
+	element.forFocusableBackward (func (child elements.Focusable) bool {
 		if child.HandleFocus(direction) {
 			element.focused = true
 			ok = true
@@ -367,7 +372,7 @@ func (element *Container) focusLastFocusableElement (
 
 func (element *Container) HandleUnfocus () {
 	element.focused = false
-	element.forFocused (func (child tomo.Focusable) bool {
+	element.forFocused (func (child elements.Focusable) bool {
 		child.HandleUnfocus()
 		return true
 	})
@@ -378,41 +383,41 @@ func (element *Container) OnFocusRequest (callback func () (granted bool)) {
 }
 
 func (element *Container) OnFocusMotionRequest (
-	callback func (direction tomo.KeynavDirection) (granted bool),
+	callback func (direction input.KeynavDirection) (granted bool),
 ) {
 	element.onFocusMotionRequest = callback
 }
 
-func (element *Container) forFocused (callback func (child tomo.Focusable) bool) {
+func (element *Container) forFocused (callback func (child elements.Focusable) bool) {
 	for _, entry := range element.children {
-		child, focusable := entry.Element.(tomo.Focusable)
+		child, focusable := entry.Element.(elements.Focusable)
 		if focusable && child.Focused() {
 			if !callback(child) { break }
 		}
 	}
 }
 
-func (element *Container) forFocusable (callback func (child tomo.Focusable) bool) {
+func (element *Container) forFocusable (callback func (child elements.Focusable) bool) {
 	for _, entry := range element.children {
-		child, focusable := entry.Element.(tomo.Focusable)
+		child, focusable := entry.Element.(elements.Focusable)
 		if focusable {
 			if !callback(child) { break }
 		}
 	}
 }
 
-func (element *Container) forFlexible (callback func (child tomo.Flexible) bool) {
+func (element *Container) forFlexible (callback func (child elements.Flexible) bool) {
 	for _, entry := range element.children {
-		child, flexible := entry.Element.(tomo.Flexible)
+		child, flexible := entry.Element.(elements.Flexible)
 		if flexible {
 			if !callback(child) { break }
 		}
 	}
 }
 
-func (element *Container) forFocusableBackward (callback func (child tomo.Focusable) bool) {
+func (element *Container) forFocusableBackward (callback func (child elements.Focusable) bool) {
 	for index := len(element.children) - 1; index >= 0; index -- {
-		child, focusable := element.children[index].Element.(tomo.Focusable)
+		child, focusable := element.children[index].Element.(elements.Focusable)
 		if focusable {
 			if !callback(child) { break }
 		}
@@ -421,7 +426,7 @@ func (element *Container) forFocusableBackward (callback func (child tomo.Focusa
 
 func (element *Container) firstFocused () (index int) {
 	for currentIndex, entry := range element.children {
-		child, focusable := entry.Element.(tomo.Focusable)
+		child, focusable := entry.Element.(elements.Focusable)
 		if focusable && child.Focused() {
 			return currentIndex
 		}
@@ -431,12 +436,12 @@ func (element *Container) firstFocused () (index int) {
 
 func (element *Container) reflectChildProperties () {
 	element.focusable = false
-	element.forFocusable (func (tomo.Focusable) bool {
+	element.forFocusable (func (elements.Focusable) bool {
 		element.focusable = true
 		return false
 	})
 	element.flexible = false
-	element.forFlexible (func (tomo.Flexible) bool {
+	element.forFlexible (func (elements.Flexible) bool {
 		element.flexible = true
 		return false
 	})
@@ -446,16 +451,16 @@ func (element *Container) reflectChildProperties () {
 }
 
 func (element *Container) childFocusRequestCallback (
-	child tomo.Focusable,
+	child elements.Focusable,
 ) (
 	granted bool,
 ) {
 	if element.onFocusRequest != nil && element.onFocusRequest() {
-		element.forFocused (func (child tomo.Focusable) bool {
+		element.forFocused (func (child elements.Focusable) bool {
 			child.HandleUnfocus()
 			return true
 		})
-		child.HandleFocus(tomo.KeynavDirectionNeutral)
+		child.HandleFocus(input.KeynavDirectionNeutral)
 		return true
 	} else {
 		return false
@@ -463,13 +468,16 @@ func (element *Container) childFocusRequestCallback (
 }
 
 func (element *Container) updateMinimumSize () {
-	width, height := element.layout.MinimumSize(element.children)
+	width, height := element.layout.MinimumSize (
+		element.children, theme.Margin())
 	if element.flexible {
-		height = element.layout.FlexibleHeightFor(element.children, width)
+		height = element.layout.FlexibleHeightFor (
+			element.children, theme.Margin(), width)
 	}
 	element.core.SetMinimumSize(width, height)
 }
 
 func (element *Container) recalculate () {
-	element.layout.Arrange(element.children, element.Bounds())
+	element.layout.Arrange (
+		element.children, theme.Margin(), element.Bounds())
 }

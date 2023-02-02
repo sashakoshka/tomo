@@ -1,6 +1,7 @@
 package x
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/data"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
@@ -81,14 +82,14 @@ func (backend *Backend) Do (callback func ()) {
 
 // Copy puts data into the clipboard. This method is not yet implemented and
 // will do nothing!
-func (backend *Backend) Copy (data tomo.Data) {
+func (backend *Backend) Copy (data data.Data) {
 	backend.assert()
 	// TODO
 }
 
 // Paste returns the data currently in the clipboard. This method may
 // return nil. This method is not yet implemented and will do nothing!
-func (backend *Backend) Paste (accept []tomo.Mime) (data tomo.Data) {
+func (backend *Backend) Paste (accept []data.Mime) (data data.Data) {
 	backend.assert()
 	// TODO
 	return

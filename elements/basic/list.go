@@ -1,9 +1,10 @@
-package basic
+package basicElements
 
 import "fmt"
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -73,10 +74,10 @@ func (element *List) Collapse (width, height int) {
 	element.updateMinimumSize()
 }
 
-func (element *List) HandleMouseDown (x, y int, button tomo.Button) {
+func (element *List) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled()  { return }
 	if !element.Focused() { element.Focus() }
-	if button != tomo.ButtonLeft { return }
+	if button != input.ButtonLeft { return }
 	element.pressed = true
 	if element.selectUnderMouse(x, y) && element.core.HasImage() {
 		element.draw()
@@ -84,8 +85,8 @@ func (element *List) HandleMouseDown (x, y int, button tomo.Button) {
 	}
 }
 
-func (element *List) HandleMouseUp (x, y int, button tomo.Button) {
-	if button != tomo.ButtonLeft { return }
+func (element *List) HandleMouseUp (x, y int, button input.Button) {
+	if button != input.ButtonLeft { return }
 	element.pressed = false
 }
 
@@ -100,18 +101,18 @@ func (element *List) HandleMouseMove (x, y int) {
 
 func (element *List) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
-func (element *List) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
+func (element *List) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if !element.Enabled() { return }
 
 	altered := false
 	switch key {
-	case tomo.KeyLeft, tomo.KeyUp:
+	case input.KeyLeft, input.KeyUp:
 		altered = element.changeSelectionBy(-1)
 		
-	case tomo.KeyRight, tomo.KeyDown:
+	case input.KeyRight, input.KeyDown:
 		altered = element.changeSelectionBy(1)
 
-	case tomo.KeyEscape:
+	case input.KeyEscape:
 		altered = element.selectEntry(-1)
 	}
 	
@@ -121,7 +122,7 @@ func (element *List) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
 	}
 }
 
-func (element *List) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) { }
+func (element *List) HandleKeyUp(key input.Key, modifiers input.Modifiers) { }
 
 // ScrollContentBounds returns the full content size of the element.
 func (element *List) ScrollContentBounds () (bounds image.Rectangle) {
@@ -383,7 +384,7 @@ func (element *List) draw () {
 		bounds.Min.X,
 		bounds.Min.Y - element.scroll,
 	}
-	innerCanvas := tomo.Cut(element, bounds)
+	innerCanvas := canvas.Cut(element, bounds)
 	for index, entry := range element.entries {
 		entryPosition := dot
 		dot.Y += entry.Bounds().Dy()

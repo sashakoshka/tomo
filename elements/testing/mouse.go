@@ -2,7 +2,7 @@ package testing
 
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -44,12 +44,12 @@ func (element *Mouse) draw () {
 		bounds.Min.Add(image.Pt(bounds.Dx() - 2, 1)))
 }
 
-func (element *Mouse) HandleMouseDown (x, y int, button tomo.Button) {
+func (element *Mouse) HandleMouseDown (x, y int, button input.Button) {
 	element.drawing = true
 	element.lastMousePos = image.Pt(x, y)
 }
 
-func (element *Mouse) HandleMouseUp (x, y int, button tomo.Button) {
+func (element *Mouse) HandleMouseUp (x, y int, button input.Button) {
 	element.drawing = false
 	mousePos := image.Pt(x, y)
 	element.core.DamageRegion (artist.Line (

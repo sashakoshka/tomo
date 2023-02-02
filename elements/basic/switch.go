@@ -1,7 +1,7 @@
-package basic
+package basicElements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -41,7 +41,7 @@ func NewSwitch (text string, on bool) (element *Switch) {
 	return
 }
 
-func (element *Switch) HandleMouseDown (x, y int, button tomo.Button) {
+func (element *Switch) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled() { return }
 	element.Focus()
 	element.pressed = true
@@ -51,8 +51,8 @@ func (element *Switch) HandleMouseDown (x, y int, button tomo.Button) {
 	}
 }
 
-func (element *Switch) HandleMouseUp (x, y int, button tomo.Button) {
-	if button != tomo.ButtonLeft || !element.pressed { return }
+func (element *Switch) HandleMouseUp (x, y int, button input.Button) {
+	if button != input.ButtonLeft || !element.pressed { return }
 
 	element.pressed = false
 	within := image.Point { x, y }.
@@ -73,8 +73,8 @@ func (element *Switch) HandleMouseUp (x, y int, button tomo.Button) {
 func (element *Switch) HandleMouseMove (x, y int) { }
 func (element *Switch) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
-func (element *Switch) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
-	if key == tomo.KeyEnter {
+func (element *Switch) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+	if key == input.KeyEnter {
 		element.pressed = true
 		if element.core.HasImage() {
 			element.draw()
@@ -83,8 +83,8 @@ func (element *Switch) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
 	}
 }
 
-func (element *Switch) HandleKeyUp (key tomo.Key, modifiers tomo.Modifiers) {
-	if key == tomo.KeyEnter && element.pressed {
+func (element *Switch) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
+	if key == input.KeyEnter && element.pressed {
 		element.pressed = false
 		element.checked = !element.checked
 		if element.core.HasImage() {

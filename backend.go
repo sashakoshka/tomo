@@ -1,6 +1,8 @@
 package tomo
 
 import "errors"
+import "git.tebibyte.media/sashakoshka/tomo/data"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Backend represents a connection to a display server, or something similar.
 // It is capable of managing an event loop, and creating windows.
@@ -19,13 +21,13 @@ type Backend interface {
 	// NewWindow creates a new window with the specified width and height,
 	// and returns a struct representing it that fulfills the Window
 	// interface.
-	NewWindow (width, height int) (window Window, err error)
+	NewWindow (width, height int) (window elements.Window, err error)
 
 	// Copy puts data into the clipboard.
-	Copy (Data)
+	Copy (data.Data)
 
 	// Paste returns the data currently in the clipboard.
-	Paste (accept []Mime) (Data)
+	Paste (accept []data.Mime) (data.Data)
 }
 
 // BackendFactory represents a function capable of constructing a backend
