@@ -1,11 +1,12 @@
-package tomo
+package layouts
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // LayoutEntry associates an element with layout and positioning information so
 // it can be arranged by a Layout.
 type LayoutEntry struct {
-	Element
+	elements.Element
 	Bounds image.Rectangle
 	Expand bool
 }
@@ -17,14 +18,20 @@ type Layout interface {
 	// and changes the position of the entiries in the slice so that they
 	// are properly laid out. The given width and height should not be less
 	// than what is returned by MinimumSize.
-	Arrange (entries []LayoutEntry, bounds image.Rectangle)
+	Arrange (entries []LayoutEntry, margin int, bounds image.Rectangle)
 
 	// MinimumSize returns the minimum width and height that the layout
 	// needs to properly arrange the given slice of layout entries.
-	MinimumSize (entries []LayoutEntry) (width, height int)
+	MinimumSize (entries []LayoutEntry, margin int) (width, height int)
 
 	// FlexibleHeightFor Returns the minimum height the layout needs to lay
 	// out the specified elements at the given width, taking into account
 	// flexible elements.
-	FlexibleHeightFor (entries []LayoutEntry, squeeze int) (height int)
+	FlexibleHeightFor (
+		entries []LayoutEntry,
+		margin int,
+		squeeze int,
+	) (
+		height int,
+	)
 }

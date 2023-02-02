@@ -1,7 +1,7 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
 
@@ -13,14 +13,14 @@ func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("dialog")
 
-	container := basic.NewContainer(layouts.Dialog { true, true })
+	container := basicElements.NewContainer(basicLayouts.Dialog { true, true })
 	window.Adopt(container)
 
-	container.Adopt(basic.NewLabel("you will explode", true), true)
-	cancel := basic.NewButton("Cancel")
+	container.Adopt(basicElements.NewLabel("you will explode", true), true)
+	cancel := basicElements.NewButton("Cancel")
 	cancel.SetEnabled(false)
 	container.Adopt(cancel, false)
-	okButton := basic.NewButton("OK")
+	okButton := basicElements.NewButton("OK")
 	container.Adopt(okButton, false)
 	okButton.Focus()
 		

@@ -2,12 +2,12 @@ package core
 
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // Core is a struct that implements some core functionality common to most
 // widgets. It is meant to be embedded directly into a struct.
 type Core struct {
-	canvas tomo.Canvas
+	canvas canvas.Canvas
 
 	metrics struct {
 		minimumWidth  int
@@ -16,7 +16,7 @@ type Core struct {
 
 	drawSizeChange func ()
 	onMinimumSizeChange func ()
-	onDamage func (region tomo.Canvas)
+	onDamage func (region canvas.Canvas)
 }
 
 // NewCore creates a new element core and its corresponding control.
@@ -49,7 +49,7 @@ func (core *Core) Set (x, y int, c color.Color) () {
 	core.canvas.Set(x, y, c)
 }
 
-// Buffer fulfills the tomo.Canvas interface.
+// Buffer fulfills the canvas.Canvas interface.
 func (core *Core) Buffer () (data []color.RGBA, stride int) {
 	if core.canvas == nil { return }
 	return core.canvas.Buffer()
@@ -63,7 +63,7 @@ func (core *Core) MinimumSize () (width, height int) {
 
 // DrawTo fulfills the tomo.Element interface. This should not need to be
 // overridden.
-func (core *Core) DrawTo (canvas tomo.Canvas) {
+func (core *Core) DrawTo (canvas canvas.Canvas) {
 	core.canvas = canvas
 	if core.drawSizeChange != nil {
 		core.drawSizeChange()
@@ -72,7 +72,7 @@ func (core *Core) DrawTo (canvas tomo.Canvas) {
 
 // OnDamage fulfils the tomo.Element interface. This should not need to be
 // overridden.
-func (core *Core) OnDamage (callback func (region tomo.Canvas)) {
+func (core *Core) OnDamage (callback func (region canvas.Canvas)) {
 	core.onDamage = callback
 }
 
@@ -100,7 +100,7 @@ func (control CoreControl) HasImage () (has bool) {
 // does not need to be called when responding to a resize event.
 func (control CoreControl) DamageRegion (bounds image.Rectangle) {
 	if control.core.onDamage != nil {
-		control.core.onDamage(tomo.Cut(control.core, bounds))
+		control.core.onDamage(canvas.Cut(control.core, bounds))
 	}
 }
 

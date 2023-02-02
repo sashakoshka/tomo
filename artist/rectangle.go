@@ -1,12 +1,12 @@
 package artist
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // Paste transfers one canvas onto another, offset by the specified point.
 func Paste (
-	destination tomo.Canvas,
-	source tomo.Canvas,
+	destination canvas.Canvas,
+	source canvas.Canvas,
 	offset image.Point,
 ) (
 	updatedRegion image.Rectangle,
@@ -31,7 +31,7 @@ func Paste (
 
 // FillRectangle draws a filled rectangle with the specified pattern.
 func FillRectangle (
-	destination tomo.Canvas,
+	destination canvas.Canvas,
 	source Pattern,
 	bounds image.Rectangle,
 ) (
@@ -61,7 +61,7 @@ func FillRectangle (
 // StrokeRectangle draws the outline of a rectangle with the specified line
 // weight and pattern.
 func StrokeRectangle (
-	destination tomo.Canvas,
+	destination canvas.Canvas,
 	source Pattern,
 	weight int,
 	bounds image.Rectangle,

@@ -1,6 +1,6 @@
 package core
 
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 
 // FocusableCore is a struct that can be embedded into objects to make them
 // focusable, giving them the default keynav behavior.
@@ -9,7 +9,7 @@ type FocusableCore struct {
 	enabled bool
 	drawFocusChange func ()
 	onFocusRequest func () (granted bool)
-	onFocusMotionRequest func(tomo.KeynavDirection) (granted bool)
+	onFocusMotionRequest func(input.KeynavDirection) (granted bool)
 }
 
 // NewFocusableCore creates a new focusability core and its corresponding
@@ -46,13 +46,13 @@ func (core *FocusableCore) Focus () {
 // HandleFocus causes this element to mark itself as focused, if it can
 // currently be. Otherwise, it will return false and do nothing.
 func (core *FocusableCore) HandleFocus (
-	direction tomo.KeynavDirection,
+	direction input.KeynavDirection,
 ) (
 	accepted bool,
 ) {
 	direction = direction.Canon()
 	if !core.enabled { return false }
-	if core.focused && direction != tomo.KeynavDirectionNeutral {
+	if core.focused && direction != input.KeynavDirectionNeutral {
 		return false
 	}
 	
@@ -80,7 +80,7 @@ func (core *FocusableCore) OnFocusRequest (callback func () (granted bool)) {
 // should return true if the request was granted, and false if it was
 // not.
 func (core *FocusableCore) OnFocusMotionRequest (
-	callback func (direction tomo.KeynavDirection) (granted bool),
+	callback func (direction input.KeynavDirection) (granted bool),
 ) {
 	core.onFocusMotionRequest = callback
 }

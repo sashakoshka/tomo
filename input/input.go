@@ -1,4 +1,4 @@
-package tomo
+package input
 
 import "unicode"
 
@@ -110,3 +110,22 @@ type Modifiers struct {
 	NumberPad bool
 }
 
+// KeynavDirection represents a keyboard navigation direction.
+type KeynavDirection int
+
+const (
+	KeynavDirectionNeutral  KeynavDirection =  0
+	KeynavDirectionBackward KeynavDirection = -1
+	KeynavDirectionForward  KeynavDirection =  1
+)
+
+// Canon returns a well-formed direction.
+func (direction KeynavDirection) Canon () (canon KeynavDirection) {
+	if direction > 0 {
+		return KeynavDirectionForward
+	} else if direction == 0 {
+		return KeynavDirectionNeutral
+	} else {
+		return KeynavDirectionBackward
+	}
+}

@@ -1,8 +1,8 @@
-package layouts
+package basicLayouts
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Vertical arranges elements vertically. Elements at the start of the entry
 // list will be positioned at the top, and elements at the end of the entry list
@@ -17,8 +17,12 @@ type Vertical struct {
 }
 
 // Arrange arranges a list of entries vertically.
-func (layout Vertical) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle) {
-	if layout.Pad { bounds = bounds.Inset(theme.Margin()) }
+func (layout Vertical) Arrange (
+	entries []layouts.LayoutEntry,
+	margin int,
+	bounds image.Rectangle,
+) {
+	if layout.Pad { bounds = bounds.Inset(margin) }
 
 	// count the number of expanding elements and the amount of free space
 	// for them to collectively occupy, while gathering minimum heights.
@@ -28,7 +32,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, bounds image.Rectang
 	for index, entry := range entries {
 		var entryMinHeight int
 
-		if child, flexible := entry.Element.(tomo.Flexible); flexible {
+		if child, flexible := entry.Element.(elements.Flexible); flexible {
 			entryMinHeight = child.FlexibleHeightFor(bounds.Dx())
 		} else {
 			_, entryMinHeight = entry.MinimumSize()
@@ -41,7 +45,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, bounds image.Rectang
 			freeSpace -= entryMinHeight
 		}
 		if index > 0 && layout.Gap {
-			freeSpace -= theme.Margin()
+			freeSpace -= margin
 		}
 	}
 	
@@ -53,7 +57,7 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, bounds image.Rectang
 	// set the size and position of each element
 	dot := bounds.Min
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { dot.Y += theme.Margin() }
+		if index > 0 && layout.Gap { dot.Y += margin }
 		
 		entry.Bounds.Min = dot
 		entryHeight := 0
@@ -72,7 +76,8 @@ func (layout Vertical) Arrange (entries []tomo.LayoutEntry, bounds image.Rectang
 // MinimumSize returns the minimum width and height that will be needed to
 // arrange the given list of entries.
 func (layout Vertical) MinimumSize (
-	entries []tomo.LayoutEntry,
+	entries []layouts.LayoutEntry,
+	margin int,
 ) (
 	width, height int,
 ) {
@@ -83,13 +88,13 @@ func (layout Vertical) MinimumSize (
 		}
 		height += entryHeight
 		if layout.Gap && index > 0 {
-			height += theme.Margin()
+			height += margin
 		}
 	}
 
 	if layout.Pad {
-		width  += theme.Margin() * 2
-		height += theme.Margin() * 2
+		width  += margin * 2
+		height += margin * 2
 	}
 	return
 }
@@ -97,18 +102,19 @@ func (layout Vertical) MinimumSize (
 // FlexibleHeightFor Returns the minimum height the layout needs to lay out the
 // specified elements at the given width, taking into account flexible elements.
 func (layout Vertical) FlexibleHeightFor (
-	entries []tomo.LayoutEntry,
+	entries []layouts.LayoutEntry,
+	margin int,
 	width int,
 ) (
 	height int,
 ) {
 	if layout.Pad {
-		width -= theme.Margin() * 2
-		height += theme.Margin() * 2
+		width -= margin * 2
+		height += margin * 2
 	}
 	
 	for index, entry := range entries {
-		child, flexible := entry.Element.(tomo.Flexible)
+		child, flexible := entry.Element.(elements.Flexible)
 		if flexible {
 			height += child.FlexibleHeightFor(width)
 		} else {
@@ -117,7 +123,7 @@ func (layout Vertical) FlexibleHeightFor (
 		}
 		
 		if layout.Gap && index > 0 {
-			height += theme.Margin()
+			height += margin
 		}
 	}
 	return

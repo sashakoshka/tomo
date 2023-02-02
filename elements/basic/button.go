@@ -1,7 +1,7 @@
-package basic
+package basicElements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -38,10 +38,10 @@ func NewButton (text string) (element *Button) {
 	return
 }
 
-func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {
+func (element *Button) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled()  { return }
 	if !element.Focused() { element.Focus() }
-	if button != tomo.ButtonLeft { return }
+	if button != input.ButtonLeft { return }
 	element.pressed = true
 	if element.core.HasImage() {
 		element.draw()
@@ -49,8 +49,8 @@ func (element *Button) HandleMouseDown (x, y int, button tomo.Button) {
 	}
 }
 
-func (element *Button) HandleMouseUp (x, y int, button tomo.Button) {
-	if button != tomo.ButtonLeft { return }
+func (element *Button) HandleMouseUp (x, y int, button input.Button) {
+	if button != input.ButtonLeft { return }
 	element.pressed = false
 	if element.core.HasImage() {
 		element.draw()
@@ -69,9 +69,9 @@ func (element *Button) HandleMouseUp (x, y int, button tomo.Button) {
 func (element *Button) HandleMouseMove (x, y int) { }
 func (element *Button) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
-func (element *Button) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
+func (element *Button) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if !element.Enabled() { return }
-	if key == tomo.KeyEnter {
+	if key == input.KeyEnter {
 		element.pressed = true
 		if element.core.HasImage() {
 			element.draw()
@@ -80,8 +80,8 @@ func (element *Button) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
 	}
 }
 
-func (element *Button) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) {
-	if key == tomo.KeyEnter && element.pressed {
+func (element *Button) HandleKeyUp(key input.Key, modifiers input.Modifiers) {
+	if key == input.KeyEnter && element.pressed {
 		element.pressed = false
 		if element.core.HasImage() {
 			element.draw()

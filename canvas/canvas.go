@@ -1,4 +1,4 @@
-package tomo
+package canvas
 
 import "image"
 import "image/draw"

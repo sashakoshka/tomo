@@ -1,6 +1,8 @@
 package tomo
 
 import "errors"
+import "git.tebibyte.media/sashakoshka/tomo/data"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 var backend Backend
 
@@ -32,7 +34,7 @@ func Do (callback func ()) {
 // Window. If the window could not be created, an error is returned explaining
 // why. If this function is called without a running backend, an error is
 // returned as well.
-func NewWindow (width, height int) (window Window, err error) {
+func NewWindow (width, height int) (window elements.Window, err error) {
 	if backend == nil {
 		err = errors.New("no backend is running.")
 		return
@@ -41,14 +43,14 @@ func NewWindow (width, height int) (window Window, err error) {
 }
 
 // Copy puts data into the clipboard.
-func Copy (data Data) {
+func Copy (data data.Data) {
 	if backend == nil { panic("no backend is running") }
 	backend.Copy(data)
 }
 
 // Paste returns the data currently in the clipboard. This method may
 // return nil.
-func Paste (accept []Mime) (Data) {
+func Paste (accept []data.Mime) (data.Data) {
 	if backend == nil { panic("no backend is running") }
 	return backend.Paste(accept)
 }

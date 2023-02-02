@@ -3,11 +3,11 @@ package artist
 import "math"
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // FillEllipse draws a filled ellipse with the specified pattern.
 func FillEllipse (
-	destination tomo.Canvas,
+	destination canvas.Canvas,
 	source Pattern,
 	bounds image.Rectangle,
 ) (
@@ -36,7 +36,7 @@ func FillEllipse (
 // StrokeEllipse draws the outline of an ellipse with the specified line weight
 // and pattern.
 func StrokeEllipse (
-	destination tomo.Canvas,
+	destination canvas.Canvas,
 	source Pattern,
 	weight int,
 	bounds image.Rectangle,

@@ -1,7 +1,7 @@
-package basic
+package basicElements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
@@ -24,7 +24,7 @@ type TextBox struct {
 	placeholderDrawer artist.TextDrawer
 	valueDrawer       artist.TextDrawer
 	
-	onKeyDown func (key tomo.Key, modifiers tomo.Modifiers) (handled bool)
+	onKeyDown func (key input.Key, modifiers input.Modifiers) (handled bool)
 	onChange  func ()
 	onScrollBoundsChange func ()
 }
@@ -59,16 +59,16 @@ func (element *TextBox) handleResize () {
 	}
 }
 
-func (element *TextBox) HandleMouseDown (x, y int, button tomo.Button) {
+func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled() { return }
 	if !element.Focused() { element.Focus() }
 }
 
-func (element *TextBox) HandleMouseUp (x, y int, button tomo.Button) { }
+func (element *TextBox) HandleMouseUp (x, y int, button input.Button) { }
 func (element *TextBox) HandleMouseMove (x, y int) { }
 func (element *TextBox) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
-func (element *TextBox) HandleKeyDown(key tomo.Key, modifiers tomo.Modifiers) {
+func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) {
 	if element.onKeyDown != nil && element.onKeyDown(key, modifiers) {
 		return
 	}
@@ -77,7 +77,7 @@ func (element *TextBox) HandleKeyDown(key tomo.Key, modifiers tomo.Modifiers) {
 	altered     := true
 	textChanged := false
 	switch {
-	case key == tomo.KeyBackspace:
+	case key == input.KeyBackspace:
 		if len(element.text) < 1 { break }
 		element.text, element.cursor = textmanip.Backspace (
 			element.text,
@@ -85,7 +85,7 @@ func (element *TextBox) HandleKeyDown(key tomo.Key, modifiers tomo.Modifiers) {
 			modifiers.Control)
 		textChanged = true
 			
-	case key == tomo.KeyDelete:
+	case key == input.KeyDelete:
 		if len(element.text) < 1 { break }
 		element.text, element.cursor = textmanip.Delete (
 			element.text,
@@ -93,13 +93,13 @@ func (element *TextBox) HandleKeyDown(key tomo.Key, modifiers tomo.Modifiers) {
 			modifiers.Control)
 		textChanged = true
 			
-	case key == tomo.KeyLeft:
+	case key == input.KeyLeft:
 		element.cursor = textmanip.MoveLeft (
 			element.text,
 			element.cursor,
 			modifiers.Control)
 			
-	case key == tomo.KeyRight:
+	case key == input.KeyRight:
 		element.cursor = textmanip.MoveRight (
 			element.text,
 			element.cursor,
@@ -136,7 +136,7 @@ func (element *TextBox) HandleKeyDown(key tomo.Key, modifiers tomo.Modifiers) {
 	}
 }
 
-func (element *TextBox) HandleKeyUp(key tomo.Key, modifiers tomo.Modifiers) { }
+func (element *TextBox) HandleKeyUp(key input.Key, modifiers input.Modifiers) { }
 
 func (element *TextBox) SetPlaceholder (placeholder string) {
 	if element.placeholder == placeholder { return }
@@ -177,7 +177,7 @@ func (element *TextBox) Filled () (filled bool) {
 }
 
 func (element *TextBox) OnKeyDown (
-	callback func (key tomo.Key, modifiers tomo.Modifiers) (handled bool),
+	callback func (key input.Key, modifiers input.Modifiers) (handled bool),
 ) {
 	element.onKeyDown = callback
 }

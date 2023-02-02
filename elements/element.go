@@ -1,13 +1,15 @@
-package tomo
+package elements
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // Element represents a basic on-screen object.
 type Element interface {
 	// Element must implement the Canvas interface. Elements should start
 	// out with a completely blank buffer, and only allocate memory and draw
 	// on it for the first time when sent an EventResize event.
-	Canvas
+	canvas.Canvas
 
 	// MinimumSize specifies the minimum amount of pixels this element's
 	// width and height may be set to. If the element is given a resize
@@ -18,35 +20,15 @@ type Element interface {
 	// DrawTo sets this element's canvas. This should only be called by the
 	// parent element. This is typically a region of the parent element's
 	// canvas.
-	DrawTo (canvas Canvas)
+	DrawTo (canvas canvas.Canvas)
 
 	// OnDamage sets a function to be called when an area of the element is
 	// drawn on and should be pushed to the screen.
-	OnDamage (callback func (region Canvas))
+	OnDamage (callback func (region canvas.Canvas))
 
 	// OnMinimumSizeChange sets a function to be called when the element's
 	// minimum size is changed.
 	OnMinimumSizeChange (callback func ())
-}
-
-// KeynavDirection represents a keyboard navigation direction.
-type KeynavDirection int
-
-const (
-	KeynavDirectionNeutral  KeynavDirection =  0
-	KeynavDirectionBackward KeynavDirection = -1
-	KeynavDirectionForward  KeynavDirection =  1
-)
-
-// Canon returns a well-formed direction.
-func (direction KeynavDirection) Canon () (canon KeynavDirection) {
-	if direction > 0 {
-		return KeynavDirectionForward
-	} else if direction == 0 {
-		return KeynavDirectionNeutral
-	} else {
-		return KeynavDirectionBackward
-	}
 }
 
 // Focusable represents an element that has keyboard navigation support. This
@@ -67,7 +49,7 @@ type Focusable interface {
 	// selectable children in the given direction, it should return false
 	// and do nothing. Otherwise, it should select itself and any children
 	// (if applicable) and return true.
-	HandleFocus (direction KeynavDirection) (accepted bool)
+	HandleFocus (direction input.KeynavDirection) (accepted bool)
 
 	// HandleDeselection causes this element to mark itself and all of its
 	// children as unfocused.
@@ -83,7 +65,7 @@ type Focusable interface {
 	// front of it, depending on the specified direction. Parent elements
 	// should return true if the request was granted, and false if it was
 	// not.
-	OnFocusMotionRequest (func (direction KeynavDirection) (granted bool))
+	OnFocusMotionRequest (func (direction input.KeynavDirection) (granted bool))
 }
 
 // KeyboardTarget represents an element that can receive keyboard input.
@@ -95,11 +77,11 @@ type KeyboardTarget interface {
 	// every key down event is guaranteed to be paired with exactly one key
 	// up event. This is the reason a list of modifier keys held down at the
 	// time of the key press is given.
-	HandleKeyDown (key Key, modifiers Modifiers)
+	HandleKeyDown (key input.Key, modifiers input.Modifiers)
 
 	// HandleKeyUp is called when a key is released while this element has
 	// keyboard focus.
-	HandleKeyUp (key Key, modifiers Modifiers)
+	HandleKeyUp (key input.Key, modifiers input.Modifiers)
 }
 
 // MouseTarget represents an element that can receive mouse events.
@@ -111,11 +93,11 @@ type MouseTarget interface {
 
 	// HandleMouseDown is called when a mouse button is pressed down on this
 	// element.
-	HandleMouseDown (x, y int, button Button)
+	HandleMouseDown (x, y int, button input.Button)
 
 	// HandleMouseUp is called when a mouse button is released that was
 	// originally pressed down on this element.
-	HandleMouseUp (x, y int, button Button)
+	HandleMouseUp (x, y int, button input.Button)
 
 	// HandleMouseMove is called when the mouse is moved over this element,
 	// or the mouse is moving while being held down and originally pressed

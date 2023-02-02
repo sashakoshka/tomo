@@ -1,8 +1,8 @@
-package basic
+package basicElements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 var listEntryCase = theme.C("basic", "listEntry")
@@ -53,7 +53,7 @@ func (entry *ListEntry) updateBounds () {
 }
 
 func (entry *ListEntry) Draw (
-	destination tomo.Canvas,
+	destination canvas.Canvas,
 	offset image.Point,
 	focused bool,
 	on bool,

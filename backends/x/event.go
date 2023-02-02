@@ -1,6 +1,7 @@
 package x
 
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
@@ -98,9 +99,9 @@ func (window *Window) exposeEventFollows (event xproto.ConfigureNotifyEvent) (fo
 func (window *Window) modifiersFromState (
 	state uint16,
 ) (
-	modifiers tomo.Modifiers,
+	modifiers input.Modifiers,
 ) {
-	return tomo.Modifiers {
+	return input.Modifiers {
 		Shift:
 			(state & xproto.ModMaskShift)                    > 0 ||
 			(state & window.backend.modifierMasks.shiftLock) > 0,
@@ -123,18 +124,18 @@ func (window *Window) handleKeyPress (
 	modifiers := window.modifiersFromState(keyEvent.State)
 	modifiers.NumberPad = numberPad
 
-	if key == tomo.KeyTab && modifiers.Alt {
-		if child, ok := window.child.(tomo.Focusable); ok {
-			direction := tomo.KeynavDirectionForward
+	if key == input.KeyTab && modifiers.Alt {
+		if child, ok := window.child.(elements.Focusable); ok {
+			direction := input.KeynavDirectionForward
 			if modifiers.Shift {
-				direction = tomo.KeynavDirectionBackward
+				direction = input.KeynavDirectionBackward
 			}
 
 			if !child.HandleFocus(direction) {
 				child.HandleUnfocus()
 			}
 		}
-	} else if child, ok := window.child.(tomo.KeyboardTarget); ok {
+	} else if child, ok := window.child.(elements.KeyboardTarget); ok {
 		child.HandleKeyDown(key, modifiers)
 	}
 }
@@ -168,7 +169,7 @@ func (window *Window) handleKeyRelease (
 	modifiers := window.modifiersFromState(keyEvent.State)
 	modifiers.NumberPad = numberPad
 	
-	if child, ok := window.child.(tomo.KeyboardTarget); ok {
+	if child, ok := window.child.(elements.KeyboardTarget); ok {
 		child.HandleKeyUp(key, modifiers)
 	}
 }
@@ -179,7 +180,7 @@ func (window *Window) handleButtonPress (
 ) {
 	if window.child == nil { return }
 	
-	if child, ok := window.child.(tomo.MouseTarget); ok {
+	if child, ok := window.child.(elements.MouseTarget); ok {
 		buttonEvent := *event.ButtonPressEvent
 		if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
 			sum := scrollSum { }
@@ -193,7 +194,7 @@ func (window *Window) handleButtonPress (
 			child.HandleMouseDown (
 				int(buttonEvent.EventX),
 				int(buttonEvent.EventY),
-				tomo.Button(buttonEvent.Detail))
+				input.Button(buttonEvent.Detail))
 		}
 	}
 	
@@ -205,13 +206,13 @@ func (window *Window) handleButtonRelease (
 ) {
 	if window.child == nil { return }
 	
-	if child, ok := window.child.(tomo.MouseTarget); ok {
+	if child, ok := window.child.(elements.MouseTarget); ok {
 		buttonEvent := *event.ButtonReleaseEvent
 		if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
 		child.HandleMouseUp (
 			int(buttonEvent.EventX),
 			int(buttonEvent.EventY),
-			tomo.Button(buttonEvent.Detail))
+			input.Button(buttonEvent.Detail))
 	}
 }
 
@@ -221,7 +222,7 @@ func (window *Window) handleMotionNotify (
 ) {
 	if window.child == nil { return }
 	
-	if child, ok := window.child.(tomo.MouseTarget); ok {
+	if child, ok := window.child.(elements.MouseTarget); ok {
 		motionEvent := window.compressMotionNotify(*event.MotionNotifyEvent)
 		child.HandleMouseMove (
 			int(motionEvent.EventX),

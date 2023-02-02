@@ -2,7 +2,7 @@ package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
 
@@ -13,14 +13,14 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("Enter Details")
-	container := basic.NewContainer(layouts.Vertical { true, true })
+	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
 	// create inputs
-	firstName    := basic.NewTextBox("First name", "")
-	lastName     := basic.NewTextBox("Last name", "")
-	fingerLength := basic.NewTextBox("Length of fingers", "")
-	button       := basic.NewButton("Ok")
+	firstName    := basicElements.NewTextBox("First name", "")
+	lastName     := basicElements.NewTextBox("Last name", "")
+	fingerLength := basicElements.NewTextBox("Length of fingers", "")
+	button       := basicElements.NewButton("Ok")
 
 	button.SetEnabled(false)
 	button.OnClick (func () {
@@ -45,11 +45,11 @@ func run () {
 	fingerLength.OnChange(check)
 
 	// add elements to container
-	container.Adopt(basic.NewLabel("Choose your words carefully.", false), true)
+	container.Adopt(basicElements.NewLabel("Choose your words carefully.", false), true)
 	container.Adopt(firstName, false)
 	container.Adopt(lastName, false)
 	container.Adopt(fingerLength, false)
-	container.Adopt(basic.NewSpacer(true), false)
+	container.Adopt(basicElements.NewSpacer(true), false)
 	container.Adopt(button, false)
 	
 	window.OnClose(tomo.Stop)
