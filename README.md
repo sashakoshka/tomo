@@ -1,5 +1,7 @@
 # ![tomo](assets/banner.png)
 
+This repository is [mirrored on GitHub](https://github.com/sashakoshka/tomo).
+
 Please note: Tomo is in early development. Some features may not work properly,
 and its API may change without notice.
 
