@@ -1,8 +1,8 @@
-package layouts
+package basicLayouts
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Horizontal arranges elements horizontally. Elements at the start of the entry
 // list will be positioned on the left, and elements at the end of the entry
@@ -17,16 +17,21 @@ type Horizontal struct {
 }
 
 // Arrange arranges a list of entries horizontally.
-func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, bounds image.Rectangle) {
-	if layout.Pad { bounds = bounds.Inset(theme.Margin()) }
+func (layout Horizontal) Arrange (
+	entries []layouts.LayoutEntry,
+	margin int,
+	bounds image.Rectangle,
+) {
+	if layout.Pad { bounds = bounds.Inset(margin) }
 	
 	// get width of expanding elements
-	expandingElementWidth := layout.expandingElementWidth(entries, bounds.Dx())
+	expandingElementWidth := layout.expandingElementWidth (
+		entries, margin, bounds.Dx())
 
 	// set the size and position of each element
 	dot := bounds.Min
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { dot.X += theme.Margin() }
+		if index > 0 && layout.Gap { dot.X += margin }
 		
 		entry.Bounds.Min = dot
 		entryWidth := 0
@@ -45,7 +50,8 @@ func (layout Horizontal) Arrange (entries []tomo.LayoutEntry, bounds image.Recta
 // MinimumSize returns the minimum width and height that will be needed to
 // arrange the given list of entries.
 func (layout Horizontal) MinimumSize (
-	entries []tomo.LayoutEntry,
+	entries []layouts.LayoutEntry,
+	margin int,
 ) (
 	width, height int,
 ) {
@@ -56,13 +62,13 @@ func (layout Horizontal) MinimumSize (
 		}
 		width += entryWidth
 		if layout.Gap && index > 0 {
-			width += theme.Margin()
+			width += margin
 		}
 	}
 
 	if layout.Pad {
-		width  += theme.Margin() * 2
-		height += theme.Margin() * 2
+		width  += margin * 2
+		height += margin * 2
 	}
 	return
 }
@@ -70,21 +76,22 @@ func (layout Horizontal) MinimumSize (
 // FlexibleHeightFor Returns the minimum height the layout needs to lay out the
 // specified elements at the given width, taking into account flexible elements.
 func (layout Horizontal) FlexibleHeightFor (
-	entries []tomo.LayoutEntry,
+	entries []layouts.LayoutEntry,
+	margin int,
 	width int,
 ) (
 	height int,
 ) {
-	if layout.Pad {
-		width -= theme.Margin() * 2
-	}
+	if layout.Pad { width -= margin * 2 }
+	
 	// get width of expanding elements
-	expandingElementWidth := layout.expandingElementWidth(entries, width)
+	expandingElementWidth := layout.expandingElementWidth (
+		entries, margin, width)
 	
 	x, y := 0, 0
 	if layout.Pad {
-		x += theme.Margin()
-		y += theme.Margin()
+		x += margin
+		y += margin
 	}
 
 	// set the size and position of each element
@@ -93,23 +100,24 @@ func (layout Horizontal) FlexibleHeightFor (
 		if entry.Expand {
 			entryWidth = expandingElementWidth
 		}
-		if child, flexible := entry.Element.(tomo.Flexible); flexible {
+		if child, flexible := entry.Element.(elements.Flexible); flexible {
 			entryHeight = child.FlexibleHeightFor(entryWidth)
 		}
 		if entryHeight > height { height = entryHeight }
 		
 		x += entryWidth
-		if index > 0 && layout.Gap { x += theme.Margin() }
+		if index > 0 && layout.Gap { x += margin }
 	}
 
 	if layout.Pad {
-		height += theme.Margin() * 2
+		height += margin * 2
 	}
 	return
 }
 
 func (layout Horizontal) expandingElementWidth (
-	entries []tomo.LayoutEntry,
+	entries []layouts.LayoutEntry,
+	margin int,
 	freeSpace int,
 ) (
 	width int,
@@ -126,7 +134,7 @@ func (layout Horizontal) expandingElementWidth (
 			freeSpace -= entryMinWidth
 		}
 		if index > 0 && layout.Gap {
-			freeSpace -= theme.Margin()
+			freeSpace -= margin
 		}
 	}
 	
