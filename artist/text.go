@@ -6,7 +6,7 @@ import "unicode"
 import "image/draw"
 import "golang.org/x/image/font"
 import "golang.org/x/image/math/fixed"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 type characterLayout struct {
 	x         int
@@ -95,7 +95,7 @@ func (drawer *TextDrawer) SetAlignment (align Align) {
 
 // Draw draws the drawer's text onto the specified canvas at the given offset.
 func (drawer *TextDrawer) Draw (
-	destination tomo.Canvas,
+	destination canvas.Canvas,
 	source      Pattern,
 	offset      image.Point,
 ) (

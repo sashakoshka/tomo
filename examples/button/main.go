@@ -11,7 +11,7 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("example button")
-	button := basic.NewButton("hello tomo!")
+	button := basicElements.NewButton("hello tomo!")
 	button.OnClick (func () {
 		// when we set the button's text to something longer, the window
 		// will automatically resize to accomodate it.

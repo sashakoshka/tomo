@@ -3,7 +3,7 @@ package main
 import "os"
 import "time"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
@@ -16,12 +16,12 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("clock")
-	container := basic.NewContainer(layouts.Vertical { true, true })
+	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
 	clock := fun.NewAnalogClock(time.Now())
 	container.Adopt(clock, true)
-	label := basic.NewLabel(formatTime(), false)
+	label := basicElements.NewLabel(formatTime(), false)
 	container.Adopt(label, false)
 	
 	window.OnClose(tomo.Stop)
@@ -33,7 +33,7 @@ func formatTime () (timeString string) {
 	return time.Now().Format("2006-01-02 15:04:05")
 }
 
-func tick (label *basic.Label, clock *fun.AnalogClock) {
+func tick (label *basicElements.Label, clock *fun.AnalogClock) {
 	for {
 		tomo.Do (func () {
 			label.SetText(formatTime())

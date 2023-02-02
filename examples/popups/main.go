@@ -2,7 +2,7 @@ package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
 
@@ -14,12 +14,12 @@ func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("Dialog Boxes")
 
-	container := basic.NewContainer(layouts.Vertical { true, true })
+	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
-	container.Adopt(basic.NewLabel("Try out different dialogs:", false), true)
+	container.Adopt(basicElements.NewLabel("Try out different dialogs:", false), true)
 
-	infoButton := basic.NewButton("popups.DialogKindInfo")
+	infoButton := basicElements.NewButton("popups.DialogKindInfo")
 	infoButton.OnClick (func () {
 		popups.NewDialog (
 			popups.DialogKindInfo,
@@ -29,7 +29,7 @@ func run () {
 	container.Adopt(infoButton, false)
 	infoButton.Focus()
 	
-	questionButton := basic.NewButton("popups.DialogKindQuestion")
+	questionButton := basicElements.NewButton("popups.DialogKindQuestion")
 	questionButton.OnClick (func () {
 		popups.NewDialog (
 			popups.DialogKindQuestion,
@@ -41,7 +41,7 @@ func run () {
 	})
 	container.Adopt(questionButton, false)
 	
-	warningButton := basic.NewButton("popups.DialogKindWarning")
+	warningButton := basicElements.NewButton("popups.DialogKindWarning")
 	warningButton.OnClick (func () {
 		popups.NewDialog (
 			popups.DialogKindQuestion,
@@ -50,7 +50,7 @@ func run () {
 	})
 	container.Adopt(warningButton, false)
 	
-	errorButton := basic.NewButton("popups.DialogKindError")
+	errorButton := basicElements.NewButton("popups.DialogKindError")
 	errorButton.OnClick (func () {
 		popups.NewDialog (
 			popups.DialogKindQuestion,
@@ -59,7 +59,7 @@ func run () {
 	})
 	container.Adopt(errorButton, false)
 
-	cancelButton := basic.NewButton("No thank you.")
+	cancelButton := basicElements.NewButton("No thank you.")
 	cancelButton.OnClick(tomo.Stop)
 	container.Adopt(cancelButton, false)
 		

@@ -1,9 +1,11 @@
-package basic
+package basicElements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 var scrollContainerCase     = theme.C("basic", "scrollContainer")
@@ -17,7 +19,7 @@ type ScrollContainer struct {
 	core core.CoreControl
 	focused bool
 	
-	child tomo.Scrollable
+	child elements.Scrollable
 	childWidth, childHeight int
 	
 	horizontal struct {
@@ -41,7 +43,7 @@ type ScrollContainer struct {
 	}
 
 	onFocusRequest func () (granted bool)
-	onFocusMotionRequest func (tomo.KeynavDirection) (granted bool)
+	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
 }
 
 // NewScrollContainer creates a new scroll container with the specified scroll
@@ -64,7 +66,7 @@ func (element *ScrollContainer) handleResize () {
 // Adopt adds a scrollable element to the scroll container. The container can
 // only contain one scrollable element at a time, and when a new one is adopted
 // it replaces the last one.
-func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
+func (element *ScrollContainer) Adopt (child elements.Scrollable) {
 	// disown previous child if it exists
 	if element.child != nil {
 		element.clearChildEventHandlers(child)
@@ -76,7 +78,7 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 		child.OnDamage(element.childDamageCallback)
 		child.OnMinimumSizeChange(element.updateMinimumSize)
 		child.OnScrollBoundsChange(element.childScrollBoundsChangeCallback)
-		if newChild, ok := child.(tomo.Focusable); ok {
+		if newChild, ok := child.(elements.Focusable); ok {
 			newChild.OnFocusRequest (
 				element.childFocusRequestCallback)
 			newChild.OnFocusMotionRequest (
@@ -96,19 +98,19 @@ func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 	}
 }
 
-func (element *ScrollContainer) HandleKeyDown (key tomo.Key, modifiers tomo.Modifiers) {
-	if child, ok := element.child.(tomo.KeyboardTarget); ok {
+func (element *ScrollContainer) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+	if child, ok := element.child.(elements.KeyboardTarget); ok {
 		child.HandleKeyDown(key, modifiers)
 	}
 }
 
-func (element *ScrollContainer) HandleKeyUp (key tomo.Key, modifiers tomo.Modifiers) {
-	if child, ok := element.child.(tomo.KeyboardTarget); ok {
+func (element *ScrollContainer) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
+	if child, ok := element.child.(elements.KeyboardTarget); ok {
 		child.HandleKeyUp(key, modifiers)
 	}
 }
 
-func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
+func (element *ScrollContainer) HandleMouseDown (x, y int, button input.Button) {
 	point := image.Pt(x, y)
 	if point.In(element.horizontal.bar) {
 		element.horizontal.dragging = true
@@ -140,12 +142,12 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button tomo.Button) {
 			element.scrollChildBy(0, -16)
 		}
 		
-	} else if child, ok := element.child.(tomo.MouseTarget); ok {
+	} else if child, ok := element.child.(elements.MouseTarget); ok {
 		child.HandleMouseDown(x, y, button)
 	}
 }
 
-func (element *ScrollContainer) HandleMouseUp (x, y int, button tomo.Button) {
+func (element *ScrollContainer) HandleMouseUp (x, y int, button input.Button) {
 	if element.horizontal.dragging {
 		element.horizontal.dragging = false
 		element.drawHorizontalBar()
@@ -156,7 +158,7 @@ func (element *ScrollContainer) HandleMouseUp (x, y int, button tomo.Button) {
 		element.drawVerticalBar()
 		element.core.DamageRegion(element.vertical.bar)
 		
-	} else if child, ok := element.child.(tomo.MouseTarget); ok {
+	} else if child, ok := element.child.(elements.MouseTarget); ok {
 		child.HandleMouseUp(x, y, button)
 	}
 }
@@ -168,7 +170,7 @@ func (element *ScrollContainer) HandleMouseMove (x, y int) {
 	} else if element.vertical.dragging {
 		element.dragVerticalBar(image.Pt(x, y))
 		
-	} else if child, ok := element.child.(tomo.MouseTarget); ok {
+	} else if child, ok := element.child.(elements.MouseTarget); ok {
 		child.HandleMouseMove(x, y)
 	}
 }
@@ -199,11 +201,11 @@ func (element *ScrollContainer) Focus () {
 }
 
 func (element *ScrollContainer) HandleFocus (
-	direction tomo.KeynavDirection,
+	direction input.KeynavDirection,
 ) (
 	accepted bool,
 ) {
-	if child, ok := element.child.(tomo.Focusable); ok {
+	if child, ok := element.child.(elements.Focusable); ok {
 		element.focused = true
 		return child.HandleFocus(direction)
 	} else {
@@ -213,7 +215,7 @@ func (element *ScrollContainer) HandleFocus (
 }
 
 func (element *ScrollContainer) HandleUnfocus () {
-	if child, ok := element.child.(tomo.Focusable); ok {
+	if child, ok := element.child.(elements.Focusable); ok {
 		child.HandleUnfocus()
 	}
 	element.focused = false
@@ -224,20 +226,20 @@ func (element *ScrollContainer) OnFocusRequest (callback func () (granted bool))
 }
 
 func (element *ScrollContainer) OnFocusMotionRequest (
-	callback func (direction tomo.KeynavDirection) (granted bool),
+	callback func (direction input.KeynavDirection) (granted bool),
 ) {
 	element.onFocusMotionRequest = callback
 }
 
-func (element *ScrollContainer) childDamageCallback (region tomo.Canvas) {
+func (element *ScrollContainer) childDamageCallback (region canvas.Canvas) {
 	element.core.DamageRegion(artist.Paste(element, region, image.Point { }))
 }
 
 func (element *ScrollContainer) childFocusRequestCallback () (granted bool) {
-	child, ok := element.child.(tomo.Focusable)
+	child, ok := element.child.(elements.Focusable)
 	if !ok { return false }
 	if element.onFocusRequest != nil && element.onFocusRequest() {
-		child.HandleFocus(tomo.KeynavDirectionNeutral)
+		child.HandleFocus(input.KeynavDirectionNeutral)
 		return true
 	} else {
 		return false
@@ -245,7 +247,7 @@ func (element *ScrollContainer) childFocusRequestCallback () (granted bool) {
 }
 
 func (element *ScrollContainer) childFocusMotionRequestCallback (
-	direction tomo.KeynavDirection,
+	direction input.KeynavDirection,
 ) (
 	granted bool,
 ) {
@@ -253,19 +255,19 @@ func (element *ScrollContainer) childFocusMotionRequestCallback (
 	return element.onFocusMotionRequest(direction)
 }
 
-func (element *ScrollContainer) clearChildEventHandlers (child tomo.Scrollable) {
+func (element *ScrollContainer) clearChildEventHandlers (child elements.Scrollable) {
 	child.DrawTo(nil)
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
 	child.OnScrollBoundsChange(nil)
-	if child0, ok := child.(tomo.Focusable); ok {
+	if child0, ok := child.(elements.Focusable); ok {
 		child0.OnFocusRequest(nil)
 		child0.OnFocusMotionRequest(nil)
 		if child0.Focused() {
 			child0.HandleUnfocus()
 		}
 	}
-	if child0, ok := child.(tomo.Flexible); ok {
+	if child0, ok := child.(elements.Flexible); ok {
 		child0.OnFlexibleHeightChange(nil)
 	}
 }
@@ -275,7 +277,7 @@ func (element *ScrollContainer) resizeChildToFit () {
 		0, 0,
 		element.childWidth,
 		element.childHeight).Add(element.Bounds().Min)
-	element.child.DrawTo(tomo.Cut(element, childBounds))
+	element.child.DrawTo(canvas.Cut(element, childBounds))
 }
 
 func (element *ScrollContainer) recalculate () {

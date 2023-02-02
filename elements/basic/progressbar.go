@@ -1,4 +1,4 @@
-package basic
+package basicElements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"

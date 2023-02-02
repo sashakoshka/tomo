@@ -2,14 +2,14 @@ package artist
 
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // TODO: draw thick lines more efficiently
 
 // Line draws a line from one point to another with the specified weight and
 // pattern.
 func Line (
-	destination tomo.Canvas,
+	destination canvas.Canvas,
 	source Pattern,
 	weight int,
 	min image.Point,
@@ -46,7 +46,7 @@ func Line (
 }
 
 func lineLow (
-	destination tomo.Canvas,
+	destination canvas.Canvas,
 	source Pattern,
 	weight int,
 	min image.Point,
@@ -82,7 +82,7 @@ func lineLow (
 }
 
 func lineHigh (
-	destination tomo.Canvas,
+	destination canvas.Canvas,
 	source Pattern,
 	weight int,
 	min image.Point,

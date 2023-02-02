@@ -1,7 +1,8 @@
 package popups
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
+import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 
 // DialogKind defines the semantic role of a dialog window.
@@ -30,24 +31,24 @@ func NewDialog (
 	title, message string,
 	buttons ...Button,
 ) (
-	window tomo.Window,
+	window elements.Window,
 ) {
 	window, _ = tomo.NewWindow(2, 2)
 	window.SetTitle(title)
 	
-	container := basic.NewContainer(layouts.Dialog { true, true })
+	container := basicElements.NewContainer(basicLayouts.Dialog { true, true })
 	window.Adopt(container)
 
-	container.Adopt(basic.NewLabel(message, false), true)
+	container.Adopt(basicElements.NewLabel(message, false), true)
 	if len(buttons) == 0 {
-		button := basic.NewButton("OK")
+		button := basicElements.NewButton("OK")
 		button.OnClick(window.Close)
 		container.Adopt(button, false)
 		button.Focus()
 	} else {
-		var button *basic.Button
+		var button *basicElements.Button
 		for _, buttonDescriptor := range buttons {
-			button = basic.NewButton(buttonDescriptor.Name)
+			button = basicElements.NewButton(buttonDescriptor.Name)
 			button.SetEnabled(buttonDescriptor.OnPress != nil)
 			button.OnClick (func () {
 				buttonDescriptor.OnPress()
