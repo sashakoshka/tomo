@@ -2,7 +2,9 @@ package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 
 // Element represents a basic on-screen object.
 type Element interface {
@@ -156,4 +158,20 @@ type Scrollable interface {
 	// OnScrollBoundsChange sets a function to be called when the element's
 	// ScrollContentBounds, ScrollViewportBounds, or ScrollAxes are changed.
 	OnScrollBoundsChange (callback func ())
+}
+
+// Themeable represents an element that can modify its appearance to fit within
+// a theme.
+type Themeable interface {
+	// SetTheme sets the element's theme to something fulfilling the
+	// theme.Theme interface.
+	SetTheme (theme.Theme)
+}
+
+// Configurable represents an element that can modify its behavior to fit within
+// a set of configuration parameters.
+type Configurable interface {
+	// SetConfig sets the element's configuration to something fulfilling
+	// the config.Config interface.
+	SetConfig (config.Config)
 }
