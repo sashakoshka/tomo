@@ -2,8 +2,8 @@ package config
 
 import "io"
 
-// Parse parses a configuration file and returns it as a Config.
-func Parse (source io.Reader) (config Config) {
+// Parse parses one or more configuration files and returns them as a Config.
+func Parse (sources ...io.Reader) (config Config) {
 	// TODO
 	return Default { }
 }

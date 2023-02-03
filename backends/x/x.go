@@ -38,6 +38,8 @@ func NewBackend () (output tomo.Backend, err error) {
 	backend := &Backend {
 		windows: map[xproto.Window] *Window { },
 		doChannel: make(chan func (), 0),
+		theme:  theme.Default  { },
+		config: config.Default { },
 	}
 	
 	// connect to X
@@ -71,7 +73,11 @@ func (backend *Backend) Run () (err error) {
 // Stop gracefully closes the connection and stops the event loop.
 func (backend *Backend) Stop () {
 	backend.assert()
+	toClose := []*Window { }
 	for _, window := range backend.windows {
+		toClose = append(toClose, window)
+	}
+	for _, window := range toClose {
 		window.Close()
 	}
 	xevent.Quit(backend.connection)
