@@ -39,7 +39,8 @@ type Element interface {
 type Focusable interface {
 	Element
 
-	// Focused returns whether or not this element is currently focused.
+	// Focused returns whether or not this element or any of its children
+	// are currently focused.
 	Focused () (selected bool)
 
 	// Focus focuses this element, if its parent element grants the

@@ -1,7 +1,8 @@
 package tomo
 
-import "errors"
 import "git.tebibyte.media/sashakoshka/tomo/data"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 var backend Backend
@@ -26,7 +27,7 @@ func Stop () {
 // Do executes the specified callback within the main thread as soon as
 // possible. This function can be safely called from other threads.
 func Do (callback func ()) {
-	if backend == nil { panic("no backend is running") }
+	assertBackend()
 	backend.Do(callback)
 }
 
@@ -35,22 +36,33 @@ func Do (callback func ()) {
 // why. If this function is called without a running backend, an error is
 // returned as well.
 func NewWindow (width, height int) (window elements.Window, err error) {
-	if backend == nil {
-		err = errors.New("no backend is running.")
-		return
-	}
+	assertBackend()
 	return backend.NewWindow(width, height)
 }
 
 // Copy puts data into the clipboard.
 func Copy (data data.Data) {
-	if backend == nil { panic("no backend is running") }
+	assertBackend()
 	backend.Copy(data)
 }
 
 // Paste returns the data currently in the clipboard. This method may
 // return nil.
 func Paste (accept []data.Mime) (data.Data) {
-	if backend == nil { panic("no backend is running") }
+	assertBackend()
 	return backend.Paste(accept)
+}
+
+// SetTheme sets the theme of all open windows.
+func SetTheme (theme theme.Theme) {
+	backend.SetTheme(theme)
+}
+
+// SetConfig sets the configuration of all open windows.
+func SetConfig (config config.Config) {
+	backend.SetConfig(config)
+}
+
+func assertBackend () {
+	if backend == nil { panic("no backend is running") }
 }
