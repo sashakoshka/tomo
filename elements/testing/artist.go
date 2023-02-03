@@ -4,6 +4,7 @@ import "fmt"
 import "time"
 import "image"
 import "image/color"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -19,13 +20,16 @@ type Artist struct {
 // NewArtist creates a new artist test element.
 func NewArtist () (element *Artist) {
 	element = &Artist { }
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore (
+		element.draw, nil, nil, theme.C("testing", "artist"))
 	element.core.SetMinimumSize(480, 600)
 	return
 }
 
 func (element *Artist) draw () {
 	bounds := element.Bounds()
+	artist.FillRectangle(element, artist.NewUniform(hex(0)), bounds)
+	
 	element.cellBounds.Max.X = bounds.Min.X + bounds.Dx() / 5
 	element.cellBounds.Max.Y = bounds.Min.Y + (bounds.Dy() - 48) / 8
 

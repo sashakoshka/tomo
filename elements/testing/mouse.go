@@ -20,15 +20,25 @@ type Mouse struct {
 // NewMouse creates a new mouse test element.
 func NewMouse () (element *Mouse) {
 	element = &Mouse { }
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore (
+		element.draw,
+		element.redo,
+		element.redo,
+		theme.C("testing", "mouse"))
 	element.core.SetMinimumSize(32, 32)
 	element.color = artist.NewUniform(color.Black)
 	return
 }
 
+func (element *Mouse) redo () {
+	if !element.core.HasImage() { return }
+	element.draw()
+	element.core.DamageAll()
+}
+
 func (element *Mouse) draw () {
 	bounds := element.Bounds()
-	pattern, _ := theme.AccentPattern(theme.PatternState { })
+	pattern := element.core.Pattern(theme.PatternAccent, theme.PatternState { })
 	artist.FillRectangle(element, pattern, bounds)
 	artist.StrokeRectangle (
 		element,
