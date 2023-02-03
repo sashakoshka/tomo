@@ -2,6 +2,8 @@ package core
 
 import "image"
 import "image/color"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // Core is a struct that implements some core functionality common to most
@@ -14,13 +16,25 @@ type Core struct {
 		minimumHeight int
 	}
 
+	config config.Config
+	theme  theme.Theme
+
 	drawSizeChange func ()
+	onConfigChange func ()
+	onThemeChange  func ()
 	onMinimumSizeChange func ()
 	onDamage func (region canvas.Canvas)
 }
 
 // NewCore creates a new element core and its corresponding control.
-func NewCore (drawSizeChange func ()) (core *Core, control CoreControl) {
+func NewCore (
+	drawSizeChange func (),
+	onConfigChange func (),
+	onThemeChange  func (),
+) (
+	core *Core,
+	control CoreControl,
+) {
 	core    = &Core { drawSizeChange: drawSizeChange }
 	control = CoreControl { core: core }
 	return
@@ -80,6 +94,24 @@ func (core *Core) OnDamage (callback func (region canvas.Canvas)) {
 // to be overridden.
 func (core *Core) OnMinimumSizeChange (callback func ()) {
 	core.onMinimumSizeChange = callback
+}
+
+// SetConfig fulfills the elements.Configurable interface. This should not need
+// to be overridden.
+func (core *Core) SetConfig (config config.Config) {
+	core.config = config
+	if core.onConfigChange != nil {
+		core.onConfigChange()
+	}
+}
+
+// SetTheme fulfills the elements.Themeable interface. This should not need
+// to be overridden.
+func (core *Core) SetTheme (theme theme.Theme) {
+	core.theme = theme
+	if core.onThemeChange != nil {
+		core.onThemeChange()
+	}
 }
 
 // CoreControl is a struct that can exert control over a Core struct. It can be
@@ -146,4 +178,14 @@ func (control CoreControl) ConstrainSize (
 		constrained = true
 	}
 	return
+}
+
+// Config returns the current configuration.
+func (control CoreControl) Config () (config.Config) {
+	return control.core.config
+}
+
+// Theme returns the current theme.
+func (control CoreControl) Theme () (theme.Theme) {
+	return control.core.theme
 }
