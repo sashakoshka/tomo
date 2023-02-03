@@ -2,6 +2,8 @@ package x
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
@@ -24,6 +26,9 @@ type Backend struct {
 		super uint16
 		hyper uint16
 	}
+
+	theme  theme.Theme
+	config config.Config
 
 	windows map[xproto.Window] *Window
 }
@@ -94,6 +99,25 @@ func (backend *Backend) Paste (accept []data.Mime) (data data.Data) {
 	// TODO
 	return
 }
+
+
+// SetTheme sets the theme of all open windows.
+func (backend *Backend) SetTheme (theme theme.Theme) {
+	backend.assert()
+	backend.theme = theme
+	for _, window := range backend.windows {
+		window.SetTheme(theme)
+	}
+}
+
+// SetConfig sets the configuration of all open windows.
+func (backend *Backend) SetConfig (config config.Config) {
+	backend.assert()
+	backend.config = config
+	for _, window := range backend.windows {
+		window.SetConfig(config)
+	}
+} 
 
 func (backend *Backend) assert () {
 	if backend == nil { panic("nil backend") }

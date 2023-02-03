@@ -164,6 +164,8 @@ type Scrollable interface {
 // Themeable represents an element that can modify its appearance to fit within
 // a theme.
 type Themeable interface {
+	Element
+	
 	// SetTheme sets the element's theme to something fulfilling the
 	// theme.Theme interface.
 	SetTheme (theme.Theme)
@@ -172,6 +174,8 @@ type Themeable interface {
 // Configurable represents an element that can modify its behavior to fit within
 // a set of configuration parameters.
 type Configurable interface {
+	Element
+	
 	// SetConfig sets the element's configuration to something fulfilling
 	// the config.Config interface.
 	SetConfig (config.Config)
