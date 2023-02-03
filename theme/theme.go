@@ -1,113 +1,100 @@
 package theme
 
-import "image/color"
+import "image"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 
-// none of these colors are final! TODO: generate these values from a theme
-// file at startup.
+// FontStyle specifies stylistic alterations to a font face.
+type FontStyle int; const (
+	FontStyleRegular    FontStyle = 0
+	FontStyleBold       FontStyle = 1
+	FontStyleItalic     FontStyle = 2
+	FontStyleBoldItalic FontStyle = 1 | 2
+)
 
-func hex (color uint32) (c color.RGBA) {
-	c.A = uint8(color)
-	c.B = uint8(color >>  8)
-	c.G = uint8(color >> 16)
-	c.R = uint8(color >> 24)
-	return
-}
+// FontSize specifies the general size of a font face in a semantic way.
+type FontSize int; const (
+	// FontSizeNormal is the default font size that should be used for most
+	// things.
+	FontSizeNormal FontSize = iota
 
-func uhex (color uint32) (pattern artist.Pattern) {
-	return artist.NewUniform(hex(color))
-}
+	// FontSizeLarge is a larger font size suitable for things like section
+	// headings.
+	FontSizeLarge
 
-var accentPattern         = artist.NewUniform(hex(0x408090FF))
-var backgroundPattern     = artist.NewUniform(color.Gray16 { 0xAAAA })
-var foregroundPattern     = artist.NewUniform(color.Gray16 { 0x0000 })
-var weakForegroundPattern = artist.NewUniform(color.Gray16 { 0x4444 })
-var strokePattern         = artist.NewUniform(color.Gray16 { 0x0000 })
+	// FontSizeHuge is a very large font size suitable for things like
+	// titles, wizard step names, digital clocks, etc.
+	FontSizeHuge
 
-var sunkenPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke {
-		Weight: 1,
-		Pattern: artist.Beveled {
-			artist.NewUniform(hex(0x3b534eFF)),
-			artist.NewUniform(hex(0x97a09cFF)),
-		},
-	},
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
+	// FontSizeSmall is a smaller font size. Try not to use this unless it
+	// makes a lot of sense to do so, because it can negatively impact
+	// accessibility. It is useful for things like copyright notices at the
+	// bottom of some window that the average user doesn't actually care
+	// about.
+	FontSizeSmall
+)
 
-var texturedSunkenPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke {
-		Weight: 1,
-		Pattern: artist.Beveled {
-			artist.NewUniform(hex(0x3b534eFF)),
-			artist.NewUniform(hex(0x97a09cFF)),
-		},
-	},
-	// artist.Stroke { Pattern: artist.Striped {
-		// First: artist.Stroke {
-			// Weight: 2,
-			// Pattern: artist.NewUniform(hex(0x97a09cFF)),
-		// },
-		// Second: artist.Stroke {
-			// Weight: 1,
-			// Pattern: artist.NewUniform(hex(0x6e8079FF)),
-		// },
-	// }})
-	
-	artist.Stroke { Pattern: artist.Noisy {
-		Low:  artist.NewUniform(hex(0x97a09cFF)),
-		High: artist.NewUniform(hex(0x6e8079FF)),
-	}})
+// Pattern lists a number of cannonical pattern types, each with its own ID.
+// This allows custom elements to follow themes, even those that do not
+// explicitly support them.
+type Pattern int; const (
+	// PatternAccent is the accent color of the theme. It is safe to assume
+	// that this is, by default, a solid color.
+	PatternAccent Pattern = iota
 
-var raisedPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke {
-		Weight: 1,
-		Pattern: artist.Beveled {
-			artist.NewUniform(hex(0xDBDBDBFF)),
-			artist.NewUniform(hex(0x383C3AFF)),
-		},
-	},
-	artist.Stroke { Pattern: artist.NewUniform(hex(0xAAAAAAFF)) })
+	// PatternBackground is the background color of the theme. It is safe to
+	// assume that this is, by default, a solid color.
+	PatternBackground
 
-var selectedRaisedPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke {
-		Weight: 1,
-		Pattern: artist.Beveled {
-			artist.NewUniform(hex(0xDBDBDBFF)),
-			artist.NewUniform(hex(0x383C3AFF)),
-		},
-	},
-	artist.Stroke { Weight: 1, Pattern: accentPattern },
-	artist.Stroke { Pattern: artist.NewUniform(hex(0xAAAAAAFF)) })
+	// PatternForeground is the foreground text color of the theme. It is
+	// safe to assume that this is, by default, a solid color.
+	PatternForeground
 
-var deadPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
+	// PatternDead is a pattern that is displayed on a "dead area" where no
+	// controls exist, but there still must be some indication of visual
+	// structure (such as in the corner between two scroll bars).
+	PatternDead
 
-// TODO: load fonts from an actual source instead of using defaultfont
+	// PatternRaised is a generic raised pattern.
+	PatternRaised
 
-// FontFaceRegular returns the font face to be used for normal text.
-func FontFaceRegular () font.Face {
-	return defaultfont.FaceRegular
-}
+	// PatternSunken is a generic sunken pattern.
+	PatternSunken
 
-// FontFaceBold returns the font face to be used for bolded text.
-func FontFaceBold () font.Face {
-	return defaultfont.FaceBold
-}
+	// PatternPinboard is similar to PatternSunken, but it is textured.
+	PatternPinboard
 
-// FontFaceItalic returns the font face to be used for italicized text.
-func FontFaceItalic () font.Face {
-	return defaultfont.FaceItalic
-}
+	// PatternButton is a button pattern.
+	PatternButton
 
-// FontFaceBoldItalic returns the font face to be used for text that is both
-// bolded and italicized.
-func FontFaceBoldItalic () font.Face {
-	return defaultfont.FaceBoldItalic
+	// PatternInput is a pattern for input fields, editable text areas, etc.
+	PatternInput
+
+	// PatternGutter is a track for things to slide on.
+	PatternGutter
+
+	// PatternHandle is a handle that slides along a gutter.
+	PatternHandle
+)
+
+// Theme represents a visual style configuration,
+type Theme interface {
+	// FontFace returns the proper font for a given style, size, and case.
+	FontFace (FontStyle, FontSize, Case) font.Face
+
+	// Icon returns an appropriate icon given an icon name and case.
+	Icon (string, Case) artist.Pattern
+
+	// Pattern returns an appropriate pattern given a pattern name, case,
+	// and state.
+	Pattern (Pattern, Case, PatternState) artist.Pattern
+
+	// Inset returns the area on all sides of a given pattern that is not
+	// meant to be drawn on.
+	Inset (Pattern, Case) Inset
+
+	// Sink returns a vector that should be added to an element's inner
+	// content when it is pressed down (if applicable) to simulate a 3D
+	// sinking effect.
+	Sink (Pattern, Case) image.Point
 }

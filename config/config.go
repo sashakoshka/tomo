@@ -1,5 +1,6 @@
 package config
 
+// Config can return global configuration parameters.
 type Config interface {
 	// Padding returns the amount of internal padding elements should have.
 	// An element's inner content (such as text) should be inset by this
