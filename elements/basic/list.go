@@ -8,8 +8,6 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
-var listCase = theme.C("basic", "list")
-
 // List is an element that contains several objects that a user can select.
 type List struct {
 	*core.Core
@@ -34,7 +32,11 @@ type List struct {
 // NewList creates a new list element with the specified entries.
 func NewList (entries ...ListEntry) (element *List) {
 	element = &List { selectedEntry: -1 }
-	element.Core, element.core = core.NewCore(element.handleResize)
+	element.Core, element.core = core.NewCore (
+		element.handleResize,
+		element.redo,
+		element.redo,
+		theme.C("basic", "list"))
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -58,6 +60,36 @@ func (element *List) handleResize () {
 	}
 
 	element.draw()
+	if element.onScrollBoundsChange != nil {
+		element.onScrollBoundsChange()
+	}
+}
+
+func (element *List) handleConfigChange () {
+	for index, entry := range element.entries {
+		entry.SetConfig(element.core.Config())
+		element.entries[index] = entry
+	}
+	element.redo()
+}
+
+func (element *List) handleThemeChange () {
+	for index, entry := range element.entries {
+		entry.SetConfig(element.core.Config())
+		element.entries[index] = entry
+	}
+	element.redo()
+}
+
+func (element *List) redo () {
+	for index, entry := range element.entries {
+		element.entries[index] = element.resizeEntryToFit(entry)
+	}
+
+	if element.core.HasImage() {
+		element.draw()
+		element.core.DamageAll()
+	}
 	if element.onScrollBoundsChange != nil {
 		element.onScrollBoundsChange()
 	}
@@ -164,9 +196,7 @@ func (element *List) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *List) scrollViewportHeight () (height int) {
-	_, inset := theme.ListPattern(theme.PatternState {
-		Case: listCase,
-	})
+	inset := element.core.Inset(theme.PatternSunken)
 	return element.Bounds().Dy() - inset[0] - inset[2]
 }
 
@@ -198,6 +228,8 @@ func (element *List) CountEntries () (count int) {
 func (element *List) Append (entry ListEntry) {
 	// append
 	entry.Collapse(element.forcedMinimumWidth)
+	entry.SetTheme(element.core.Theme())
+	entry.SetConfig(element.core.Config())
 	element.entries = append(element.entries, entry)
 
 	// recalculate, redraw, notify
@@ -290,7 +322,7 @@ func (element *List) Replace (index int, entry ListEntry) {
 }
 
 func (element *List) selectUnderMouse (x, y int) (updated bool) {
-	_, inset := theme.ListPattern(theme.PatternState { })
+	inset := element.core.Inset(theme.PatternSunken)
 	bounds := inset.Apply(element.Bounds())
 	mousePoint := image.Pt(x, y)
 	dot := image.Pt (
@@ -332,9 +364,7 @@ func (element *List) changeSelectionBy (delta int) (updated bool) {
 }
 
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
-	_, inset := theme.ListPattern(theme.PatternState {
-		Case: listCase,
-	})
+	inset := element.core.Inset(theme.PatternSunken)
 	entry.Collapse(element.forcedMinimumWidth - inset[3] - inset[1])
 	return entry
 }
@@ -361,9 +391,7 @@ func (element *List) updateMinimumSize () {
 		minimumHeight = element.contentHeight
 	}
 
-	_, inset := theme.ListPattern(theme.PatternState {
-		Case: listCase,
-	})
+	inset := element.core.Inset(theme.PatternSunken)
 	minimumHeight += inset[0] + inset[2]
 
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
@@ -372,8 +400,8 @@ func (element *List) updateMinimumSize () {
 func (element *List) draw () {
 	bounds := element.Bounds()
 
-	pattern, inset := theme.ListPattern(theme.PatternState {
-		Case: listCase,
+	inset := element.core.Inset(theme.PatternSunken)
+	pattern := element.core.Pattern (theme.PatternSunken, theme.PatternState {
 		Disabled: !element.Enabled(),
 		Focused: element.Focused(),
 	})

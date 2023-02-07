@@ -6,8 +6,6 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
-var buttonCase = theme.C("basic", "button")
-
 // Button is a clickable button.
 type Button struct {
 	*core.Core
@@ -25,17 +23,25 @@ type Button struct {
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
 	element = &Button { }
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore (
+		element.draw,
+		element.redo,
+		element.redo,
+		theme.C("basic", "button"))
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore (func () {
-		if element.core.HasImage () {
-			element.draw()
-			element.core.DamageAll()
-		}
-	})
-	element.drawer.SetFace(theme.FontFaceRegular())
+	element.focusableControl = core.NewFocusableCore(element.redo)
 	element.SetText(text)
 	return
+}
+
+func (element *Button) redo () {
+	element.drawer.SetFace (
+		element.core.FontFace(theme.FontStyleRegular,
+		theme.FontSizeNormal))
+	if element.core.HasImage () {
+		element.draw()
+		element.core.DamageAll()
+	}
 }
 
 func (element *Button) HandleMouseDown (x, y int, button input.Button) {
@@ -83,10 +89,7 @@ func (element *Button) HandleKeyDown (key input.Key, modifiers input.Modifiers) 
 func (element *Button) HandleKeyUp(key input.Key, modifiers input.Modifiers) {
 	if key == input.KeyEnter && element.pressed {
 		element.pressed = false
-		if element.core.HasImage() {
-			element.draw()
-			element.core.DamageAll()
-		}
+		element.redo()
 		if !element.Enabled() { return }
 		if element.onClick != nil {
 			element.onClick()
@@ -111,33 +114,28 @@ func (element *Button) SetText (text string) {
 	element.text = text
 	element.drawer.SetText([]rune(text))
 	textBounds := element.drawer.LayoutBounds()
-	_, inset := theme.ButtonPattern(theme.PatternState { Case: buttonCase })
-	minimumSize := inset.Inverse().Apply(textBounds).Inset(-theme.Padding())
+	minimumSize := textBounds.Inset(-element.core.Config().Padding())
 	element.core.SetMinimumSize(minimumSize.Dx(), minimumSize.Dy())
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
+	element.redo()
 }
 
 func (element *Button) draw () {
 	bounds := element.Bounds()
 
-	pattern, inset := theme.ButtonPattern(theme.PatternState {
-		Case: buttonCase,
+	state := theme.PatternState {
 		Disabled: !element.Enabled(),
-		Focused: element.Focused(),
+		Focused:  element.Focused(),
 		Pressed:  element.pressed,
-	})
+	}
+
+	pattern := element.core.Pattern(theme.PatternButton, state)
 
 	artist.FillRectangle(element, pattern, bounds)
-		
-	innerBounds := inset.Apply(bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
-		X: innerBounds.Min.X + (innerBounds.Dx() - textBounds.Dx()) / 2,
-		Y: innerBounds.Min.Y + (innerBounds.Dy() - textBounds.Dy()) / 2,
+		X: bounds.Min.X + (bounds.Dx() - textBounds.Dx()) / 2,
+		Y: bounds.Min.Y + (bounds.Dy() - textBounds.Dy()) / 2,
 	}
 
 	// account for the fact that the bounding rectangle will be shifted over
@@ -145,9 +143,6 @@ func (element *Button) draw () {
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground, _ := theme.ForegroundPattern (theme.PatternState {
-		Case: buttonCase,
-		Disabled: !element.Enabled(),
-	})
+	foreground := element.core.Pattern(theme.PatternForeground, state)
 	element.drawer.Draw(element, foreground, offset)
 }

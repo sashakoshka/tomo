@@ -2,6 +2,7 @@ package basicElements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
@@ -15,6 +16,8 @@ type ListEntry struct {
 	text string
 	forcedMinimumWidth int
 	onSelect func ()
+	theme  theme.Theme
+	config config.Config
 }
 
 func NewListEntry (text string, onSelect func ()) (entry ListEntry) {
@@ -23,7 +26,6 @@ func NewListEntry (text string, onSelect func ()) (entry ListEntry) {
 		onSelect: onSelect,
 	}
 	entry.drawer.SetText([]rune(text))
-	entry.drawer.SetFace(theme.FontFaceRegular())
 	entry.updateBounds()
 	return
 }
@@ -32,6 +34,19 @@ func (entry *ListEntry) Collapse (width int) {
 	if entry.forcedMinimumWidth == width { return }
 	entry.forcedMinimumWidth = width
 	entry.updateBounds()
+}
+
+func (entry *ListEntry) SetTheme (new theme.Theme) {
+	entry.theme = new
+	entry.drawer.SetFace (entry.theme.FontFace (
+		theme.FontStyleRegular,
+		theme.FontSizeNormal,
+		listEntryCase))
+	entry.updateBounds()
+}
+
+func (entry *ListEntry) SetConfig (config config.Config) {
+	entry.config = config
 }
 
 func (entry *ListEntry) updateBounds () {
@@ -43,8 +58,7 @@ func (entry *ListEntry) updateBounds () {
 		entry.bounds.Max.X = entry.drawer.LayoutBounds().Dx()
 	}
 	
-	_, inset := theme.ItemPattern(theme.PatternState {
-	})
+	inset := entry.theme.Inset(theme.PatternRaised, listEntryCase)
 	entry.bounds.Max.Y += inset[0] + inset[2]
 	
 	entry.textPoint =
@@ -60,20 +74,16 @@ func (entry *ListEntry) Draw (
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	pattern, _ := theme.ItemPattern(theme.PatternState {
-		Case: listEntryCase,
+	state := theme.PatternState {
 		Focused: focused,
 		On: on,
-	})
+	}
+	pattern := entry.theme.Pattern (theme.PatternRaised, listEntryCase, state)
 	artist.FillRectangle (
 		destination,
 		pattern,
 		entry.Bounds().Add(offset))
-	foreground, _ := theme.ForegroundPattern (theme.PatternState {
-		Case: listEntryCase,
-		Focused: focused,
-		On: on,
-	})
+	foreground := entry.theme.Pattern (theme.PatternForeground, listEntryCase, state)
 	return entry.drawer.Draw (
 		destination,
 		foreground,

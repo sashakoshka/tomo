@@ -6,8 +6,6 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
-var checkboxCase = theme.C("basic", "checkbox")
-
 // Checkbox is a toggle-able checkbox with a label.
 type Checkbox struct {
 	*core.Core
@@ -26,17 +24,25 @@ type Checkbox struct {
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked }
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore (
+		element.draw,
+		element.redo,
+		element.redo,
+		theme.C("basic", "checkbox"))
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore (func () {
-		if element.core.HasImage () {
-			element.draw()
-			element.core.DamageAll()
-		}
-	})
-	element.drawer.SetFace(theme.FontFaceRegular())
+	element.focusableControl = core.NewFocusableCore(element.redo)
 	element.SetText(text)
 	return
+}
+
+func (element *Checkbox) redo () {
+	element.drawer.SetFace (
+		element.core.FontFace(theme.FontStyleRegular,
+		theme.FontSizeNormal))
+	if element.core.HasImage () {
+		element.draw()
+		element.core.DamageAll()
+	}
 }
 
 func (element *Checkbox) HandleMouseDown (x, y int, button input.Button) {
@@ -122,7 +128,7 @@ func (element *Checkbox) SetText (text string) {
 		element.core.SetMinimumSize(textBounds.Dy(), textBounds.Dy())
 	} else {
 		element.core.SetMinimumSize (
-			textBounds.Dy() + theme.Padding() + textBounds.Dx(),
+			textBounds.Dy() + element.core.Config().Padding() + textBounds.Dx(),
 			textBounds.Dy())
 	}
 	
@@ -136,35 +142,27 @@ func (element *Checkbox) draw () {
 	bounds := element.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 
-	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
-		Case: checkboxCase,
-	})
-	artist.FillRectangle(element, backgroundPattern, bounds)
-
-	pattern, inset := theme.ButtonPattern(theme.PatternState {
-		Case: checkboxCase,
+	state := theme.PatternState {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
-	})
+		On:       element.checked,
+	}
+
+	backgroundPattern := element.core.Pattern(theme.PatternBackground, state)
+	artist.FillRectangle(element, backgroundPattern, bounds)
+
+	pattern := element.core.Pattern (theme.PatternButton, state)
 	artist.FillRectangle(element, pattern, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := bounds.Min.Add(image.Point {
-		X: bounds.Dy() + theme.Padding(),
+		X: bounds.Dy() + element.core.Config().Padding(),
 	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground, _ := theme.ForegroundPattern (theme.PatternState {
-		Case: checkboxCase,
-		Disabled: !element.Enabled(),
-	})
+	foreground := element.core.Pattern(theme.PatternForeground, state)
 	element.drawer.Draw(element, foreground, offset)
-	
-	if element.checked {
-		checkBounds := inset.Apply(boxBounds).Inset(2)
-		artist.FillRectangle(element, foreground, checkBounds)
-	}
 }

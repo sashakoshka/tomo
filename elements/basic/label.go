@@ -4,8 +4,6 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
-var labelCase = theme.C("basic", "label")
-
 // Label is a simple text box.
 type Label struct {
 	*core.Core
@@ -22,12 +20,33 @@ type Label struct {
 // wrapped.
 func NewLabel (text string, wrap bool) (element *Label) {
 	element = &Label {  }
-	element.Core, element.core = core.NewCore(element.handleResize)
-	face := theme.FontFaceRegular()
+	element.Core, element.core = core.NewCore (
+		element.handleResize,
+		element.redo,
+		element.redo,
+		theme.C("basic", "label"))
+	face := element.core.FontFace (
+		theme.FontStyleRegular,
+		theme.FontSizeNormal)
 	element.drawer.SetFace(face)
 	element.SetWrap(wrap)
 	element.SetText(text)
 	return
+}
+
+func (element *Label) redo () {
+	face := element.core.FontFace (
+		theme.FontStyleRegular,
+		theme.FontSizeNormal)
+	element.drawer.SetFace(face)
+	element.updateMinimumSize()
+	bounds := element.Bounds()
+	if element.wrap {
+		element.drawer.SetMaxWidth(bounds.Dx())
+		element.drawer.SetMaxHeight(bounds.Dy())
+	}
+	element.draw()
+	element.core.DamageAll()
 }
 
 func (element *Label) handleResize () {
@@ -93,7 +112,7 @@ func (element *Label) SetWrap (wrap bool) {
 func (element *Label) updateMinimumSize () {
 	if element.wrap {
 		em := element.drawer.Em().Round()
-		if em < 1 { em = theme.Padding() }
+		if em < 1 { em = element.core.Config().Padding() }
 		element.core.SetMinimumSize (
 			em, element.drawer.LineHeight().Round())
 		if element.onFlexibleHeightChange != nil {
@@ -108,15 +127,15 @@ func (element *Label) updateMinimumSize () {
 func (element *Label) draw () {
 	bounds := element.Bounds()
 
-	pattern, _ := theme.BackgroundPattern(theme.PatternState {
-		Case: labelCase,
-	})
+	pattern := element.core.Pattern (
+		theme.PatternBackground,
+		theme.PatternState { })
 	artist.FillRectangle(element, pattern, bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 
-	foreground, _ := theme.ForegroundPattern (theme.PatternState {
-		Case: labelCase,
-	})
+	foreground :=  element.core.Pattern (
+		theme.PatternForeground,
+		theme.PatternState { })
 	element.drawer.Draw (element, foreground, bounds.Min.Sub(textBounds.Min))
 }

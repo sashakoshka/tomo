@@ -9,8 +9,6 @@ import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
-var containerCase = theme.C("basic", "container")
-
 // Container is an element capable of containg other elements, and arranging
 // them in a layout.
 type Container struct {
@@ -33,7 +31,11 @@ type Container struct {
 // NewContainer creates a new container.
 func NewContainer (layout layouts.Layout) (element *Container) {
 	element = &Container { }
-	element.Core, element.core = core.NewCore(element.redoAll)
+	element.Core, element.core = core.NewCore (
+		element.redoAll,
+		element.handleConfigChange,
+		element.handleThemeChange,
+		theme.C("basic", "container"))
 	element.SetLayout(layout)
 	return
 }
@@ -205,15 +207,31 @@ func (element *Container) redoAll () {
 
 	// draw a background
 	bounds := element.Bounds()
-	pattern, _ := theme.BackgroundPattern (theme.PatternState {
-		Case: containerCase,
-	})
+	pattern := element.core.Pattern (theme.PatternBackground, theme.PatternState { })
 	artist.FillRectangle(element, pattern, bounds)
 
 	// cut our canvas up and give peices to child elements
 	for _, entry := range element.children {
 		entry.DrawTo(canvas.Cut(element, entry.Bounds))
 	}
+}
+
+func (element *Container) handleConfigChange () {
+	for _, child := range element.children {
+		if child0, ok := child.Element.(elements.Configurable); ok {
+			child0.SetConfig(element.core.Config())
+		}
+	}
+	element.redoAll()
+}
+
+func (element *Container) handleThemeChange () {
+	for _, child := range element.children {
+		if child0, ok := child.Element.(elements.Themeable); ok {
+			child0.SetTheme(element.core.Theme())
+		}
+	}
+	element.redoAll()
 }
 
 func (element *Container) HandleMouseDown (x, y int, button input.Button) {
@@ -266,7 +284,7 @@ func (element *Container) HandleKeyUp (key input.Key, modifiers input.Modifiers)
 func (element *Container) FlexibleHeightFor (width int) (height int) {
 	return element.layout.FlexibleHeightFor (
 		element.children,
-		theme.Margin(), width)
+		element.core.Config().Margin(), width)
 }
 
 func (element *Container) OnFlexibleHeightChange (callback func ()) {
@@ -469,15 +487,15 @@ func (element *Container) childFocusRequestCallback (
 
 func (element *Container) updateMinimumSize () {
 	width, height := element.layout.MinimumSize (
-		element.children, theme.Margin())
+		element.children, element.core.Config().Margin())
 	if element.flexible {
 		height = element.layout.FlexibleHeightFor (
-			element.children, theme.Margin(), width)
+			element.children, element.core.Config().Margin(), width)
 	}
 	element.core.SetMinimumSize(width, height)
 }
 
 func (element *Container) recalculate () {
 	element.layout.Arrange (
-		element.children, theme.Margin(), element.Bounds())
+		element.children, element.core.Config().Margin(), element.Bounds())
 }

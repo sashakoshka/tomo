@@ -22,27 +22,27 @@ type Core struct {
 	theme  theme.Theme
 	c theme.Case
 
-	drawSizeChange func ()
-	onConfigChange func ()
-	onThemeChange  func ()
+	handleSizeChange    func ()
+	handleConfigChange  func ()
+	handleThemeChange   func ()
 	onMinimumSizeChange func ()
 	onDamage func (region canvas.Canvas)
 }
 
 // NewCore creates a new element core and its corresponding control.
 func NewCore (
-	drawSizeChange func (),
-	onConfigChange func (),
-	onThemeChange  func (),
+	handleSizeChange   func (),
+	handleConfigChange func (),
+	handleThemeChange  func (),
 	c theme.Case,
 ) (
 	core *Core,
 	control CoreControl,
 ) {
-	core    = &Core {
-		drawSizeChange: drawSizeChange,
-		onConfigChange: onConfigChange,
-		onThemeChange:  onThemeChange,
+	core = &Core {
+		handleSizeChange:   handleSizeChange,
+		handleConfigChange: handleConfigChange,
+		handleThemeChange:  handleThemeChange,
 		c: c,
 	}
 	control = CoreControl { core: core }
@@ -88,8 +88,8 @@ func (core *Core) MinimumSize () (width, height int) {
 // overridden.
 func (core *Core) DrawTo (canvas canvas.Canvas) {
 	core.canvas = canvas
-	if core.drawSizeChange != nil {
-		core.drawSizeChange()
+	if core.handleSizeChange != nil {
+		core.handleSizeChange()
 	}
 }
 
@@ -109,8 +109,8 @@ func (core *Core) OnMinimumSizeChange (callback func ()) {
 // to be overridden.
 func (core *Core) SetConfig (config config.Config) {
 	core.config = config
-	if core.onConfigChange != nil {
-		core.onConfigChange()
+	if core.handleConfigChange != nil {
+		core.handleConfigChange()
 	}
 }
 
@@ -118,8 +118,8 @@ func (core *Core) SetConfig (config config.Config) {
 // to be overridden.
 func (core *Core) SetTheme (theme theme.Theme) {
 	core.theme = theme
-	if core.onThemeChange != nil {
-		core.onThemeChange()
+	if core.handleThemeChange != nil {
+		core.handleThemeChange()
 	}
 }
 
