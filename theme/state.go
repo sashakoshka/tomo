@@ -46,3 +46,33 @@ type PatternState struct {
 	// or outline.
 	Invalid bool
 }
+
+// FontStyle specifies stylistic alterations to a font face.
+type FontStyle int; const (
+	FontStyleRegular    FontStyle = 0
+	FontStyleBold       FontStyle = 1
+	FontStyleItalic     FontStyle = 2
+	FontStyleBoldItalic FontStyle = 1 | 2
+)
+
+// FontSize specifies the general size of a font face in a semantic way.
+type FontSize int; const (
+	// FontSizeNormal is the default font size that should be used for most
+	// things.
+	FontSizeNormal FontSize = iota
+
+	// FontSizeLarge is a larger font size suitable for things like section
+	// headings.
+	FontSizeLarge
+
+	// FontSizeHuge is a very large font size suitable for things like
+	// titles, wizard step names, digital clocks, etc.
+	FontSizeHuge
+
+	// FontSizeSmall is a smaller font size. Try not to use this unless it
+	// makes a lot of sense to do so, because it can negatively impact
+	// accessibility. It is useful for things like copyright notices at the
+	// bottom of some window that the average user doesn't actually care
+	// about.
+	FontSizeSmall
+)

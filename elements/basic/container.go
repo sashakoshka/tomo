@@ -24,9 +24,8 @@ type Container struct {
 	focusable bool
 	flexible  bool
 	
-	config config.Config
-	theme  theme.Theme
-	c      theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 	
 	onFocusRequest func () (granted bool)
 	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
@@ -35,9 +34,8 @@ type Container struct {
 
 // NewContainer creates a new container.
 func NewContainer (layout layouts.Layout) (element *Container) {
-	element = &Container {
-		c: theme.C("basic", "container"),
-	}
+	element = &Container { }
+	element.theme.Case = theme.C("basic", "container")
 	element.Core, element.core = core.NewCore(element.redoAll)
 	element.SetLayout(layout)
 	return
@@ -57,6 +55,12 @@ func (element *Container) SetLayout (layout layouts.Layout) {
 // whatever way is defined by the current layout.
 func (element *Container) Adopt (child elements.Element, expand bool) {
 	// set event handlers
+	if child0, ok := child.(elements.Themeable); ok {
+		child0.SetTheme(element.theme.Theme)
+	}
+	if child0, ok := child.(elements.Configurable); ok {
+		child0.SetConfig(element.config.Config)
+	}
 	child.OnDamage (func (region canvas.Canvas) {
 		element.core.DamageRegion(region.Bounds())
 	})
@@ -212,7 +216,6 @@ func (element *Container) redoAll () {
 	bounds := element.Bounds()
 	pattern := element.theme.Pattern (
 		theme.PatternBackground,
-		element.c,
 		theme.PatternState { })
 	artist.FillRectangle(element, pattern, bounds)
 
@@ -225,10 +228,11 @@ func (element *Container) redoAll () {
 
 // SetTheme sets the element's theme.
 func (element *Container) SetTheme (new theme.Theme) {
-	element.theme = new
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
 	for _, child := range element.children {
 		if child0, ok := child.Element.(elements.Themeable); ok {
-			child0.SetTheme(element.theme)
+			child0.SetTheme(element.theme.Theme)
 		}
 	}
 	element.updateMinimumSize()
@@ -237,7 +241,8 @@ func (element *Container) SetTheme (new theme.Theme) {
 
 // SetConfig sets the element's configuration.
 func (element *Container) SetConfig (new config.Config) {
-	element.config = new
+	if new == element.config.Config { return }
+	element.config.Config = new
 	for _, child := range element.children {
 		if child0, ok := child.Element.(elements.Configurable); ok {
 			child0.SetConfig(element.config)

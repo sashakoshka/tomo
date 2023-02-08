@@ -19,19 +19,16 @@ type Checkbox struct {
 	checked bool
 	text    string
 	
-	config config.Config
-	theme  theme.Theme
-	c      theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 	
 	onToggle func ()
 }
 
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
-	element = &Checkbox {
-		checked: checked,
-		c: theme.C("basic", "checkbox"),
-	}
+	element = &Checkbox { checked: checked }
+	element.theme.Case = theme.C("basic", "checkbox")
 	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.redo)
@@ -126,18 +123,19 @@ func (element *Checkbox) SetText (text string) {
 
 // SetTheme sets the element's theme.
 func (element *Checkbox) SetTheme (new theme.Theme) {
-	element.theme = new
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
 	element.drawer.SetFace (element.theme.FontFace (
 		theme.FontStyleRegular,
-		theme.FontSizeNormal,
-		element.c))
+		theme.FontSizeNormal))
 	element.updateMinimumSize()
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
 func (element *Checkbox) SetConfig (new config.Config) {
-	element.config = new
+	if new == element.config.Config { return }
+	element.config.Config = new
 	element.updateMinimumSize()
 	element.redo()
 }
@@ -172,10 +170,10 @@ func (element *Checkbox) draw () {
 	}
 
 	backgroundPattern := element.theme.Pattern (
-		theme.PatternBackground, element.c, state)
+		theme.PatternBackground, state)
 	artist.FillRectangle(element, backgroundPattern, bounds)
 
-	pattern := element.theme.Pattern(theme.PatternButton, element.c, state)
+	pattern := element.theme.Pattern(theme.PatternButton, state)
 	artist.FillRectangle(element, pattern, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
@@ -186,7 +184,6 @@ func (element *Checkbox) draw () {
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := element.theme.Pattern (
-		theme.PatternForeground, element.c, state)
+	foreground := element.theme.Pattern(theme.PatternForeground, state)
 	element.drawer.Draw(element, foreground, offset)
 }

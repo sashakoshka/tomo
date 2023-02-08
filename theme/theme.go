@@ -4,36 +4,6 @@ import "image"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
-// FontStyle specifies stylistic alterations to a font face.
-type FontStyle int; const (
-	FontStyleRegular    FontStyle = 0
-	FontStyleBold       FontStyle = 1
-	FontStyleItalic     FontStyle = 2
-	FontStyleBoldItalic FontStyle = 1 | 2
-)
-
-// FontSize specifies the general size of a font face in a semantic way.
-type FontSize int; const (
-	// FontSizeNormal is the default font size that should be used for most
-	// things.
-	FontSizeNormal FontSize = iota
-
-	// FontSizeLarge is a larger font size suitable for things like section
-	// headings.
-	FontSizeLarge
-
-	// FontSizeHuge is a very large font size suitable for things like
-	// titles, wizard step names, digital clocks, etc.
-	FontSizeHuge
-
-	// FontSizeSmall is a smaller font size. Try not to use this unless it
-	// makes a lot of sense to do so, because it can negatively impact
-	// accessibility. It is useful for things like copyright notices at the
-	// bottom of some window that the average user doesn't actually care
-	// about.
-	FontSizeSmall
-)
-
 // Pattern lists a number of cannonical pattern types, each with its own ID.
 // This allows custom elements to follow themes, even those that do not
 // explicitly support them.
@@ -97,4 +67,50 @@ type Theme interface {
 	// content when it is pressed down (if applicable) to simulate a 3D
 	// sinking effect.
 	Sink (Pattern, Case) image.Point
+}
+
+// Wrapped wraps any theme and injects a case into it automatically so that it
+// doesn't need to be specified for each query. Additionally, if the underlying
+// theme is nil, it just uses the default theme instead.
+type Wrapped struct {
+	Theme
+	Case
+}
+
+// FontFace returns the proper font for a given style and size.
+func (wrapped Wrapped) FontFace (style FontStyle, size FontSize) font.Face {
+	real := wrapped.ensure()
+	return real.FontFace(style, size, wrapped.Case)
+}
+
+// Icon returns an appropriate icon given an icon name.
+func (wrapped Wrapped) Icon (name string) artist.Pattern {
+	real := wrapped.ensure()
+	return real.Icon(name, wrapped.Case)
+}
+
+// Pattern returns an appropriate pattern given a pattern name and state.
+func (wrapped Wrapped) Pattern (id Pattern, state PatternState) artist.Pattern {
+	real := wrapped.ensure()
+	return real.Pattern(id, wrapped.Case, state)
+}
+
+// Inset returns the area on all sides of a given pattern that is not meant to
+// be drawn on.
+func (wrapped Wrapped) Inset (id Pattern) Inset {
+	real := wrapped.ensure()
+	return real.Inset(id, wrapped.Case)
+}
+
+// Sink returns a vector that should be added to an element's inner content when
+// it is pressed down (if applicable) to simulate a 3D sinking effect.
+func (wrapped Wrapped) Sink (id Pattern) image.Point {
+	real := wrapped.ensure()
+	return real.Sink(id, wrapped.Case)
+}
+
+func (wrapped Wrapped) ensure () (real Theme) {
+	real = wrapped.Theme
+	if real == nil { real = Default { } }
+	return
 }

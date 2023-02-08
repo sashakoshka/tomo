@@ -12,18 +12,15 @@ type ProgressBar struct {
 	core core.CoreControl
 	progress float64
 	
-	theme  theme.Theme
-	config config.Config
-	c theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 }
 
 // NewProgressBar creates a new progress bar displaying the given progress
 // level.
 func NewProgressBar (progress float64) (element *ProgressBar) {
-	element = &ProgressBar {
-		progress: progress,
-		c: theme.C("basic", "progressBar"),
-	}
+	element = &ProgressBar { progress: progress }
+	element.theme.Case = theme.C("basic", "progressBar")
 	element.Core, element.core = core.NewCore(element.draw)
 	return
 }
@@ -40,14 +37,16 @@ func (element *ProgressBar) SetProgress (progress float64) {
 
 // SetTheme sets the element's theme.
 func (element *ProgressBar) SetTheme (new theme.Theme) {
-	element.theme = new
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
 	element.updateMinimumSize()
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
 func (element *ProgressBar) SetConfig (new config.Config) {
-	element.config = new
+	if new == nil || new == element.config.Config { return }
+	element.config.Config = new
 	element.updateMinimumSize()
 	element.redo()
 }
@@ -70,9 +69,8 @@ func (element *ProgressBar) draw () {
 
 	pattern := element.theme.Pattern (
 		theme.PatternSunken,
-		element.c,
 		theme.PatternState { })
-	inset := element.theme.Inset(theme.PatternSunken, element.c)
+	inset := element.theme.Inset(theme.PatternSunken)
 	artist.FillRectangle(element, pattern, bounds)
 	bounds = inset.Apply(bounds)
 	meterBounds := image.Rect (
@@ -80,8 +78,7 @@ func (element *ProgressBar) draw () {
 		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
 		bounds.Max.Y)
 	accent := element.theme.Pattern (
-		theme.PatternSunken,
-		element.c,
+		theme.PatternAccent,
 		theme.PatternState { })
 	artist.FillRectangle(element, accent, meterBounds)
 }

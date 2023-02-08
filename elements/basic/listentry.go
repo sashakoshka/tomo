@@ -14,9 +14,8 @@ type ListEntry struct {
 	text string
 	forcedMinimumWidth int
 	
-	theme  theme.Theme
-	config config.Config
-	c theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 	
 	onSelect func ()
 }
@@ -25,8 +24,8 @@ func NewListEntry (text string, onSelect func ()) (entry ListEntry) {
 	entry = ListEntry  {
 		text:     text,
 		onSelect: onSelect,
-		c: theme.C("basic", "listEntry"),
 	}
+	entry.theme.Case = theme.C("basic", "listEntry")
 	entry.drawer.SetText([]rune(text))
 	entry.updateBounds()
 	return
@@ -39,16 +38,17 @@ func (entry *ListEntry) Collapse (width int) {
 }
 
 func (entry *ListEntry) SetTheme (new theme.Theme) {
-	entry.theme = new
+	if new == entry.theme.Theme { return }
+	entry.theme.Theme = new
 	entry.drawer.SetFace (entry.theme.FontFace (
 		theme.FontStyleRegular,
-		theme.FontSizeNormal,
-		entry.c))
+		theme.FontSizeNormal))
 	entry.updateBounds()
 }
 
-func (entry *ListEntry) SetConfig (config config.Config) {
-	entry.config = config
+func (entry *ListEntry) SetConfig (new config.Config) {
+	if new == entry.config.Config { return }
+	entry.config.Config = new
 }
 
 func (entry *ListEntry) updateBounds () {
@@ -60,7 +60,7 @@ func (entry *ListEntry) updateBounds () {
 		entry.bounds.Max.X = entry.drawer.LayoutBounds().Dx()
 	}
 	
-	inset := entry.theme.Inset(theme.PatternRaised, entry.c)
+	inset := entry.theme.Inset(theme.PatternRaised)
 	entry.bounds.Max.Y += inset[0] + inset[2]
 	
 	entry.textPoint =
@@ -80,12 +80,12 @@ func (entry *ListEntry) Draw (
 		Focused: focused,
 		On: on,
 	}
-	pattern := entry.theme.Pattern (theme.PatternRaised, entry.c, state)
+	pattern := entry.theme.Pattern (theme.PatternRaised, state)
 	artist.FillRectangle (
 		destination,
 		pattern,
 		entry.Bounds().Add(offset))
-	foreground := entry.theme.Pattern (theme.PatternForeground, entry.c, state)
+	foreground := entry.theme.Pattern (theme.PatternForeground, state)
 	return entry.drawer.Draw (
 		destination,
 		foreground,

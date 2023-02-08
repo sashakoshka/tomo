@@ -14,9 +14,8 @@ type Label struct {
 	text   string
 	drawer artist.TextDrawer
 	
-	config config.Config
-	theme  theme.Theme
-	c      theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 	
 	onFlexibleHeightChange func ()
 }
@@ -24,7 +23,8 @@ type Label struct {
 // NewLabel creates a new label. If wrap is set to true, the text inside will be
 // wrapped.
 func NewLabel (text string, wrap bool) (element *Label) {
-	element = &Label { c: theme.C("basic", "label") }
+	element = &Label { }
+	element.theme.Case = theme.C("basic", "label")
 	element.Core, element.core = core.NewCore(element.handleResize)
 	element.SetWrap(wrap)
 	element.SetText(text)
@@ -34,8 +34,7 @@ func NewLabel (text string, wrap bool) (element *Label) {
 func (element *Label) redo () {
 	face := element.theme.FontFace (
 		theme.FontStyleRegular,
-		theme.FontSizeNormal,
-		element.c)
+		theme.FontSizeNormal)
 	element.drawer.SetFace(face)
 	element.updateMinimumSize()
 	bounds := element.Bounds()
@@ -109,11 +108,11 @@ func (element *Label) SetWrap (wrap bool) {
 
 // SetTheme sets the element's theme.
 func (element *Label) SetTheme (new theme.Theme) {
-	element.theme = new
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
 	element.drawer.SetFace (element.theme.FontFace (
 		theme.FontStyleRegular,
-		theme.FontSizeNormal,
-		element.c))
+		theme.FontSizeNormal))
 	element.updateMinimumSize()
 	
 	if element.core.HasImage () {
@@ -124,7 +123,8 @@ func (element *Label) SetTheme (new theme.Theme) {
 
 // SetConfig sets the element's configuration.
 func (element *Label) SetConfig (new config.Config) {
-	element.config = new
+	if new == element.config.Config { return }
+	element.config.Config = new
 	element.updateMinimumSize()
 	
 	if element.core.HasImage () {
@@ -153,7 +153,6 @@ func (element *Label) draw () {
 
 	pattern := element.theme.Pattern (
 		theme.PatternBackground,
-		element.c,
 		theme.PatternState { })
 	artist.FillRectangle(element, pattern, bounds)
 
@@ -161,7 +160,6 @@ func (element *Label) draw () {
 
 	foreground :=  element.theme.Pattern (
 		theme.PatternForeground,
-		element.c,
 		theme.PatternState { })
 	element.drawer.Draw(element, foreground, bounds.Min.Sub(textBounds.Min))
 }

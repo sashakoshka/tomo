@@ -50,3 +50,44 @@ func (Default) ScrollVelocity () int {
 func (Default) ThemePath () (string) {
 	return ""
 }
+
+// Wrapped wraps a configuration and uses Default if it is nil.
+type Wrapped struct {
+	Config
+}
+
+// Padding returns the amount of internal padding elements should have.
+// An element's inner content (such as text) should be inset by this
+// amount, in addition to the inset returned by the pattern of its
+// background.
+func (wrapped Wrapped) Padding () int {
+	return wrapped.ensure().Padding()
+}
+
+// Margin returns how much space should be put in between elements.
+func (wrapped Wrapped) Margin () int {
+	return wrapped.ensure().Margin()
+}
+
+// HandleWidth returns how large grab handles should typically be. This
+// is important for accessibility reasons.
+func (wrapped Wrapped) HandleWidth () int {
+	return wrapped.ensure().HandleWidth()
+}
+
+// ScrollVelocity returns how many pixels should be scrolled every time
+// a scroll button is pressed.
+func (wrapped Wrapped) ScrollVelocity () int {
+	return wrapped.ensure().ScrollVelocity()
+}
+
+// ThemePath returns the directory path to the theme.
+func (wrapped Wrapped) ThemePath () string {
+	return wrapped.ensure().ThemePath()
+}
+
+func (wrapped Wrapped) ensure () (real Config) {
+	real = wrapped.Config
+	if real == nil { real = Default { } }
+	return
+}

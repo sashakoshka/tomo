@@ -3,6 +3,7 @@ package testing
 import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -15,19 +16,31 @@ type Mouse struct {
 	drawing      bool
 	color        artist.Pattern
 	lastMousePos image.Point
+	
+	config config.Config
+	theme  theme.Theme
+	c      theme.Case
 }
 
 // NewMouse creates a new mouse test element.
 func NewMouse () (element *Mouse) {
-	element = &Mouse { }
-	element.Core, element.core = core.NewCore (
-		element.draw,
-		element.redo,
-		element.redo,
-		theme.C("testing", "mouse"))
+	element = &Mouse { c: theme.C("testing", "mouse") }
+	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(32, 32)
 	element.color = artist.NewUniform(color.Black)
 	return
+}
+
+// SetTheme sets the element's theme.
+func (element *Mouse) SetTheme (new theme.Theme) {
+	element.theme = new
+	element.redo()
+}
+
+// SetConfig sets the element's configuration.
+func (element *Mouse) SetConfig (new config.Config) {
+	element.config = new
+	element.redo()
 }
 
 func (element *Mouse) redo () {
@@ -38,7 +51,10 @@ func (element *Mouse) redo () {
 
 func (element *Mouse) draw () {
 	bounds := element.Bounds()
-	pattern := element.core.Pattern(theme.PatternAccent, theme.PatternState { })
+	pattern := element.theme.Pattern (
+		theme.PatternAccent,
+		element.c,
+		theme.PatternState { })
 	artist.FillRectangle(element, pattern, bounds)
 	artist.StrokeRectangle (
 		element,

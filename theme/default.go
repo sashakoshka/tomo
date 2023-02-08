@@ -41,7 +41,7 @@ func (Default) Pattern (
 	case PatternBackground:
 		return backgroundPattern
 	case PatternForeground:
-		if state.Disabled {
+		if state.Disabled || c == C("basic", "spacer") {
 			return weakForegroundPattern
 		} else {
 			return foregroundPattern
@@ -77,6 +77,16 @@ func (Default) Pattern (
 			} else {
 				return listPattern
 			}
+		} else if c == C("basic", "textBox") {
+			if state.Disabled {
+				return disabledInputPattern
+			} else {
+				if state.Focused {
+					return selectedInputPattern
+				} else {
+					return inputPattern
+				}
+			}
 		} else {
 			return sunkenPattern
 		}
@@ -86,7 +96,7 @@ func (Default) Pattern (
 		if state.Disabled {
 			return disabledButtonPattern
 		} else {
-			if state.Pressed {
+			if state.Pressed || state.On && c == C("basic", "checkbox") {
 				if state.Focused {
 					return pressedSelectedButtonPattern
 				} else {
@@ -144,13 +154,15 @@ func (Default) Inset (pattern Pattern, c Case) Inset {
 	switch pattern {
 	case PatternRaised:
 		if c == C("basic", "listEntry") {
-			return Inset { 2, 1, 2, 1 }
+			return Inset { 4, 6, 4, 6 }
 		} else {
 			return Inset { 1, 1, 1, 1 }
 		}
 	case PatternSunken:
 		if c == C("basic", "list") {
-			return Inset { 4, 6, 4, 6 }
+			return Inset { 2, 1, 2, 1 }
+		} else if c == C("basic", "progressBar") {
+			return Inset { 2, 1, 1, 2 }
 		} else {
 			return Inset { 1, 1, 1, 1 }
 		}

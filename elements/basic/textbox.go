@@ -23,9 +23,8 @@ type TextBox struct {
 	placeholderDrawer artist.TextDrawer
 	valueDrawer       artist.TextDrawer
 	
-	theme  theme.Theme
-	config config.Config
-	c theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 	
 	onKeyDown func (key input.Key, modifiers input.Modifiers) (handled bool)
 	onChange  func ()
@@ -36,7 +35,8 @@ type TextBox struct {
 // a value. When the value is empty, the placeholder will be displayed in gray
 // text.
 func NewTextBox (placeholder, value string) (element *TextBox) {
-	element = &TextBox { c: theme.C("basic", "textBox") }
+	element = &TextBox { }
+	element.theme.Case = theme.C("basic", "textBox")
 	element.Core, element.core = core.NewCore(element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
@@ -252,11 +252,11 @@ func (element *TextBox) scrollToCursor () {
 
 // SetTheme sets the element's theme.
 func (element *TextBox) SetTheme (new theme.Theme) {
-	element.theme = new
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
 	face := element.theme.FontFace (
 		theme.FontStyleRegular,
-		theme.FontSizeNormal,
-		element.c)
+		theme.FontSizeNormal)
 	element.placeholderDrawer.SetFace(face)
 	element.valueDrawer.SetFace(face)
 	element.updateMinimumSize()
@@ -265,19 +265,19 @@ func (element *TextBox) SetTheme (new theme.Theme) {
 
 // SetConfig sets the element's configuration.
 func (element *TextBox) SetConfig (new config.Config) {
-	element.config = new
+	if new == element.config.Config { return }
+	element.config.Config = new
 	element.updateMinimumSize()
 	element.redo()
 }
 
 func (element *TextBox) updateMinimumSize () {
 	textBounds := element.placeholderDrawer.LayoutBounds()
-	inset := element.theme.Inset(theme.PatternInput, element.c)
 	element.core.SetMinimumSize (
 		textBounds.Dx() +
-		element.config.Padding() * 2 + inset[3] + inset[1],
+		element.config.Padding() * 2,
 		element.placeholderDrawer.LineHeight().Round() +
-		element.config.Padding() * 2 + inset[0] + inset[2])
+		element.config.Padding() * 2)
 }
 
 func (element *TextBox) redo () {
@@ -295,7 +295,7 @@ func (element *TextBox) draw () {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 	}
-	pattern := element.theme.Pattern(theme.PatternSunken, element.c, state)
+	pattern := element.theme.Pattern(theme.PatternSunken, state)
 	artist.FillRectangle(element, pattern, bounds)
 
 	if len(element.text) == 0 && !element.Focused() {
@@ -306,7 +306,7 @@ func (element *TextBox) draw () {
 			Y: element.config.Padding(),
 		})
 		foreground := element.theme.Pattern (
-			theme.PatternForeground, element.c,
+			theme.PatternForeground,
 			theme.PatternState { Disabled: true })
 		element.placeholderDrawer.Draw (
 			element,
@@ -320,7 +320,7 @@ func (element *TextBox) draw () {
 			Y: element.config.Padding(),
 		})
 		foreground := element.theme.Pattern (
-			theme.PatternForeground, element.c, state)
+			theme.PatternForeground,  state)
 		element.valueDrawer.Draw (
 			element,
 			foreground,

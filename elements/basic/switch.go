@@ -20,9 +20,8 @@ type Switch struct {
 	checked bool
 	text    string
 	
-	theme  theme.Theme
-	config config.Config
-	c theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 	
 	onToggle func ()
 }
@@ -32,8 +31,8 @@ func NewSwitch (text string, on bool) (element *Switch) {
 	element = &Switch {
 		checked: on,
 		text: text,
-		c: theme.C("basic", "switch"),
 	}
+	element.theme.Case = theme.C("basic", "switch")
 	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.redo)
@@ -116,18 +115,19 @@ func (element *Switch) SetText (text string) {
 
 // SetTheme sets the element's theme.
 func (element *Switch) SetTheme (new theme.Theme) {
-	element.theme = new
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
 	element.drawer.SetFace (element.theme.FontFace (
 		theme.FontStyleRegular,
-		theme.FontSizeNormal,
-		element.c))
+		theme.FontSizeNormal))
 	element.updateMinimumSize()
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
 func (element *Switch) SetConfig (new config.Config) {
-	element.config = new
+	if new == element.config.Config { return }
+	element.config.Config = new
 	element.updateMinimumSize()
 	element.redo()
 }
@@ -165,7 +165,7 @@ func (element *Switch) draw () {
 		Pressed:  element.pressed,
 	}
 	backgroundPattern := element.theme.Pattern (
-		theme.PatternBackground, element.c, state)
+		theme.PatternBackground, state)
 	artist.FillRectangle (element, backgroundPattern, bounds)
 
 	if element.checked {
@@ -183,11 +183,11 @@ func (element *Switch) draw () {
 	}
 
 	gutterPattern := element.theme.Pattern (
-		theme.PatternGutter, element.c, state)
+		theme.PatternGutter, state)
 	artist.FillRectangle(element, gutterPattern, gutterBounds)
 	
 	handlePattern := element.theme.Pattern (
-		theme.PatternHandle, element.c, state)
+		theme.PatternHandle, state)
 	artist.FillRectangle(element, handlePattern, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
@@ -199,6 +199,6 @@ func (element *Switch) draw () {
 	offset.X -= textBounds.Min.X
 
 	foreground := element.theme.Pattern (
-		theme.PatternForeground, element.c, state)
+		theme.PatternForeground, state)
 	element.drawer.Draw(element, foreground, offset)
 }

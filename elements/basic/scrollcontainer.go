@@ -20,7 +20,7 @@ type ScrollContainer struct {
 	childWidth, childHeight int
 	
 	horizontal struct {
-		c theme.Case
+		theme theme.Wrapped
 		exists bool
 		enabled bool
 		dragging bool
@@ -31,7 +31,7 @@ type ScrollContainer struct {
 	}
 
 	vertical struct {
-		c theme.Case
+		theme theme.Wrapped
 		exists bool
 		enabled bool
 		dragging bool
@@ -41,9 +41,8 @@ type ScrollContainer struct {
 		bar image.Rectangle
 	}
 	
-	theme  theme.Theme
-	config config.Config
-	c theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 
 	onFocusRequest func () (granted bool)
 	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
@@ -52,12 +51,12 @@ type ScrollContainer struct {
 // NewScrollContainer creates a new scroll container with the specified scroll
 // bars.
 func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
-	element = &ScrollContainer { c: theme.C("basic", "scrollContainer") }
-	element.horizontal.c = theme.C("basic", "scrollBarHorizontal")
-	element.vertical.c   = theme.C("basic", "scrollBarVertical")
+	element = &ScrollContainer { }
+	element.theme.Case = theme.C("basic", "scrollContainer")
+	element.horizontal.theme.Case = theme.C("basic", "scrollBarHorizontal")
+	element.vertical.theme.Case   = theme.C("basic", "scrollBarVertical")
 	
 	element.Core, element.core = core.NewCore(element.handleResize)
-	element.updateMinimumSize()
 	element.horizontal.exists = horizontal
 	element.vertical.exists   = vertical
 	return
@@ -81,6 +80,12 @@ func (element *ScrollContainer) Adopt (child elements.Scrollable) {
 	// adopt new child
 	element.child = child
 	if child != nil {
+		if child0, ok := child.(elements.Themeable); ok {
+			child0.SetTheme(element.theme.Theme)
+		}
+		if child0, ok := child.(elements.Configurable); ok {
+			child0.SetConfig(element.config.Config)
+		}
 		child.OnDamage(element.childDamageCallback)
 		child.OnMinimumSizeChange(element.updateMinimumSize)
 		child.OnScrollBoundsChange(element.childScrollBoundsChangeCallback)
@@ -99,6 +104,34 @@ func (element *ScrollContainer) Adopt (child elements.Scrollable) {
 		if element.core.HasImage() {
 			element.resizeChildToFit()
 		}
+	}
+}
+
+// SetTheme sets the element's theme.
+func (element *ScrollContainer) SetTheme (new theme.Theme) {
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
+	if child, ok := element.child.(elements.Themeable); ok {
+		child.SetTheme(element.theme.Theme)
+	}
+	if element.core.HasImage() {
+		element.recalculate()
+		element.resizeChildToFit()
+		element.draw()
+	}
+}
+
+// SetConfig sets the element's configuration.
+func (element *ScrollContainer) SetConfig (new config.Config) {
+	if new == element.config.Config { return }
+	element.config.Config = new
+	if child, ok := element.child.(elements.Configurable); ok {
+		child.SetConfig(element.config.Config)
+	}
+	if element.core.HasImage() {
+		element.recalculate()
+		element.resizeChildToFit()
+		element.draw()
 	}
 }
 
@@ -289,8 +322,8 @@ func (element *ScrollContainer) recalculate () {
 	horizontal := &element.horizontal
 	vertical   := &element.vertical
 	
-	gutterInsetHorizontal := element.theme.Inset(theme.PatternGutter, horizontal.c)
-	gutterInsetVertical   := element.theme.Inset(theme.PatternGutter, vertical.c)
+	gutterInsetHorizontal := horizontal.theme.Inset(theme.PatternGutter)
+	gutterInsetVertical   := vertical.theme.Inset(theme.PatternGutter)
 
 	bounds     := element.Bounds()
 	thicknessHorizontal :=
@@ -376,7 +409,7 @@ func (element *ScrollContainer) recalculate () {
 func (element *ScrollContainer) draw () {
 	artist.Paste(element, element.child, image.Point { })
 	deadPattern := element.theme.Pattern (
-		theme.PatternDead, element.c, theme.PatternState { })
+		theme.PatternDead, theme.PatternState { })
 	artist.FillRectangle (
 		element, deadPattern,
 		image.Rect (
@@ -393,12 +426,10 @@ func (element *ScrollContainer) drawHorizontalBar () {
 		Disabled: !element.horizontal.enabled,
 		Pressed:  element.horizontal.dragging,
 	}
-	gutterPattern := element.theme.Pattern (
-		theme.PatternGutter, element.horizontal.c, state)
+	gutterPattern := element.horizontal.theme.Pattern(theme.PatternGutter, state)
 	artist.FillRectangle(element, gutterPattern, element.horizontal.gutter)
 	
-	handlePattern := element.theme.Pattern (
-			theme.PatternHandle, element.horizontal.c, state)
+	handlePattern := element.horizontal.theme.Pattern(theme.PatternHandle, state)
 	artist.FillRectangle(element, handlePattern, element.horizontal.bar)
 }
 
@@ -407,12 +438,10 @@ func (element *ScrollContainer) drawVerticalBar () {
 		Disabled: !element.vertical.enabled,
 		Pressed:  element.vertical.dragging,
 	}
-	gutterPattern := element.theme.Pattern (
-		theme.PatternGutter, element.vertical.c, state)
+	gutterPattern := element.vertical.theme.Pattern(theme.PatternGutter, state)
 	artist.FillRectangle(element, gutterPattern, element.vertical.gutter)
 	
-	handlePattern := element.theme.Pattern (
-			theme.PatternHandle, element.vertical.c, state)
+	handlePattern := element.vertical.theme.Pattern(theme.PatternHandle, state)
 	artist.FillRectangle(element, handlePattern, element.vertical.bar)
 }
 
@@ -435,10 +464,8 @@ func (element *ScrollContainer) dragVerticalBar (mousePosition image.Point) {
 }
 
 func (element *ScrollContainer) updateMinimumSize () {
-	gutterInsetHorizontal := element.theme.Inset (
-		theme.PatternGutter, element.horizontal.c)
-	gutterInsetVertical := element.theme.Inset (
-		theme.PatternGutter, element.vertical.c)
+	gutterInsetHorizontal := element.horizontal.theme.Inset(theme.PatternGutter)
+	gutterInsetVertical   := element.vertical.theme.Inset(theme.PatternGutter)
 
 	thicknessHorizontal :=
 		element.config.HandleWidth() +

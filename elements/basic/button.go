@@ -18,18 +18,16 @@ type Button struct {
 	pressed bool
 	text    string
 	
-	config config.Config
-	theme  theme.Theme
-	c      theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 	
 	onClick func ()
 }
 
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
-	element = &Button {
-		c: theme.C("basic", "button"),
-	}
+	element = &Button { }
+	element.theme.Case = theme.C("basic", "button")
 	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.redo)
@@ -103,18 +101,19 @@ func (element *Button) SetText (text string) {
 
 // SetTheme sets the element's theme.
 func (element *Button) SetTheme (new theme.Theme) {
-	element.theme = new
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
 	element.drawer.SetFace (element.theme.FontFace (
 		theme.FontStyleRegular,
-		theme.FontSizeNormal,
-		element.c))
+		theme.FontSizeNormal))
 	element.updateMinimumSize()
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
 func (element *Button) SetConfig (new config.Config) {
-	element.config = new
+	if new == element.config.Config { return }
+	element.config.Config = new
 	element.updateMinimumSize()
 	element.redo()
 }
@@ -141,7 +140,7 @@ func (element *Button) draw () {
 		Pressed:  element.pressed,
 	}
 
-	pattern := element.theme.Pattern(theme.PatternButton, element.c, state)
+	pattern := element.theme.Pattern(theme.PatternButton, state)
 
 	artist.FillRectangle(element, pattern, bounds)
 
@@ -156,6 +155,10 @@ func (element *Button) draw () {
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := element.theme.Pattern(theme.PatternForeground, element.c, state)
+	if element.pressed {
+		offset = offset.Add(element.theme.Sink(theme.PatternButton))
+	}
+
+	foreground := element.theme.Pattern(theme.PatternForeground, state)
 	element.drawer.Draw(element, foreground, offset)
 }

@@ -26,9 +26,8 @@ type List struct {
 	scroll int
 	entries []ListEntry
 	
-	config config.Config
-	theme  theme.Theme
-	c      theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 	
 	onScrollBoundsChange func ()
 	onNoEntrySelected func ()
@@ -36,10 +35,8 @@ type List struct {
 
 // NewList creates a new list element with the specified entries.
 func NewList (entries ...ListEntry) (element *List) {
-	element = &List {
-		selectedEntry: -1,
-		c: theme.C("basic", "list"),
-	}
+	element = &List { selectedEntry: -1 }
+	element.theme.Case = theme.C("basic", "list")
 	element.Core, element.core = core.NewCore(element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
@@ -71,9 +68,10 @@ func (element *List) handleResize () {
 
 // SetTheme sets the element's theme.
 func (element *List) SetTheme (new theme.Theme) {
-	element.theme = new
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
 	for index, entry := range element.entries {
-		entry.SetConfig(element.config)
+		entry.SetTheme(element.theme.Theme)
 		element.entries[index] = entry
 	}
 	element.updateMinimumSize()
@@ -82,7 +80,8 @@ func (element *List) SetTheme (new theme.Theme) {
 
 // SetConfig sets the element's configuration.
 func (element *List) SetConfig (new config.Config) {
-	element.config = new
+	if new == element.config.Config { return }
+	element.config.Config = new
 	for index, entry := range element.entries {
 		entry.SetConfig(element.config)
 		element.entries[index] = entry
@@ -206,7 +205,7 @@ func (element *List) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *List) scrollViewportHeight () (height int) {
-	inset := element.theme.Inset(theme.PatternSunken, element.c)
+	inset := element.theme.Inset(theme.PatternSunken)
 	return element.Bounds().Dy() - inset[0] - inset[2]
 }
 
@@ -238,7 +237,7 @@ func (element *List) CountEntries () (count int) {
 func (element *List) Append (entry ListEntry) {
 	// append
 	entry.Collapse(element.forcedMinimumWidth)
-	entry.SetTheme(element.theme)
+	entry.SetTheme(element.theme.Theme)
 	entry.SetConfig(element.config)
 	element.entries = append(element.entries, entry)
 
@@ -332,7 +331,7 @@ func (element *List) Replace (index int, entry ListEntry) {
 }
 
 func (element *List) selectUnderMouse (x, y int) (updated bool) {
-	inset := element.theme.Inset(theme.PatternSunken, element.c)
+	inset := element.theme.Inset(theme.PatternSunken)
 	bounds := inset.Apply(element.Bounds())
 	mousePoint := image.Pt(x, y)
 	dot := image.Pt (
@@ -374,7 +373,7 @@ func (element *List) changeSelectionBy (delta int) (updated bool) {
 }
 
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
-	inset := element.theme.Inset(theme.PatternSunken, element.c)
+	inset := element.theme.Inset(theme.PatternSunken)
 	entry.Collapse(element.forcedMinimumWidth - inset[3] - inset[1])
 	return entry
 }
@@ -401,7 +400,7 @@ func (element *List) updateMinimumSize () {
 		minimumHeight = element.contentHeight
 	}
 
-	inset := element.theme.Inset(theme.PatternSunken, element.c)
+	inset := element.theme.Inset(theme.PatternSunken)
 	minimumHeight += inset[0] + inset[2]
 
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
@@ -410,8 +409,8 @@ func (element *List) updateMinimumSize () {
 func (element *List) draw () {
 	bounds := element.Bounds()
 
-	inset := element.theme.Inset(theme.PatternSunken, element.c)
-	pattern := element.theme.Pattern (theme.PatternSunken, element.c, theme.PatternState {
+	inset := element.theme.Inset(theme.PatternSunken)
+	pattern := element.theme.Pattern (theme.PatternSunken, theme.PatternState {
 		Disabled: !element.Enabled(),
 		Focused: element.Focused(),
 	})
