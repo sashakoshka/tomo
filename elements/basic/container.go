@@ -3,6 +3,7 @@ package basicElements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
@@ -23,6 +24,10 @@ type Container struct {
 	focusable bool
 	flexible  bool
 	
+	config config.Config
+	theme  theme.Theme
+	c      theme.Case
+	
 	onFocusRequest func () (granted bool)
 	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
 	onFlexibleHeightChange func ()
@@ -30,12 +35,10 @@ type Container struct {
 
 // NewContainer creates a new container.
 func NewContainer (layout layouts.Layout) (element *Container) {
-	element = &Container { }
-	element.Core, element.core = core.NewCore (
-		element.redoAll,
-		element.handleConfigChange,
-		element.handleThemeChange,
-		theme.C("basic", "container"))
+	element = &Container {
+		c: theme.C("basic", "container"),
+	}
+	element.Core, element.core = core.NewCore(element.redoAll)
 	element.SetLayout(layout)
 	return
 }
@@ -207,7 +210,10 @@ func (element *Container) redoAll () {
 
 	// draw a background
 	bounds := element.Bounds()
-	pattern := element.core.Pattern (theme.PatternBackground, theme.PatternState { })
+	pattern := element.theme.Pattern (
+		theme.PatternBackground,
+		element.c,
+		theme.PatternState { })
 	artist.FillRectangle(element, pattern, bounds)
 
 	// cut our canvas up and give peices to child elements
@@ -216,21 +222,28 @@ func (element *Container) redoAll () {
 	}
 }
 
-func (element *Container) handleConfigChange () {
+
+// SetTheme sets the element's theme.
+func (element *Container) SetTheme (new theme.Theme) {
+	element.theme = new
 	for _, child := range element.children {
-		if child0, ok := child.Element.(elements.Configurable); ok {
-			child0.SetConfig(element.core.Config())
+		if child0, ok := child.Element.(elements.Themeable); ok {
+			child0.SetTheme(element.theme)
 		}
 	}
+	element.updateMinimumSize()
 	element.redoAll()
 }
 
-func (element *Container) handleThemeChange () {
+// SetConfig sets the element's configuration.
+func (element *Container) SetConfig (new config.Config) {
+	element.config = new
 	for _, child := range element.children {
-		if child0, ok := child.Element.(elements.Themeable); ok {
-			child0.SetTheme(element.core.Theme())
+		if child0, ok := child.Element.(elements.Configurable); ok {
+			child0.SetConfig(element.config)
 		}
 	}
+	element.updateMinimumSize()
 	element.redoAll()
 }
 
@@ -284,7 +297,7 @@ func (element *Container) HandleKeyUp (key input.Key, modifiers input.Modifiers)
 func (element *Container) FlexibleHeightFor (width int) (height int) {
 	return element.layout.FlexibleHeightFor (
 		element.children,
-		element.core.Config().Margin(), width)
+		element.config.Margin(), width)
 }
 
 func (element *Container) OnFlexibleHeightChange (callback func ()) {
@@ -487,15 +500,15 @@ func (element *Container) childFocusRequestCallback (
 
 func (element *Container) updateMinimumSize () {
 	width, height := element.layout.MinimumSize (
-		element.children, element.core.Config().Margin())
+		element.children, element.config.Margin())
 	if element.flexible {
 		height = element.layout.FlexibleHeightFor (
-			element.children, element.core.Config().Margin(), width)
+			element.children, element.config.Margin(), width)
 	}
 	element.core.SetMinimumSize(width, height)
 }
 
 func (element *Container) recalculate () {
 	element.layout.Arrange (
-		element.children, element.core.Config().Margin(), element.Bounds())
+		element.children, element.config.Margin(), element.Bounds())
 }

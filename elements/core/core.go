@@ -2,11 +2,7 @@ package core
 
 import "image"
 import "image/color"
-import "golang.org/x/image/font"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // Core is a struct that implements some core functionality common to most
 // widgets. It is meant to be embedded directly into a struct.
@@ -18,32 +14,20 @@ type Core struct {
 		minimumHeight int
 	}
 
-	config config.Config
-	theme  theme.Theme
-	c theme.Case
-
-	handleSizeChange    func ()
-	handleConfigChange  func ()
-	handleThemeChange   func ()
+	drawSizeChange      func ()
 	onMinimumSizeChange func ()
 	onDamage func (region canvas.Canvas)
 }
 
 // NewCore creates a new element core and its corresponding control.
 func NewCore (
-	handleSizeChange   func (),
-	handleConfigChange func (),
-	handleThemeChange  func (),
-	c theme.Case,
+	drawSizeChange func (),
 ) (
 	core *Core,
 	control CoreControl,
 ) {
 	core = &Core {
-		handleSizeChange:   handleSizeChange,
-		handleConfigChange: handleConfigChange,
-		handleThemeChange:  handleThemeChange,
-		c: c,
+		drawSizeChange: drawSizeChange,
 	}
 	control = CoreControl { core: core }
 	return
@@ -88,8 +72,8 @@ func (core *Core) MinimumSize () (width, height int) {
 // overridden.
 func (core *Core) DrawTo (canvas canvas.Canvas) {
 	core.canvas = canvas
-	if core.handleSizeChange != nil {
-		core.handleSizeChange()
+	if core.drawSizeChange != nil {
+		core.drawSizeChange()
 	}
 }
 
@@ -103,24 +87,6 @@ func (core *Core) OnDamage (callback func (region canvas.Canvas)) {
 // to be overridden.
 func (core *Core) OnMinimumSizeChange (callback func ()) {
 	core.onMinimumSizeChange = callback
-}
-
-// SetConfig fulfills the elements.Configurable interface. This should not need
-// to be overridden.
-func (core *Core) SetConfig (config config.Config) {
-	core.config = config
-	if core.handleConfigChange != nil {
-		core.handleConfigChange()
-	}
-}
-
-// SetTheme fulfills the elements.Themeable interface. This should not need
-// to be overridden.
-func (core *Core) SetTheme (theme theme.Theme) {
-	core.theme = theme
-	if core.handleThemeChange != nil {
-		core.handleThemeChange()
-	}
 }
 
 // CoreControl is a struct that can exert control over a Core struct. It can be
@@ -187,50 +153,4 @@ func (control CoreControl) ConstrainSize (
 		constrained = true
 	}
 	return
-}
-
-// Config returns the current configuration.
-func (control CoreControl) Config () (config.Config) {
-	return control.core.config
-}
-
-// Theme returns the current theme.
-func (control CoreControl) Theme () (theme.Theme) {
-	return control.core.theme
-}
-
-// FontFace is like Theme.FontFace, but it automatically applies the correct
-// case.
-func (control CoreControl) FontFace (
-	style theme.FontStyle,
-	size  theme.FontSize,
-) (
-	face font.Face,
-) {
-	return control.core.theme.FontFace(style, size, control.core.c)
-}
-
-// Icon is like Theme.Icon, but it automatically applies the correct case.
-func (control CoreControl) Icon (name string) (artist.Pattern) {
-	return control.core.theme.Icon(name, control.core.c)
-}
-
-// Pattern is like Theme.Pattern, but it automatically applies the correct case.
-func (control CoreControl) Pattern (
-	id    theme.Pattern,
-	state theme.PatternState,
-) (
-	pattern artist.Pattern,
-) {
-	return control.core.theme.Pattern(id, control.core.c, state)
-}
-
-// Inset is like Theme.Inset, but it automatically applies the correct case.
-func (control CoreControl) Inset (id theme.Pattern) (inset theme.Inset) {
-	return control.core.theme.Inset(id, control.core.c)
-}
-
-// Sink is like Theme.Sink, but it automatically applies the correct case.
-func (control CoreControl) Sink (id theme.Pattern) (offset image.Point) {
-	return control.core.theme.Sink(id, control.core.c)
 }

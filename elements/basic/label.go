@@ -1,6 +1,7 @@
 package basicElements
 
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -13,31 +14,28 @@ type Label struct {
 	text   string
 	drawer artist.TextDrawer
 	
+	config config.Config
+	theme  theme.Theme
+	c      theme.Case
+	
 	onFlexibleHeightChange func ()
 }
 
 // NewLabel creates a new label. If wrap is set to true, the text inside will be
 // wrapped.
 func NewLabel (text string, wrap bool) (element *Label) {
-	element = &Label {  }
-	element.Core, element.core = core.NewCore (
-		element.handleResize,
-		element.redo,
-		element.redo,
-		theme.C("basic", "label"))
-	face := element.core.FontFace (
-		theme.FontStyleRegular,
-		theme.FontSizeNormal)
-	element.drawer.SetFace(face)
+	element = &Label { c: theme.C("basic", "label") }
+	element.Core, element.core = core.NewCore(element.handleResize)
 	element.SetWrap(wrap)
 	element.SetText(text)
 	return
 }
 
 func (element *Label) redo () {
-	face := element.core.FontFace (
+	face := element.theme.FontFace (
 		theme.FontStyleRegular,
-		theme.FontSizeNormal)
+		theme.FontSizeNormal,
+		element.c)
 	element.drawer.SetFace(face)
 	element.updateMinimumSize()
 	bounds := element.Bounds()
@@ -109,10 +107,36 @@ func (element *Label) SetWrap (wrap bool) {
 	}
 }
 
+// SetTheme sets the element's theme.
+func (element *Label) SetTheme (new theme.Theme) {
+	element.theme = new
+	element.drawer.SetFace (element.theme.FontFace (
+		theme.FontStyleRegular,
+		theme.FontSizeNormal,
+		element.c))
+	element.updateMinimumSize()
+	
+	if element.core.HasImage () {
+		element.draw()
+		element.core.DamageAll()
+	}
+}
+
+// SetConfig sets the element's configuration.
+func (element *Label) SetConfig (new config.Config) {
+	element.config = new
+	element.updateMinimumSize()
+	
+	if element.core.HasImage () {
+		element.draw()
+		element.core.DamageAll()
+	}
+}
+
 func (element *Label) updateMinimumSize () {
 	if element.wrap {
 		em := element.drawer.Em().Round()
-		if em < 1 { em = element.core.Config().Padding() }
+		if em < 1 { em = element.config.Padding() }
 		element.core.SetMinimumSize (
 			em, element.drawer.LineHeight().Round())
 		if element.onFlexibleHeightChange != nil {
@@ -127,15 +151,17 @@ func (element *Label) updateMinimumSize () {
 func (element *Label) draw () {
 	bounds := element.Bounds()
 
-	pattern := element.core.Pattern (
+	pattern := element.theme.Pattern (
 		theme.PatternBackground,
+		element.c,
 		theme.PatternState { })
 	artist.FillRectangle(element, pattern, bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 
-	foreground :=  element.core.Pattern (
+	foreground :=  element.theme.Pattern (
 		theme.PatternForeground,
+		element.c,
 		theme.PatternState { })
-	element.drawer.Draw (element, foreground, bounds.Min.Sub(textBounds.Min))
+	element.drawer.Draw(element, foreground, bounds.Min.Sub(textBounds.Min))
 }

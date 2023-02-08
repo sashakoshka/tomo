@@ -6,8 +6,6 @@ import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
-var listEntryCase = theme.C("basic", "listEntry")
-
 // ListEntry is an item that can be added to a list.
 type ListEntry struct {
 	drawer artist.TextDrawer
@@ -15,15 +13,19 @@ type ListEntry struct {
 	textPoint image.Point
 	text string
 	forcedMinimumWidth int
-	onSelect func ()
+	
 	theme  theme.Theme
 	config config.Config
+	c theme.Case
+	
+	onSelect func ()
 }
 
 func NewListEntry (text string, onSelect func ()) (entry ListEntry) {
 	entry = ListEntry  {
 		text:     text,
 		onSelect: onSelect,
+		c: theme.C("basic", "listEntry"),
 	}
 	entry.drawer.SetText([]rune(text))
 	entry.updateBounds()
@@ -41,7 +43,7 @@ func (entry *ListEntry) SetTheme (new theme.Theme) {
 	entry.drawer.SetFace (entry.theme.FontFace (
 		theme.FontStyleRegular,
 		theme.FontSizeNormal,
-		listEntryCase))
+		entry.c))
 	entry.updateBounds()
 }
 
@@ -58,7 +60,7 @@ func (entry *ListEntry) updateBounds () {
 		entry.bounds.Max.X = entry.drawer.LayoutBounds().Dx()
 	}
 	
-	inset := entry.theme.Inset(theme.PatternRaised, listEntryCase)
+	inset := entry.theme.Inset(theme.PatternRaised, entry.c)
 	entry.bounds.Max.Y += inset[0] + inset[2]
 	
 	entry.textPoint =
@@ -78,12 +80,12 @@ func (entry *ListEntry) Draw (
 		Focused: focused,
 		On: on,
 	}
-	pattern := entry.theme.Pattern (theme.PatternRaised, listEntryCase, state)
+	pattern := entry.theme.Pattern (theme.PatternRaised, entry.c, state)
 	artist.FillRectangle (
 		destination,
 		pattern,
 		entry.Bounds().Add(offset))
-	foreground := entry.theme.Pattern (theme.PatternForeground, listEntryCase, state)
+	foreground := entry.theme.Pattern (theme.PatternForeground, entry.c, state)
 	return entry.drawer.Draw (
 		destination,
 		foreground,

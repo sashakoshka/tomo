@@ -4,6 +4,7 @@ import "fmt"
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -25,18 +26,21 @@ type List struct {
 	scroll int
 	entries []ListEntry
 	
+	config config.Config
+	theme  theme.Theme
+	c      theme.Case
+	
 	onScrollBoundsChange func ()
 	onNoEntrySelected func ()
 }
 
 // NewList creates a new list element with the specified entries.
 func NewList (entries ...ListEntry) (element *List) {
-	element = &List { selectedEntry: -1 }
-	element.Core, element.core = core.NewCore (
-		element.handleResize,
-		element.redo,
-		element.redo,
-		theme.C("basic", "list"))
+	element = &List {
+		selectedEntry: -1,
+		c: theme.C("basic", "list"),
+	}
+	element.Core, element.core = core.NewCore(element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (func () {
 		if element.core.HasImage () {
@@ -65,19 +69,25 @@ func (element *List) handleResize () {
 	}
 }
 
-func (element *List) handleConfigChange () {
+// SetTheme sets the element's theme.
+func (element *List) SetTheme (new theme.Theme) {
+	element.theme = new
 	for index, entry := range element.entries {
-		entry.SetConfig(element.core.Config())
+		entry.SetConfig(element.config)
 		element.entries[index] = entry
 	}
+	element.updateMinimumSize()
 	element.redo()
 }
 
-func (element *List) handleThemeChange () {
+// SetConfig sets the element's configuration.
+func (element *List) SetConfig (new config.Config) {
+	element.config = new
 	for index, entry := range element.entries {
-		entry.SetConfig(element.core.Config())
+		entry.SetConfig(element.config)
 		element.entries[index] = entry
 	}
+	element.updateMinimumSize()
 	element.redo()
 }
 
@@ -196,7 +206,7 @@ func (element *List) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *List) scrollViewportHeight () (height int) {
-	inset := element.core.Inset(theme.PatternSunken)
+	inset := element.theme.Inset(theme.PatternSunken, element.c)
 	return element.Bounds().Dy() - inset[0] - inset[2]
 }
 
@@ -228,8 +238,8 @@ func (element *List) CountEntries () (count int) {
 func (element *List) Append (entry ListEntry) {
 	// append
 	entry.Collapse(element.forcedMinimumWidth)
-	entry.SetTheme(element.core.Theme())
-	entry.SetConfig(element.core.Config())
+	entry.SetTheme(element.theme)
+	entry.SetConfig(element.config)
 	element.entries = append(element.entries, entry)
 
 	// recalculate, redraw, notify
@@ -322,7 +332,7 @@ func (element *List) Replace (index int, entry ListEntry) {
 }
 
 func (element *List) selectUnderMouse (x, y int) (updated bool) {
-	inset := element.core.Inset(theme.PatternSunken)
+	inset := element.theme.Inset(theme.PatternSunken, element.c)
 	bounds := inset.Apply(element.Bounds())
 	mousePoint := image.Pt(x, y)
 	dot := image.Pt (
@@ -364,7 +374,7 @@ func (element *List) changeSelectionBy (delta int) (updated bool) {
 }
 
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
-	inset := element.core.Inset(theme.PatternSunken)
+	inset := element.theme.Inset(theme.PatternSunken, element.c)
 	entry.Collapse(element.forcedMinimumWidth - inset[3] - inset[1])
 	return entry
 }
@@ -391,7 +401,7 @@ func (element *List) updateMinimumSize () {
 		minimumHeight = element.contentHeight
 	}
 
-	inset := element.core.Inset(theme.PatternSunken)
+	inset := element.theme.Inset(theme.PatternSunken, element.c)
 	minimumHeight += inset[0] + inset[2]
 
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
@@ -400,8 +410,8 @@ func (element *List) updateMinimumSize () {
 func (element *List) draw () {
 	bounds := element.Bounds()
 
-	inset := element.core.Inset(theme.PatternSunken)
-	pattern := element.core.Pattern (theme.PatternSunken, theme.PatternState {
+	inset := element.theme.Inset(theme.PatternSunken, element.c)
+	pattern := element.theme.Pattern (theme.PatternSunken, element.c, theme.PatternState {
 		Disabled: !element.Enabled(),
 		Focused: element.Focused(),
 	})
