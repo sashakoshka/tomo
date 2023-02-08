@@ -4,21 +4,24 @@ import "time"
 import "math"
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
-
-var clockCase = theme.C("fun", "clock")
 
 // AnalogClock can display the time of day in an analog format.
 type AnalogClock struct {
 	*core.Core
 	core core.CoreControl
 	time time.Time
+	
+	config config.Wrapped
+	theme  theme.Wrapped
 }
 
 // NewAnalogClock creates a new analog clock that displays the specified time.
 func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 	element = &AnalogClock { }
+	element.theme.Case = theme.C("fun", "clock")
 	element.Core, element.core = core.NewCore(element.draw)
 	element.core.SetMinimumSize(64, 64)
 	return
@@ -28,6 +31,24 @@ func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 func (element *AnalogClock) SetTime (newTime time.Time) {
 	if newTime == element.time { return }
 	element.time = newTime
+	element.redo()
+}
+
+// SetTheme sets the element's theme.
+func (element *AnalogClock) SetTheme (new theme.Theme) {
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
+	element.redo()
+}
+
+// SetConfig sets the element's configuration.
+func (element *AnalogClock) SetConfig (new config.Config) {
+	if new == element.config.Config { return }
+	element.config.Config = new
+	element.redo()
+}
+
+func (element *AnalogClock) redo () {
 	if element.core.HasImage() {
 		element.draw()
 		element.core.DamageAll()
@@ -37,19 +58,15 @@ func (element *AnalogClock) SetTime (newTime time.Time) {
 func (element *AnalogClock) draw () {
 	bounds := element.Bounds()
 
-	pattern, inset := theme.SunkenPattern(theme.PatternState {
-		Case: clockCase,
-	})
+	state := theme.PatternState { }
+	pattern := element.theme.Pattern(theme.PatternSunken, state)
+	inset   := element.theme.Inset(theme.PatternSunken)
 	artist.FillRectangle(element, pattern, bounds)
 
 	bounds = inset.Apply(bounds)
 
-	foreground, _ := theme.ForegroundPattern(theme.PatternState {
-		Case: clockCase,
-	})
-	accent, _ := theme.AccentPattern(theme.PatternState {
-		Case: clockCase,
-	})
+	foreground := element.theme.Pattern(theme.PatternForeground, state)
+	accent     := element.theme.Pattern(theme.PatternAccent, state)
 
 	for hour := 0; hour < 12; hour ++ {
 		element.radialLine (
@@ -71,7 +88,7 @@ func (element *AnalogClock) FlexibleHeightFor (width int) (height int) {
 	return width
 }
 
-// OnFlexibleHeightChange sets a function to be calle dwhen the parameters
+// OnFlexibleHeightChange sets a function to be called when the parameters
 // affecting the clock's flexible height change.
 func (element *AnalogClock) OnFlexibleHeightChange (func ()) { }
 
