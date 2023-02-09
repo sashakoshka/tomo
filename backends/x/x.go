@@ -2,6 +2,8 @@ package x
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
@@ -25,6 +27,9 @@ type Backend struct {
 		hyper uint16
 	}
 
+	theme  theme.Theme
+	config config.Config
+
 	windows map[xproto.Window] *Window
 }
 
@@ -33,6 +38,8 @@ func NewBackend () (output tomo.Backend, err error) {
 	backend := &Backend {
 		windows: map[xproto.Window] *Window { },
 		doChannel: make(chan func (), 0),
+		theme:  theme.Default  { },
+		config: config.Default { },
 	}
 	
 	// connect to X
@@ -66,7 +73,11 @@ func (backend *Backend) Run () (err error) {
 // Stop gracefully closes the connection and stops the event loop.
 func (backend *Backend) Stop () {
 	backend.assert()
+	toClose := []*Window { }
 	for _, window := range backend.windows {
+		toClose = append(toClose, window)
+	}
+	for _, window := range toClose {
 		window.Close()
 	}
 	xevent.Quit(backend.connection)
@@ -94,6 +105,25 @@ func (backend *Backend) Paste (accept []data.Mime) (data data.Data) {
 	// TODO
 	return
 }
+
+
+// SetTheme sets the theme of all open windows.
+func (backend *Backend) SetTheme (theme theme.Theme) {
+	backend.assert()
+	backend.theme = theme
+	for _, window := range backend.windows {
+		window.SetTheme(theme)
+	}
+}
+
+// SetConfig sets the configuration of all open windows.
+func (backend *Backend) SetConfig (config config.Config) {
+	backend.assert()
+	backend.config = config
+	for _, window := range backend.windows {
+		window.SetConfig(config)
+	}
+} 
 
 func (backend *Backend) assert () {
 	if backend == nil { panic("nil backend") }

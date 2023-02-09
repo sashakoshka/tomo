@@ -3,14 +3,11 @@ package basicElements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
-
-var scrollContainerCase     = theme.C("basic", "scrollContainer")
-var scrollBarHorizontalCase = theme.C("basic", "scrollBarHorizontal")
-var scrollBarVerticalCase   = theme.C("basic", "scrollBarVertical")
 
 // ScrollContainer is a container that is capable of holding a scrollable
 // element.
@@ -23,6 +20,7 @@ type ScrollContainer struct {
 	childWidth, childHeight int
 	
 	horizontal struct {
+		theme theme.Wrapped
 		exists bool
 		enabled bool
 		dragging bool
@@ -33,6 +31,7 @@ type ScrollContainer struct {
 	}
 
 	vertical struct {
+		theme theme.Wrapped
 		exists bool
 		enabled bool
 		dragging bool
@@ -41,6 +40,9 @@ type ScrollContainer struct {
 		track image.Rectangle
 		bar image.Rectangle
 	}
+	
+	config config.Wrapped
+	theme  theme.Wrapped
 
 	onFocusRequest func () (granted bool)
 	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
@@ -50,8 +52,11 @@ type ScrollContainer struct {
 // bars.
 func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 	element = &ScrollContainer { }
+	element.theme.Case = theme.C("basic", "scrollContainer")
+	element.horizontal.theme.Case = theme.C("basic", "scrollBarHorizontal")
+	element.vertical.theme.Case   = theme.C("basic", "scrollBarVertical")
+	
 	element.Core, element.core = core.NewCore(element.handleResize)
-	element.updateMinimumSize()
 	element.horizontal.exists = horizontal
 	element.vertical.exists   = vertical
 	return
@@ -75,6 +80,12 @@ func (element *ScrollContainer) Adopt (child elements.Scrollable) {
 	// adopt new child
 	element.child = child
 	if child != nil {
+		if child0, ok := child.(elements.Themeable); ok {
+			child0.SetTheme(element.theme.Theme)
+		}
+		if child0, ok := child.(elements.Configurable); ok {
+			child0.SetConfig(element.config.Config)
+		}
 		child.OnDamage(element.childDamageCallback)
 		child.OnMinimumSizeChange(element.updateMinimumSize)
 		child.OnScrollBoundsChange(element.childScrollBoundsChangeCallback)
@@ -85,8 +96,6 @@ func (element *ScrollContainer) Adopt (child elements.Scrollable) {
 				element.childFocusMotionRequestCallback)
 		}
 
-		// TODO: somehow inform the core that we do not in fact want to
-		// redraw the element.
 		element.updateMinimumSize()
 		
 		element.horizontal.enabled,
@@ -95,6 +104,34 @@ func (element *ScrollContainer) Adopt (child elements.Scrollable) {
 		if element.core.HasImage() {
 			element.resizeChildToFit()
 		}
+	}
+}
+
+// SetTheme sets the element's theme.
+func (element *ScrollContainer) SetTheme (new theme.Theme) {
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
+	if child, ok := element.child.(elements.Themeable); ok {
+		child.SetTheme(element.theme.Theme)
+	}
+	if element.core.HasImage() {
+		element.recalculate()
+		element.resizeChildToFit()
+		element.draw()
+	}
+}
+
+// SetConfig sets the element's configuration.
+func (element *ScrollContainer) SetConfig (new config.Config) {
+	if new == element.config.Config { return }
+	element.config.Config = new
+	if child, ok := element.child.(elements.Configurable); ok {
+		child.SetConfig(element.config.Config)
+	}
+	if element.core.HasImage() {
+		element.recalculate()
+		element.resizeChildToFit()
+		element.draw()
 	}
 }
 
@@ -111,6 +148,7 @@ func (element *ScrollContainer) HandleKeyUp (key input.Key, modifiers input.Modi
 }
 
 func (element *ScrollContainer) HandleMouseDown (x, y int, button input.Button) {
+	velocity := element.config.ScrollVelocity()
 	point := image.Pt(x, y)
 	if point.In(element.horizontal.bar) {
 		element.horizontal.dragging = true
@@ -123,9 +161,9 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button input.Button) 
 		// FIXME: x backend and scroll container should pull these
 		// values from the same place
 		if x > element.horizontal.bar.Min.X {
-			element.scrollChildBy(16, 0)
+			element.scrollChildBy(velocity, 0)
 		} else {
-			element.scrollChildBy(-16, 0)
+			element.scrollChildBy(-velocity, 0)
 		}
 		
 	} else if point.In(element.vertical.bar) {
@@ -137,9 +175,9 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button input.Button) 
 		
 	} else if point.In(element.vertical.gutter) {
 		if y > element.vertical.bar.Min.Y {
-			element.scrollChildBy(0, 16)
+			element.scrollChildBy(0, velocity)
 		} else {
-			element.scrollChildBy(0, -16)
+			element.scrollChildBy(0, -velocity)
 		}
 		
 	} else if child, ok := element.child.(elements.MouseTarget); ok {
@@ -281,22 +319,19 @@ func (element *ScrollContainer) resizeChildToFit () {
 }
 
 func (element *ScrollContainer) recalculate () {
-	_, gutterInsetHorizontal := theme.GutterPattern(theme.PatternState {
-		Case: scrollBarHorizontalCase,
-	})
-	_, gutterInsetVertical := theme.GutterPattern(theme.PatternState {
-		Case: scrollBarHorizontalCase,
-	})
-
 	horizontal := &element.horizontal
 	vertical   := &element.vertical
+	
+	gutterInsetHorizontal := horizontal.theme.Inset(theme.PatternGutter)
+	gutterInsetVertical   := vertical.theme.Inset(theme.PatternGutter)
+
 	bounds     := element.Bounds()
 	thicknessHorizontal :=
-		theme.HandleWidth() +
+		element.config.HandleWidth() +
 		gutterInsetHorizontal[3] +
 		gutterInsetHorizontal[1]
 	thicknessVertical :=
-		theme.HandleWidth() +
+		element.config.HandleWidth() +
 		gutterInsetVertical[3] +
 		gutterInsetVertical[1]
 
@@ -373,9 +408,8 @@ func (element *ScrollContainer) recalculate () {
 
 func (element *ScrollContainer) draw () {
 	artist.Paste(element, element.child, image.Point { })
-	deadPattern, _ := theme.DeadPattern(theme.PatternState {
-		Case: scrollContainerCase,
-	})
+	deadPattern := element.theme.Pattern (
+		theme.PatternDead, theme.PatternState { })
 	artist.FillRectangle (
 		element, deadPattern,
 		image.Rect (
@@ -388,32 +422,26 @@ func (element *ScrollContainer) draw () {
 }
 
 func (element *ScrollContainer) drawHorizontalBar () {
-	gutterPattern, _ := theme.GutterPattern (theme.PatternState {
-		Case: scrollBarHorizontalCase,
-		Disabled: !element.horizontal.enabled,
-	})
-	artist.FillRectangle(element, gutterPattern, element.horizontal.gutter)
-	
-	handlePattern, _ := theme.HandlePattern (theme.PatternState {
-		Case: scrollBarHorizontalCase,
+	state := theme.PatternState {
 		Disabled: !element.horizontal.enabled,
 		Pressed:  element.horizontal.dragging,
-	})
+	}
+	gutterPattern := element.horizontal.theme.Pattern(theme.PatternGutter, state)
+	artist.FillRectangle(element, gutterPattern, element.horizontal.gutter)
+	
+	handlePattern := element.horizontal.theme.Pattern(theme.PatternHandle, state)
 	artist.FillRectangle(element, handlePattern, element.horizontal.bar)
 }
 
 func (element *ScrollContainer) drawVerticalBar () {
-	gutterPattern, _ := theme.GutterPattern (theme.PatternState {
-		Case: scrollBarVerticalCase,
-		Disabled: !element.vertical.enabled,
-	})
-	artist.FillRectangle(element, gutterPattern, element.vertical.gutter)
-	
-	handlePattern, _ := theme.HandlePattern (theme.PatternState {
-		Case: scrollBarVerticalCase,
+	state := theme.PatternState {
 		Disabled: !element.vertical.enabled,
 		Pressed:  element.vertical.dragging,
-	})
+	}
+	gutterPattern := element.vertical.theme.Pattern(theme.PatternGutter, state)
+	artist.FillRectangle(element, gutterPattern, element.vertical.gutter)
+	
+	handlePattern := element.vertical.theme.Pattern(theme.PatternHandle, state)
 	artist.FillRectangle(element, handlePattern, element.vertical.bar)
 }
 
@@ -436,19 +464,15 @@ func (element *ScrollContainer) dragVerticalBar (mousePosition image.Point) {
 }
 
 func (element *ScrollContainer) updateMinimumSize () {
-	_, gutterInsetHorizontal := theme.GutterPattern(theme.PatternState {
-		Case: scrollBarHorizontalCase,
-	})
-	_, gutterInsetVertical := theme.GutterPattern(theme.PatternState {
-		Case: scrollBarHorizontalCase,
-	})
+	gutterInsetHorizontal := element.horizontal.theme.Inset(theme.PatternGutter)
+	gutterInsetVertical   := element.vertical.theme.Inset(theme.PatternGutter)
 
 	thicknessHorizontal :=
-		theme.HandleWidth() +
+		element.config.HandleWidth() +
 		gutterInsetHorizontal[3] +
 		gutterInsetHorizontal[1]
 	thicknessVertical :=
-		theme.HandleWidth() +
+		element.config.HandleWidth() +
 		gutterInsetVertical[3] +
 		gutterInsetVertical[1]
 	

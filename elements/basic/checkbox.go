@@ -3,10 +3,9 @@ package basicElements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
-
-var checkboxCase = theme.C("basic", "checkbox")
 
 // Checkbox is a toggle-able checkbox with a label.
 type Checkbox struct {
@@ -20,21 +19,19 @@ type Checkbox struct {
 	checked bool
 	text    string
 	
+	config config.Wrapped
+	theme  theme.Wrapped
+	
 	onToggle func ()
 }
 
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked }
+	element.theme.Case = theme.C("basic", "checkbox")
 	element.Core, element.core = core.NewCore(element.draw)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore (func () {
-		if element.core.HasImage () {
-			element.draw()
-			element.core.DamageAll()
-		}
-	})
-	element.drawer.SetFace(theme.FontFaceRegular())
+	element.focusableControl = core.NewFocusableCore(element.redo)
 	element.SetText(text)
 	return
 }
@@ -116,16 +113,45 @@ func (element *Checkbox) SetText (text string) {
 
 	element.text = text
 	element.drawer.SetText([]rune(text))
-	textBounds := element.drawer.LayoutBounds()
+	element.updateMinimumSize()
 	
-	if text == "" {
+	if element.core.HasImage () {
+		element.draw()
+		element.core.DamageAll()
+	}
+}
+
+// SetTheme sets the element's theme.
+func (element *Checkbox) SetTheme (new theme.Theme) {
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
+	element.drawer.SetFace (element.theme.FontFace (
+		theme.FontStyleRegular,
+		theme.FontSizeNormal))
+	element.updateMinimumSize()
+	element.redo()
+}
+
+// SetConfig sets the element's configuration.
+func (element *Checkbox) SetConfig (new config.Config) {
+	if new == element.config.Config { return }
+	element.config.Config = new
+	element.updateMinimumSize()
+	element.redo()
+}
+
+func (element *Checkbox) updateMinimumSize () {
+	textBounds := element.drawer.LayoutBounds()
+	if element.text == "" {
 		element.core.SetMinimumSize(textBounds.Dy(), textBounds.Dy())
 	} else {
 		element.core.SetMinimumSize (
-			textBounds.Dy() + theme.Padding() + textBounds.Dx(),
+			textBounds.Dy() + element.config.Padding() + textBounds.Dx(),
 			textBounds.Dy())
 	}
-	
+}
+
+func (element *Checkbox) redo () {
 	if element.core.HasImage () {
 		element.draw()
 		element.core.DamageAll()
@@ -136,35 +162,28 @@ func (element *Checkbox) draw () {
 	bounds := element.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 
-	backgroundPattern, _ := theme.BackgroundPattern(theme.PatternState {
-		Case: checkboxCase,
-	})
-	artist.FillRectangle(element, backgroundPattern, bounds)
-
-	pattern, inset := theme.ButtonPattern(theme.PatternState {
-		Case: checkboxCase,
+	state := theme.PatternState {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
-	})
+		On:       element.checked,
+	}
+
+	backgroundPattern := element.theme.Pattern (
+		theme.PatternBackground, state)
+	artist.FillRectangle(element, backgroundPattern, bounds)
+
+	pattern := element.theme.Pattern(theme.PatternButton, state)
 	artist.FillRectangle(element, pattern, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := bounds.Min.Add(image.Point {
-		X: bounds.Dy() + theme.Padding(),
+		X: bounds.Dy() + element.config.Padding(),
 	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground, _ := theme.ForegroundPattern (theme.PatternState {
-		Case: checkboxCase,
-		Disabled: !element.Enabled(),
-	})
+	foreground := element.theme.Pattern(theme.PatternForeground, state)
 	element.drawer.Draw(element, foreground, offset)
-	
-	if element.checked {
-		checkBounds := inset.Apply(boxBounds).Inset(2)
-		artist.FillRectangle(element, foreground, checkBounds)
-	}
 }

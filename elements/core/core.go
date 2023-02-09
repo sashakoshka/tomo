@@ -14,14 +14,21 @@ type Core struct {
 		minimumHeight int
 	}
 
-	drawSizeChange func ()
+	drawSizeChange      func ()
 	onMinimumSizeChange func ()
 	onDamage func (region canvas.Canvas)
 }
 
 // NewCore creates a new element core and its corresponding control.
-func NewCore (drawSizeChange func ()) (core *Core, control CoreControl) {
-	core    = &Core { drawSizeChange: drawSizeChange }
+func NewCore (
+	drawSizeChange func (),
+) (
+	core *Core,
+	control CoreControl,
+) {
+	core = &Core {
+		drawSizeChange: drawSizeChange,
+	}
 	control = CoreControl { core: core }
 	return
 }

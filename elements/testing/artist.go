@@ -26,6 +26,8 @@ func NewArtist () (element *Artist) {
 
 func (element *Artist) draw () {
 	bounds := element.Bounds()
+	artist.FillRectangle(element, artist.NewUniform(hex(0)), bounds)
+	
 	element.cellBounds.Max.X = bounds.Min.X + bounds.Dx() / 5
 	element.cellBounds.Max.Y = bounds.Min.Y + (bounds.Dy() - 48) / 8
 

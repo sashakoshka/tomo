@@ -165,6 +165,7 @@ func (drawer *TextDrawer) LineHeight () (height fixed.Int26_6) {
 // have its maximum width set to the given width. This does not alter the
 // drawer's state.
 func (drawer *TextDrawer) ReccomendedHeightFor (width int) (height int) {
+	if drawer.face == nil { return }
 	if !drawer.layoutClean { drawer.recalculate() }
 	metrics := drawer.face.Metrics()
 	dot := fixed.Point26_6 { 0, metrics.Height }

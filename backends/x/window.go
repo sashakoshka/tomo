@@ -8,6 +8,8 @@ import "github.com/jezek/xgbutil/xevent"
 import "github.com/jezek/xgbutil/xwindow"
 import "github.com/jezek/xgbutil/xgraphics"
 import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
@@ -19,6 +21,9 @@ type Window struct {
 	child   elements.Element
 	onClose func ()
 	skipChildDrawCallback bool
+
+	theme  theme.Theme
+	config config.Config
 
 	metrics struct {
 		width  int
@@ -69,6 +74,9 @@ func (backend *Backend) NewWindow (
 		Connect(backend.connection, window.xWindow.Id)
 	xevent.MotionNotifyFun(window.handleMotionNotify).
 		Connect(backend.connection, window.xWindow.Id)
+
+	window.SetTheme(backend.theme)
+	window.SetConfig(backend.config)
 	
 	window.metrics.width  = width
 	window.metrics.height = height
@@ -100,6 +108,12 @@ func (window *Window) Adopt (child elements.Element) {
 	
 	// adopt new child
 	window.child = child
+	if newChild, ok := child.(elements.Themeable); ok {
+		newChild.SetTheme(window.theme)
+	}
+	if newChild, ok := child.(elements.Configurable); ok {
+		newChild.SetConfig(window.config)
+	}
 	if newChild, ok := child.(elements.Flexible); ok {
 		newChild.OnFlexibleHeightChange(window.resizeChildToFit)
 	}
@@ -194,6 +208,20 @@ func (window *Window) Close () {
 
 func (window *Window) OnClose (callback func ()) {
 	window.onClose = callback
+}
+
+func (window *Window) SetTheme (theme theme.Theme) {
+	window.theme = theme
+	if child, ok := window.child.(elements.Themeable); ok {
+		child.SetTheme(theme)
+	}
+}
+
+func (window *Window) SetConfig (config config.Config) {
+	window.config = config
+	if child, ok := window.child.(elements.Configurable); ok {
+		child.SetConfig(config)
+	}
 }
 
 func (window *Window) reallocateCanvas () {

@@ -1,113 +1,116 @@
 package theme
 
-import "image/color"
+import "image"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 
-// none of these colors are final! TODO: generate these values from a theme
-// file at startup.
+// Pattern lists a number of cannonical pattern types, each with its own ID.
+// This allows custom elements to follow themes, even those that do not
+// explicitly support them.
+type Pattern int; const (
+	// PatternAccent is the accent color of the theme. It is safe to assume
+	// that this is, by default, a solid color.
+	PatternAccent Pattern = iota
 
-func hex (color uint32) (c color.RGBA) {
-	c.A = uint8(color)
-	c.B = uint8(color >>  8)
-	c.G = uint8(color >> 16)
-	c.R = uint8(color >> 24)
+	// PatternBackground is the background color of the theme. It is safe to
+	// assume that this is, by default, a solid color.
+	PatternBackground
+
+	// PatternForeground is the foreground text color of the theme. It is
+	// safe to assume that this is, by default, a solid color.
+	PatternForeground
+
+	// PatternDead is a pattern that is displayed on a "dead area" where no
+	// controls exist, but there still must be some indication of visual
+	// structure (such as in the corner between two scroll bars).
+	PatternDead
+
+	// PatternRaised is a generic raised pattern.
+	PatternRaised
+
+	// PatternSunken is a generic sunken pattern.
+	PatternSunken
+
+	// PatternPinboard is similar to PatternSunken, but it is textured.
+	PatternPinboard
+
+	// PatternButton is a button pattern.
+	PatternButton
+
+	// PatternInput is a pattern for input fields, editable text areas, etc.
+	PatternInput
+
+	// PatternGutter is a track for things to slide on.
+	PatternGutter
+
+	// PatternHandle is a handle that slides along a gutter.
+	PatternHandle
+)
+
+// Theme represents a visual style configuration,
+type Theme interface {
+	// FontFace returns the proper font for a given style, size, and case.
+	FontFace (FontStyle, FontSize, Case) font.Face
+
+	// Icon returns an appropriate icon given an icon name and case.
+	Icon (string, Case) artist.Pattern
+
+	// Pattern returns an appropriate pattern given a pattern name, case,
+	// and state.
+	Pattern (Pattern, Case, PatternState) artist.Pattern
+
+	// Inset returns the area on all sides of a given pattern that is not
+	// meant to be drawn on.
+	Inset (Pattern, Case) Inset
+
+	// Sink returns a vector that should be added to an element's inner
+	// content when it is pressed down (if applicable) to simulate a 3D
+	// sinking effect.
+	Sink (Pattern, Case) image.Point
+}
+
+// Wrapped wraps any theme and injects a case into it automatically so that it
+// doesn't need to be specified for each query. Additionally, if the underlying
+// theme is nil, it just uses the default theme instead.
+type Wrapped struct {
+	Theme
+	Case
+}
+
+// FontFace returns the proper font for a given style and size.
+func (wrapped Wrapped) FontFace (style FontStyle, size FontSize) font.Face {
+	real := wrapped.ensure()
+	return real.FontFace(style, size, wrapped.Case)
+}
+
+// Icon returns an appropriate icon given an icon name.
+func (wrapped Wrapped) Icon (name string) artist.Pattern {
+	real := wrapped.ensure()
+	return real.Icon(name, wrapped.Case)
+}
+
+// Pattern returns an appropriate pattern given a pattern name and state.
+func (wrapped Wrapped) Pattern (id Pattern, state PatternState) artist.Pattern {
+	real := wrapped.ensure()
+	return real.Pattern(id, wrapped.Case, state)
+}
+
+// Inset returns the area on all sides of a given pattern that is not meant to
+// be drawn on.
+func (wrapped Wrapped) Inset (id Pattern) Inset {
+	real := wrapped.ensure()
+	return real.Inset(id, wrapped.Case)
+}
+
+// Sink returns a vector that should be added to an element's inner content when
+// it is pressed down (if applicable) to simulate a 3D sinking effect.
+func (wrapped Wrapped) Sink (id Pattern) image.Point {
+	real := wrapped.ensure()
+	return real.Sink(id, wrapped.Case)
+}
+
+func (wrapped Wrapped) ensure () (real Theme) {
+	real = wrapped.Theme
+	if real == nil { real = Default { } }
 	return
-}
-
-func uhex (color uint32) (pattern artist.Pattern) {
-	return artist.NewUniform(hex(color))
-}
-
-var accentPattern         = artist.NewUniform(hex(0x408090FF))
-var backgroundPattern     = artist.NewUniform(color.Gray16 { 0xAAAA })
-var foregroundPattern     = artist.NewUniform(color.Gray16 { 0x0000 })
-var weakForegroundPattern = artist.NewUniform(color.Gray16 { 0x4444 })
-var strokePattern         = artist.NewUniform(color.Gray16 { 0x0000 })
-
-var sunkenPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke {
-		Weight: 1,
-		Pattern: artist.Beveled {
-			artist.NewUniform(hex(0x3b534eFF)),
-			artist.NewUniform(hex(0x97a09cFF)),
-		},
-	},
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
-
-var texturedSunkenPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke {
-		Weight: 1,
-		Pattern: artist.Beveled {
-			artist.NewUniform(hex(0x3b534eFF)),
-			artist.NewUniform(hex(0x97a09cFF)),
-		},
-	},
-	// artist.Stroke { Pattern: artist.Striped {
-		// First: artist.Stroke {
-			// Weight: 2,
-			// Pattern: artist.NewUniform(hex(0x97a09cFF)),
-		// },
-		// Second: artist.Stroke {
-			// Weight: 1,
-			// Pattern: artist.NewUniform(hex(0x6e8079FF)),
-		// },
-	// }})
-	
-	artist.Stroke { Pattern: artist.Noisy {
-		Low:  artist.NewUniform(hex(0x97a09cFF)),
-		High: artist.NewUniform(hex(0x6e8079FF)),
-	}})
-
-var raisedPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke {
-		Weight: 1,
-		Pattern: artist.Beveled {
-			artist.NewUniform(hex(0xDBDBDBFF)),
-			artist.NewUniform(hex(0x383C3AFF)),
-		},
-	},
-	artist.Stroke { Pattern: artist.NewUniform(hex(0xAAAAAAFF)) })
-
-var selectedRaisedPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke {
-		Weight: 1,
-		Pattern: artist.Beveled {
-			artist.NewUniform(hex(0xDBDBDBFF)),
-			artist.NewUniform(hex(0x383C3AFF)),
-		},
-	},
-	artist.Stroke { Weight: 1, Pattern: accentPattern },
-	artist.Stroke { Pattern: artist.NewUniform(hex(0xAAAAAAFF)) })
-
-var deadPattern = artist.NewMultiBordered (
-	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
-
-// TODO: load fonts from an actual source instead of using defaultfont
-
-// FontFaceRegular returns the font face to be used for normal text.
-func FontFaceRegular () font.Face {
-	return defaultfont.FaceRegular
-}
-
-// FontFaceBold returns the font face to be used for bolded text.
-func FontFaceBold () font.Face {
-	return defaultfont.FaceBold
-}
-
-// FontFaceItalic returns the font face to be used for italicized text.
-func FontFaceItalic () font.Face {
-	return defaultfont.FaceItalic
-}
-
-// FontFaceBoldItalic returns the font face to be used for text that is both
-// bolded and italicized.
-func FontFaceBoldItalic () font.Face {
-	return defaultfont.FaceBoldItalic
 }

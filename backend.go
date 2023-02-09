@@ -2,6 +2,8 @@ package tomo
 
 import "errors"
 import "git.tebibyte.media/sashakoshka/tomo/data"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Backend represents a connection to a display server, or something similar.
@@ -28,6 +30,12 @@ type Backend interface {
 
 	// Paste returns the data currently in the clipboard.
 	Paste (accept []data.Mime) (data.Data)
+	
+	// SetTheme sets the theme of all open windows.
+	SetTheme (theme.Theme)
+	
+	// SetConfig sets the configuration of all open windows.
+	SetConfig (config.Config)
 }
 
 // BackendFactory represents a function capable of constructing a backend

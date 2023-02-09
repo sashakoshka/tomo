@@ -3,13 +3,12 @@ package basicElements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
-
-var containerCase = theme.C("basic", "container")
 
 // Container is an element capable of containg other elements, and arranging
 // them in a layout.
@@ -25,6 +24,9 @@ type Container struct {
 	focusable bool
 	flexible  bool
 	
+	config config.Wrapped
+	theme  theme.Wrapped
+	
 	onFocusRequest func () (granted bool)
 	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
 	onFlexibleHeightChange func ()
@@ -33,6 +35,7 @@ type Container struct {
 // NewContainer creates a new container.
 func NewContainer (layout layouts.Layout) (element *Container) {
 	element = &Container { }
+	element.theme.Case = theme.C("basic", "container")
 	element.Core, element.core = core.NewCore(element.redoAll)
 	element.SetLayout(layout)
 	return
@@ -52,6 +55,12 @@ func (element *Container) SetLayout (layout layouts.Layout) {
 // whatever way is defined by the current layout.
 func (element *Container) Adopt (child elements.Element, expand bool) {
 	// set event handlers
+	if child0, ok := child.(elements.Themeable); ok {
+		child0.SetTheme(element.theme.Theme)
+	}
+	if child0, ok := child.(elements.Configurable); ok {
+		child0.SetConfig(element.config.Config)
+	}
 	child.OnDamage (func (region canvas.Canvas) {
 		element.core.DamageRegion(region.Bounds())
 	})
@@ -205,15 +214,42 @@ func (element *Container) redoAll () {
 
 	// draw a background
 	bounds := element.Bounds()
-	pattern, _ := theme.BackgroundPattern (theme.PatternState {
-		Case: containerCase,
-	})
+	pattern := element.theme.Pattern (
+		theme.PatternBackground,
+		theme.PatternState { })
 	artist.FillRectangle(element, pattern, bounds)
 
 	// cut our canvas up and give peices to child elements
 	for _, entry := range element.children {
 		entry.DrawTo(canvas.Cut(element, entry.Bounds))
 	}
+}
+
+
+// SetTheme sets the element's theme.
+func (element *Container) SetTheme (new theme.Theme) {
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
+	for _, child := range element.children {
+		if child0, ok := child.Element.(elements.Themeable); ok {
+			child0.SetTheme(element.theme.Theme)
+		}
+	}
+	element.updateMinimumSize()
+	element.redoAll()
+}
+
+// SetConfig sets the element's configuration.
+func (element *Container) SetConfig (new config.Config) {
+	if new == element.config.Config { return }
+	element.config.Config = new
+	for _, child := range element.children {
+		if child0, ok := child.Element.(elements.Configurable); ok {
+			child0.SetConfig(element.config)
+		}
+	}
+	element.updateMinimumSize()
+	element.redoAll()
 }
 
 func (element *Container) HandleMouseDown (x, y int, button input.Button) {
@@ -266,7 +302,7 @@ func (element *Container) HandleKeyUp (key input.Key, modifiers input.Modifiers)
 func (element *Container) FlexibleHeightFor (width int) (height int) {
 	return element.layout.FlexibleHeightFor (
 		element.children,
-		theme.Margin(), width)
+		element.config.Margin(), width)
 }
 
 func (element *Container) OnFlexibleHeightChange (callback func ()) {
@@ -469,15 +505,15 @@ func (element *Container) childFocusRequestCallback (
 
 func (element *Container) updateMinimumSize () {
 	width, height := element.layout.MinimumSize (
-		element.children, theme.Margin())
+		element.children, element.config.Margin())
 	if element.flexible {
 		height = element.layout.FlexibleHeightFor (
-			element.children, theme.Margin(), width)
+			element.children, element.config.Margin(), width)
 	}
 	element.core.SetMinimumSize(width, height)
 }
 
 func (element *Container) recalculate () {
 	element.layout.Arrange (
-		element.children, theme.Margin(), element.Bounds())
+		element.children, element.config.Margin(), element.Bounds())
 }
