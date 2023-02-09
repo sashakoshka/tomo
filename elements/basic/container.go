@@ -64,7 +64,10 @@ func (element *Container) Adopt (child elements.Element, expand bool) {
 	child.OnDamage (func (region canvas.Canvas) {
 		element.core.DamageRegion(region.Bounds())
 	})
-	child.OnMinimumSizeChange(element.updateMinimumSize)
+	child.OnMinimumSizeChange (func () {
+		element.updateMinimumSize()
+		element.redoAll()
+	})
 	if child0, ok := child.(elements.Flexible); ok {
 		child0.OnFlexibleHeightChange(element.updateMinimumSize)
 	}
@@ -209,6 +212,7 @@ func (element *Container) childPosition (child elements.Element) (position image
 }
 
 func (element *Container) redoAll () {
+	if !element.core.HasImage() { return }
 	// do a layout
 	element.recalculate()
 
@@ -496,7 +500,6 @@ func (element *Container) childFocusRequestCallback (
 			child.HandleUnfocus()
 			return true
 		})
-		child.HandleFocus(input.KeynavDirectionNeutral)
 		return true
 	} else {
 		return false

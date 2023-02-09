@@ -1,6 +1,7 @@
 package basicElements
 
 import "image"
+// import "runtime/debug"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
@@ -36,7 +37,7 @@ func NewButton (text string) (element *Button) {
 }
 
 func (element *Button) HandleMouseDown (x, y int, button input.Button) {
-	if !element.Enabled()  { return }
+	if !element.Enabled() { return }
 	if !element.Focused() { element.Focus() }
 	if button != input.ButtonLeft { return }
 	element.pressed = true
@@ -45,16 +46,15 @@ func (element *Button) HandleMouseDown (x, y int, button input.Button) {
 
 func (element *Button) HandleMouseUp (x, y int, button input.Button) {
 	if button != input.ButtonLeft { return }
+	// println("handling mouse up")
 	element.pressed = false
-	element.redo()
-
 	within := image.Point { x, y }.
 		In(element.Bounds())
-		
-	if !element.Enabled() { return }
-	if within && element.onClick != nil {
+	if element.Enabled() && within && element.onClick != nil {
 		element.onClick()
 	}
+	element.redo()
+	// println("done handling mouse up")
 }
 
 func (element *Button) HandleMouseMove (x, y int) { }
@@ -133,6 +133,8 @@ func (element *Button) redo () {
 
 func (element *Button) draw () {
 	bounds := element.Bounds()
+	// println(bounds.String(), element.text)
+	// debug.PrintStack()
 
 	state := theme.PatternState {
 		Disabled: !element.Enabled(),

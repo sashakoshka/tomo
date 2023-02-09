@@ -32,6 +32,7 @@ func run () {
 	controlBar := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
 	label := basicElements.NewLabel("Play a song!", false)
 	controlBar.Adopt(label, true)
+	controlBar.Adopt(basicElements.NewLabel("Play a song!", false), true)
 	waveformButton := basicElements.NewButton("Sine")
 	waveformButton.OnClick (func () {
 		waveform = (waveform + 1) % 2

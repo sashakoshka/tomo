@@ -126,9 +126,10 @@ func (window *Window) Adopt (child elements.Element) {
 			window.childMinimumSizeChangeCallback (
 				child.MinimumSize())
 		})
-		window.resizeChildToFit()
-		window.childMinimumSizeChangeCallback(child.MinimumSize())
-		window.redrawChildEntirely()
+		if !window.childMinimumSizeChangeCallback(child.MinimumSize()) {
+			window.resizeChildToFit()
+			window.redrawChildEntirely()
+		}
 	}
 }
 
@@ -303,7 +304,7 @@ func (window *Window) paste (canvas canvas.Canvas) (updatedRegion image.Rectangl
 	return bounds
 }
 
-func (window *Window) childMinimumSizeChangeCallback (width, height int) {
+func (window *Window) childMinimumSizeChangeCallback (width, height int) (resized bool) {
 	icccm.WmNormalHintsSet (
 		window.backend.connection,
 		window.xWindow.Id,
@@ -319,14 +320,17 @@ func (window *Window) childMinimumSizeChangeCallback (width, height int) {
 	if newWidth != window.metrics.width ||
 		newHeight != window.metrics.height {
 		window.xWindow.Resize(newWidth, newHeight)
+		return true
 	}
+
+	return false
 }
 
 func (window *Window) childSelectionRequestCallback () (granted bool) {
-	if child, ok := window.child.(elements.Focusable); ok {
-		child.HandleFocus(input.KeynavDirectionNeutral)
+	if _, ok := window.child.(elements.Focusable); ok {
+		return true
 	}
-	return true
+	return false
 }
 
 func (window *Window) childSelectionMotionRequestCallback (

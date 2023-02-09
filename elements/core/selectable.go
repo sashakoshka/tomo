@@ -37,9 +37,14 @@ func (core *FocusableCore) Focused () (focused bool) {
 
 // Focus focuses this element, if its parent element grants the request.
 func (core *FocusableCore) Focus () {
-	if !core.enabled { return }
+	if !core.enabled || core.focused { return }
 	if core.onFocusRequest != nil {
-		core.onFocusRequest()
+		if core.onFocusRequest() {
+			core.focused = true
+			if core.drawFocusChange != nil {
+				core.drawFocusChange()
+			}
+		}
 	}
 }
 
@@ -55,9 +60,11 @@ func (core *FocusableCore) HandleFocus (
 	if core.focused && direction != input.KeynavDirectionNeutral {
 		return false
 	}
-	
-	core.focused = true
-	if core.drawFocusChange != nil { core.drawFocusChange() }
+
+	if core.focused == false {
+		core.focused = true
+		if core.drawFocusChange != nil { core.drawFocusChange() }
+	}
 	return true
 }
 
