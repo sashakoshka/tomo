@@ -15,6 +15,7 @@ type pianoKey struct {
 	music.Note
 }
 
+// Piano is an element that can be used to input midi notes.
 type Piano struct {
 	*core.Core
 	core core.CoreControl
@@ -32,7 +33,15 @@ type Piano struct {
 	onRelease func (music.Note)
 }
 
+// NewPiano returns a new piano element with a lowest and highest octave,
+// inclusive. If low is greater than high, they will be swapped.
 func NewPiano (low, high music.Octave) (element *Piano) {
+	if low > high {
+		temp := low
+		low = high
+		high = temp
+	}
+	
 	element = &Piano {
 		low:  low,
 		high: high,

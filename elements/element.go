@@ -60,7 +60,9 @@ type Focusable interface {
 
 	// OnFocusRequest sets a function to be called when this element wants
 	// its parent element to focus it. Parent elements should return true if
-	// the request was granted, and false if it was not.
+	// the request was granted, and false if it was not. If the parent
+	// element returns true, the element must act as if a HandleFocus call
+	// was made with KeynavDirectionNeutral.
 	OnFocusRequest (func () (granted bool))
 
 	// OnFocusMotionRequest sets a function to be called when this
