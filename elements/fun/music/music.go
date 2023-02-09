@@ -43,6 +43,7 @@ const (
 	NoteBb0
 	NoteB0
 
+	// nice
 	NoteA4 Note = 69
 )
 
