@@ -49,6 +49,7 @@ func run () {
 	container.Adopt(piano, true)
 	piano.OnPress(playNote)
 	piano.OnRelease(stopNote)
+	piano.Focus()
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
