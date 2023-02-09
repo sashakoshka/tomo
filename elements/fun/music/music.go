@@ -48,8 +48,8 @@ const (
 )
 
 // Octave returns the octave of the note
-func (note Note) Octave () int {
-	return int(note / 12 - 1)
+func (note Note) Octave () Octave {
+	return Octave(note / 12 - 1)
 }
 
 // Degree returns the scale degree of the note in the chromatic scale.
