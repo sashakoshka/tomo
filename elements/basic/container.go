@@ -499,6 +499,7 @@ func (element *Container) childFocusRequestCallback (
 	granted bool,
 ) {
 	if element.onFocusRequest != nil && element.onFocusRequest() {
+		element.focused = true
 		element.forFocused (func (child elements.Focusable) bool {
 			child.HandleUnfocus()
 			return true
