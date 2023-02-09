@@ -1,7 +1,5 @@
 package main
 
-import "os"
-import "time"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
@@ -10,35 +8,19 @@ import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
 
 func main () {
 	tomo.Run(run)
-	os.Exit(0)
 }
 
 func run () {
 	window, _ := tomo.NewWindow(2, 2)
-	window.SetTitle("Clock")
+	window.SetTitle("Piano")
 	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
-	clock := fun.NewAnalogClock(time.Now())
-	container.Adopt(clock, true)
-	label := basicElements.NewLabel(formatTime(), false)
+	label := basicElements.NewLabel("Play a song!", false)
 	container.Adopt(label, false)
+	piano := fun.NewPiano(3, 5)
+	container.Adopt(piano, true)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
-	go tick(label, clock)
-}
-
-func formatTime () (timeString string) {
-	return time.Now().Format("2006-01-02 15:04:05")
-}
-
-func tick (label *basicElements.Label, clock *fun.AnalogClock) {
-	for {
-		tomo.Do (func () {
-			label.SetText(formatTime())
-			clock.SetTime(time.Now())
-		})
-		time.Sleep(time.Second)
-	}
 }
