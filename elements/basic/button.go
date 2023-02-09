@@ -133,7 +133,6 @@ func (element *Button) redo () {
 
 func (element *Button) draw () {
 	bounds := element.Bounds()
-	// println(bounds.String(), element.text)
 	// debug.PrintStack()
 
 	state := theme.PatternState {

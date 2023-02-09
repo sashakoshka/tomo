@@ -65,8 +65,11 @@ func (element *Container) Adopt (child elements.Element, expand bool) {
 		element.core.DamageRegion(region.Bounds())
 	})
 	child.OnMinimumSizeChange (func () {
+		// TODO: this could probably stand to be more efficient. I mean
+		// seriously?
 		element.updateMinimumSize()
 		element.redoAll()
+		element.core.DamageAll()
 	})
 	if child0, ok := child.(elements.Flexible); ok {
 		child0.OnFlexibleHeightChange(element.updateMinimumSize)
@@ -214,7 +217,7 @@ func (element *Container) childPosition (child elements.Element) (position image
 func (element *Container) redoAll () {
 	if !element.core.HasImage() { return }
 	// do a layout
-	element.recalculate()
+	element.doLayout()
 
 	// draw a background
 	bounds := element.Bounds()
@@ -516,7 +519,7 @@ func (element *Container) updateMinimumSize () {
 	element.core.SetMinimumSize(width, height)
 }
 
-func (element *Container) recalculate () {
+func (element *Container) doLayout () {
 	element.layout.Arrange (
 		element.children, element.config.Margin(), element.Bounds())
 }

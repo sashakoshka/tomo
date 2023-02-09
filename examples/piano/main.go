@@ -4,7 +4,6 @@ import "math"
 import "errors"
 import "github.com/faiface/beep"
 import "github.com/faiface/beep/speaker"
-import "github.com/faiface/beep/generators"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
@@ -32,13 +31,15 @@ func run () {
 	controlBar := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
 	label := basicElements.NewLabel("Play a song!", false)
 	controlBar.Adopt(label, true)
-	controlBar.Adopt(basicElements.NewLabel("Play a song!", false), true)
 	waveformButton := basicElements.NewButton("Sine")
 	waveformButton.OnClick (func () {
-		waveform = (waveform + 1) % 2
+		waveform = (waveform + 1) % 5
 		switch waveform {
 		case 0: waveformButton.SetText("Sine")
 		case 1: waveformButton.SetText("Square")
+		case 2: waveformButton.SetText("Saw")
+		case 3: waveformButton.SetText("Triangle")
+		case 4: waveformButton.SetText("Supersaw")
 		}
 	})
 	controlBar.Adopt(waveformButton, false)
@@ -63,11 +64,7 @@ func stopNote (note music.Note) {
 }
 
 func playNote (note music.Note) {
-	var streamer beep.Streamer
-	switch waveform {
-	case 0: streamer, _ = generators.SinTone(sampleRate, int(tuning.Tune(note)))
-	case 1: streamer, _ = SquareTone(sampleRate, int(tuning.Tune(note)))
-	}
+	streamer, _ := Tone(sampleRate, int(tuning.Tune(note)), waveform)
 
 	stopNote(note)
 	speaker.Lock()
@@ -77,42 +74,56 @@ func playNote (note music.Note) {
 }
 
 // https://github.com/faiface/beep/blob/v1.1.0/generators/toner.go
-// Adapted to be a square wave instead
+// Adapted to be a bit more versatile.
 
 type toneStreamer struct {
-	stat  float64
-	delta float64
+	position float64
+	delta    float64
+	waveform int
 }
 
-func SquareTone (sr beep.SampleRate, freq int) (beep.Streamer, error) {
+func Tone (sr beep.SampleRate, freq int, waveform int) (beep.Streamer, error) {
 	if int(sr) / freq < 2 {
 		return nil, errors.New (
 			"square tone generator: samplerate must be at least " +
 			"2 times greater then frequency")
 	}
 	tone := new(toneStreamer)
-	tone.stat = 0.0
-	srf := float64(sr)
-	ff := float64(freq)
-	steps := srf / ff
+	tone.position = 0.0
+	tone.waveform = waveform
+	steps := float64(sr) / float64(freq)
 	tone.delta = 1.0 / steps
 	return tone, nil
 }
 
 func (tone *toneStreamer) nextSample () (sample float64) {
-	if tone.stat > 0.5 {
-		sample = 1
-	} else {
-		sample = 0
+	switch tone.waveform {
+	case 0:
+		sample = math.Sin(tone.position * 2.0 * math.Pi)
+	case 1:
+		if tone.position > 0.5 {
+			sample = 1
+		} else {
+			sample = -1
+		}
+	case 2:
+		sample = (tone.position - 0.5) * 2
+	case 3:
+		sample = 1 - math.Abs(tone.position - 0.5) * 4
+	case 4:
+		sample =
+			-1 + 13.7 * tone.position +
+			28.32 * tone.position * tone.position +
+			15.62 * tone.position * tone.position * tone.position
 	}
-	_, tone.stat = math.Modf(tone.stat + tone.delta)
+	_, tone.position = math.Modf(tone.position + tone.delta)
 	return
 }
 
 func (tone *toneStreamer) Stream (buf [][2]float64) (int, bool) {
 	for i := 0; i < len(buf); i++ {
-		s := tone.nextSample()
-		buf[i] = [2]float64{s, s}
+		sample := tone.nextSample()
+		buf[i] = [2]float64{sample, sample}
 	}
 	return len(buf), true
 }
