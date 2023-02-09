@@ -18,7 +18,9 @@ type pianoKey struct {
 // Piano is an element that can be used to input midi notes.
 type Piano struct {
 	*core.Core
+	*core.FocusableCore
 	core core.CoreControl
+	focusableControl core.FocusableCoreControl
 	low, high music.Octave
 	
 	config config.Wrapped
@@ -28,6 +30,7 @@ type Piano struct {
 	sharpKeys []pianoKey
 
 	pressed *pianoKey
+	keynavPressed map[music.Note] bool
 
 	onPress   func (music.Note)
 	onRelease func (music.Note)
@@ -45,12 +48,16 @@ func NewPiano (low, high music.Octave) (element *Piano) {
 	element = &Piano {
 		low:  low,
 		high: high,
+		keynavPressed: make(map[music.Note] bool),
 	}
+	
 	element.theme.Case = theme.C("fun", "piano")
 	element.Core, element.core = core.NewCore (func () {
 		element.recalculate()
 		element.draw()
 	})
+	element.FocusableCore,
+	element.focusableControl = core.NewFocusableCore(element.redo)
 	element.updateMinimumSize()
 	return
 }
@@ -66,13 +73,14 @@ func (element *Piano) OnRelease (callback func (note music.Note)) {
 }
 
 func (element *Piano) HandleMouseDown (x, y int, button input.Button) {
+	element.Focus()
 	if button != input.ButtonLeft { return }
 	element.pressUnderMouseCursor(image.Pt(x, y))
 }
 
 func (element *Piano) HandleMouseUp (x, y int, button input.Button) {
 	if button != input.ButtonLeft { return }
-	if element.onRelease != nil {
+	if element.onRelease != nil && element.pressed != nil {
 		element.onRelease((*element.pressed).Note)
 	}
 	element.pressed = nil
@@ -116,6 +124,52 @@ func (element *Piano) pressUnderMouseCursor (point image.Point) {
 		}
 		element.redo()
 	}
+}
+
+var noteForKey = map[input.Key] music.Note {
+	'a': 60,
+	'w': 61,
+	's': 62,
+	'e': 63,
+	'd': 64,
+	'f': 65,
+	't': 66,
+	'g': 67,
+	'y': 68,
+	'h': 69,
+	'u': 70,
+	'j': 71,
+	'k': 72,
+	'o': 73,
+	'l': 74,
+	'p': 75,
+	';': 76,
+	'\'': 77,
+}
+
+func (element *Piano) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+	if !element.Enabled() { return }
+	note, exists := noteForKey[key]
+	if !exists { return }
+	if !element.keynavPressed[note] {
+		element.keynavPressed[note] = true
+		if element.onPress != nil {
+			element.onPress(note)
+		}
+		element.redo()
+	}
+}
+
+func (element *Piano) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
+	note, exists := noteForKey[key]
+	if !exists { return }
+	_, pressed := element.keynavPressed[note]
+	if !pressed { return }
+	delete(element.keynavPressed, note)
+	if element.onRelease != nil {
+		element.onRelease(note)
+	}
+	element.redo()
 }
 
 // SetTheme sets the element's theme.
@@ -194,38 +248,49 @@ func (element *Piano) recalculate () {
 }
 
 func (element *Piano) draw () {
-	state := theme.PatternState { }
+	state := theme.PatternState {
+		Focused: element.Focused(),
+		Disabled: !element.Enabled(),
+	}
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
 	// inset   := element.theme.Inset(theme.PatternSunken)
 	artist.FillRectangle(element, pattern, element.Bounds())
 
 	for _, key := range element.flatKeys {
+		_, keynavPressed := element.keynavPressed[key.Note]
 		element.drawFlat (
 			key.Rectangle,
 			element.pressed != nil &&
-			(*element.pressed).Note == key.Note)
+			(*element.pressed).Note == key.Note || keynavPressed,
+			state)
 	}
 	for _, key := range element.sharpKeys {
+		_, keynavPressed := element.keynavPressed[key.Note]
 		element.drawSharp (
 			key.Rectangle,
 			element.pressed != nil &&
-			(*element.pressed).Note == key.Note)
+			(*element.pressed).Note == key.Note || keynavPressed,
+			state)
 	}
 }
 
-func (element *Piano) drawFlat (bounds image.Rectangle, pressed bool) {
-	state := theme.PatternState {
-		Pressed: pressed,
-	}
+func (element *Piano) drawFlat (
+	bounds image.Rectangle,
+	pressed bool,
+	state theme.PatternState,
+) {
+	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
 		theme.PatternButton, theme.C("fun", "flatKey"), state)
 	artist.FillRectangle(element, pattern, bounds)
 }
 
-func (element *Piano) drawSharp (bounds image.Rectangle, pressed bool) {
-	state := theme.PatternState {
-		Pressed: pressed,
-	}
+func (element *Piano) drawSharp (
+	bounds image.Rectangle,
+	pressed bool,
+	state theme.PatternState,
+) {
+	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
 		theme.PatternButton, theme.C("fun", "sharpKey"), state)
 	artist.FillRectangle(element, pattern, bounds)

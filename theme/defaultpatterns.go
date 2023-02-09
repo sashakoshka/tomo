@@ -19,6 +19,14 @@ var sunkenPattern = artist.NewMultiBordered (
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
+	
+var focusedSunkenPattern = artist.NewMultiBordered (
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke {
+		Weight: 1,
+		Pattern: accentPattern,
+	},
+	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 
 var texturedSunkenPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },

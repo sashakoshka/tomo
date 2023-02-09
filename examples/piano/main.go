@@ -64,7 +64,7 @@ func stopNote (note music.Note) {
 }
 
 func playNote (note music.Note) {
-	streamer, _ := Tone(sampleRate, int(tuning.Tune(note)), waveform)
+	streamer, _ := Tone(sampleRate, int(tuning.Tune(note)), waveform, 0.3)
 
 	stopNote(note)
 	speaker.Lock()
@@ -80,12 +80,21 @@ type toneStreamer struct {
 	position float64
 	delta    float64
 	waveform int
+	gain     float64
 }
 
-func Tone (sr beep.SampleRate, freq int, waveform int) (beep.Streamer, error) {
+func Tone (
+	sr beep.SampleRate,
+	freq int,
+	waveform int,
+	gain float64,
+) (
+	beep.Streamer,
+	error,
+) {
 	if int(sr) / freq < 2 {
 		return nil, errors.New (
-			"square tone generator: samplerate must be at least " +
+			"tone generator: samplerate must be at least " +
 			"2 times greater then frequency")
 	}
 	tone := new(toneStreamer)
@@ -93,6 +102,7 @@ func Tone (sr beep.SampleRate, freq int, waveform int) (beep.Streamer, error) {
 	tone.waveform = waveform
 	steps := float64(sr) / float64(freq)
 	tone.delta = 1.0 / steps
+	tone.gain = gain
 	return tone, nil
 }
 
@@ -122,7 +132,7 @@ func (tone *toneStreamer) nextSample () (sample float64) {
 
 func (tone *toneStreamer) Stream (buf [][2]float64) (int, bool) {
 	for i := 0; i < len(buf); i++ {
-		sample := tone.nextSample()
+		sample := tone.nextSample() * tone.gain
 		buf[i] = [2]float64{sample, sample}
 	}
 	return len(buf), true

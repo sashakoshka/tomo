@@ -88,7 +88,11 @@ func (Default) Pattern (
 				}
 			}
 		} else {
-			return sunkenPattern
+			if state.Focused {
+				return focusedSunkenPattern
+			} else {
+				return sunkenPattern
+			}
 		}
 	case PatternPinboard:
 		return texturedSunkenPattern
@@ -101,6 +105,12 @@ func (Default) Pattern (
 					return pressedDarkButtonPattern
 				} else {
 					return darkButtonPattern
+				}
+			} else if c == C("fun", "flatKey") {
+				if state.Pressed {
+					return pressedButtonPattern
+				} else {
+					return buttonPattern
 				}	
 			} else {
 				if state.Pressed || state.On && c == C("basic", "checkbox") {
