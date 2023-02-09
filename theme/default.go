@@ -96,17 +96,25 @@ func (Default) Pattern (
 		if state.Disabled {
 			return disabledButtonPattern
 		} else {
-			if state.Pressed || state.On && c == C("basic", "checkbox") {
-				if state.Focused {
-					return pressedSelectedButtonPattern
+			if c == C("fun", "sharpKey") {
+				if state.Pressed {
+					return pressedDarkButtonPattern
 				} else {
-					return pressedButtonPattern
-				}
+					return darkButtonPattern
+				}	
 			} else {
-				if state.Focused {
-					return selectedButtonPattern
+				if state.Pressed || state.On && c == C("basic", "checkbox") {
+					if state.Focused {
+						return pressedSelectedButtonPattern
+					} else {
+						return pressedButtonPattern
+					}
 				} else {
-					return buttonPattern
+					if state.Focused {
+						return selectedButtonPattern
+					} else {
+						return buttonPattern
+					}
 				}
 			}
 		}
@@ -156,19 +164,24 @@ func (Default) Inset (pattern Pattern, c Case) Inset {
 		if c == C("basic", "listEntry") {
 			return Inset { 4, 6, 4, 6 }
 		} else {
-			return Inset { 1, 1, 1, 1 }
+			return Inset { 2, 2, 2, 2 }
 		}
+		
 	case PatternSunken:
 		if c == C("basic", "list") {
 			return Inset { 2, 1, 2, 1 }
 		} else if c == C("basic", "progressBar") {
 			return Inset { 2, 1, 1, 2 }
 		} else {
-			return Inset { 1, 1, 1, 1 }
+			return Inset { 2, 2, 2, 2 }
 		}
+
+	case PatternPinboard:
+		return Inset { 2, 2, 2, 2 }
 	
-	case PatternInput, PatternButton, PatternHandle, PatternPinboard:
-		return Inset { 1, 1, 1, 1}
+	case PatternInput, PatternButton, PatternHandle:
+		return Inset { 2, 2, 2, 2}
+
 	default: return Inset { }
 	}
 }

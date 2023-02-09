@@ -45,7 +45,7 @@ func run () {
 	controlBar.Adopt(waveformButton, false)
 	container.Adopt(controlBar, false)
 	
-	piano := fun.NewPiano(3, 5)
+	piano := fun.NewPiano(2, 5)
 	container.Adopt(piano, true)
 	piano.OnPress(playNote)
 	piano.OnRelease(stopNote)

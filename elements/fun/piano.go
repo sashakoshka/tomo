@@ -128,8 +128,10 @@ func (element *Piano) SetConfig (new config.Config) {
 }
 
 func (element *Piano) updateMinimumSize () {
+	inset := element.theme.Inset(theme.PatternSunken)
 	element.core.SetMinimumSize (
-		pianoKeyWidth * 7 * element.countOctaves(), 64)
+		pianoKeyWidth * 7 * element.countOctaves() + inset[1] + inset[3],
+		64 + inset[0] + inset[2])
 }
 
 func (element *Piano) countOctaves () int {
@@ -155,7 +157,9 @@ func (element *Piano) recalculate () {
 	element.flatKeys  = make([]pianoKey, element.countFlats())
 	element.sharpKeys = make([]pianoKey, element.countSharps())
 
-	bounds := element.Bounds()
+	inset  := element.theme.Inset(theme.PatternSunken)
+	bounds := inset.Apply(element.Bounds())
+
 	dot := bounds.Min
 	note := element.low.Note(0)
 	limit := element.high.Note(12)
@@ -181,6 +185,11 @@ func (element *Piano) recalculate () {
 }
 
 func (element *Piano) draw () {
+	state := theme.PatternState { }
+	pattern := element.theme.Pattern(theme.PatternSunken, state)
+	// inset   := element.theme.Inset(theme.PatternSunken)
+	artist.FillRectangle(element, pattern, element.Bounds())
+
 	for _, key := range element.flatKeys {
 		element.drawFlat (
 			key.Rectangle,
@@ -199,7 +208,8 @@ func (element *Piano) drawFlat (bounds image.Rectangle, pressed bool) {
 	state := theme.PatternState {
 		Pressed: pressed,
 	}
-	pattern := element.theme.Pattern(theme.PatternButton, state)
+	pattern := element.theme.Theme.Pattern (
+		theme.PatternButton, theme.C("fun", "flatKey"), state)
 	artist.FillRectangle(element, pattern, bounds)
 }
 
@@ -207,6 +217,7 @@ func (element *Piano) drawSharp (bounds image.Rectangle, pressed bool) {
 	state := theme.PatternState {
 		Pressed: pressed,
 	}
-	pattern := element.theme.Pattern(theme.PatternButton, state)
+	pattern := element.theme.Theme.Pattern (
+		theme.PatternButton, theme.C("fun", "sharpKey"), state)
 	artist.FillRectangle(element, pattern, bounds)
 }

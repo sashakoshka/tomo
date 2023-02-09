@@ -93,7 +93,6 @@ var selectedButtonPattern = artist.NewMultiBordered (
 	},
 	artist.Stroke { Weight: 1, Pattern: accentPattern },
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x8D9894FF)) })
-
 var pressedButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {
@@ -117,6 +116,27 @@ var pressedSelectedButtonPattern = artist.NewMultiBordered (
 var disabledButtonPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: weakForegroundPattern },
 	artist.Stroke { Pattern: backgroundPattern })
+
+var darkButtonPattern = artist.NewMultiBordered (
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke {
+		Weight: 1,
+		Pattern: artist.Beveled {
+			artist.NewUniform(hex(0xaebdb9FF)),
+			artist.NewUniform(hex(0x3b4947FF)),
+		},
+	},
+	artist.Stroke { Pattern: artist.NewUniform(hex(0x6b7a75FF)) })
+var pressedDarkButtonPattern = artist.NewMultiBordered (
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke {
+		Weight: 1,
+		Pattern: artist.Beveled {
+			artist.NewUniform(hex(0x3b4947FF)),
+			artist.NewUniform(hex(0x6b7a75FF)),
+		},
+	},
+	artist.Stroke { Pattern: artist.NewUniform(hex(0x6b7a75FF)) })
 
 var inputPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
