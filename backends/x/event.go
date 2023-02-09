@@ -154,7 +154,7 @@ func (window *Window) handleKeyRelease (
 		untypedEvent := nextEvents[0]
 		if untypedEvent.Err == nil {
 			typedEvent, ok :=
-				untypedEvent.Event.(xproto.KeyReleaseEvent)
+				untypedEvent.Event.(xproto.KeyPressEvent)
 			
 			if ok && typedEvent.Detail == keyEvent.Detail &&
 				typedEvent.Event == keyEvent.Event &&

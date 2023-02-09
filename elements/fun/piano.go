@@ -145,7 +145,7 @@ var noteForKey = map[input.Key] music.Note {
 	'.': 60,
 	';': 61,
 	'/': 62,
-	 '\'': 63,
+	'\'': 63,
 
 	'1': 56,
 	'q': 57,
