@@ -16,7 +16,7 @@ const sampleRate = 44100
 const bufferSize = 256
 var   tuning     = music.EqualTemparment { A4: 440 }
 var   waveform   = 0
-var playing = map[music.Note] *toneStreamer { }
+var   playing    = map[music.Note] *toneStreamer { }
 
 func main () {
 	speaker.Init(sampleRate, bufferSize)
@@ -90,6 +90,7 @@ func playNote (note music.Note) {
 
 type toneStreamer struct {
 	position float64
+	cycles   uint64
 	delta    float64
 	
 	waveform int
@@ -165,10 +166,17 @@ func (tone *toneStreamer) nextSample () (sample float64) {
 	case 3:
 		sample = 1 - math.Abs(tone.position - 0.5) * 4
 	case 4:
-		sample =
-			-1 + 13.7 * tone.position +
-			28.32 * tone.position * tone.position +
-			15.62 * tone.position * tone.position * tone.position
+		unison := 5
+		detuneDelta := 0.00005
+		
+		detune := 0.0 - (float64(unison) / 2) * detuneDelta
+		for i := 0; i < unison; i ++ {
+			_, offset := math.Modf(detune * float64(tone.cycles) + tone.position)
+			sample += (offset - 0.5) * 2
+			detune += detuneDelta
+		}
+
+		sample /= float64(unison)
 	}
 
 	adsrGain := 0.0
@@ -201,6 +209,7 @@ func (tone *toneStreamer) nextSample () (sample float64) {
 	
 	tone.adsrPosition += tone.adsrDeltas[tone.adsrPhase]
 	_, tone.position = math.Modf(tone.position + tone.delta)
+	tone.cycles ++
 	return
 }
 
