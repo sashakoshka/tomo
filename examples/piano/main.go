@@ -22,7 +22,8 @@ var   adsr = ADSR {
 	Decay:   400 * time.Millisecond,
 	Sustain: 0.7,
 	Release: 500 * time.Millisecond,
-} 
+}
+var gain = 0.3
 
 func main () {
 	speaker.Init(sampleRate, bufferSize)
@@ -52,6 +53,7 @@ func run () {
 	decaySlider   := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Decay, true)
 	sustainSlider := basicElements.NewSlider(adsr.Sustain, true)
 	releaseSlider := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Release, true)
+	gainSlider    := basicElements.NewSlider(math.Sqrt(gain), false)
 
 	attackSlider.OnRelease (func () {
 		adsr.Attack = attackSlider.Value()
@@ -64,6 +66,9 @@ func run () {
 	})
 	releaseSlider.OnRelease (func () {
 		adsr.Release = releaseSlider.Value()
+	})
+	gainSlider.OnRelease (func () {
+		gain = math.Pow(gainSlider.Value(), 2)
 	})
 
 	patchColumn := basicElements.NewContainer(basicLayouts.Vertical { true, false })
@@ -133,6 +138,7 @@ func run () {
 	adsrGroup.Adopt(sustainSlider, false)
 	adsrGroup.Adopt(releaseSlider, false)
 	adsrColumn.Adopt(adsrGroup, true)
+	adsrColumn.Adopt(gainSlider, false)
 	
 	controlBar.Adopt(adsrColumn, false)
 	container.Adopt(controlBar, true)
@@ -162,7 +168,7 @@ func playNote (note music.Note) {
 		sampleRate,
 		int(tuning.Tune(note)),
 		waveform,
-		0.3,
+		gain,
 		adsr)
 
 	stopNote(note)

@@ -131,6 +131,7 @@ func (element *Slider) valueFor (x, y int) (value float64) {
 		value =
 			float64(y - element.track.Min.Y - element.bar.Dy() / 2) /
 			float64(element.track.Dy() - element.bar.Dy())
+		value = 1 - value
 	} else {
 		value =
 			float64(x - element.track.Min.X - element.bar.Dx() / 2) /
@@ -139,7 +140,6 @@ func (element *Slider) valueFor (x, y int) (value float64) {
 	
 	if value < 0 { value = 0 }
 	if value > 1 { value = 1 }
-	value = 1 - value
 	return
 }
 
