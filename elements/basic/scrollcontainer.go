@@ -234,7 +234,9 @@ func (element *ScrollContainer) Focused () (focused bool) {
 
 func (element *ScrollContainer) Focus () {
 	if element.onFocusRequest != nil {
-		element.onFocusRequest()
+		if element.onFocusRequest() {
+			element.focused = true
+		}
 	}
 }
 
@@ -244,8 +246,8 @@ func (element *ScrollContainer) HandleFocus (
 	accepted bool,
 ) {
 	if child, ok := element.child.(elements.Focusable); ok {
-		element.focused = true
-		return child.HandleFocus(direction)
+		element.focused = child.HandleFocus(direction)
+		return element.focused
 	} else {
 		element.focused = false
 		return false
@@ -274,11 +276,9 @@ func (element *ScrollContainer) childDamageCallback (region canvas.Canvas) {
 }
 
 func (element *ScrollContainer) childFocusRequestCallback () (granted bool) {
-	child, ok := element.child.(elements.Focusable)
-	if !ok { return false }
-	if element.onFocusRequest != nil && element.onFocusRequest() {
-		child.HandleFocus(input.KeynavDirectionNeutral)
-		return true
+	if element.onFocusRequest != nil {
+		element.focused = element.onFocusRequest()
+		return element.focused
 	} else {
 		return false
 	}

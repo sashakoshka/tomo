@@ -64,6 +64,41 @@ func run () {
 	releaseSlider.OnRelease (func () {
 		adsr.Release = releaseSlider.Value()
 	})
+
+	patch := func (w int, a, d time.Duration, s float64, r time.Duration) func () {
+		return func () {
+			waveform = w
+			adsr     = ADSR {
+				a * time.Millisecond,
+				d * time.Millisecond,
+				s,
+				r * time.Millisecond,
+			}
+			waveformList.Select(w)
+			attackSlider .SetValue(adsr.Attack)
+			decaySlider  .SetValue(adsr.Decay)
+			sustainSlider.SetValue(adsr.Sustain)
+			releaseSlider.SetValue(adsr.Release)
+		}
+	}
+	patchList := basicElements.NewList (
+		basicElements.NewListEntry ("Bones", patch (
+			0, 0, 100, 0.0, 0)),
+		basicElements.NewListEntry ("Staccato", patch (
+			4, 70, 0, 1.0, 400)),
+		basicElements.NewListEntry ("Sustain", patch (
+			4, 70, 200, 0.8, 500)),
+		basicElements.NewListEntry ("Upright", patch (
+			1, 0, 500, 0.4, 70)),
+		basicElements.NewListEntry ("Space Pad", patch (
+			4, 1500, 0, 1.0, 3000)),
+		basicElements.NewListEntry ("Popcorn", patch (
+			2, 0, 40, 0.0, 0)),
+		basicElements.NewListEntry ("Racer", patch (
+			3, 70, 0, 0.7, 400)),
+	)
+	patchList.Collapse(0, 32)
+	patchScrollBox := basicElements.NewScrollContainer(false, true)
 	
 	piano := fun.NewPiano(2, 5)
 	piano.OnPress(playNote)
@@ -72,6 +107,8 @@ func run () {
 	
 	window.Adopt(container)
 	controlBar.Adopt(label, true)
+	controlBar.Adopt(patchScrollBox, false)
+	patchScrollBox.Adopt(patchList)
 	controlBar.Adopt(waveformList, false)
 	controlBar.Adopt(basicElements.NewSpacer(true), false)
 	controlBar.Adopt(attackSlider, false)
@@ -83,6 +120,11 @@ func run () {
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
+}
+
+type Patch struct {
+	ADSR
+	Waveform int
 }
 
 func stopNote (note music.Note) {
