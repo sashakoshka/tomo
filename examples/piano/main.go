@@ -35,7 +35,7 @@ func run () {
 	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
 
 	controlBar := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
-	label := basicElements.NewLabel("Play a song!", false)
+	// label := basicElements.NewLabel("Play a song!", false)
 
 	waveformList := basicElements.NewList (
 		basicElements.NewListEntry("Sine",     func(){ waveform = 0 }),
@@ -47,6 +47,8 @@ func run () {
 	waveformList.OnNoEntrySelected (func(){waveformList.Select(0)})
 	waveformList.Select(0)
 
+	adsrColumn := basicElements.NewContainer(basicLayouts.Vertical { true, false })
+	adsrGroup := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
 	attackSlider  := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Attack, true)
 	decaySlider   := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Decay, true)
 	sustainSlider := basicElements.NewSlider(adsr.Sustain, true)
@@ -106,15 +108,18 @@ func run () {
 	piano.Focus()
 	
 	window.Adopt(container)
-	controlBar.Adopt(label, true)
-	controlBar.Adopt(patchScrollBox, false)
+	// controlBar.Adopt(label, true)
+	controlBar.Adopt(patchScrollBox, true)
 	patchScrollBox.Adopt(patchList)
-	controlBar.Adopt(waveformList, false)
+	controlBar.Adopt(waveformList, true)
 	controlBar.Adopt(basicElements.NewSpacer(true), false)
-	controlBar.Adopt(attackSlider, false)
-	controlBar.Adopt(decaySlider, false)
-	controlBar.Adopt(sustainSlider, false)
-	controlBar.Adopt(releaseSlider, false)
+	adsrColumn.Adopt(basicElements.NewLabel("ADSR", false), false)
+	adsrGroup.Adopt(attackSlider, false)
+	adsrGroup.Adopt(decaySlider, false)
+	adsrGroup.Adopt(sustainSlider, false)
+	adsrGroup.Adopt(releaseSlider, false)
+	adsrColumn.Adopt(adsrGroup, true)
+	controlBar.Adopt(adsrColumn, false)
 	container.Adopt(controlBar, true)
 	container.Adopt(piano, false)
 	
