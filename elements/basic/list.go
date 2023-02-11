@@ -330,6 +330,14 @@ func (element *List) Replace (index int, entry ListEntry) {
 	}
 }
 
+// Select selects a specific item in the list. If the index is out of bounds,
+// no items will be selecected.
+func (element *List) Select (index int) {
+	if element.selectEntry(index) {
+		element.redo()
+	}
+}
+
 func (element *List) selectUnderMouse (x, y int) (updated bool) {
 	inset := element.theme.Inset(theme.PatternSunken)
 	bounds := inset.Apply(element.Bounds())

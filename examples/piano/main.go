@@ -36,17 +36,27 @@ func run () {
 
 	controlBar := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
 	label := basicElements.NewLabel("Play a song!", false)
-	waveformButton := basicElements.NewButton("Sine")
-	waveformButton.OnClick (func () {
-		waveform = (waveform + 1) % 5
-		switch waveform {
-		case 0: waveformButton.SetText("Sine")
-		case 1: waveformButton.SetText("Square")
-		case 2: waveformButton.SetText("Saw")
-		case 3: waveformButton.SetText("Triangle")
-		case 4: waveformButton.SetText("Supersaw")
-		}
-	})
+
+	waveformList := basicElements.NewList (
+		basicElements.NewListEntry("Sine",     func(){ waveform = 0 }),
+		basicElements.NewListEntry("Triangle", func(){ waveform = 3 }),
+		basicElements.NewListEntry("Square",   func(){ waveform = 1 }),
+		basicElements.NewListEntry("Saw",      func(){ waveform = 2 }),
+		basicElements.NewListEntry("Supersaw", func(){ waveform = 4 }),
+	)
+	waveformList.Select(0)
+	
+	// waveformButton := basicElements.NewButton("Sine")
+	// waveformButton.OnClick (func () {
+		// waveform = (waveform + 1) % 5
+		// switch waveform {
+		// case 0: waveformButton.SetText("Sine")
+		// case 1: waveformButton.SetText("Square")
+		// case 2: waveformButton.SetText("Saw")
+		// case 3: waveformButton.SetText("Triangle")
+		// case 4: waveformButton.SetText("Supersaw")
+		// }
+	// })
 
 	attackSlider  := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Attack, true)
 	decaySlider   := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Decay, true)
@@ -73,7 +83,7 @@ func run () {
 	
 	window.Adopt(container)
 	controlBar.Adopt(label, true)
-	controlBar.Adopt(waveformButton, false)
+	controlBar.Adopt(waveformList, false)
 	controlBar.Adopt(basicElements.NewSpacer(true), false)
 	controlBar.Adopt(attackSlider, false)
 	controlBar.Adopt(decaySlider, false)
