@@ -17,6 +17,12 @@ const bufferSize = 256
 var   tuning     = music.EqualTemparment { A4: 440 }
 var   waveform   = 0
 var   playing    = map[music.Note] *toneStreamer { }
+var   adsr = ADSR {
+	Attack:  5 * time.Millisecond,
+	Decay:   400 * time.Millisecond,
+	Sustain: 0.7,
+	Release: 500 * time.Millisecond,
+} 
 
 func main () {
 	speaker.Init(sampleRate, bufferSize)
@@ -27,11 +33,9 @@ func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("Piano")
 	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
-	window.Adopt(container)
 
 	controlBar := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
 	label := basicElements.NewLabel("Play a song!", false)
-	controlBar.Adopt(label, true)
 	waveformButton := basicElements.NewButton("Sine")
 	waveformButton.OnClick (func () {
 		waveform = (waveform + 1) % 5
@@ -43,14 +47,40 @@ func run () {
 		case 4: waveformButton.SetText("Supersaw")
 		}
 	})
-	controlBar.Adopt(waveformButton, false)
-	container.Adopt(controlBar, false)
+
+	attackSlider  := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Attack, true)
+	decaySlider   := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Decay, true)
+	sustainSlider := basicElements.NewSlider(adsr.Sustain, true)
+	releaseSlider := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Release, true)
+
+	attackSlider.OnRelease (func () {
+		adsr.Attack = attackSlider.Value()
+	})
+	decaySlider.OnRelease (func () {
+		adsr.Decay = decaySlider.Value()
+	})
+	sustainSlider.OnRelease (func () {
+		adsr.Sustain = sustainSlider.Value()
+	})
+	releaseSlider.OnRelease (func () {
+		adsr.Release = releaseSlider.Value()
+	})
 	
 	piano := fun.NewPiano(2, 5)
-	container.Adopt(piano, true)
 	piano.OnPress(playNote)
 	piano.OnRelease(stopNote)
 	piano.Focus()
+	
+	window.Adopt(container)
+	controlBar.Adopt(label, true)
+	controlBar.Adopt(waveformButton, false)
+	controlBar.Adopt(basicElements.NewSpacer(true), false)
+	controlBar.Adopt(attackSlider, false)
+	controlBar.Adopt(decaySlider, false)
+	controlBar.Adopt(sustainSlider, false)
+	controlBar.Adopt(releaseSlider, false)
+	container.Adopt(controlBar, true)
+	container.Adopt(piano, false)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
@@ -71,12 +101,7 @@ func playNote (note music.Note) {
 		int(tuning.Tune(note)),
 		waveform,
 		0.3,
-		ADSR {
-			Attack:  100 * time.Millisecond,
-			Decay:   400 * time.Millisecond,
-			Sustain: 0.7,
-			Release: 500 * time.Millisecond,
-		})
+		adsr)
 
 	stopNote(note)
 	speaker.Lock()
