@@ -7,6 +7,7 @@ import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
+// Slider is a slider control with a floating point value between zero and one.
 type Slider struct {
 	*core.Core
 	*core.FocusableCore
@@ -27,6 +28,8 @@ type Slider struct {
 	onRelease func ()
 }
 
+// NewSlider creates a new slider with the specified value. If vertical is set
+// to true, 
 func NewSlider (value float64, vertical bool) (element *Slider) {
 	element = &Slider {
 		value: value,
@@ -85,14 +88,17 @@ func (element *Slider) HandleKeyDown (key input.Key, modifiers input.Modifiers) 
 
 func (element *Slider) HandleKeyUp (key input.Key, modifiers input.Modifiers) { }
 
+// Value returns the slider's value.
 func (element *Slider) Value () (value float64) {
 	return element.value
 }
 
+// SetEnabled sets whether or not the slider can be interacted with.
 func (element *Slider) SetEnabled (enabled bool) {
 	element.focusableControl.SetEnabled(enabled)
 }
 
+// SetValue sets the slider's value.
 func (element *Slider) SetValue (value float64) {
 	if value < 0 { value = 0 }
 	if value > 1 { value = 1 }
@@ -103,10 +109,13 @@ func (element *Slider) SetValue (value float64) {
 	element.redo()
 }
 
+// OnSlide sets a function to be called every time the slider handle changes
+// position while being dragged.
 func (element *Slider) OnSlide (callback func ()) {
 	element.onSlide = callback
 }
 
+// OnRelease sets a function to be called when the handle stops being dragged.
 func (element *Slider) OnRelease (callback func ()) {
 	element.onRelease = callback
 }
