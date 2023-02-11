@@ -10,9 +10,9 @@ import "git.tebibyte.media/sashakoshka/tomo/artist"
 type ListEntry struct {
 	drawer artist.TextDrawer
 	bounds image.Rectangle
-	textPoint image.Point
 	text string
-	forcedMinimumWidth int
+	width int
+	minimumWidth int
 	
 	config config.Wrapped
 	theme  theme.Wrapped
@@ -31,12 +31,6 @@ func NewListEntry (text string, onSelect func ()) (entry ListEntry) {
 	return
 }
 
-func (entry *ListEntry) Collapse (width int) {
-	if entry.forcedMinimumWidth == width { return }
-	entry.forcedMinimumWidth = width
-	entry.updateBounds()
-}
-
 func (entry *ListEntry) SetTheme (new theme.Theme) {
 	if new == entry.theme.Theme { return }
 	entry.theme.Theme = new
@@ -52,20 +46,11 @@ func (entry *ListEntry) SetConfig (new config.Config) {
 }
 
 func (entry *ListEntry) updateBounds () {
-	entry.bounds = image.Rectangle { }
-	entry.bounds.Max.Y = entry.drawer.LineHeight().Round()
-	if entry.forcedMinimumWidth > 0 {
-		entry.bounds.Max.X = entry.forcedMinimumWidth
-	} else {
-		entry.bounds.Max.X = entry.drawer.LayoutBounds().Dx()
-	}
-	
 	inset := entry.theme.Inset(theme.PatternRaised)
-	entry.bounds.Max.Y += inset[0] + inset[2]
-	
-	entry.textPoint =
-		image.Pt(inset[3], inset[0]).
-		Sub(entry.drawer.LayoutBounds().Min)
+	entry.bounds = inset.Inverse().Apply(entry.drawer.LayoutBounds())
+	entry.bounds = entry.bounds.Sub(entry.bounds.Min)
+	entry.minimumWidth = entry.bounds.Dx()
+	entry.bounds.Max.X = entry.width
 }
 
 func (entry *ListEntry) Draw (
@@ -80,16 +65,20 @@ func (entry *ListEntry) Draw (
 		Focused: focused,
 		On: on,
 	}
+
 	pattern := entry.theme.Pattern (theme.PatternRaised, state)
+	inset := entry.theme.Inset(theme.PatternRaised)
 	artist.FillRectangle (
 		destination,
 		pattern,
-		entry.Bounds().Add(offset))
+		entry.Bounds().Add(offset))	
+		
 	foreground := entry.theme.Pattern (theme.PatternForeground, state)
 	return entry.drawer.Draw (
 		destination,
 		foreground,
-		offset.Add(entry.textPoint))
+		offset.Add(image.Pt(inset[3], inset[0])).
+		Sub(entry.drawer.LayoutBounds().Min))
 }
 
 func (entry *ListEntry) RunSelect () {
@@ -101,3 +90,12 @@ func (entry *ListEntry) RunSelect () {
 func (entry *ListEntry) Bounds () (bounds image.Rectangle) {
 	return entry.bounds
 }
+
+func (entry *ListEntry) Resize (width int) {
+	entry.width = width
+	entry.updateBounds()
+}
+
+func (entry *ListEntry) MinimumWidth () (width int) {
+	return entry.minimumWidth
+} 

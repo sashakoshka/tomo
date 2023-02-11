@@ -110,9 +110,22 @@ func (element *List) redo () {
 // via scrolling. If an entry's width goes beyond the forced size, its text will
 // be truncated so that it fits.
 func (element *List) Collapse (width, height int) {
+	if
+		element.forcedMinimumWidth == width &&
+		element.forcedMinimumHeight == height {
+		
+		return
+	}
+	
 	element.forcedMinimumWidth  = width
 	element.forcedMinimumHeight = height
 	element.updateMinimumSize()
+
+	for index, entry := range element.entries {
+		element.entries[index] = element.resizeEntryToFit(entry)
+	}
+	
+	element.redo()
 }
 
 func (element *List) HandleMouseDown (x, y int, button input.Button) {
@@ -236,7 +249,7 @@ func (element *List) CountEntries () (count int) {
 // Append adds an entry to the end of the list.
 func (element *List) Append (entry ListEntry) {
 	// append
-	entry.Collapse(element.forcedMinimumWidth)
+	entry = element.resizeEntryToFit(entry)
 	entry.SetTheme(element.theme.Theme)
 	entry.SetConfig(element.config)
 	element.entries = append(element.entries, entry)
@@ -271,7 +284,7 @@ func (element *List) Insert (index int, entry ListEntry) {
 	element.entries = append (
 		element.entries[:index + 1],
 		element.entries[index:]...)
-	entry.Collapse(element.forcedMinimumWidth)
+	entry = element.resizeEntryToFit(entry)
 	element.entries[index] = entry
 
 	// recalculate, redraw, notify
@@ -316,7 +329,7 @@ func (element *List) Replace (index int, entry ListEntry) {
 	}
 
 	// replace
-	entry.Collapse(element.forcedMinimumWidth)
+	entry = element.resizeEntryToFit(entry)
 	element.entries[index] = entry
 
 	// redraw
@@ -381,8 +394,9 @@ func (element *List) changeSelectionBy (delta int) (updated bool) {
 }
 
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
+	bounds := element.Bounds()
 	inset := element.theme.Inset(theme.PatternSunken)
-	entry.Collapse(element.forcedMinimumWidth - inset[3] - inset[1])
+	entry.Resize(inset.Apply(bounds).Dx())
 	return entry
 }
 
@@ -397,7 +411,7 @@ func (element *List) updateMinimumSize () {
 
 	if minimumWidth == 0 {
 		for _, entry := range element.entries {
-			entryWidth := entry.Bounds().Dx()
+			entryWidth := entry.MinimumWidth()
 			if entryWidth > minimumWidth {
 				minimumWidth = entryWidth
 			}

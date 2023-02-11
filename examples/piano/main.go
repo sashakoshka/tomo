@@ -44,19 +44,8 @@ func run () {
 		basicElements.NewListEntry("Saw",      func(){ waveform = 2 }),
 		basicElements.NewListEntry("Supersaw", func(){ waveform = 4 }),
 	)
+	waveformList.OnNoEntrySelected (func(){waveformList.Select(0)})
 	waveformList.Select(0)
-	
-	// waveformButton := basicElements.NewButton("Sine")
-	// waveformButton.OnClick (func () {
-		// waveform = (waveform + 1) % 5
-		// switch waveform {
-		// case 0: waveformButton.SetText("Sine")
-		// case 1: waveformButton.SetText("Square")
-		// case 2: waveformButton.SetText("Saw")
-		// case 3: waveformButton.SetText("Triangle")
-		// case 4: waveformButton.SetText("Supersaw")
-		// }
-	// })
 
 	attackSlider  := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Attack, true)
 	decaySlider   := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Decay, true)
