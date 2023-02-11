@@ -95,7 +95,11 @@ func (Default) Pattern (
 			}
 		}
 	case PatternPinboard:
-		return texturedSunkenPattern
+		if state.Focused {
+			return focusedTexturedSunkenPattern
+		} else {
+			return texturedSunkenPattern
+		}
 	case PatternButton:
 		if state.Disabled {
 			return disabledButtonPattern

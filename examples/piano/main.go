@@ -33,10 +33,9 @@ func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("Piano")
 	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
-
 	controlBar := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
-	// label := basicElements.NewLabel("Play a song!", false)
 
+	waveformColumn := basicElements.NewContainer(basicLayouts.Vertical { true, false })
 	waveformList := basicElements.NewList (
 		basicElements.NewListEntry("Sine",     func(){ waveform = 0 }),
 		basicElements.NewListEntry("Triangle", func(){ waveform = 3 }),
@@ -67,6 +66,7 @@ func run () {
 		adsr.Release = releaseSlider.Value()
 	})
 
+	patchColumn := basicElements.NewContainer(basicLayouts.Vertical { true, false })
 	patch := func (w int, a, d time.Duration, s float64, r time.Duration) func () {
 		return func () {
 			waveform = w
@@ -87,7 +87,7 @@ func run () {
 		basicElements.NewListEntry ("Bones", patch (
 			0, 0, 100, 0.0, 0)),
 		basicElements.NewListEntry ("Staccato", patch (
-			4, 70, 0, 1.0, 400)),
+			4, 70, 500, 0, 0)),
 		basicElements.NewListEntry ("Sustain", patch (
 			4, 70, 200, 0.8, 500)),
 		basicElements.NewListEntry ("Upright", patch (
@@ -98,6 +98,8 @@ func run () {
 			2, 0, 40, 0.0, 0)),
 		basicElements.NewListEntry ("Racer", patch (
 			3, 70, 0, 0.7, 400)),
+		basicElements.NewListEntry ("Reverse", patch (
+			2, 3000, 60, 0, 0)),
 	)
 	patchList.Collapse(0, 32)
 	patchScrollBox := basicElements.NewScrollContainer(false, true)
@@ -105,24 +107,38 @@ func run () {
 	piano := fun.NewPiano(2, 5)
 	piano.OnPress(playNote)
 	piano.OnRelease(stopNote)
-	piano.Focus()
-	
+
+	// honestly, if you were doing something like this for real, i'd
+	// encourage you to build a custom layout because this is a bit cursed.
+	// i need to add more layouts...
+
 	window.Adopt(container)
-	// controlBar.Adopt(label, true)
-	controlBar.Adopt(patchScrollBox, true)
+	
+	controlBar.Adopt(patchColumn, true)
+	patchColumn.Adopt(basicElements.NewLabel("Presets", false), false)
+	patchColumn.Adopt(patchScrollBox, true)
 	patchScrollBox.Adopt(patchList)
-	controlBar.Adopt(waveformList, true)
+
 	controlBar.Adopt(basicElements.NewSpacer(true), false)
+	
+	controlBar.Adopt(waveformColumn, false)
+	waveformColumn.Adopt(basicElements.NewLabel("Waveform", false), false)
+	waveformColumn.Adopt(waveformList, true)
+	
+	controlBar.Adopt(basicElements.NewSpacer(true), false)
+	
 	adsrColumn.Adopt(basicElements.NewLabel("ADSR", false), false)
 	adsrGroup.Adopt(attackSlider, false)
 	adsrGroup.Adopt(decaySlider, false)
 	adsrGroup.Adopt(sustainSlider, false)
 	adsrGroup.Adopt(releaseSlider, false)
 	adsrColumn.Adopt(adsrGroup, true)
+	
 	controlBar.Adopt(adsrColumn, false)
 	container.Adopt(controlBar, true)
 	container.Adopt(piano, false)
 	
+	piano.Focus()
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

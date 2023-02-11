@@ -246,7 +246,7 @@ func (element *Piano) recalculate () {
 	element.flatKeys  = make([]pianoKey, element.countFlats())
 	element.sharpKeys = make([]pianoKey, element.countSharps())
 
-	inset  := element.theme.Inset(theme.PatternSunken)
+	inset  := element.theme.Inset(theme.PatternPinboard)
 	bounds := inset.Apply(element.Bounds())
 
 	dot := bounds.Min
@@ -278,7 +278,7 @@ func (element *Piano) draw () {
 		Focused: element.Focused(),
 		Disabled: !element.Enabled(),
 	}
-	pattern := element.theme.Pattern(theme.PatternSunken, state)
+	pattern := element.theme.Pattern(theme.PatternPinboard, state)
 	// inset   := element.theme.Inset(theme.PatternSunken)
 	artist.FillRectangle(element, pattern, element.Bounds())
 

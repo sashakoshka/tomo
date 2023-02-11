@@ -19,13 +19,9 @@ var sunkenPattern = artist.NewMultiBordered (
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
-	
 var focusedSunkenPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
-	artist.Stroke {
-		Weight: 1,
-		Pattern: accentPattern,
-	},
+	artist.Stroke { Weight: 1, Pattern: accentPattern },
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x97a09cFF)) })
 
 var texturedSunkenPattern = artist.NewMultiBordered (
@@ -37,17 +33,14 @@ var texturedSunkenPattern = artist.NewMultiBordered (
 			artist.NewUniform(hex(0x97a09cFF)),
 		},
 	},
-	// artist.Stroke { Pattern: artist.Striped {
-		// First: artist.Stroke {
-			// Weight: 2,
-			// Pattern: artist.NewUniform(hex(0x97a09cFF)),
-		// },
-		// Second: artist.Stroke {
-			// Weight: 1,
-			// Pattern: artist.NewUniform(hex(0x6e8079FF)),
-		// },
-	// }})
 	
+	artist.Stroke { Pattern: artist.Noisy {
+		Low:  artist.NewUniform(hex(0x97a09cFF)),
+		High: artist.NewUniform(hex(0x6e8079FF)),
+	}})
+var focusedTexturedSunkenPattern = artist.NewMultiBordered (
+	artist.Stroke { Weight: 1, Pattern: strokePattern },
+	artist.Stroke { Weight: 1, Pattern: accentPattern },
 	artist.Stroke { Pattern: artist.Noisy {
 		Low:  artist.NewUniform(hex(0x97a09cFF)),
 		High: artist.NewUniform(hex(0x6e8079FF)),
