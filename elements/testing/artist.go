@@ -5,6 +5,7 @@ import "time"
 import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -116,6 +117,30 @@ func (element *Artist) draw () {
 				uhex(0xFF00FFFF),
 			} [x - 1],
 			x, element.cellAt(x, 3))
+	}
+
+	// 4, 3
+	shatterPos := element.cellAt(4, 3).Min
+	rocks := []image.Rectangle {
+		image.Rect(3, 12, 13, 23).Add(shatterPos),
+		// image.Rect(30, 10, 40, 23).Add(shatterPos),
+		image.Rect(55, 40, 70, 49).Add(shatterPos),
+		image.Rect(30, -10, 40, 43).Add(shatterPos),
+		image.Rect(80, 30, 90, 45).Add(shatterPos),
+	}
+	tiles := shatter.Shatter(element.cellAt(4, 3), rocks...)
+	for index, tile := range tiles {
+		artist.FillRectangle (
+			element, []artist.Pattern {
+				uhex(0xFF0000FF),
+				uhex(0x00FF00FF),
+				uhex(0x0000FFFF),
+				uhex(0xFF00FFFF),
+				uhex(0xFFF00FFF),
+				uhex(0xAAAAAAFF),
+				uhex(0x699669FF),
+				uhex(0x077777FF),
+			} [index % 8], tile)
 	}
 
 	// 0, 4 - 3, 4
