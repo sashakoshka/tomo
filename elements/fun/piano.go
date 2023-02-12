@@ -307,7 +307,7 @@ func (element *Piano) drawFlat (
 ) {
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
-		theme.PatternButton, theme.C("fun", "flatKey"), state)
+		theme.PatternButton, state, theme.C("fun", "flatKey"))
 	artist.FillRectangle(element, pattern, bounds)
 }
 
@@ -318,6 +318,6 @@ func (element *Piano) drawSharp (
 ) {
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
-		theme.PatternButton, theme.C("fun", "sharpKey"), state)
+		theme.PatternButton, state, theme.C("fun", "sharpKey"))
 	artist.FillRectangle(element, pattern, bounds)
 }

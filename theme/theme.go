@@ -66,7 +66,7 @@ type Theme interface {
 
 	// Pattern returns an appropriate pattern given a pattern name, case,
 	// and state.
-	Pattern (Pattern, Case, PatternState) artist.Pattern
+	Pattern (Pattern, PatternState, Case) artist.Pattern
 
 	// Inset returns the area on all sides of a given pattern that is not
 	// meant to be drawn on.
@@ -101,7 +101,7 @@ func (wrapped Wrapped) Icon (name string, size IconSize) canvas.Image {
 // Pattern returns an appropriate pattern given a pattern name and state.
 func (wrapped Wrapped) Pattern (id Pattern, state PatternState) artist.Pattern {
 	real := wrapped.ensure()
-	return real.Pattern(id, wrapped.Case, state)
+	return real.Pattern(id, state, wrapped.Case)
 }
 
 // Inset returns the area on all sides of a given pattern that is not meant to

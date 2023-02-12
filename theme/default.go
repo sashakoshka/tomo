@@ -24,7 +24,7 @@ func (Default) FontFace (style FontStyle, size FontSize, c Case) font.Face {
 }
 
 // Icon returns an icon from the default set corresponding to the given name.
-func (Default) Icon (string, Case, IconSize) canvas.Image {
+func (Default) Icon (string, IconSize, Case) canvas.Image {
 	// TODO
 	return nil
 }
@@ -33,8 +33,8 @@ func (Default) Icon (string, Case, IconSize) canvas.Image {
 // pattern ID.
 func (Default) Pattern (
 	pattern Pattern,
-	c Case,
 	state PatternState,
+	c Case,
 ) artist.Pattern {
 	switch pattern {
 	case PatternAccent:
