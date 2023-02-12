@@ -60,6 +60,9 @@ func (element *List) handleResize () {
 		element.entries[index] = element.resizeEntryToFit(entry)
 	}
 
+	if element.scroll > element.maxScrollHeight() {
+		element.scroll = element.maxScrollHeight()
+	}
 	element.draw()
 	if element.onScrollBoundsChange != nil {
 		element.onScrollBoundsChange()
