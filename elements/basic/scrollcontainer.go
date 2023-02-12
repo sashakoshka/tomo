@@ -158,12 +158,26 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button input.Button) 
 		element.dragHorizontalBar(point)
 		
 	} else if point.In(element.horizontal.gutter) {
-		// FIXME: x backend and scroll container should pull these
-		// values from the same place
-		if x > element.horizontal.bar.Min.X {
-			element.scrollChildBy(velocity, 0)
-		} else {
-			element.scrollChildBy(-velocity, 0)
+		switch button {
+		case input.ButtonLeft:
+			element.horizontal.dragging = true
+			element.horizontal.dragOffset =
+				element.horizontal.bar.Dx() / 2 +
+				element.Bounds().Min.X
+			element.dragHorizontalBar(point)
+		case input.ButtonMiddle:
+			viewport := element.child.ScrollViewportBounds().Dx()
+			if x > element.horizontal.bar.Min.X {
+				element.scrollChildBy(viewport, 0)
+			} else {
+				element.scrollChildBy(-viewport, 0)
+			}
+		case input.ButtonRight:
+			if x > element.horizontal.bar.Min.X {
+				element.scrollChildBy(velocity, 0)
+			} else {
+				element.scrollChildBy(-velocity, 0)
+			}
 		}
 		
 	} else if point.In(element.vertical.bar) {
@@ -174,10 +188,26 @@ func (element *ScrollContainer) HandleMouseDown (x, y int, button input.Button) 
 		element.dragVerticalBar(point)
 		
 	} else if point.In(element.vertical.gutter) {
-		if y > element.vertical.bar.Min.Y {
-			element.scrollChildBy(0, velocity)
-		} else {
-			element.scrollChildBy(0, -velocity)
+		switch button {
+		case input.ButtonLeft:
+			element.vertical.dragging = true
+			element.vertical.dragOffset =
+				element.vertical.bar.Dy() / 2 +
+				element.Bounds().Min.Y
+			element.dragVerticalBar(point)
+		case input.ButtonMiddle:
+			viewport := element.child.ScrollViewportBounds().Dy()
+			if y > element.vertical.bar.Min.Y {
+				element.scrollChildBy(0, viewport)
+			} else {
+				element.scrollChildBy(0, -viewport)
+			}
+		case input.ButtonRight:
+			if y > element.vertical.bar.Min.Y {
+				element.scrollChildBy(0, velocity)
+			} else {
+				element.scrollChildBy(0, -velocity)
+			}
 		}
 		
 	} else if child, ok := element.child.(elements.MouseTarget); ok {
