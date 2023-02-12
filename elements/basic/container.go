@@ -6,6 +6,7 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -220,11 +221,17 @@ func (element *Container) redoAll () {
 	element.doLayout()
 
 	// draw a background
-	bounds := element.Bounds()
+	rocks := make([]image.Rectangle, len(element.children))
+	for index, entry := range element.children {
+		rocks[index] = entry.Bounds
+	}
+	tiles := shatter.Shatter(element.Bounds(), rocks...)
 	pattern := element.theme.Pattern (
 		theme.PatternBackground,
 		theme.PatternState { })
-	artist.FillRectangle(element, pattern, bounds)
+	for _, tile := range tiles {
+		artist.FillRectangle(element, pattern, tile)
+	}
 
 	// cut our canvas up and give peices to child elements
 	for _, entry := range element.children {
