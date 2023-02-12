@@ -4,6 +4,12 @@ import "image"
 import "image/draw"
 import "image/color"
 
+// Image represents an immutable canvas.
+type Image interface {
+	image.Image
+	RGBAAt (x, y int) color.RGBA
+}
+
 // Canvas is like draw.Image but is also able to return a raw pixel buffer for
 // more efficient drawing. This interface can be easily satisfied using a
 // BasicCanvas struct.

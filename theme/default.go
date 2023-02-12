@@ -3,6 +3,7 @@ package theme
 import "image"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 
 // Default is the default theme.
@@ -23,9 +24,9 @@ func (Default) FontFace (style FontStyle, size FontSize, c Case) font.Face {
 }
 
 // Icon returns an icon from the default set corresponding to the given name.
-func (Default) Icon (string, Case) artist.Pattern {
+func (Default) Icon (string, Case, IconSize) canvas.Image {
 	// TODO
-	return uhex(0)
+	return nil
 }
 
 // Pattern returns a pattern from the default theme corresponding to the given

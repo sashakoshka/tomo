@@ -3,6 +3,15 @@ package theme
 import "image"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
+
+// IconSize is a type representing valid icon sizes.
+type IconSize int
+
+const (
+	IconSizeSmall IconSize = 16
+	IconSizeLarge IconSize = 48
+)
 
 // Pattern lists a number of cannonical pattern types, each with its own ID.
 // This allows custom elements to follow themes, even those that do not
@@ -52,8 +61,8 @@ type Theme interface {
 	// FontFace returns the proper font for a given style, size, and case.
 	FontFace (FontStyle, FontSize, Case) font.Face
 
-	// Icon returns an appropriate icon given an icon name and case.
-	Icon (string, Case) artist.Pattern
+	// Icon returns an appropriate icon given an icon name, size, and case.
+	Icon (string, IconSize, Case) canvas.Image
 
 	// Pattern returns an appropriate pattern given a pattern name, case,
 	// and state.
@@ -84,9 +93,9 @@ func (wrapped Wrapped) FontFace (style FontStyle, size FontSize) font.Face {
 }
 
 // Icon returns an appropriate icon given an icon name.
-func (wrapped Wrapped) Icon (name string) artist.Pattern {
+func (wrapped Wrapped) Icon (name string, size IconSize) canvas.Image {
 	real := wrapped.ensure()
-	return real.Icon(name, wrapped.Case)
+	return real.Icon(name, size, wrapped.Case)
 }
 
 // Pattern returns an appropriate pattern given a pattern name and state.
