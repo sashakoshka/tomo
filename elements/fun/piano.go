@@ -280,7 +280,7 @@ func (element *Piano) draw () {
 	}
 	pattern := element.theme.Pattern(theme.PatternPinboard, state)
 	// inset   := element.theme.Inset(theme.PatternSunken)
-	artist.FillRectangle(element, pattern, element.Bounds())
+	artist.FillRectangle(element.core, pattern, element.Bounds())
 
 	for _, key := range element.flatKeys {
 		_, keynavPressed := element.keynavPressed[key.Note]
@@ -308,7 +308,7 @@ func (element *Piano) drawFlat (
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
 		theme.PatternButton, state, theme.C("fun", "flatKey"))
-	artist.FillRectangle(element, pattern, bounds)
+	artist.FillRectangle(element.core, pattern, bounds)
 }
 
 func (element *Piano) drawSharp (
@@ -319,5 +319,5 @@ func (element *Piano) drawSharp (
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
 		theme.PatternButton, state, theme.C("fun", "sharpKey"))
-	artist.FillRectangle(element, pattern, bounds)
+	artist.FillRectangle(element.core, pattern, bounds)
 }

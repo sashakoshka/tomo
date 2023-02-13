@@ -166,7 +166,7 @@ func (element *Switch) draw () {
 	}
 	backgroundPattern := element.theme.Pattern (
 		theme.PatternBackground, state)
-	artist.FillRectangle (element, backgroundPattern, bounds)
+	artist.FillRectangle (element.core, backgroundPattern, bounds)
 
 	if element.checked {
 		handleBounds.Min.X += bounds.Dy()
@@ -184,11 +184,11 @@ func (element *Switch) draw () {
 
 	gutterPattern := element.theme.Pattern (
 		theme.PatternGutter, state)
-	artist.FillRectangle(element, gutterPattern, gutterBounds)
+	artist.FillRectangle(element.core, gutterPattern, gutterBounds)
 	
 	handlePattern := element.theme.Pattern (
 		theme.PatternHandle, state)
-	artist.FillRectangle(element, handlePattern, handleBounds)
+	artist.FillRectangle(element.core, handlePattern, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := bounds.Min.Add(image.Point {
@@ -200,5 +200,5 @@ func (element *Switch) draw () {
 
 	foreground := element.theme.Pattern (
 		theme.PatternForeground, state)
-	element.drawer.Draw(element, foreground, offset)
+	element.drawer.Draw(element.core, foreground, offset)
 }

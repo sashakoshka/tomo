@@ -302,7 +302,7 @@ func (element *ScrollContainer) OnFocusMotionRequest (
 }
 
 func (element *ScrollContainer) childDamageCallback (region canvas.Canvas) {
-	element.core.DamageRegion(artist.Paste(element, region, image.Point { }))
+	element.core.DamageRegion(artist.Paste(element.core, region, image.Point { }))
 }
 
 func (element *ScrollContainer) childFocusRequestCallback () (granted bool) {
@@ -345,7 +345,7 @@ func (element *ScrollContainer) resizeChildToFit () {
 		0, 0,
 		element.childWidth,
 		element.childHeight).Add(element.Bounds().Min)
-	element.child.DrawTo(canvas.Cut(element, childBounds))
+	element.child.DrawTo(canvas.Cut(element.core, childBounds))
 }
 
 func (element *ScrollContainer) recalculate () {
@@ -437,11 +437,10 @@ func (element *ScrollContainer) recalculate () {
 }
 
 func (element *ScrollContainer) draw () {
-	artist.Paste(element, element.child, image.Point { })
 	deadPattern := element.theme.Pattern (
 		theme.PatternDead, theme.PatternState { })
 	artist.FillRectangle (
-		element, deadPattern,
+		element.core, deadPattern,
 		image.Rect (
 			element.vertical.gutter.Min.X,
 			element.horizontal.gutter.Min.Y,
@@ -457,10 +456,10 @@ func (element *ScrollContainer) drawHorizontalBar () {
 		Pressed:  element.horizontal.dragging,
 	}
 	gutterPattern := element.horizontal.theme.Pattern(theme.PatternGutter, state)
-	artist.FillRectangle(element, gutterPattern, element.horizontal.gutter)
+	artist.FillRectangle(element.core, gutterPattern, element.horizontal.gutter)
 	
 	handlePattern := element.horizontal.theme.Pattern(theme.PatternHandle, state)
-	artist.FillRectangle(element, handlePattern, element.horizontal.bar)
+	artist.FillRectangle(element.core, handlePattern, element.horizontal.bar)
 }
 
 func (element *ScrollContainer) drawVerticalBar () {
@@ -469,10 +468,10 @@ func (element *ScrollContainer) drawVerticalBar () {
 		Pressed:  element.vertical.dragging,
 	}
 	gutterPattern := element.vertical.theme.Pattern(theme.PatternGutter, state)
-	artist.FillRectangle(element, gutterPattern, element.vertical.gutter)
+	artist.FillRectangle(element.core, gutterPattern, element.vertical.gutter)
 	
 	handlePattern := element.vertical.theme.Pattern(theme.PatternHandle, state)
-	artist.FillRectangle(element, handlePattern, element.vertical.bar)
+	artist.FillRectangle(element.core, handlePattern, element.vertical.bar)
 }
 
 func (element *ScrollContainer) dragHorizontalBar (mousePosition image.Point) {

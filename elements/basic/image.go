@@ -19,5 +19,5 @@ func NewImage (image image.Image) (element *Image) {
 }
 
 func (element *Image) draw () {
-	artist.FillRectangle(element, element.buffer, element.Bounds())
+	artist.FillRectangle(element.core, element.buffer, element.Bounds())
 }

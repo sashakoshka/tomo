@@ -71,7 +71,7 @@ func (element *ProgressBar) draw () {
 		theme.PatternSunken,
 		theme.PatternState { })
 	inset := element.theme.Inset(theme.PatternSunken)
-	artist.FillRectangle(element, pattern, bounds)
+	artist.FillRectangle(element.core, pattern, bounds)
 	bounds = inset.Apply(bounds)
 	meterBounds := image.Rect (
 		bounds.Min.X, bounds.Min.Y,
@@ -80,5 +80,5 @@ func (element *ProgressBar) draw () {
 	accent := element.theme.Pattern (
 		theme.PatternAccent,
 		theme.PatternState { })
-	artist.FillRectangle(element, accent, meterBounds)
+	artist.FillRectangle(element.core, accent, meterBounds)
 }

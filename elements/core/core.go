@@ -33,33 +33,11 @@ func NewCore (
 	return
 }
 
-// ColorModel fulfills the draw.Image interface.
-func (core *Core) ColorModel () (model color.Model) {
-	return color.RGBAModel
-}
-
-// ColorModel fulfills the draw.Image interface.
-func (core *Core) At (x, y int) (pixel color.Color) {
-	if core.canvas == nil { return }
-	return core.canvas.At(x, y)
-}
-
-// ColorModel fulfills the draw.Image interface.
+// Bounds fulfills the tomo.Element interface. This should not need to be
+// overridden.
 func (core *Core) Bounds () (bounds image.Rectangle) {
 	if core.canvas == nil { return }
 	return core.canvas.Bounds()
-}
-
-// ColorModel fulfills the draw.Image interface.
-func (core *Core) Set (x, y int, c color.Color) () {
-	if core.canvas == nil { return }
-	core.canvas.Set(x, y, c)
-}
-
-// Buffer fulfills the canvas.Canvas interface.
-func (core *Core) Buffer () (data []color.RGBA, stride int) {
-	if core.canvas == nil { return }
-	return core.canvas.Buffer()
 }
 
 // MinimumSize fulfils the tomo.Element interface. This should not need to be
@@ -97,6 +75,35 @@ type CoreControl struct {
 	core *Core
 }
 
+// ColorModel fulfills the draw.Image interface.
+func (control CoreControl) ColorModel () (model color.Model) {
+	return color.RGBAModel
+}
+
+// At fulfills the draw.Image interface.
+func (control CoreControl) At (x, y int) (pixel color.Color) {
+	if control.core.canvas == nil { return }
+	return control.core.canvas.At(x, y)
+}
+
+// Bounds fulfills the draw.Image interface.
+func (control CoreControl) Bounds () (bounds image.Rectangle) {
+	if control.core.canvas == nil { return }
+	return control.core.canvas.Bounds()
+}
+
+// Set fulfills the draw.Image interface.
+func (control CoreControl) Set (x, y int, c color.Color) () {
+	if control.core.canvas == nil { return }
+	control.core.canvas.Set(x, y, c)
+}
+
+// Buffer fulfills the canvas.Canvas interface.
+func (control CoreControl) Buffer () (data []color.RGBA, stride int) {
+	if control.core.canvas == nil { return }
+	return control.core.canvas.Buffer()
+}
+
 // HasImage returns true if the core has an allocated image buffer, and false if
 // it doesn't.
 func (control CoreControl) HasImage () (has bool) {
@@ -107,7 +114,7 @@ func (control CoreControl) HasImage () (has bool) {
 // does not need to be called when responding to a resize event.
 func (control CoreControl) DamageRegion (bounds image.Rectangle) {
 	if control.core.onDamage != nil {
-		control.core.onDamage(canvas.Cut(control.core, bounds))
+		control.core.onDamage(canvas.Cut(control.core.canvas, bounds))
 	}
 }
 

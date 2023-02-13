@@ -171,10 +171,10 @@ func (element *Checkbox) draw () {
 
 	backgroundPattern := element.theme.Pattern (
 		theme.PatternBackground, state)
-	artist.FillRectangle(element, backgroundPattern, bounds)
+	artist.FillRectangle(element.core, backgroundPattern, bounds)
 
 	pattern := element.theme.Pattern(theme.PatternButton, state)
-	artist.FillRectangle(element, pattern, boxBounds)
+	artist.FillRectangle(element.core, pattern, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := bounds.Min.Add(image.Point {
@@ -185,5 +185,5 @@ func (element *Checkbox) draw () {
 	offset.X -= textBounds.Min.X
 
 	foreground := element.theme.Pattern(theme.PatternForeground, state)
-	element.drawer.Draw(element, foreground, offset)
+	element.drawer.Draw(element.core, foreground, offset)
 }

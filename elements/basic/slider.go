@@ -196,11 +196,11 @@ func (element *Slider) draw () {
 		Pressed:  element.dragging,
 	}
 	artist.FillRectangle (
-		element,
+		element.core,
 		element.theme.Pattern(theme.PatternGutter, state),
 		bounds)
 	artist.FillRectangle (
-		element,
+		element.core,
 		element.theme.Pattern(theme.PatternHandle, state),
 		element.bar)
 }

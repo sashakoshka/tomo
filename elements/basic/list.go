@@ -439,14 +439,14 @@ func (element *List) draw () {
 		Disabled: !element.Enabled(),
 		Focused: element.Focused(),
 	})
-	artist.FillRectangle(element, pattern, bounds)
+	artist.FillRectangle(element.core, pattern, bounds)
 
 	bounds = inset.Apply(bounds)
 	dot := image.Point {
 		bounds.Min.X,
 		bounds.Min.Y - element.scroll,
 	}
-	innerCanvas := canvas.Cut(element, bounds)
+	innerCanvas := canvas.Cut(element.core, bounds)
 	for index, entry := range element.entries {
 		entryPosition := dot
 		dot.Y += entry.Bounds().Dy()

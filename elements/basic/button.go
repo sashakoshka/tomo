@@ -143,7 +143,7 @@ func (element *Button) draw () {
 
 	pattern := element.theme.Pattern(theme.PatternButton, state)
 
-	artist.FillRectangle(element, pattern, bounds)
+	artist.FillRectangle(element.core, pattern, bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
@@ -161,5 +161,5 @@ func (element *Button) draw () {
 	}
 
 	foreground := element.theme.Pattern(theme.PatternForeground, state)
-	element.drawer.Draw(element, foreground, offset)
+	element.drawer.Draw(element.core, foreground, offset)
 }

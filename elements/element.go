@@ -8,16 +8,9 @@ import "git.tebibyte.media/sashakoshka/tomo/config"
 
 // Element represents a basic on-screen object.
 type Element interface {
-	// Element must implement the Canvas interface. Elements should start
-	// out with a completely blank buffer, and only allocate memory and draw
-	// on it for the first time when sent an EventResize event.
-	canvas.Canvas
-
-	// MinimumSize specifies the minimum amount of pixels this element's
-	// width and height may be set to. If the element is given a resize
-	// event with dimensions smaller than this, it will use its minimum
-	// instead of the offending dimension(s).
-	MinimumSize () (width, height int)
+	// Bounds reports the element's bounding box. This must reflect the
+	// bounding box of the last canvas given to the element by DrawTo.
+	Bounds () (bounds image.Rectangle)
 
 	// DrawTo sets this element's canvas. This should only be called by the
 	// parent element. This is typically a region of the parent element's
@@ -27,6 +20,12 @@ type Element interface {
 	// OnDamage sets a function to be called when an area of the element is
 	// drawn on and should be pushed to the screen.
 	OnDamage (callback func (region canvas.Canvas))
+
+	// MinimumSize specifies the minimum amount of pixels this element's
+	// width and height may be set to. If the element is given a resize
+	// event with dimensions smaller than this, it will use its minimum
+	// instead of the offending dimension(s).
+	MinimumSize () (width, height int)
 
 	// OnMinimumSizeChange sets a function to be called when the element's
 	// minimum size is changed.

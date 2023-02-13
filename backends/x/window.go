@@ -254,7 +254,7 @@ func (window *Window) reallocateCanvas () {
 }
 
 func (window *Window) redrawChildEntirely () {
-	window.pushRegion(window.paste(window.child))
+	window.pushRegion(window.paste(window.canvas))
 	
 }
 

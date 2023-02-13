@@ -154,12 +154,12 @@ func (element *Label) draw () {
 	pattern := element.theme.Pattern (
 		theme.PatternBackground,
 		theme.PatternState { })
-	artist.FillRectangle(element, pattern, bounds)
+	artist.FillRectangle(element.core, pattern, bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 
 	foreground :=  element.theme.Pattern (
 		theme.PatternForeground,
 		theme.PatternState { })
-	element.drawer.Draw(element, foreground, bounds.Min.Sub(textBounds.Min))
+	element.drawer.Draw(element.core, foreground, bounds.Min.Sub(textBounds.Min))
 }

@@ -27,7 +27,7 @@ func NewArtist () (element *Artist) {
 
 func (element *Artist) draw () {
 	bounds := element.Bounds()
-	artist.FillRectangle(element, artist.NewUniform(hex(0)), bounds)
+	artist.FillRectangle(element.core, artist.NewUniform(hex(0)), bounds)
 	
 	element.cellBounds.Max.X = bounds.Min.X + bounds.Dx() / 5
 	element.cellBounds.Max.Y = bounds.Min.Y + (bounds.Dy() - 48) / 8
@@ -36,7 +36,7 @@ func (element *Artist) draw () {
 
 	// 0, 0
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.Beveled {
 			artist.NewUniform(hex(0xFF0000FF)),
 			artist.NewUniform(hex(0x0000FFFF)),
@@ -45,13 +45,13 @@ func (element *Artist) draw () {
 
 	// 1, 0
 	artist.StrokeRectangle (
-		element,
+		element.core,
 		artist.NewUniform(hex(0x00FF00FF)), 3,
 		element.cellAt(1, 0))
 
 	// 2, 0
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.NewMultiBordered (
 			artist.Stroke { Pattern: uhex(0xFF0000FF), Weight: 1 },
 			artist.Stroke { Pattern: uhex(0x888800FF), Weight: 2 },
@@ -63,7 +63,7 @@ func (element *Artist) draw () {
 
 	// 3, 0
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.Bordered {
 			Stroke: artist.Stroke { Pattern: uhex(0x0000FFFF), Weight: 5 },
 			Fill: uhex(0xFF0000FF),
@@ -72,7 +72,7 @@ func (element *Artist) draw () {
 
 	// 4, 0
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.Padded {
 			Stroke: uhex(0xFFFFFFFF),
 			Fill: uhex(0x666666FF),
@@ -83,7 +83,7 @@ func (element *Artist) draw () {
 	// 0, 1 - 3, 1
 	for x := 0; x < 4; x ++ {
 		artist.FillRectangle (
-			element,
+			element.core,
 			artist.Striped {
 				First:  artist.Stroke { Pattern: uhex(0xFF8800FF), Weight: 7 },
 				Second: artist.Stroke { Pattern: uhex(0x0088FFFF), Weight: 2 },
@@ -100,17 +100,17 @@ func (element *Artist) draw () {
 
 	// 0, 3
 	artist.StrokeRectangle (
-		element,uhex(0x888888FF), 1,
+		element.core, uhex(0x888888FF), 1,
 		element.cellAt(0, 3))
-	artist.FillEllipse(element, uhex(0x00FF00FF), element.cellAt(0, 3))
+	artist.FillEllipse(element.core, uhex(0x00FF00FF), element.cellAt(0, 3))
 
 	// 1, 3 - 3, 3
 	for x := 1; x < 4; x ++ {
 		artist.StrokeRectangle (
-			element,uhex(0x888888FF), 1,
+			element.core,uhex(0x888888FF), 1,
 			element.cellAt(x, 3))
 		artist.StrokeEllipse (
-			element,
+			element.core,
 			[]artist.Pattern {
 				uhex(0xFF0000FF),
 				uhex(0x00FF00FF),
@@ -131,7 +131,7 @@ func (element *Artist) draw () {
 	tiles := shatter.Shatter(element.cellAt(4, 3), rocks...)
 	for index, tile := range tiles {
 		artist.FillRectangle (
-			element, []artist.Pattern {
+			element.core, []artist.Pattern {
 				uhex(0xFF0000FF),
 				uhex(0x00FF00FF),
 				uhex(0x0000FFFF),
@@ -146,7 +146,7 @@ func (element *Artist) draw () {
 	// 0, 4 - 3, 4
 	for x := 0; x < 4; x ++ {
 		artist.FillEllipse (
-			element, 
+			element.core, 
 			artist.Split {
 				First:  uhex(0xFF0000FF),
 				Second: uhex(0x0000FFFF),
@@ -163,11 +163,11 @@ func (element *Artist) draw () {
 		"%dms\n%dus",
 		drawTime.Milliseconds(),
 		drawTime.Microseconds())))
-	textDrawer.Draw(element, uhex(0xFFFFFFFF), image.Pt(8, bounds.Max.Y - 24))
+	textDrawer.Draw(element.core, uhex(0xFFFFFFFF), image.Pt(8, bounds.Max.Y - 24))
 	
 	// 0, 5
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.QuadBeveled {
 			uhex(0x880000FF),
 			uhex(0x00FF00FF),
@@ -178,7 +178,7 @@ func (element *Artist) draw () {
 		
 	// 1, 5
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.Checkered {
 			First: artist.QuadBeveled {
 				uhex(0x880000FF),
@@ -198,7 +198,7 @@ func (element *Artist) draw () {
 	
 	// 2, 5
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.Dotted {
 			Foreground: uhex(0x00FF00FF),
 			Background: artist.Checkered {
@@ -214,7 +214,7 @@ func (element *Artist) draw () {
 		
 	// 3, 5
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.Tiled {
 			Pattern: artist.QuadBeveled {
 				uhex(0x880000FF),
@@ -230,7 +230,7 @@ func (element *Artist) draw () {
 	// 0, 6 - 3, 6
 	for x := 0; x < 4; x ++ {
 		artist.FillRectangle (
-			element, 
+			element.core, 
 			artist.Gradient {
 				First:  uhex(0xFF0000FF),
 				Second: uhex(0x0000FFFF),
@@ -241,7 +241,7 @@ func (element *Artist) draw () {
 
 	// 0, 7
 	artist.FillEllipse (
-		element,
+		element.core,
 		artist.EllipticallyBordered {
 			Fill: artist.Gradient {
 				First:  uhex(0x00FF00FF),
@@ -254,7 +254,7 @@ func (element *Artist) draw () {
 
 	// 1, 7
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.Noisy {
 			Low:  uhex(0x000000FF),
 			High: uhex(0xFFFFFFFF),
@@ -265,7 +265,7 @@ func (element *Artist) draw () {
 
 	// 2, 7
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.Noisy {
 			Low:  uhex(0x000000FF),
 			High: artist.Gradient {
@@ -280,7 +280,7 @@ func (element *Artist) draw () {
 
 	// 3, 7
 	artist.FillRectangle (
-		element,
+		element.core,
 		artist.Noisy {
 			Low:  uhex(0x000000FF),
 			High: uhex(0xFFFFFFFF),
@@ -294,33 +294,33 @@ func (element *Artist) draw () {
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
 	bounds = bounds.Inset(4)
 	c := uhex(0xFFFFFFFF)
-	artist.Line(element, c, weight, bounds.Min, bounds.Max)
+	artist.Line(element.core, c, weight, bounds.Min, bounds.Max)
 	artist.Line (
-		element, c, weight,
+		element.core, c, weight,
 		image.Pt(bounds.Max.X, bounds.Min.Y),
 		image.Pt(bounds.Min.X, bounds.Max.Y))
 	artist.Line (
-		element, c, weight,
+		element.core, c, weight,
 		image.Pt(bounds.Max.X, bounds.Min.Y + 16),
 		image.Pt(bounds.Min.X, bounds.Max.Y - 16))
 	artist.Line (
-		element, c, weight,
+		element.core, c, weight,
 		image.Pt(bounds.Min.X, bounds.Min.Y + 16),
 		image.Pt(bounds.Max.X, bounds.Max.Y - 16))
 	artist.Line (
-		element, c, weight,
+		element.core, c, weight,
 		image.Pt(bounds.Min.X + 20, bounds.Min.Y),
 		image.Pt(bounds.Max.X - 20, bounds.Max.Y))
 	artist.Line (
-		element, c, weight,
+		element.core, c, weight,
 		image.Pt(bounds.Max.X - 20, bounds.Min.Y),
 		image.Pt(bounds.Min.X + 20, bounds.Max.Y))
 	artist.Line (
-		element, c, weight,
+		element.core, c, weight,
 		image.Pt(bounds.Min.X, bounds.Min.Y + bounds.Dy() / 2),
 		image.Pt(bounds.Max.X, bounds.Min.Y + bounds.Dy() / 2))
 	artist.Line (
-		element, c, weight,
+		element.core, c, weight,
 		image.Pt(bounds.Min.X + bounds.Dx() / 2, bounds.Min.Y),
 		image.Pt(bounds.Min.X + bounds.Dx() / 2, bounds.Max.Y))
 }

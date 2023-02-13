@@ -296,7 +296,7 @@ func (element *TextBox) draw () {
 		Focused:  element.Focused(),
 	}
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
-	artist.FillRectangle(element, pattern, bounds)
+	artist.FillRectangle(element.core, pattern, bounds)
 
 	if len(element.text) == 0 && !element.Focused() {
 		// draw placeholder
@@ -309,7 +309,7 @@ func (element *TextBox) draw () {
 			theme.PatternForeground,
 			theme.PatternState { Disabled: true })
 		element.placeholderDrawer.Draw (
-			element,
+			element.core,
 			foreground,
 			offset.Sub(textBounds.Min))
 	} else {
@@ -322,7 +322,7 @@ func (element *TextBox) draw () {
 		foreground := element.theme.Pattern (
 			theme.PatternForeground,  state)
 		element.valueDrawer.Draw (
-			element,
+			element.core,
 			foreground,
 			offset.Sub(textBounds.Min))
 
@@ -331,7 +331,7 @@ func (element *TextBox) draw () {
 			cursorPosition := element.valueDrawer.PositionOf (
 				element.cursor)
 			artist.Line (
-				element,
+				element.core,
 				foreground, 1,
 				cursorPosition.Add(offset),
 				image.Pt (

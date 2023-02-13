@@ -64,11 +64,11 @@ func (element *Spacer) draw () {
 		pattern := element.theme.Pattern (
 			theme.PatternForeground,
 			theme.PatternState { })
-		artist.FillRectangle(element, pattern, bounds)
+		artist.FillRectangle(element.core, pattern, bounds)
 	} else {
 		pattern := element.theme.Pattern (
 			theme.PatternBackground,
 			theme.PatternState { })
-		artist.FillRectangle(element, pattern, bounds)
+		artist.FillRectangle(element.core, pattern, bounds)
 	}
 }
