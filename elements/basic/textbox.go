@@ -97,16 +97,30 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 		textChanged = true
 			
 	case key == input.KeyLeft:
-		element.dot = textmanip.MoveLeft (
-			element.text,
-			element.dot,
-			modifiers.Control)
+		if modifiers.Shift {
+			element.dot = textmanip.SelectLeft (
+				element.text,
+				element.dot,
+				modifiers.Control)
+		} else {
+			element.dot = textmanip.MoveLeft (
+				element.text,
+				element.dot,
+				modifiers.Control)
+		}
 			
 	case key == input.KeyRight:
-		element.dot = textmanip.MoveRight (
-			element.text,
-			element.dot,
-			modifiers.Control)
+		if modifiers.Shift {
+			element.dot = textmanip.SelectRight (
+				element.text,
+				element.dot,
+				modifiers.Control)
+		} else {
+			element.dot = textmanip.MoveRight (
+				element.text,
+				element.dot,
+				modifiers.Control)
+		}
 		
 	case key.Printable():
 		element.text, element.dot = textmanip.Type (
@@ -299,14 +313,28 @@ func (element *TextBox) draw () {
 	}
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
 	artist.FillRectangle(element.core, pattern, bounds)
+	offset := bounds.Min.Add (image.Point {
+		X: element.config.Padding() - element.scroll,
+		Y: element.config.Padding(),
+	})
 
-	if len(element.text) == 0 && !element.Focused() {
+	if element.Focused() && !element.dot.Empty() {
+		// draw selection bounds
+		accent := element.theme.Pattern (
+			theme.PatternAccent,  state)
+		canon := element.dot.Canon()
+		start := element.valueDrawer.PositionOf(canon.Start).Add(offset)
+		end   := element.valueDrawer.PositionOf(canon.End).Add(offset)
+		end.Y += element.valueDrawer.LineHeight().Round()
+		artist.FillRectangle (
+			element.core,
+			accent,
+			image.Rectangle { start, end })
+	}
+
+	if len(element.text) == 0 {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
-		offset := bounds.Min.Add (image.Point {
-			X: element.config.Padding(),
-			Y: element.config.Padding(),
-		})
 		foreground := element.theme.Pattern (
 			theme.PatternForeground,
 			theme.PatternState { Disabled: true })
@@ -317,30 +345,27 @@ func (element *TextBox) draw () {
 	} else {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
-		offset := bounds.Min.Add (image.Point {
-			X: element.config.Padding() - element.scroll,
-			Y: element.config.Padding(),
-		})
 		foreground := element.theme.Pattern (
 			theme.PatternForeground,  state)
 		element.valueDrawer.Draw (
 			element.core,
 			foreground,
 			offset.Sub(textBounds.Min))
-
-		if element.Focused() {
-			// cursor
-			// TODO: draw selection if exists
-			cursorPosition := element.valueDrawer.PositionOf (
-				element.dot.End)
-			artist.Line (
-				element.core,
-				foreground, 1,
-				cursorPosition.Add(offset),
-				image.Pt (
-					cursorPosition.X,
-					cursorPosition.Y + element.valueDrawer.
-					LineHeight().Round()).Add(offset))
-		}
+	}
+	
+	if element.Focused() && element.dot.Empty() {
+		// draw cursor
+		foreground := element.theme.Pattern (
+			theme.PatternForeground,  state)
+		cursorPosition := element.valueDrawer.PositionOf (
+			element.dot.End)
+		artist.Line (
+			element.core,
+			foreground, 1,
+			cursorPosition.Add(offset),
+			image.Pt (
+				cursorPosition.X,
+				cursorPosition.Y + element.valueDrawer.
+				LineHeight().Round()).Add(offset))
 	}
 }

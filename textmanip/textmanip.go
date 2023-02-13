@@ -34,12 +34,19 @@ func (dot Dot) Sub (delta int) Dot {
 	}
 }
 
-func WordToLeft (text []rune, dot Dot) (length int) {
-	cursor := dot.End
-	if cursor < 1 { return }
-	if cursor > len(text) { cursor = len(text) }
+func (dot Dot) Constrain (length int) Dot {
+	if dot.Start < 0      { dot.Start = 0 }
+	if dot.Start > length { dot.Start = length}
+	if dot.End < 0        { dot.End = 0 }
+	if dot.End > length   { dot.End = length}
+	return dot
+}
 
-	index := cursor - 1
+func WordToLeft (text []rune, position int) (length int) {
+	if position < 1 { return }
+	if position > len(text) { position = len(text) }
+
+	index := position - 1
 	for index >= 0 && unicode.IsSpace(text[index]) {
 		length ++
 		index --
@@ -51,12 +58,11 @@ func WordToLeft (text []rune, dot Dot) (length int) {
 	return
 }
 
-func WordToRight (text []rune, dot Dot) (length int) {
-	cursor := dot.End
-	if cursor < 0 { return }
-	if cursor > len(text) { cursor = len(text) }
+func WordToRight (text []rune, position int) (length int) {
+	if position < 0 { return }
+	if position > len(text) { position = len(text) }
 
-	index := cursor
+	index := position
 	for index < len(text) && unicode.IsSpace(text[index]) {
 		length ++
 		index ++
@@ -68,41 +74,46 @@ func WordToRight (text []rune, dot Dot) (length int) {
 	return
 }
 
-func Backspace (text []rune, dot Dot, word bool) (result []rune, moved Dot) {
-	if dot.Empty() {
-		cursor := dot.End
-		if cursor < 1         { return text, dot }
-		if cursor > len(text) { cursor = len(text) }
+func WordAround (text []rune, position int) (around Dot) {
+	return Dot {
+		WordToLeft(text, position),
+		WordToRight(text, position),
+	}
+}
 
+func Backspace (text []rune, dot Dot, word bool) (result []rune, moved Dot) {
+	dot = dot.Constrain(len(text))
+	if dot.Empty() {
 		distance := 1
 		if word {
-			distance = WordToLeft(text, dot)
+			distance = WordToLeft(text, dot.End)
 		}
-		result = append(result, text[:cursor - distance]...)
-		result = append(result, text[cursor:]...)
-		moved = EmptyDot(cursor - distance)
+		result = append (
+			result,
+			text[:dot.Sub(distance).Constrain(len(text)).End]...)
+		result = append(result, text[dot.End:]...)
+		moved = EmptyDot(dot.Sub(distance).Start)
+		return
 	} else {
 		return Delete(text, dot, word)
 	}
-
-	return
 }
 
 func Delete (text []rune, dot Dot, word bool) (result []rune, moved Dot) {
+	dot = dot.Constrain(len(text))
 	if dot.Empty() {
-		cursor := dot.End
-		if cursor < 0         { return text, dot }
-		if cursor > len(text) { cursor = len(text) }
-
 		distance := 1
 		if word {
-			distance = WordToRight(text, dot)
+			distance = WordToRight(text, dot.End)
 		}
-		result = append(result, text[:cursor]...)
-		result = append(result, text[cursor + distance:]...)
+		result = append(result, text[:dot.End]...)
+		result = append (
+			result,
+			text[dot.Add(distance).Constrain(len(text)).End:]...)
 		moved = dot
 		return	
 	} else {
+		dot = dot.Canon()
 		result = append(result, text[:dot.Start]...)
 		result = append(result, text[dot.End:]...)
 		moved = EmptyDot(dot.Start)
@@ -111,50 +122,61 @@ func Delete (text []rune, dot Dot, word bool) (result []rune, moved Dot) {
 }
 
 func Type (text []rune, dot Dot, character rune) (result []rune, moved Dot) {
+	dot = dot.Constrain(len(text))
 	if dot.Empty() {
-		cursor := dot.End
-		if cursor < 0         { cursor = 0 }
-		if cursor > len(text) { cursor = len(text) }
-		result = append(result, text[:cursor]...)
+		result = append(result, text[:dot.End]...)
 		result = append(result, character)
-		if cursor < len(text) {
-			result = append(result, text[cursor:]...)
+		if dot.End < len(text) {
+			result = append(result, text[dot.End:]...)
 		}
-		moved = EmptyDot(cursor + 1)
+		moved = EmptyDot(dot.Add(1).End)
 		return
 	} else {
+		dot = dot.Canon()
 		result = append(result, text[:dot.Start]...)
 		result = append(result, character)
 		result = append(result, text[dot.End:]...)
-		moved = EmptyDot(dot.Start)
+		moved = EmptyDot(dot.Add(1).Start)
 		return
 	}
 }
 
 func MoveLeft (text []rune, dot Dot, word bool) (moved Dot) {
-	cursor := dot.Start
-
-	if cursor < 1         { return EmptyDot(cursor) }
-	if cursor > len(text) { cursor = len(text) }
-
+	dot = dot.Constrain(len(text))
 	distance := 1
 	if word {
-		distance = WordToLeft(text, dot)
+		distance = WordToLeft(text, dot.Start)
 	}
-	moved = EmptyDot(cursor - distance)
+	moved = EmptyDot(dot.Sub(distance).Start)
 	return
 }
 
 func MoveRight (text []rune, dot Dot, word bool) (moved Dot) {
-	cursor := dot.End
-	
-	if cursor < 0         { return EmptyDot(cursor) }
-	if cursor > len(text) { cursor = len(text) }
-
+	dot = dot.Constrain(len(text))
 	distance := 1
 	if word {
-		distance = WordToRight(text, dot)
+		distance = WordToRight(text, dot.End)
 	}
-	moved = EmptyDot(cursor + distance)
+	moved = EmptyDot(dot.Add(distance).End)
 	return
+}
+
+func SelectLeft (text []rune, dot Dot, word bool) (moved Dot) {
+	dot = dot.Constrain(len(text))
+	distance := 1
+	if word {
+		distance = WordToLeft(text, dot.Start)
+	}
+	dot.Start -= distance
+	return dot
+}
+
+func SelectRight (text []rune, dot Dot, word bool) (moved Dot) {
+	dot = dot.Constrain(len(text))
+	distance := 1
+	if word {
+		distance = WordToRight(text, dot.End)
+	}
+	dot.Start += distance
+	return dot
 }
