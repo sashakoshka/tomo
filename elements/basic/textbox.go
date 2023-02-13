@@ -14,7 +14,8 @@ type TextBox struct {
 	*core.FocusableCore
 	core core.CoreControl
 	focusableControl core.FocusableCoreControl
-	
+
+	dragging bool
 	dot    textmanip.Dot
 	scroll int
 	placeholder string
@@ -63,10 +64,44 @@ func (element *TextBox) handleResize () {
 func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled() { return }
 	if !element.Focused() { element.Focus() }
+
+	if button == input.ButtonLeft {
+		point := image.Pt(x, y)
+		offset := element.Bounds().Min.Add (image.Pt (
+			element.config.Padding() - element.scroll,
+			element.config.Padding()))
+		runeIndex := element.valueDrawer.AtPosition(point.Sub(offset))
+		element.dragging = true
+		if runeIndex > -1 {
+			element.dot = textmanip.EmptyDot(runeIndex)
+			element.redo()
+		}
+	}
 }
 
-func (element *TextBox) HandleMouseUp (x, y int, button input.Button) { }
-func (element *TextBox) HandleMouseMove (x, y int) { }
+func (element *TextBox) HandleMouseMove (x, y int) {
+	if !element.Enabled() { return }
+	if !element.Focused() { element.Focus() }
+
+	if element.dragging {
+		point := image.Pt(x, y)
+		offset := element.Bounds().Min.Add (image.Pt (
+			element.config.Padding() - element.scroll,
+			element.config.Padding()))
+		runeIndex := element.valueDrawer.AtPosition(point.Sub(offset))
+		if runeIndex > -1 {
+			element.dot.End = runeIndex
+			element.redo()
+		}
+	}
+}
+
+func (element *TextBox) HandleMouseUp (x, y int, button input.Button) {
+	if button == input.ButtonLeft {
+		element.dragging = false
+	}
+}
+
 func (element *TextBox) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) {

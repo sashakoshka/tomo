@@ -10,6 +10,7 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 type characterLayout struct {
 	x         int
+	width     int
 	character rune
 }
 
@@ -38,13 +39,14 @@ const (
 // text, and calculating text bounds. It avoids doing redundant work
 // automatically.
 type TextDrawer struct {
-	runes  []rune
-	face   font.Face
-	width  int
-	height int
-	align  Align
-	wrap   bool
-	cut    bool
+	runes   []rune
+	face    font.Face
+	width   int
+	height  int
+	align   Align
+	wrap    bool
+	cut     bool
+	metrics font.Metrics
 
 	layout       []wordLayout
 	layoutClean  bool
@@ -205,6 +207,38 @@ func (drawer *TextDrawer) PositionOf (index int) (position image.Point) {
 	return
 }
 
+// AtPosition returns the index at the specified position relative to the
+// baseline.
+func (drawer *TextDrawer) AtPosition (position image.Point) (index int) {
+	cursor := 0
+	if !drawer.layoutClean { drawer.recalculate() }
+	for _, word := range drawer.layout {
+		for _, character := range word.text {
+			bounds := drawer.boundsOfChar(character).Add(word.position)
+			if position.In(bounds) {
+				return cursor
+			}
+			cursor ++
+		}
+		for _, character := range word.whitespace {
+			bounds := drawer.boundsOfChar(character).Add(word.position)
+			if position.In(bounds) {
+				return cursor
+			}
+			cursor ++
+		}
+	}
+	return -1
+}
+
+func (drawer *TextDrawer) boundsOfChar (char characterLayout) (image.Rectangle) {
+	return image.Rect (
+		char.x, 0,
+		char.x + char.width,
+		drawer.metrics.Height.Ceil()).
+			Sub(image.Pt(0, drawer.metrics.Descent.Round()))
+}
+
 // Length returns the amount of runes in the drawer's text.
 func (drawer *TextDrawer) Length () (length int) {
 	return len(drawer.runes)
@@ -217,7 +251,7 @@ func (drawer *TextDrawer) recalculate () {
 	if drawer.runes == nil { return }
 	if drawer.face  == nil { return }
 
-	metrics := drawer.face.Metrics()
+	drawer.metrics = drawer.face.Metrics()
 	dot := fixed.Point26_6 { 0, 0 }
 	index := 0
 	horizontalExtent  := 0
@@ -241,6 +275,7 @@ func (drawer *TextDrawer) recalculate () {
 			word.text = append(word.text, characterLayout {
 				x: currentCharacterX.Round(),
 				character: character,
+				width: advance.Ceil(),
 			})
 			
 			dot.X             += advance
@@ -264,9 +299,9 @@ func (drawer *TextDrawer) recalculate () {
 			word.width + word.position.X > drawer.width &&
 			word.position.X > 0 {
 			
-			word.position.Y += metrics.Height.Round()
+			word.position.Y += drawer.metrics.Height.Round()
 			word.position.X = 0
-			dot.Y += metrics.Height
+			dot.Y += drawer.metrics.Height
 			dot.X = wordWidth
 		}
 
@@ -281,12 +316,13 @@ func (drawer *TextDrawer) recalculate () {
 			word.whitespace = append(word.whitespace, characterLayout {
 				x: currentCharacterX.Round(),
 				character: character,
+				width: advance.Ceil(),
 			})
 			spaceWidth        += advance
 			currentCharacterX += advance
 			
 			if character == '\n' {
-				dot.Y += metrics.Height
+				dot.Y += drawer.metrics.Height
 				dot.X = 0
 				word.breaksAfter ++
 				break
@@ -309,8 +345,9 @@ func (drawer *TextDrawer) recalculate () {
 		// stop processing more words. and remove any words that have
 		// also crossed the line.
 		if
-			drawer.cut &&
-			(dot.Y - metrics.Ascent - metrics.Descent).Round() >
+			drawer.cut && (
+				dot.Y - drawer.metrics.Ascent -
+				drawer.metrics.Descent).Round() >
 			drawer.height {
 
 			for
@@ -343,11 +380,15 @@ func (drawer *TextDrawer) recalculate () {
 	}
 
 	if drawer.cut {
-		drawer.layoutBounds.Min.Y = 0 - metrics.Ascent.Round()
-		drawer.layoutBounds.Max.Y = drawer.height - metrics.Ascent.Round()
+		drawer.layoutBounds.Min.Y = 0 - drawer.metrics.Ascent.Round()
+		drawer.layoutBounds.Max.Y =
+			drawer.height -
+			drawer.metrics.Ascent.Round()
 	} else {
-		drawer.layoutBounds.Min.Y = 0 - metrics.Ascent.Round()
-		drawer.layoutBounds.Max.Y = dot.Y.Round() + metrics.Descent.Round()
+		drawer.layoutBounds.Min.Y = 0 - drawer.metrics.Ascent.Round()
+		drawer.layoutBounds.Max.Y =
+			dot.Y.Round() +
+			drawer.metrics.Descent.Round()
 	}
 	
 	// TODO:
