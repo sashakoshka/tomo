@@ -142,8 +142,11 @@ func Type (text []rune, dot Dot, character rune) (result []rune, moved Dot) {
 }
 
 func MoveLeft (text []rune, dot Dot, word bool) (moved Dot) {
-	dot = dot.Constrain(len(text))
-	distance := 1
+	dot = dot.Canon().Constrain(len(text))
+	distance := 0
+	if dot.Empty() {
+		distance = 1
+	}
 	if word {
 		distance = WordToLeft(text, dot.Start)
 	}
@@ -152,8 +155,11 @@ func MoveLeft (text []rune, dot Dot, word bool) (moved Dot) {
 }
 
 func MoveRight (text []rune, dot Dot, word bool) (moved Dot) {
-	dot = dot.Constrain(len(text))
-	distance := 1
+	dot = dot.Canon().Constrain(len(text))
+	distance := 0
+	if dot.Empty() {
+		distance = 1
+	}
 	if word {
 		distance = WordToRight(text, dot.End)
 	}
