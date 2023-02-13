@@ -15,7 +15,7 @@ type TextBox struct {
 	core core.CoreControl
 	focusableControl core.FocusableCoreControl
 	
-	cursor int
+	dot    textmanip.Dot
 	scroll int
 	placeholder string
 	text        []rune
@@ -74,42 +74,44 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 		return
 	}
 
+	// TODO: text selection with shift
+
 	scrollMemory := element.scroll
 	altered     := true
 	textChanged := false
 	switch {
 	case key == input.KeyBackspace:
 		if len(element.text) < 1 { break }
-		element.text, element.cursor = textmanip.Backspace (
+		element.text, element.dot = textmanip.Backspace (
 			element.text,
-			element.cursor,
+			element.dot,
 			modifiers.Control)
 		textChanged = true
 			
 	case key == input.KeyDelete:
 		if len(element.text) < 1 { break }
-		element.text, element.cursor = textmanip.Delete (
+		element.text, element.dot = textmanip.Delete (
 			element.text,
-			element.cursor,
+			element.dot,
 			modifiers.Control)
 		textChanged = true
 			
 	case key == input.KeyLeft:
-		element.cursor = textmanip.MoveLeft (
+		element.dot = textmanip.MoveLeft (
 			element.text,
-			element.cursor,
+			element.dot,
 			modifiers.Control)
 			
 	case key == input.KeyRight:
-		element.cursor = textmanip.MoveRight (
+		element.dot = textmanip.MoveRight (
 			element.text,
-			element.cursor,
+			element.dot,
 			modifiers.Control)
 		
 	case key.Printable():
-		element.text, element.cursor = textmanip.Type (
+		element.text, element.dot = textmanip.Type (
 			element.text,
-			element.cursor,
+			element.dot,
 			rune(key))
 		textChanged = true
 			
@@ -154,8 +156,8 @@ func (element *TextBox) SetValue (text string) {
 	element.text = []rune(text)
 	element.runOnChange()
 	element.valueDrawer.SetText(element.text)
-	if element.cursor > element.valueDrawer.Length() {
-		element.cursor = element.valueDrawer.Length()
+	if element.dot.End > element.valueDrawer.Length() {
+		element.dot = textmanip.EmptyDot(element.valueDrawer.Length())
 	}
 	element.scrollToCursor()
 	element.redo()
@@ -238,7 +240,7 @@ func (element *TextBox) scrollToCursor () {
 	bounds := element.Bounds().Inset(element.config.Padding())
 	bounds = bounds.Sub(bounds.Min)
 	bounds.Max.X -= element.valueDrawer.Em().Round()
-	cursorPosition := element.valueDrawer.PositionOf(element.cursor)
+	cursorPosition := element.valueDrawer.PositionOf(element.dot.End)
 	cursorPosition.X -= element.scroll
 	maxX := bounds.Max.X
 	minX := maxX
@@ -328,8 +330,9 @@ func (element *TextBox) draw () {
 
 		if element.Focused() {
 			// cursor
+			// TODO: draw selection if exists
 			cursorPosition := element.valueDrawer.PositionOf (
-				element.cursor)
+				element.dot.End)
 			artist.Line (
 				element.core,
 				foreground, 1,
