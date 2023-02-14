@@ -56,8 +56,8 @@ func FillRectangleClip (
 	realBounds := bounds
 	bounds =
 		bounds.Canon().
-		Intersect(destination.Bounds()).
-		Intersect(mask)
+		Intersect(mask.Canon()).
+		Intersect(destination.Bounds())
 	if bounds.Empty() { return }
 	updatedRegion = bounds
 

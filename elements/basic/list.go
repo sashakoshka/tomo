@@ -7,6 +7,7 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // List is an element that contains several objects that a user can select.
@@ -432,28 +433,39 @@ func (element *List) updateMinimumSize () {
 }
 
 func (element *List) draw () {
-	bounds := element.Bounds()
-
-	inset := element.theme.Inset(theme.PatternSunken)
-	pattern := element.theme.Pattern (theme.PatternSunken, theme.PatternState {
+	bounds      := element.Bounds()
+	inset       := element.theme.Inset(theme.PatternSunken)
+	innerBounds := inset.Apply(bounds)
+	state := theme.PatternState {
 		Disabled: !element.Enabled(),
 		Focused: element.Focused(),
-	})
-	artist.FillRectangle(element.core, pattern, bounds)
-
-	bounds = inset.Apply(bounds)
-	dot := image.Point {
-		bounds.Min.X,
-		bounds.Min.Y - element.scroll,
 	}
-	innerCanvas := canvas.Cut(element.core, bounds)
+	
+	dot := image.Point {
+		innerBounds.Min.X,
+		innerBounds.Min.Y - element.scroll,
+	}
+	innerCanvas := canvas.Cut(element.core, innerBounds)
 	for index, entry := range element.entries {
 		entryPosition := dot
 		dot.Y += entry.Bounds().Dy()
-		if dot.Y < bounds.Min.Y { continue }
-		if entryPosition.Y > bounds.Max.Y { break }
+		if dot.Y < innerBounds.Min.Y { continue }
+		if entryPosition.Y > innerBounds.Max.Y { break }
 		entry.Draw (
 			innerCanvas, entryPosition,
 			element.Focused(), element.selectedEntry == index)
+	}
+
+	covered := image.Rect (
+		0, 0,
+		innerBounds.Dx(), element.contentHeight,
+	).Add(innerBounds.Min).Intersect(innerBounds)
+	println(covered.String())
+	
+	pattern := element.theme.Pattern(theme.PatternSunken, state)
+	tiles := shatter.Shatter(bounds, covered)
+	for _, tile := range tiles {
+		artist.FillRectangleClip (
+			element.core, pattern, bounds, tile)
 	}
 }

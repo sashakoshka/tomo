@@ -129,18 +129,20 @@ func (element *Artist) draw () {
 		image.Rect(80, 30, 90, 45).Add(shatterPos),
 	}
 	tiles := shatter.Shatter(element.cellAt(4, 3), rocks...)
-	for index, tile := range tiles {
+	for _, tile := range tiles {
 		artist.FillRectangle (
-			element.core, []artist.Pattern {
-				uhex(0xFF0000FF),
-				uhex(0x00FF00FF),
-				uhex(0x0000FFFF),
-				uhex(0xFF00FFFF),
-				uhex(0xFFF00FFF),
-				uhex(0xAAAAAAFF),
-				uhex(0x699669FF),
-				uhex(0x077777FF),
-			} [index % 8], tile)
+			element.core,
+			artist.Bordered {
+				Fill: uhex(0x888888FF),
+				Stroke: artist.Stroke {
+					Pattern: artist.Beveled {
+						uhex(0xCCCCCCFF),
+						uhex(0x444444FF),
+					},
+					Weight: 1,
+				},
+			},
+			tile)
 	}
 
 	// 0, 4 - 3, 4

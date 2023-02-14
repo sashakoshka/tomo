@@ -230,7 +230,8 @@ func (element *Container) redoAll () {
 		theme.PatternBackground,
 		theme.PatternState { })
 	for _, tile := range tiles {
-		artist.FillRectangle(element.core, pattern, tile)
+		artist.FillRectangleClip (
+			element.core, pattern, element.Bounds(), tile)
 	}
 
 	// cut our canvas up and give peices to child elements
