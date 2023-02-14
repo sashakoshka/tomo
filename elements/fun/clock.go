@@ -61,7 +61,7 @@ func (element *AnalogClock) draw () {
 	state := theme.PatternState { }
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
 	inset   := element.theme.Inset(theme.PatternSunken)
-	artist.FillRectangle(element, pattern, bounds)
+	artist.FillRectangle(element.core, pattern, bounds)
 
 	bounds = inset.Apply(bounds)
 
@@ -107,6 +107,5 @@ func (element *AnalogClock) radialLine (
 	max := element.Bounds().Min.Add(image.Pt (
 		int(math.Cos(radian) * outer * width + width),
 		int(math.Sin(radian) * outer * height + height)))
-	// println(min.String(), max.String())
-	artist.Line(element, source, 1, min, max)
+	artist.Line(element.core, source, 1, min, max)
 }

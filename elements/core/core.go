@@ -113,6 +113,7 @@ func (control CoreControl) HasImage () (has bool) {
 // DamageRegion pushes the selected region of pixels to the parent element. This
 // does not need to be called when responding to a resize event.
 func (control CoreControl) DamageRegion (bounds image.Rectangle) {
+	if control.core.canvas == nil { return }
 	if control.core.onDamage != nil {
 		control.core.onDamage(canvas.Cut(control.core.canvas, bounds))
 	}
