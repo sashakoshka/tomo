@@ -37,9 +37,27 @@ func FillRectangle (
 ) (
 	updatedRegion image.Rectangle,
 ) {
+	return FillRectangleClip(destination, source, bounds, bounds)
+}
+
+// FillRectangleClip is similar to FillRectangle, but it clips the pattern to
+// a specified rectangle mask. That is—the pattern will be queried as if it
+// were drawn without the mask, but only the area specified by the intersection
+// of bounds and mask will be drawn to.
+func FillRectangleClip (
+	destination canvas.Canvas,
+	source Pattern,
+	bounds image.Rectangle,
+	mask   image.Rectangle,
+) (
+	updatedRegion image.Rectangle,
+) {
 	data, stride := destination.Buffer()
 	realBounds := bounds
-	bounds = bounds.Canon().Intersect(destination.Bounds()).Canon()
+	bounds =
+		bounds.Canon().
+		Intersect(destination.Bounds()).
+		Intersect(mask)
 	if bounds.Empty() { return }
 	updatedRegion = bounds
 
@@ -56,7 +74,6 @@ func FillRectangle (
 	}}
 	return
 }
-
 
 // StrokeRectangle draws the outline of a rectangle with the specified line
 // weight and pattern.

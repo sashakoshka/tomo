@@ -11,6 +11,8 @@ import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
+import _ "net/http/pprof"
+import "net/http"
 
 const sampleRate = 44100
 const bufferSize = 256
@@ -147,6 +149,9 @@ func run () {
 	piano.Focus()
 	window.OnClose(tomo.Stop)
 	window.Show()
+	go func () {
+		http.ListenAndServe("localhost:6060", nil)
+	} ()
 }
 
 type Patch struct {
