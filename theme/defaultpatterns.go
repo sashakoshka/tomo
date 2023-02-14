@@ -3,6 +3,10 @@ package theme
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
+// var backgroundPattern     = artist.Gradient {
+	// First: uhex(0xFF0000FF),
+	// Second: uhex(0x00FF00FF),
+// }
 var accentPattern         = artist.NewUniform(hex(0x408090FF))
 var backgroundPattern     = artist.NewUniform(color.Gray16 { 0xAAAA })
 var foregroundPattern     = artist.NewUniform(color.Gray16 { 0x0000 })

@@ -20,7 +20,6 @@ type wordLayout struct {
 	spaceAfter  int
 	breaksAfter int
 	text        []characterLayout
-	whitespace  []characterLayout
 }
 
 // Align specifies a text alignment method.
@@ -120,9 +119,13 @@ func (drawer *TextDrawer) Draw (
 				offset.X + word.position.X + character.x,
 				offset.Y + word.position.Y),
 			character.character)
-		if !ok { continue }
+		invalid :=
+			!ok || 
+			unicode.IsSpace(character.character) ||
+			character.character == 0
+		if invalid { continue }
 
-		// FIXME: clip destination rectangle if we are on the cusp of
+		// FIXME:? clip destination rectangle if we are on the cusp of
 		// the maximum height.
 
 		draw.DrawMask (
@@ -198,11 +201,6 @@ func (drawer *TextDrawer) PositionOf (index int) (position image.Point) {
 			position.X = word.position.X + character.x
 			if index < 1 { return }
 		}
-		for _, character := range word.whitespace {
-			index --
-			position.X = word.position.X + character.x
-			if index < 1 { return }
-		}
 	}
 	return
 }
@@ -214,13 +212,6 @@ func (drawer *TextDrawer) AtPosition (position image.Point) (index int) {
 	if !drawer.layoutClean { drawer.recalculate() }
 	for _, word := range drawer.layout {
 		for _, character := range word.text {
-			bounds := drawer.boundsOfChar(character).Add(word.position)
-			if position.In(bounds) {
-				return cursor
-			}
-			cursor ++
-		}
-		for _, character := range word.whitespace {
 			bounds := drawer.boundsOfChar(character).Add(word.position)
 			if position.In(bounds) {
 				return cursor
@@ -313,7 +304,7 @@ func (drawer *TextDrawer) recalculate () {
 			_, advance, ok := drawer.face.GlyphBounds(character)
 			index ++
 			if !ok { continue }
-			word.whitespace = append(word.whitespace, characterLayout {
+			word.text = append(word.text, characterLayout {
 				x: currentCharacterX.Round(),
 				character: character,
 				width: advance.Ceil(),
@@ -366,8 +357,8 @@ func (drawer *TextDrawer) recalculate () {
 	// add a little null to the last character
 	if len(drawer.layout) > 0 {
 		lastWord := &drawer.layout[len(drawer.layout) - 1]
-		lastWord.whitespace = append (
-			lastWord.whitespace,
+		lastWord.text = append (
+			lastWord.text,
 			characterLayout {
 				x: currentCharacterX.Round(),
 			})

@@ -5,6 +5,7 @@ import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -341,13 +342,15 @@ func (element *TextBox) redo () {
 func (element *TextBox) draw () {
 	bounds := element.Bounds()
 
-	// FIXME: take index into account
 	state := theme.PatternState {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 	}
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
+	inset   := element.theme.Inset(theme.PatternSunken)
+	innerCanvas := canvas.Cut(element.core, inset.Apply(bounds))
 	artist.FillRectangle(element.core, pattern, bounds)
+	
 	offset := bounds.Min.Add (image.Point {
 		X: element.config.Padding() - element.scroll,
 		Y: element.config.Padding(),
@@ -362,7 +365,7 @@ func (element *TextBox) draw () {
 		end   := element.valueDrawer.PositionOf(canon.End).Add(offset)
 		end.Y += element.valueDrawer.LineHeight().Round()
 		artist.FillRectangle (
-			element.core,
+			innerCanvas,
 			accent,
 			image.Rectangle { start, end })
 	}
@@ -374,7 +377,7 @@ func (element *TextBox) draw () {
 			theme.PatternForeground,
 			theme.PatternState { Disabled: true })
 		element.placeholderDrawer.Draw (
-			element.core,
+			innerCanvas,
 			foreground,
 			offset.Sub(textBounds.Min))
 	} else {
@@ -383,7 +386,7 @@ func (element *TextBox) draw () {
 		foreground := element.theme.Pattern (
 			theme.PatternForeground,  state)
 		element.valueDrawer.Draw (
-			element.core,
+			innerCanvas,
 			foreground,
 			offset.Sub(textBounds.Min))
 	}
@@ -395,7 +398,7 @@ func (element *TextBox) draw () {
 		cursorPosition := element.valueDrawer.PositionOf (
 			element.dot.End)
 		artist.Line (
-			element.core,
+			innerCanvas,
 			foreground, 1,
 			cursorPosition.Add(offset),
 			image.Pt (
