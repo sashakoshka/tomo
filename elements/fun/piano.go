@@ -5,6 +5,7 @@ import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
 
@@ -28,6 +29,7 @@ type Piano struct {
 
 	flatKeys  []pianoKey
 	sharpKeys []pianoKey
+	contentBounds image.Rectangle
 
 	pressed *pianoKey
 	keynavPressed map[music.Note] bool
@@ -271,6 +273,11 @@ func (element *Piano) recalculate () {
 		}
 		note ++
 	}
+
+	element.contentBounds = image.Rectangle {
+		bounds.Min,
+		image.Pt(dot.X, bounds.Max.Y),
+	}
 }
 
 func (element *Piano) draw () {
@@ -278,9 +285,6 @@ func (element *Piano) draw () {
 		Focused: element.Focused(),
 		Disabled: !element.Enabled(),
 	}
-	pattern := element.theme.Pattern(theme.PatternPinboard, state)
-	// inset   := element.theme.Inset(theme.PatternSunken)
-	artist.FillRectangle(element.core, pattern, element.Bounds())
 
 	for _, key := range element.flatKeys {
 		_, keynavPressed := element.keynavPressed[key.Note]
@@ -297,6 +301,13 @@ func (element *Piano) draw () {
 			element.pressed != nil &&
 			(*element.pressed).Note == key.Note || keynavPressed,
 			state)
+	}
+	
+	pattern := element.theme.Pattern(theme.PatternPinboard, state)
+	tiles := shatter.Shatter(element.Bounds(), element.contentBounds)
+	for _, tile := range tiles {
+		artist.FillRectangleClip (
+			element.core, pattern, element.Bounds(), tile)
 	}
 }
 
