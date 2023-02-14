@@ -144,10 +144,18 @@ func (Default) Pattern (
 			}
 		}
 	case PatternGutter:
-		if state.Disabled {
-			return disabledScrollGutterPattern
+		if c == C("basic", "sliderVertical") || c == C("basic", "sliderHorizontal") {
+			if state.Disabled {
+				return disabledThinScrollGutterPattern
+			} else {
+				return thinScrollGutterPattern
+			}
 		} else {
-			return scrollGutterPattern
+			if state.Disabled {
+				return disabledScrollGutterPattern
+			} else {
+				return scrollGutterPattern
+			}
 		}
 	case PatternHandle:
 		if state.Disabled {

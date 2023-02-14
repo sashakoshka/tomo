@@ -207,9 +207,19 @@ var scrollGutterPattern = artist.NewMultiBordered (
 		},
 	},
 	artist.Stroke { Pattern: artist.NewUniform(hex(0x6e8079FF)) })
+var thinScrollGutterPattern = artist.Padded {
+	Fill: scrollGutterPattern,
+	Stroke: sunkenPattern,
+	Sides: []int{  6, 6, 6, 6 },
+}
 var disabledScrollGutterPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: weakForegroundPattern },
 	artist.Stroke { Pattern: backgroundPattern })
+var disabledThinScrollGutterPattern = artist.Padded {
+	Fill: disabledScrollGutterPattern,
+	Stroke: disabledButtonPattern,
+	Sides: []int{ 6, 6, 6, 6},
+}
 var scrollBarPattern = artist.NewMultiBordered (
 	artist.Stroke { Weight: 1, Pattern: strokePattern },
 	artist.Stroke {

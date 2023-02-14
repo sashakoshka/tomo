@@ -460,7 +460,6 @@ func (element *List) draw () {
 		0, 0,
 		innerBounds.Dx(), element.contentHeight,
 	).Add(innerBounds.Min).Intersect(innerBounds)
-	
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
 	tiles := shatter.Shatter(bounds, covered)
 	for _, tile := range tiles {
