@@ -6,7 +6,9 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
+import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // TextBox is a single-line text input.
@@ -22,8 +24,8 @@ type TextBox struct {
 	placeholder string
 	text        []rune
 	
-	placeholderDrawer artist.TextDrawer
-	valueDrawer       artist.TextDrawer
+	placeholderDrawer textdraw.Drawer
+	valueDrawer       textdraw.Drawer
 	
 	config config.Wrapped
 	theme  theme.Wrapped
@@ -71,7 +73,8 @@ func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 		offset := element.Bounds().Min.Add (image.Pt (
 			element.config.Padding() - element.scroll,
 			element.config.Padding()))
-		runeIndex := element.valueDrawer.AtPosition(point.Sub(offset))
+		runeIndex := element.valueDrawer.AtPosition (
+			fixedutil.Pt(point.Sub(offset)))
 		element.dragging = true
 		if runeIndex > -1 {
 			element.dot = textmanip.EmptyDot(runeIndex)
@@ -89,7 +92,8 @@ func (element *TextBox) HandleMouseMove (x, y int) {
 		offset := element.Bounds().Min.Add (image.Pt (
 			element.config.Padding() - element.scroll,
 			element.config.Padding()))
-		runeIndex := element.valueDrawer.AtPosition(point.Sub(offset))
+		runeIndex := element.valueDrawer.AtPosition (
+			fixedutil.Pt(point.Sub(offset)))
 		if runeIndex > -1 {
 			element.dot.End = runeIndex
 			element.redo()
@@ -290,7 +294,8 @@ func (element *TextBox) scrollToCursor () {
 	bounds := element.Bounds().Inset(element.config.Padding())
 	bounds = bounds.Sub(bounds.Min)
 	bounds.Max.X -= element.valueDrawer.Em().Round()
-	cursorPosition := element.valueDrawer.PositionOf(element.dot.End)
+	cursorPosition := fixedutil.RoundPt (
+		element.valueDrawer.PositionAt(element.dot.End))
 	cursorPosition.X -= element.scroll
 	maxX := bounds.Max.X
 	minX := maxX
@@ -361,13 +366,17 @@ func (element *TextBox) draw () {
 		accent := element.theme.Pattern (
 			theme.PatternAccent,  state)
 		canon := element.dot.Canon()
-		start := element.valueDrawer.PositionOf(canon.Start).Add(offset)
-		end   := element.valueDrawer.PositionOf(canon.End).Add(offset)
-		end.Y += element.valueDrawer.LineHeight().Round()
+		foff  := fixedutil.Pt(offset)
+		start := element.valueDrawer.PositionAt(canon.Start).Add(foff)
+		end   := element.valueDrawer.PositionAt(canon.End).Add(foff)
+		end.Y += element.valueDrawer.LineHeight()
 		artist.FillRectangle (
 			innerCanvas,
 			accent,
-			image.Rectangle { start, end })
+			image.Rectangle {
+				fixedutil.RoundPt(start),
+				fixedutil.RoundPt(end),
+			})
 	}
 
 	if len(element.text) == 0 {
@@ -395,8 +404,8 @@ func (element *TextBox) draw () {
 		// draw cursor
 		foreground := element.theme.Pattern (
 			theme.PatternForeground,  state)
-		cursorPosition := element.valueDrawer.PositionOf (
-			element.dot.End)
+		cursorPosition := fixedutil.RoundPt (
+			element.valueDrawer.PositionAt(element.dot.End))
 		artist.Line (
 			innerCanvas,
 			foreground, 1,

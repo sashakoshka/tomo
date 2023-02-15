@@ -5,6 +5,7 @@ import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // Switch is a toggle-able on/off switch with an optional label. It is
@@ -14,7 +15,7 @@ type Switch struct {
 	*core.FocusableCore
 	core core.CoreControl
 	focusableControl core.FocusableCoreControl
-	drawer artist.TextDrawer
+	drawer textdraw.Drawer
 
 	pressed bool
 	checked bool

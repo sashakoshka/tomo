@@ -5,10 +5,11 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 
 // ListEntry is an item that can be added to a list.
 type ListEntry struct {
-	drawer artist.TextDrawer
+	drawer textdraw.Drawer
 	bounds image.Rectangle
 	text string
 	width int

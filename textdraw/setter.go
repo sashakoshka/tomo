@@ -170,6 +170,11 @@ func (setter *TypeSetter) Face () font.Face {
 	return setter.face
 }
 
+// Length returns the amount of runes in the typesetter.
+func (setter *TypeSetter) Length () int {
+	return len(setter.text)
+}
+
 // RuneIterator is a function that can iterate accross a typesetter's runes.
 type RuneIterator func (
 	index    int,

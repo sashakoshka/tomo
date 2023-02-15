@@ -3,6 +3,7 @@ package basicElements
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // Label is a simple text box.
@@ -12,7 +13,7 @@ type Label struct {
 
 	wrap   bool
 	text   string
-	drawer artist.TextDrawer
+	drawer textdraw.Drawer
 	
 	config config.Wrapped
 	theme  theme.Wrapped
