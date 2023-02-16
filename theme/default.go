@@ -209,6 +209,36 @@ func (Default) Inset (pattern Pattern, c Case) Inset {
 	}
 }
 
+// Hints returns rendering optimization hints for a particular pattern.
+// These are optional, but following them may result in improved
+// performance.
+func (Default) Hints (pattern Pattern, c Case) (hints Hints) {
+	switch pattern {
+	case PatternRaised:
+		if c == C("basic", "listEntry") {
+			hints.StaticInset = Inset { 0, 1, 0, 1 }
+		} else {
+			hints.StaticInset = Inset { 3, 3, 3, 3 }
+		}
+		
+	case PatternSunken:
+		if c == C("basic", "list") {
+			hints.StaticInset = Inset { 2, 1, 2, 1 }
+		} else {
+			hints.StaticInset = Inset { 3, 3, 3, 3 }
+		}
+		
+	case
+		PatternPinboard,
+		PatternInput,
+		PatternButton,
+		PatternHandle:
+		
+		hints.StaticInset = Inset { 3, 3, 3, 3 }
+	}
+	return
+}
+
 // Sink returns the default sink vector for the given pattern.
 func (Default) Sink (pattern Pattern, c Case) image.Point {
 	return image.Point { 1, 1 }

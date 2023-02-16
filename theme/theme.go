@@ -1,6 +1,7 @@
 package theme
 
 import "image"
+import "image/color"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
@@ -56,6 +57,19 @@ type Pattern int; const (
 	PatternHandle
 )
 
+// Hints specifies rendering hints for a particular pattern. Elements can take
+// these into account in order to gain extra performance.
+type Hints struct {
+	// StaticInset defines an inset rectangular area in the middle of the
+	// pattern that does not change between PatternStates. If the inset is
+	// zero on all sides, this hint does not apply.
+	StaticInset Inset
+
+	// Uniform specifies a singular color for the entire pattern. If the
+	// alpha channel is zero, this hint does not apply.
+	Uniform color.RGBA
+}
+
 // Theme represents a visual style configuration,
 type Theme interface {
 	// FontFace returns the proper font for a given style, size, and case.
@@ -76,6 +90,11 @@ type Theme interface {
 	// content when it is pressed down (if applicable) to simulate a 3D
 	// sinking effect.
 	Sink (Pattern, Case) image.Point
+
+	// Hints returns rendering optimization hints for a particular pattern.
+	// These are optional, but following them may result in improved
+	// performance.
+	Hints (Pattern, Case) Hints
 }
 
 // Wrapped wraps any theme and injects a case into it automatically so that it
