@@ -162,6 +162,16 @@ type Scrollable interface {
 	OnScrollBoundsChange (callback func ())
 }
 
+// Collapsible represents an element who's minimum width and height can be
+// manually resized. Scrollable elements should implement this if possible.
+type Collapsible interface {
+	Element
+
+	// Collapse collapses the element's minimum width and height. A value of
+	// zero for either means that the element's normal value is used.
+	Collapse (width, height int)
+}
+
 // Themeable represents an element that can modify its appearance to fit within
 // a theme.
 type Themeable interface {
