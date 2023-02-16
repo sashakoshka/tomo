@@ -18,6 +18,10 @@ func TestDoWord (test *testing.T) {
 	if len(word.Runes) != 4 {
 		test.Fatalf(`wrong rune length %d`, len(word.Runes))
 	}
+	
+	if word.SpaceAfter != fixed.I(7) {
+		test.Fatalf(`wrong space after %d`, word.SpaceAfter.Round())
+	}
 
 	if word.FirstRune() != 'T' {
 		test.Fatalf(`wrong first rune %s`, string(word.FirstRune()))

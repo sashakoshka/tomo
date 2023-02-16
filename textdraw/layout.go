@@ -127,7 +127,7 @@ func DoLine (text []rune, face font.Face, maxWidth fixed.Int26_6) (line LineLayo
 		}
 		lastRune = word.LastRune()
 		word.X = x
-		x += word.Width
+		x += word.Width + word.SpaceAfter
 
 		// if we have gone over the maximum width, stop processing
 		// words (if maxWidth is even specified)

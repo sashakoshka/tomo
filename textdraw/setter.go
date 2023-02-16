@@ -37,11 +37,12 @@ func (setter *TypeSetter) needLayout () {
 
 	horizontalExtent      := fixed.Int26_6(0)
 	horizontalExtentSpace := fixed.Int26_6(0)
-	metrics          := setter.face.Metrics()
-	remaining        := setter.text
-	y                := fixed.Int26_6(0)
-	maxY             := fixed.I(setter.maxHeight) + metrics.Height
-	for len(remaining) > 0 && y < maxY {
+	
+	metrics   := setter.face.Metrics()
+	remaining := setter.text
+	y         := fixed.Int26_6(0)
+	maxY      := fixed.I(setter.maxHeight) + metrics.Height
+	for len(remaining) > 0 && (y < maxY || setter.maxHeight == 0) {
 		// process one line
 		line, remainingFromLine := DoLine (
 			remaining, setter.face, fixed.I(setter.maxWidth))
@@ -73,6 +74,7 @@ func (setter *TypeSetter) needLayout () {
 		setter.layoutBoundsSpace.Max.X = setter.maxWidth
 	}
 
+	y -= metrics.Height
 	if setter.maxHeight == 0 {
 		setter.layoutBounds.Min.Y = -metrics.Ascent.Round()
 		setter.layoutBounds.Max.Y =
