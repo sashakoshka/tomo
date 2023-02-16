@@ -110,6 +110,24 @@ func TestSetterIndex (test *testing.T) {
 	
 	pos = fixed.P(-59, 230)
 	index = setter.AtPosition(pos)
+	expect = 20
+	if index != expect {
+		test.Fatalf (
+			`setter index at (%d, %d): %d, expected: %d`,
+			pos.X.Round(), pos.Y.Round(), index, expect)
+	}
+	
+	pos = fixed.P(-500, -500)
+	index = setter.AtPosition(pos)
+	expect = 0
+	if index != expect {
+		test.Fatalf (
+			`setter index at (%d, %d): %d, expected: %d`,
+			pos.X.Round(), pos.Y.Round(), index, expect)
+	}
+	
+	pos = fixed.P(500, -500)
+	index = setter.AtPosition(pos)
 	expect = 19
 	if index != expect {
 		test.Fatalf (
@@ -119,7 +137,7 @@ func TestSetterIndex (test *testing.T) {
 	
 	pos = fixed.P(500, 500)
 	index = setter.AtPosition(pos)
-	expect = 45
+	expect = setter.Length()
 	if index != expect {
 		test.Fatalf (
 			`setter index at (%d, %d): %d, expected: %d`,

@@ -65,6 +65,7 @@ func (setter *TypeSetter) needLayout () {
 
 	// add a null onto the end because the very end of the text should have
 	// a valid layout position
+	// lastLine = lastLine
 	lastWord := &lastLine.Words[len(lastLine.Words) - 1]
 	lastWord.Runes = append (lastWord.Runes, RuneLayout {
 		X: lastWord.Width + lastWord.SpaceAfter,
@@ -203,8 +204,11 @@ func (setter *TypeSetter) For (iterator RuneIterator) {
 
 	index := 0
 	for _, line := range setter.lines {
+		lastCharRightBound := fixed.Int26_6(0)
+		
 		for _, word := range line.Words {
 		for _, char := range word.Runes {
+			lastCharRightBound = word.X + char.X + char.Width
 			keepGoing := iterator (index, char.Rune, fixed.Point26_6 {
 				X: word.X + char.X,
 				Y: line.Y,
@@ -212,13 +216,20 @@ func (setter *TypeSetter) For (iterator RuneIterator) {
 			if !keepGoing { return }
 			index ++
 		}}
-		if line.BreakAfter { index ++ }
+		
+		if line.BreakAfter {
+			keepGoing := iterator (index, '\n', fixed.Point26_6 {
+				X: lastCharRightBound,
+				Y: line.Y,
+			})
+			if !keepGoing { return }
+			index ++
+		}
 	}
 }
 
 // AtPosition returns the index of the rune at the specified position.
 func (setter *TypeSetter) AtPosition (position fixed.Point26_6) (index int) {
-	println("XXX", position.Y.Round())
 	setter.needAlignedLayout()
 	
 	if setter.lines == nil { return }
@@ -250,12 +261,12 @@ func (setter *TypeSetter) AtPosition (position fixed.Point26_6) (index int) {
 	for _, curWord := range line.Words {
 		for _, curChar := range curWord.Runes {
 			x := curWord.X + curChar.X + curChar.Width
-			println(index, x.Round(), position.X.Round())
 			if x > position.X { goto foundRune }
 			index ++
 		}
 	}
 	foundRune:
+	println(index)
 	return
 }
 
