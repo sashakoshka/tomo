@@ -31,6 +31,8 @@ type Backend struct {
 	config config.Config
 
 	windows map[xproto.Window] *Window
+
+	open bool
 }
 
 // NewBackend instantiates an X backend.
@@ -40,6 +42,7 @@ func NewBackend () (output tomo.Backend, err error) {
 		doChannel: make(chan func (), 0),
 		theme:  theme.Default  { },
 		config: config.Default { },
+		open:   true,
 	}
 	
 	// connect to X
@@ -73,6 +76,9 @@ func (backend *Backend) Run () (err error) {
 // Stop gracefully closes the connection and stops the event loop.
 func (backend *Backend) Stop () {
 	backend.assert()
+	if !backend.open { return }
+	backend.open = false
+	
 	toClose := []*Window { }
 	for _, window := range backend.windows {
 		toClose = append(toClose, window)

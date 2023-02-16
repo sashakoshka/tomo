@@ -201,9 +201,8 @@ func (window *Window) Hide () {
 }
 
 func (window *Window) Close () {
-	delete(window.backend.windows, window.xWindow.Id)
 	if window.onClose != nil { window.onClose() }
-	xevent.Detach(window.xWindow.X, window.xWindow.Id)
+	delete(window.backend.windows, window.xWindow.Id)
 	window.xWindow.Destroy()
 }
 
