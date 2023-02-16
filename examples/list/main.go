@@ -45,12 +45,14 @@ func run () {
 		form.Adopt(basicElements.NewCheckbox("Skin", true), false)
 		form.Adopt(basicElements.NewCheckbox("Blood", false), false)
 		form.Adopt(basicElements.NewCheckbox("Bone", false), false)
+	art := testing.NewArtist()
 
 	list := basicElements.NewList (
 		basicElements.NewListEntry("button", func () { turnPage(button) }),
 		basicElements.NewListEntry("mouse",  func () { turnPage(mouse) }),
 		basicElements.NewListEntry("input",  func () { turnPage(input) }),
-		basicElements.NewListEntry("form",   func () { turnPage(form) }))
+		basicElements.NewListEntry("form",   func () { turnPage(form) }),
+		basicElements.NewListEntry("art",    func () { turnPage(art) }))
 	list.OnNoEntrySelected(func () { turnPage (intro) })
 	list.Collapse(96, 0)
 	

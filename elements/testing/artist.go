@@ -15,23 +15,19 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 type Artist struct {
 	*core.Core
 	core core.CoreControl
-	cellBounds image.Rectangle
 }
 
 // NewArtist creates a new artist test element.
 func NewArtist () (element *Artist) {
 	element = &Artist { }
 	element.Core, element.core = core.NewCore(element.draw)
-	element.core.SetMinimumSize(480, 600)
+	element.core.SetMinimumSize(240, 360)
 	return
 }
 
 func (element *Artist) draw () {
 	bounds := element.Bounds()
 	artist.FillRectangle(element.core, artist.NewUniform(hex(0)), bounds)
-	
-	element.cellBounds.Max.X = bounds.Min.X + bounds.Dx() / 5
-	element.cellBounds.Max.Y = bounds.Min.Y + (bounds.Dy() - 48) / 8
 
 	drawStart := time.Now()
 
@@ -158,16 +154,6 @@ func (element *Artist) draw () {
 			element.cellAt(x, 4))
 	}
 	
-	// how long did that take to render?
-	drawTime := time.Since(drawStart)
-	textDrawer := textdraw.Drawer { }
-	textDrawer.SetFace(defaultfont.FaceRegular)
-	textDrawer.SetText ([]rune (fmt.Sprintf (
-		"%dms\n%dus",
-		drawTime.Milliseconds(),
-		drawTime.Microseconds())))
-	textDrawer.Draw(element.core, uhex(0xFFFFFFFF), image.Pt(8, bounds.Max.Y - 24))
-	
 	// 0, 5
 	artist.FillRectangle (
 		element.core,
@@ -292,6 +278,18 @@ func (element *Artist) draw () {
 		},
 		element.cellAt(3, 7),
 	)
+	
+	// how long did that take to render?
+	drawTime := time.Since(drawStart)
+	textDrawer := textdraw.Drawer { }
+	textDrawer.SetFace(defaultfont.FaceRegular)
+	textDrawer.SetText ([]rune (fmt.Sprintf (
+		"%dms\n%dus",
+		drawTime.Milliseconds(),
+		drawTime.Microseconds())))
+	textDrawer.Draw (
+		element.core, uhex(0xFFFFFFFF),
+		image.Pt(bounds.Min.X + 8, bounds.Max.Y - 24))
 }
 
 func (element *Artist) lines (weight int, bounds image.Rectangle) {
@@ -329,9 +327,14 @@ func (element *Artist) lines (weight int, bounds image.Rectangle) {
 }
 
 func (element *Artist) cellAt (x, y int) (image.Rectangle) {
-	return element.cellBounds.Add (image.Pt (
-		x * element.cellBounds.Dx(),
-		y * element.cellBounds.Dy()))
+	bounds := element.Bounds()
+	cellBounds := image.Rectangle { }
+	cellBounds.Min = bounds.Min
+	cellBounds.Max.X = bounds.Min.X + bounds.Dx() / 5
+	cellBounds.Max.Y = bounds.Min.Y + (bounds.Dy() - 48) / 8
+	return cellBounds.Add (image.Pt (
+		x * cellBounds.Dx(),
+		y * cellBounds.Dy()))
 }
 
 func hex (n uint32) (c color.RGBA) {
