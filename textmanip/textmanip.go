@@ -171,9 +171,9 @@ func SelectLeft (text []rune, dot Dot, word bool) (moved Dot) {
 	dot = dot.Constrain(len(text))
 	distance := 1
 	if word {
-		distance = WordToLeft(text, dot.Start)
+		distance = WordToLeft(text, dot.End)
 	}
-	dot.Start -= distance
+	dot.End -= distance
 	return dot
 }
 
@@ -183,6 +183,6 @@ func SelectRight (text []rune, dot Dot, word bool) (moved Dot) {
 	if word {
 		distance = WordToRight(text, dot.End)
 	}
-	dot.Start += distance
+	dot.End += distance
 	return dot
 }
