@@ -1,7 +1,9 @@
 package textdraw
 
+import "image"
 import "testing"
 import "golang.org/x/image/math/fixed"
+import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
 import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 
 func TestSetterLength (test *testing.T) {
@@ -15,10 +17,10 @@ func TestSetterLength (test *testing.T) {
 		length ++
 		return true
 	})
-	if length != len(text) - 1 {
+	if length != len(text) {
 		test.Fatalf (
 			`setter rune count: %d, expected: %d`,
-			length, len(text) - 1)
+			length, len(text))
 	}
 
 	// case 2
@@ -28,10 +30,10 @@ func TestSetterLength (test *testing.T) {
 		length ++
 		return true
 	})
-	if length != len(text) - 1 {
+	if length != len(text) {
 		test.Fatalf (
 			`setter rune count: %d, expected: %d`,
-			length, len(text) - 1)
+			length, len(text))
 	}
 }
 
@@ -74,6 +76,21 @@ func testLargeRecHeight (test *testing.T, width int) {
 			`setter bounds mismatch rec. height: %d, Dy: %d ` +
 			`for width: %d`,
 			recHeight, bounds.Dy(), width)
+	}
+}
+
+func TestSetterIndex (test *testing.T) {
+	setter := TypeSetter { }
+	setter.SetText([]rune("The quick brown fox\njumped over the lazy dog."))
+	setter.SetFace(defaultfont.FaceRegular)
+	index := 20
+	pos := fixedutil.RoundPt(setter.PositionAt(index))
+	expect := image.Pt(0, 13)
+
+	if pos != expect {
+		test.Fatalf (
+			`setter pos at %d: (%d, %d), expected: (%d, %d)`,
+			index, pos.X, pos.Y, expect.X, expect.Y)
 	}
 }
 

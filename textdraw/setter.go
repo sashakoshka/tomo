@@ -37,7 +37,8 @@ func (setter *TypeSetter) needLayout () {
 
 	horizontalExtent      := fixed.Int26_6(0)
 	horizontalExtentSpace := fixed.Int26_6(0)
-	
+
+	lastLine  := LineLayout { }
 	metrics   := setter.face.Metrics()
 	remaining := setter.text
 	y         := fixed.Int26_6(0)
@@ -59,7 +60,16 @@ func (setter *TypeSetter) needLayout () {
 			horizontalExtentSpace = lineWidthSpace
 		}
 		setter.lines = append(setter.lines, line)
+		lastLine = line
 	}
+
+	// add a null onto the end because the very end of the text should have
+	// a valid layout position
+	lastWord := &lastLine.Words[len(lastLine.Words) - 1]
+	lastWord.Runes = append (lastWord.Runes, RuneLayout {
+		X: lastWord.Width + lastWord.SpaceAfter,
+		Rune: 0,
+	})
 
 	// set all line widths to horizontalExtent if we don't have a specified
 	// maximum width
@@ -195,10 +205,11 @@ func (setter *TypeSetter) For (iterator RuneIterator) {
 	for _, line := range setter.lines {
 		for _, word := range line.Words {
 		for _, char := range word.Runes {
-			iterator (index, char.Rune, fixed.Point26_6 {
+			keepGoing := iterator (index, char.Rune, fixed.Point26_6 {
 				X: word.X + char.X,
 				Y: line.Y,
 			})
+			if !keepGoing { return }
 			index ++
 		}}
 		if line.BreakAfter { index ++ }
