@@ -111,28 +111,23 @@ type LineLayout struct {
 // the limit is crossed. The word which would have crossed over the limit will
 // not be processed.
 func DoLine (text []rune, face font.Face, maxWidth fixed.Int26_6) (line LineLayout, remaining []rune) {
-	remaining = text
-	x        := fixed.Int26_6(0)
-	lastRune := rune(-1)
-	lastWord := WordLayout { }
+	remaining    = text
+	x           := fixed.Int26_6(0)
+	lastWord    := WordLayout { }
+	isFirstWord := true
 	for {
 		// process one word
 		word, remainingFromWord := DoWord(remaining, face)
-
-		// apply kerning and position. yeah, its unlikely that a letter
-		// will have kerning with a whitespace character. but like, what
-		// if, you know?
-		if lastRune >= 0 && word.FirstRune() >= 0 {
-			x += face.Kern(lastRune, word.FirstRune())
-		}
-		lastRune = word.LastRune()
 		word.X = x
-		x += word.Width + word.SpaceAfter
+		x += word.Width
 
 		// if we have gone over the maximum width, stop processing
 		// words (if maxWidth is even specified)
-		if maxWidth > 0 && x > maxWidth { break }
+		if !isFirstWord && maxWidth > 0 && x > maxWidth {
+			break
+		}
 
+		x += word.SpaceAfter
 		remaining = remainingFromWord
 
 		// if the word actually has contents, add it
@@ -148,6 +143,8 @@ func DoLine (text []rune, face font.Face, maxWidth fixed.Int26_6) (line LineLayo
 			remaining = remaining[1:]
 			break
 		}
+
+		isFirstWord = false
 	}
 
 	// set the line's width. this is subject to be overridden by the

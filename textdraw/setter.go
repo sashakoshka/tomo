@@ -278,20 +278,24 @@ func (setter *TypeSetter) ReccomendedHeightFor (width int) (height int) {
 	
 	if setter.lines == nil { return }
 	if setter.face  == nil { return }
-	
+
 	metrics := setter.face.Metrics()
 	dot := fixed.Point26_6 { 0, metrics.Height }
+	firstWord := true
 	for _, line := range setter.lines {
 		for _, word := range line.Words {
-			if word.Width + dot.X > fixed.I(width) {
+			if word.Width + dot.X > fixed.I(width) && !firstWord {
 				dot.Y += metrics.Height
 				dot.X = 0
+				firstWord = true
 			}
 			dot.X += word.Width + word.SpaceAfter
+			firstWord = false
 		}
 		if line.BreakAfter {
 			dot.Y += metrics.Height
 			dot.X = 0
+			firstWord = true
 		}
 	}
 

@@ -89,4 +89,23 @@ func TestDoLine (test *testing.T) {
 	if line.BreakAfter {
 		test.Fatalf(`did not set BreakAfter to false`)
 	}
+	
+	// case 4
+	text = []rune("jumped over the lazy dog")
+	line, remaining = DoLine(text, defaultfont.FaceRegular, fixed.I(10))
+	
+	expect = "over the lazy dog"
+	if string(remaining) != expect {
+		test.Fatalf (
+			`text: "%s", remaining: "%s" expected: "%s"`,
+			string(text), string(remaining), expect)
+	}
+
+	if len(line.Words) != 1 {
+		test.Fatalf(`wrong word count %d`, len(line.Words))
+	}
+	
+	if line.BreakAfter {
+		test.Fatalf(`did not set BreakAfter to false`)
+	}
 }
