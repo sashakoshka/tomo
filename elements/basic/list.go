@@ -7,7 +7,6 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // List is an element that contains several objects that a user can select.
@@ -461,9 +460,6 @@ func (element *List) draw () {
 		innerBounds.Dx(), element.contentHeight,
 	).Add(innerBounds.Min).Intersect(innerBounds)
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
-	tiles := shatter.Shatter(bounds, covered)
-	for _, tile := range tiles {
-		artist.FillRectangleClip (
-			element.core, pattern, bounds, tile)
-	}
+	artist.FillRectangleShatter (
+		element.core, pattern, bounds, covered)
 }

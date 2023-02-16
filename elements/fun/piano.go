@@ -5,7 +5,6 @@ import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
 
@@ -304,11 +303,8 @@ func (element *Piano) draw () {
 	}
 	
 	pattern := element.theme.Pattern(theme.PatternPinboard, state)
-	tiles := shatter.Shatter(element.Bounds(), element.contentBounds)
-	for _, tile := range tiles {
-		artist.FillRectangleClip (
-			element.core, pattern, element.Bounds(), tile)
-	}
+	artist.FillRectangleShatter (
+		element.core, pattern, element.Bounds(), element.contentBounds)
 }
 
 func (element *Piano) drawFlat (

@@ -2,6 +2,7 @@ package artist
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/shatter"
 
 // Paste transfers one canvas onto another, offset by the specified point.
 func Paste (
@@ -73,6 +74,23 @@ func FillRectangleClip (
 				realWidth, realHeight)
 	}}
 	return
+}
+
+// FillRectangleShatter shatters a bounding rectangle and draws its tiles in one
+// fell swoop.
+func FillRectangleShatter (
+	destination canvas.Canvas,
+	source Pattern,
+	glass image.Rectangle,
+	rocks ...image.Rectangle,
+) (
+	updatedRegions []image.Rectangle,
+) {
+	tiles := shatter.Shatter(glass, rocks...)
+	for _, tile := range tiles {
+		FillRectangleClip(destination, source, glass, tile)
+	}
+	return tiles
 }
 
 // StrokeRectangle draws the outline of a rectangle with the specified line
