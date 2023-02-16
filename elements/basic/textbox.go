@@ -69,12 +69,7 @@ func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Focused() { element.Focus() }
 
 	if button == input.ButtonLeft {
-		point := image.Pt(x, y)
-		offset := element.Bounds().Min.Add (image.Pt (
-			element.config.Padding() - element.scroll,
-			element.config.Padding()))
-		runeIndex := element.valueDrawer.AtPosition (
-			fixedutil.Pt(point.Sub(offset)))
+		runeIndex := element.atPosition(image.Pt(x, y))
 		element.dragging = true
 		if runeIndex > -1 {
 			element.dot = textmanip.EmptyDot(runeIndex)
@@ -88,17 +83,21 @@ func (element *TextBox) HandleMouseMove (x, y int) {
 	if !element.Focused() { element.Focus() }
 
 	if element.dragging {
-		point := image.Pt(x, y)
-		offset := element.Bounds().Min.Add (image.Pt (
-			element.config.Padding() - element.scroll,
-			element.config.Padding()))
-		runeIndex := element.valueDrawer.AtPosition (
-			fixedutil.Pt(point.Sub(offset)))
+		runeIndex := element.atPosition(image.Pt(x, y))
 		if runeIndex > -1 {
 			element.dot.End = runeIndex
 			element.redo()
 		}
 	}
+}
+
+func (element *TextBox) atPosition (position image.Point) int {
+	offset := element.Bounds().Min.Add (image.Pt (
+		element.config.Padding() - element.scroll,
+		element.config.Padding()))
+	textBoundsMin := element.valueDrawer.LayoutBounds().Min
+	return element.valueDrawer.AtPosition (
+		fixedutil.Pt(position.Sub(offset).Add(textBoundsMin)))
 }
 
 func (element *TextBox) HandleMouseUp (x, y int, button input.Button) {

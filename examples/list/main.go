@@ -38,7 +38,7 @@ func run () {
 		popups.NewDialog(popups.DialogKindInfo, "", "Sike!")
 	})
 	mouse  := testing.NewMouse()
-	input  := basicElements.NewTextBox("Write some text", "")
+	input  := basicElements.NewTextBox("Write some text", "fkjasdklfja\ndjkfhadf")
 	form := basicElements.NewContainer(basicLayouts.Vertical { true, false})
 		form.Adopt(basicElements.NewLabel("I have:", false), false)
 		form.Adopt(basicElements.NewSpacer(true), false)

@@ -79,7 +79,7 @@ func testLargeRecHeight (test *testing.T, width int) {
 	}
 }
 
-func TestSetterIndex (test *testing.T) {
+func TestSetterPosition (test *testing.T) {
 	setter := TypeSetter { }
 	setter.SetText([]rune("The quick brown fox\njumped over the lazy dog."))
 	setter.SetFace(defaultfont.FaceRegular)
@@ -91,6 +91,39 @@ func TestSetterIndex (test *testing.T) {
 		test.Fatalf (
 			`setter pos at %d: (%d, %d), expected: (%d, %d)`,
 			index, pos.X, pos.Y, expect.X, expect.Y)
+	}
+}
+
+func TestSetterIndex (test *testing.T) {
+	setter := TypeSetter { }
+	setter.SetText([]rune("The quick brown fox\njumped over the lazy dog."))
+	setter.SetFace(defaultfont.FaceRegular)
+	
+	pos := fixed.P(3, 8)
+	index := setter.AtPosition(pos)
+	expect := 20
+	if index != expect {
+		test.Fatalf (
+			`setter index at (%d, %d): %d, expected: %d`,
+			pos.X.Round(), pos.Y.Round(), index, expect)
+	}
+	
+	pos = fixed.P(-59, 230)
+	index = setter.AtPosition(pos)
+	expect = 19
+	if index != expect {
+		test.Fatalf (
+			`setter index at (%d, %d): %d, expected: %d`,
+			pos.X.Round(), pos.Y.Round(), index, expect)
+	}
+	
+	pos = fixed.P(500, 500)
+	index = setter.AtPosition(pos)
+	expect = 45
+	if index != expect {
+		test.Fatalf (
+			`setter index at (%d, %d): %d, expected: %d`,
+			pos.X.Round(), pos.Y.Round(), index, expect)
 	}
 }
 

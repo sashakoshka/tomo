@@ -6,6 +6,7 @@ import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
+import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -159,7 +160,7 @@ func (element *Artist) draw () {
 	
 	// how long did that take to render?
 	drawTime := time.Since(drawStart)
-	textDrawer := artist.TextDrawer { }
+	textDrawer := textdraw.Drawer { }
 	textDrawer.SetFace(defaultfont.FaceRegular)
 	textDrawer.SetText ([]rune (fmt.Sprintf (
 		"%dms\n%dus",

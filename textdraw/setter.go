@@ -218,39 +218,44 @@ func (setter *TypeSetter) For (iterator RuneIterator) {
 
 // AtPosition returns the index of the rune at the specified position.
 func (setter *TypeSetter) AtPosition (position fixed.Point26_6) (index int) {
+	println("XXX", position.Y.Round())
 	setter.needAlignedLayout()
 	
 	if setter.lines == nil { return }
 	if setter.face  == nil { return }
-	metrics := setter.face.Metrics()
 
 	// find the first line who's bottom bound is greater than position.Y. if
 	// we haven't found it, then dont set the line variable (defaults to the
 	// last line)
+	metrics := setter.face.Metrics()
 	line := setter.lines[len(setter.lines) - 1]
+	lineSize := 0
 	for _, curLine := range setter.lines {
 		for _, curWord := range curLine.Words {
-			index += len(curWord.Runes)
+			lineSize += len(curWord.Runes)
 		}
+		if curLine.BreakAfter { lineSize ++ }
+		index += lineSize
+		
 		if curLine.Y + metrics.Descent > position.Y {
 			line = curLine
 			break
 		}
 	}
+	index -= lineSize
 
 	if line.Words == nil { return }
 
 	// find the first rune who's right bound is greater than position.X.
 	for _, curWord := range line.Words {
 		for _, curChar := range curWord.Runes {
-			if curWord.X + curChar.X + curChar.Width > position.X {
-				break
-			}
+			x := curWord.X + curChar.X + curChar.Width
+			println(index, x.Round(), position.X.Round())
+			if x > position.X { goto foundRune }
 			index ++
 		}
-		if line.BreakAfter { index ++ }
 	}
-	
+	foundRune:
 	return
 }
 
