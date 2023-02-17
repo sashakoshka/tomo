@@ -30,9 +30,11 @@ type Button struct {
 func NewButton (text string) (element *Button) {
 	element = &Button { }
 	element.theme.Case = theme.C("basic", "button")
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element.drawAll)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.redo)
+	element.focusableControl = core.NewFocusableCore (func () {
+		element.drawAndPush(true)
+	})
 	element.SetText(text)
 	return
 }
@@ -42,20 +44,18 @@ func (element *Button) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Focused() { element.Focus() }
 	if button != input.ButtonLeft { return }
 	element.pressed = true
-	element.redo()
+	element.drawAndPush(true)
 }
 
 func (element *Button) HandleMouseUp (x, y int, button input.Button) {
 	if button != input.ButtonLeft { return }
-	// println("handling mouse up")
 	element.pressed = false
 	within := image.Point { x, y }.
 		In(element.Bounds())
 	if element.Enabled() && within && element.onClick != nil {
 		element.onClick()
 	}
-	element.redo()
-	// println("done handling mouse up")
+	element.drawAndPush(true)
 }
 
 func (element *Button) HandleMouseMove (x, y int) { }
@@ -65,14 +65,14 @@ func (element *Button) HandleKeyDown (key input.Key, modifiers input.Modifiers) 
 	if !element.Enabled() { return }
 	if key == input.KeyEnter {
 		element.pressed = true
-		element.redo()
+		element.drawAndPush(true)
 	}
 }
 
 func (element *Button) HandleKeyUp(key input.Key, modifiers input.Modifiers) {
 	if key == input.KeyEnter && element.pressed {
 		element.pressed = false
-		element.redo()
+		element.drawAndPush(true)
 		if !element.Enabled() { return }
 		if element.onClick != nil {
 			element.onClick()
@@ -97,7 +97,7 @@ func (element *Button) SetText (text string) {
 	element.text = text
 	element.drawer.SetText([]rune(text))
 	element.updateMinimumSize()
-	element.redo()
+	element.drawAndPush(false)
 }
 
 // SetTheme sets the element's theme.
@@ -108,7 +108,7 @@ func (element *Button) SetTheme (new theme.Theme) {
 		theme.FontStyleRegular,
 		theme.FontSizeNormal))
 	element.updateMinimumSize()
-	element.redo()
+	element.drawAndPush(false)
 }
 
 // SetConfig sets the element's configuration.
@@ -116,7 +116,7 @@ func (element *Button) SetConfig (new config.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
-	element.redo()
+	element.drawAndPush(false)
 }
 
 func (element *Button) updateMinimumSize () {
@@ -125,42 +125,73 @@ func (element *Button) updateMinimumSize () {
 	element.core.SetMinimumSize(minimumSize.Dx(), minimumSize.Dy())
 }
 
-func (element *Button) redo () {
+func (element *Button) drawAndPush (partial bool) {
 	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
+		if partial {
+			element.core.DamageRegion (append (
+				element.drawBackground(true),
+				element.drawText(true))...)
+		} else {
+			element.drawAll()
+			element.core.DamageAll()
+		}
 	}
 }
 
-func (element *Button) draw () {
-	bounds := element.Bounds()
-	// debug.PrintStack()
-
-	state := theme.PatternState {
+func (element *Button) state () theme.PatternState {
+	return theme.PatternState {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	}
+}
 
+func (element *Button) drawBackground (partial bool) []image.Rectangle {
+	state   := element.state()
+	bounds  := element.Bounds()
 	pattern := element.theme.Pattern(theme.PatternButton, state)
+	static  := element.theme.Hints(theme.PatternButton).StaticInset
 
-	artist.FillRectangle(element.core, pattern, bounds)
+	if partial && static != (theme.Inset { }) {
+		return artist.FillRectangleShatter (
+			element.core, pattern, bounds, static.Apply(bounds))
+	} else {
+		return []image.Rectangle {
+			artist.FillRectangle(element.core, pattern, bounds),
+		}
+	}
+}
+
+func (element *Button) drawText (partial bool) image.Rectangle {
+	state      := element.state()
+	bounds     := element.Bounds()
+	foreground := element.theme.Pattern(theme.PatternForeground, state)
+	sink       := element.theme.Sink(theme.PatternButton)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
 		X: bounds.Min.X + (bounds.Dx() - textBounds.Dx()) / 2,
 		Y: bounds.Min.Y + (bounds.Dy() - textBounds.Dy()) / 2,
 	}
-
-	// account for the fact that the bounding rectangle will be shifted over
-	// due to the bounds origin being at the baseline of the first line
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
-
+	region := textBounds.Union(textBounds.Add(sink)).Add(offset)
+	
 	if element.pressed {
-		offset = offset.Add(element.theme.Sink(theme.PatternButton))
+		offset = offset.Add(sink)
 	}
 
-	foreground := element.theme.Pattern(theme.PatternForeground, state)
+	if partial {
+		pattern := element.theme.Pattern(theme.PatternButton, state)
+		artist.FillRectangleClip (
+			element.core, pattern, bounds, region)
+	}
+	
 	element.drawer.Draw(element.core, foreground, offset)
+	return region
+}
+
+func (element *Button) drawAll () {
+	element.drawBackground(false)
+	element.drawText(false)
 }

@@ -137,6 +137,14 @@ func (wrapped Wrapped) Sink (id Pattern) image.Point {
 	return real.Sink(id, wrapped.Case)
 }
 
+// Hints returns rendering optimization hints for a particular pattern.
+// These are optional, but following them may result in improved
+// performance.
+func (wrapped Wrapped) Hints (id Pattern) Hints {
+	real := wrapped.ensure()
+	return real.Hints(id, wrapped.Case)
+}
+
 func (wrapped Wrapped) ensure () (real Theme) {
 	real = wrapped.Theme
 	if real == nil { real = Default { } }
