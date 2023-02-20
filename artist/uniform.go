@@ -7,7 +7,7 @@ import "image/color"
 // Pattern, color.Color, color.Model, and image.Image interfaces.
 type Uniform color.RGBA
 
-// NewUniform returns a new Uniform image of the given color.
+// NewUniform returns a new Uniform pattern of the given color.
 func NewUniform (c color.Color) (uniform Uniform) {
 	r, g, b, a := c.RGBA()
 	uniform.R = uint8(r >> 8)
@@ -15,6 +15,19 @@ func NewUniform (c color.Color) (uniform Uniform) {
 	uniform.B = uint8(b >> 8)
 	uniform.A = uint8(a >> 8)
 	return
+}
+
+func hex (color uint32) (c color.RGBA) {
+	c.A = uint8(color)
+	c.B = uint8(color >>  8)
+	c.G = uint8(color >> 16)
+	c.R = uint8(color >> 24)
+	return
+}
+
+// Uhex creates a new Uniform pattern from an RGBA integer value.
+func Uhex (color uint32) (uniform Uniform) {
+	return NewUniform(hex(color))
 }
 
 // ColorModel satisfies the image.Image interface.
