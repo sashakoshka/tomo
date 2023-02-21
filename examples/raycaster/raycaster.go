@@ -16,6 +16,7 @@ type ControlState struct {
 	StrafeRight  bool
 	LookLeft     bool
 	LookRight    bool
+	Sprint       bool
 }
 
 type Raycaster struct {
@@ -81,6 +82,7 @@ func (element *Raycaster) HandleKeyDown (key input.Key, modifiers input.Modifier
 	case 'd', 'D': element.controlState.StrafeRight  = true
 	case 'w', 'W': element.controlState.WalkForward  = true
 	case 's', 'S': element.controlState.WalkBackward = true
+	case input.KeyLeftControl: element.controlState.Sprint = true
 	default: return
 	}
 
@@ -97,6 +99,7 @@ func (element *Raycaster) HandleKeyUp(key input.Key, modifiers input.Modifiers) 
 	case 'd', 'D': element.controlState.StrafeRight  = false
 	case 'w', 'W': element.controlState.WalkForward  = false
 	case 's', 'S': element.controlState.WalkBackward = false
+	case input.KeyLeftControl: element.controlState.Sprint = false
 	default: return
 	}
 

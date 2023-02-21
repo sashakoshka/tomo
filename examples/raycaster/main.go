@@ -4,6 +4,7 @@ import "bytes"
 import _ "embed"
 import _ "image/png"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
@@ -19,7 +20,7 @@ func run () {
 	window, _ := tomo.NewWindow(640, 480)
 	window.SetTitle("Raycaster")
 
-	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
+	container := basicElements.NewContainer(basicLayouts.Vertical { false, false })
 	window.Adopt(container)
 
 	wallTexture, _ := TextureFrom(bytes.NewReader(wallTextureBytes))
@@ -46,10 +47,29 @@ func run () {
 		wallTexture,
 	})
 
-	container.Adopt(basicElements.NewLabel("Explore a 3D world!", false), false)
+	topBar := basicElements.NewContainer(basicLayouts.Horizontal { true, true })
+	staminaBar := basicElements.NewProgressBar(game.Stamina())
+	healthBar  := basicElements.NewProgressBar(game.Health())
+	
+	topBar.Adopt(basicElements.NewLabel("Stamina:", false), false)
+	topBar.Adopt(staminaBar, true)
+	topBar.Adopt(basicElements.NewLabel("Health:", false), false)
+	topBar.Adopt(healthBar, true)
+	container.Adopt(topBar, false)
 	container.Adopt(game, true)
 	game.Focus()
+
+	game.OnStatUpdate (func () {
+		staminaBar.SetProgress(game.Stamina())
+	})
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
+	
+	popups.NewDialog (
+		popups.DialogKindInfo,
+		"Welcome to the backrooms",
+		"You've no-clipped into the backrooms!\n" +
+		"Move with WASD, and look with the arrow keys.\n" +
+		"Keep an eye on your health and stamina.")
 }
