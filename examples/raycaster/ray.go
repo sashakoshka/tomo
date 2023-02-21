@@ -120,6 +120,7 @@ func (ray *Ray) Cast (
 func (ray *Ray) castH (world World, max int) (distance float64, hit Vector, wall int) {
 	var position Vector
 	var delta    Vector
+	var offset   Vector
 	ray.Angle = math.Mod(ray.Angle, math.Pi * 2)
 	if ray.Angle < 0 {
 		ray.Angle += math.Pi * 2
@@ -127,8 +128,9 @@ func (ray *Ray) castH (world World, max int) (distance float64, hit Vector, wall
 	tan := math.Tan(math.Pi - ray.Angle)
 	if ray.Angle > math.Pi {
 		// facing up
-		position.Y = math.Floor(ray.Y) - (1.0 / 64)
-		delta.Y = -1
+		position.Y = math.Floor(ray.Y)
+		delta.Y  = -1
+		offset.Y = -1
 	} else if ray.Angle < math.Pi {
 		// facing down
 		position.Y = math.Floor(ray.Y) + 1
@@ -143,24 +145,28 @@ func (ray *Ray) castH (world World, max int) (distance float64, hit Vector, wall
 	// cast da ray
 	steps := 0
 	for {
-		cell := world.At(position.Point())
+		cell := world.At(position.Add(offset).Point())
 		if cell > 0 || steps > max { break }
 		position = position.Add(delta)
 		steps ++
 	}
 
-	return position.Sub(ray.Vector).Hypot(), position, world.At(position.Point())
+	return position.Sub(ray.Vector).Hypot(),
+		position,
+		world.At(position.Add(offset).Point())
 }
 
 func (ray *Ray) castV (world World, max int) (distance float64, hit Vector, wall int) {
 	var position Vector
 	var delta    Vector
+	var offset   Vector
 	tan := math.Tan(math.Pi - ray.Angle)
 	offsetAngle := math.Mod(ray.Angle + math.Pi / 2, math.Pi * 2)
 	if offsetAngle > math.Pi {
 		// facing left
-		position.X = math.Floor(ray.X) - (1.0 / 64)
-		delta.X = -1
+		position.X = math.Floor(ray.X)
+		delta.X  = -1
+		offset.X = -1
 	} else if offsetAngle < math.Pi {
 		// facing right
 		position.X = math.Floor(ray.X) + 1
@@ -175,11 +181,13 @@ func (ray *Ray) castV (world World, max int) (distance float64, hit Vector, wall
 	// cast da ray
 	steps := 0
 	for {
-		cell := world.At(position.Point())
+		cell := world.At(position.Add(offset).Point())
 		if cell > 0 || steps > max { break }
 		position = position.Add(delta)
 		steps ++
 	}
 
-	return position.Sub(ray.Vector).Hypot(), position, world.At(position.Point())
+	return position.Sub(ray.Vector).Hypot(),
+		position,
+		world.At(position.Add(offset).Point())
 }

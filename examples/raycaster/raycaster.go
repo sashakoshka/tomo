@@ -130,7 +130,7 @@ func (element *Raycaster) drawAll () {
 
 		shade := 1.0
 		if horizontal {
-			shade *= 0.7
+			shade *= 0.8
 		}
 		shade *= 1 - distance / float64(element.renderDistance)
 		if shade < 0 { shade = 0 }
