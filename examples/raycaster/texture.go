@@ -15,9 +15,14 @@ func (texture Textures) At (wall int, offset Vector) color.RGBA {
 	wall --
 	if wall < 0 || wall >= len(texture) { return color.RGBA { } }
 	image := texture[wall]
+	
 	xOffset := int(offset.X * float64(image.Stride))
 	yOffset := int(offset.Y * float64(len(image.Data) / image.Stride))
-	return image.Data[xOffset + yOffset * image.Stride]
+	
+	index := xOffset + yOffset * image.Stride
+	if index <  0               { return color.RGBA { } }
+	if index >= len(image.Data) { return color.RGBA { } }
+	return image.Data[index]
 }
 
 func TextureFrom (source io.Reader) (texture Texture, err error) {

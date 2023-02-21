@@ -108,8 +108,9 @@ func (element *Raycaster) HandleKeyUp(key input.Key, modifiers input.Modifiers) 
 func (element *Raycaster) drawAll () {
 	bounds := element.Bounds()
 	// artist.FillRectangle(element.core, artist.Uhex(0x000000FF), bounds)
-	width  := bounds.Dx()
-	height := bounds.Dy()
+	width   := bounds.Dx()
+	height  := bounds.Dy()
+	halfway := bounds.Max.Y - height / 2
 
 	ray := Ray { Angle: element.Camera.Angle - element.Camera.Fov / 2 }
 	
@@ -140,30 +141,30 @@ func (element *Raycaster) drawAll () {
 
 		// draw
 		data, stride := element.core.Buffer()
-		wallStart := height / 2 - wallHeight + bounds.Min.Y
-		wallEnd   := height / 2 + wallHeight + bounds.Min.Y
-		if wallStart < 0            { wallStart = 0 }
-		if wallEnd   > bounds.Max.Y { wallEnd   = bounds.Max.Y }
+		wallStart := halfway - wallHeight
+		wallEnd   := halfway + wallHeight
 
-		for y := bounds.Min.Y; y < wallStart; y ++ {
-			data[y * stride + x + bounds.Min.X] = ceilingColor
-		}
+		for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
+			switch {
+			case y < wallStart:
+				data[y * stride + x + bounds.Min.X] = ceilingColor
 
-		slicePoint := 0.0
-		slicePointDelta := 1 / float64(wallEnd - wallStart)
-		for y := wallStart; y < wallEnd; y ++ {
-			wallColor := element.textures.At (wall, Vector {
-				textureX,
-				slicePoint,
-			})
-			wallColor = shadeColor(wallColor, shade)
-			data[y * stride + x + bounds.Min.X] = wallColor
+			case y < wallEnd:
+				textureY :=
+					float64(y - halfway) / 
+					float64(wallEnd - wallStart) + 0.5
+				// fmt.Println(textureY)
 				
-			slicePoint += slicePointDelta
-		}
-		
-		for y := wallEnd; y < bounds.Max.Y; y ++ {
-			data[y * stride + x + bounds.Min.X] = floorColor
+				wallColor := element.textures.At (wall, Vector {
+					textureX,
+					textureY,
+				})
+				wallColor = shadeColor(wallColor, shade)
+				data[y * stride + x + bounds.Min.X] = wallColor
+				
+			default:
+				data[y * stride + x + bounds.Min.X] = floorColor
+			}
 		}
 
 		// increment angle
