@@ -13,9 +13,9 @@ type Game struct {
 	controlState ControlState
 }
 
-func NewGame (world World) (game *Game) {
+func NewGame (world World, textures Textures) (game *Game) {
 	game = &Game {
-		Raycaster: NewRaycaster(world),
+		Raycaster: NewRaycaster(world, textures),
 		stopChan: make(chan bool),
 	}
 	game.Raycaster.OnControlStateChange (func (state ControlState) {

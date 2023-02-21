@@ -28,20 +28,24 @@ type Raycaster struct {
 	Camera
 	controlState ControlState
 	world World
+	textures Textures
 	onControlStateChange func (ControlState)
+	renderDistance int
 }
 
-func NewRaycaster (world World) (element *Raycaster) {
+func NewRaycaster (world World, textures Textures) (element *Raycaster) {
 	element = &Raycaster {
 		Camera: Camera {
 			Vector: Vector {
-				X: 1.5,
-				Y: 1.5,
+				X: 1,
+				Y: 1,
 			},
 			Angle: math.Pi / 3,
 			Fov:   1,
 		},
 		world: world,
+		textures: textures,
+		renderDistance: 8,
 	}
 	element.Core, element.core = core.NewCore(element.drawAll)
 	element.FocusableCore,
@@ -113,22 +117,26 @@ func (element *Raycaster) drawAll () {
 		ray.X = element.Camera.X
 		ray.Y = element.Camera.Y
 		
-		distance, _ := ray.Cast(element.world, 8)
-		distanceFac := float64(distance) / 8
-		distance    *= math.Cos(ray.Angle - element.Camera.Angle)
+		distance, hitPoint, wall, horizontal := ray.Cast (
+			element.world, element.renderDistance)
+		distance *= math.Cos(ray.Angle - element.Camera.Angle)
+		textureX := math.Mod(hitPoint.X + hitPoint.Y, 1)
+		if textureX < 0 { textureX += 1 }
 		
 		wallHeight := height
 		if distance > 0 {
 			wallHeight = int((float64(height) / 2.0) / float64(distance))
 		}
 
+		shade := 1.0
+		if horizontal {
+			shade *= 0.7
+		}
+		shade *= 1 - distance / float64(element.renderDistance)
+		if shade < 0 { shade = 0 }
+
 		ceilingColor := color.RGBA { 0x00, 0x00, 0x00, 0xFF }
-		wallColor    := color.RGBA { 0xCC, 0x33, 0x22, 0xFF }
-		floorColor   := color.RGBA { 0x11, 0x50, 0x22, 0xFF }
-
-		// fmt.Println(float64(distance) / 32)
-
-		wallColor  = artist.LerpRGBA(wallColor, ceilingColor, distanceFac)
+		floorColor   := color.RGBA { 0x39, 0x49, 0x25, 0xFF }
 
 		// draw
 		data, stride := element.core.Buffer()
@@ -136,16 +144,26 @@ func (element *Raycaster) drawAll () {
 		wallEnd   := height / 2 + wallHeight + bounds.Min.Y
 		if wallStart < 0            { wallStart = 0 }
 		if wallEnd   > bounds.Max.Y { wallEnd   = bounds.Max.Y }
+
 		for y := bounds.Min.Y; y < wallStart; y ++ {
 			data[y * stride + x + bounds.Min.X] = ceilingColor
 		}
+
+		slicePoint := 0.0
+		slicePointDelta := 1 / float64(wallEnd - wallStart)
 		for y := wallStart; y < wallEnd; y ++ {
+			wallColor := element.textures.At (wall, Vector {
+				textureX,
+				slicePoint,
+			})
+			wallColor = shadeColor(wallColor, shade)
 			data[y * stride + x + bounds.Min.X] = wallColor
+				
+			slicePoint += slicePointDelta
 		}
+		
 		for y := wallEnd; y < bounds.Max.Y; y ++ {
-			floorFac := float64(y - (height / 2)) / float64(height / 2)
-			data[y * stride + x + bounds.Min.X] =
-				artist.LerpRGBA(ceilingColor, floorColor, floorFac)
+			data[y * stride + x + bounds.Min.X] = floorColor
 		}
 
 		// increment angle
@@ -155,11 +173,20 @@ func (element *Raycaster) drawAll () {
 	// element.drawMinimap()
 }
 
+func shadeColor (c color.RGBA, brightness float64) color.RGBA {
+	return color.RGBA {
+		uint8(float64(c.R) * brightness),
+		uint8(float64(c.G) * brightness),
+		uint8(float64(c.B) * brightness),
+		c.A,
+	}
+}
+
 func (element *Raycaster) drawMinimap () {
 	bounds := element.Bounds()
-	scale  := 16
-	for y := 0; y < 10; y ++ {
-	for x := 0; x < 10; x ++ {
+	scale  := 8
+	for y := 0; y < len(element.world.Data) / element.world.Stride; y ++ {
+	for x := 0; x < element.world.Stride; x ++ {
 		cellPt := image.Pt(x, y)
 		cell   := element.world.At(cellPt)
 		cellBounds :=
@@ -168,7 +195,7 @@ func (element *Raycaster) drawMinimap () {
 				cellPt.Add(image.Pt(1, 1)).Mul(scale),
 			}.Add(bounds.Min)
 		cellColor  := color.RGBA { 0x22, 0x22, 0x22, 0xFF }
-		if cell == 1 {
+		if cell > 0 {
 			cellColor = color.RGBA { 0xFF, 0xFF, 0xFF, 0xFF }
 		}
 		artist.FillRectangle (
@@ -182,9 +209,8 @@ func (element *Raycaster) drawMinimap () {
 		element.Camera.Add(element.Camera.Delta()).
 		Mul(float64(scale)).Point().Add(bounds.Min)
 	ray := Ray { Vector: element.Camera.Vector, Angle: element.Camera.Angle }
-	_, hit := ray.Cast(element.world, 8)
+	_, hit, _, _ := ray.Cast(element.world, 8)
 	hitPt := hit.Mul(float64(scale)).Point().Add(bounds.Min)
-	// fmt.Println(rayDistance)
 	
 	playerBounds := image.Rectangle { playerPt, playerPt }.Inset(scale / -8)
 	artist.FillEllipse (

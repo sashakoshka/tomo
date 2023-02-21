@@ -44,7 +44,7 @@ func run () {
 	warningButton := basicElements.NewButton("popups.DialogKindWarning")
 	warningButton.OnClick (func () {
 		popups.NewDialog (
-			popups.DialogKindQuestion,
+			popups.DialogKindWarning,
 			"Warning",
 			"They are fast approaching.")
 	})
@@ -53,7 +53,7 @@ func run () {
 	errorButton := basicElements.NewButton("popups.DialogKindError")
 	errorButton.OnClick (func () {
 		popups.NewDialog (
-			popups.DialogKindQuestion,
+			popups.DialogKindError,
 			"Error",
 			"There is nowhere left to go.")
 	})

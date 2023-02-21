@@ -3,16 +3,12 @@ package main
 import "math"
 import "image"
 
-type World interface {
-	At (image.Point) int
-}
-
-type DefaultWorld struct {
+type World struct {
 	Data   []int
 	Stride int
 }
 
-func (world DefaultWorld) At (position image.Point) int {
+func (world World) At (position image.Point) int {
 	if position.X < 0 { return 0 }
 	if position.Y < 0 { return 0 }
 	if position.X >= world.Stride { return 0 }
@@ -98,21 +94,30 @@ type Ray struct {
 	Angle  float64
 }
 
-func (ray *Ray) Cast (world World, max int) (distance float64, hit Vector) {
+func (ray *Ray) Cast (
+	world World,
+	max int,
+) (
+	distance float64,
+	hit Vector,
+	wall int,
+	horizontal bool,
+) {
 	// return ray.castV(world, max)
-	if world.At(ray.Point()) > 0 {
-		return 0, Vector { }
+	cellAt := world.At(ray.Point())
+	if cellAt > 0 {
+		return 0, Vector { }, cellAt, false
 	}
-	hDistance, hPos := ray.castH(world, max)
-	vDistance, vPos := ray.castV(world, max)
+	hDistance, hPos, hWall := ray.castH(world, max)
+	vDistance, vPos, vWall := ray.castV(world, max)
 	if hDistance < vDistance {
-		return hDistance, hPos
+		return hDistance, hPos, hWall, true
 	} else {
-		return vDistance, vPos
+		return vDistance, vPos, vWall, false
 	}
 }
 
-func (ray *Ray) castH (world World, max int) (distance float64, hit Vector) {
+func (ray *Ray) castH (world World, max int) (distance float64, hit Vector, wall int) {
 	var position Vector
 	var delta    Vector
 	ray.Angle = math.Mod(ray.Angle, math.Pi * 2)
@@ -130,7 +135,7 @@ func (ray *Ray) castH (world World, max int) (distance float64, hit Vector) {
 		delta.Y = 1
 	} else {
 		// facing straight left or right
-		return float64(max), Vector { }
+		return float64(max), Vector { }, 0
 	}
 	position.X = ray.X + (ray.Y - position.Y) / tan
 	delta.X    = -delta.Y / tan
@@ -144,10 +149,10 @@ func (ray *Ray) castH (world World, max int) (distance float64, hit Vector) {
 		steps ++
 	}
 
-	return position.Sub(ray.Vector).Hypot(), position
+	return position.Sub(ray.Vector).Hypot(), position, world.At(position.Point())
 }
 
-func (ray *Ray) castV (world World, max int) (distance float64, hit Vector) {
+func (ray *Ray) castV (world World, max int) (distance float64, hit Vector, wall int) {
 	var position Vector
 	var delta    Vector
 	tan := math.Tan(math.Pi - ray.Angle)
@@ -162,7 +167,7 @@ func (ray *Ray) castV (world World, max int) (distance float64, hit Vector) {
 		delta.X = 1
 	} else {
 		// facing straight left or right
-		return float64(max), Vector { }
+		return float64(max), Vector { }, 0
 	}
 	position.Y = ray.Y + (ray.X - position.X) * tan
 	delta.Y    = -delta.X * tan
@@ -176,6 +181,5 @@ func (ray *Ray) castV (world World, max int) (distance float64, hit Vector) {
 		steps ++
 	}
 
-	return position.Sub(ray.Vector).Hypot(), position
-	return
+	return position.Sub(ray.Vector).Hypot(), position, world.At(position.Point())
 }

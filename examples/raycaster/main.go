@@ -1,9 +1,15 @@
 package main
 
+import "bytes"
+import _ "embed"
+import _ "image/png"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
+
+//go:embed wall.png
+var wallTextureBytes []uint8
 
 func main () {
 	tomo.Run(run)
@@ -16,20 +22,28 @@ func run () {
 	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
-	game := NewGame (DefaultWorld {
+	wallTexture, _ := TextureFrom(bytes.NewReader(wallTextureBytes))
+
+	game := NewGame (World {
 		Data: []int {
-		        1,1,1,1,1,1,1,1,1,1,
-		        1,0,0,0,0,0,0,0,0,1,
-		        1,0,0,0,0,0,0,0,0,1,
-		        1,0,0,1,1,0,1,0,0,1,
-		        1,0,0,1,0,0,1,0,0,1,
-		        1,0,0,1,0,0,1,0,0,1,
-		        1,0,0,1,0,1,1,0,0,1,
-		        1,0,0,0,0,0,0,0,0,1,
-		        1,0,0,0,0,0,0,0,0,1,
-		        1,1,1,1,1,1,1,1,1,1,
+		        1,1,1,1,1,1,1,1,1,1,1,1,1,
+		        1,0,0,0,0,0,0,0,0,0,0,0,1,
+		        1,0,1,1,1,1,1,1,1,0,0,0,1,
+		        1,0,0,0,0,0,0,0,1,1,1,0,1,
+		        1,0,0,0,0,0,0,0,1,0,0,0,1,
+		        1,0,0,0,0,0,0,0,1,0,1,1,1,
+		        1,1,1,1,1,1,1,1,1,0,0,0,1,
+		        1,0,0,0,0,0,0,0,1,1,0,1,1,
+		        1,0,0,1,0,0,0,0,0,0,0,0,1,
+		        1,0,1,1,1,0,0,0,0,0,0,0,1,
+		        1,0,0,1,0,0,0,0,0,0,0,0,1,
+		        1,0,0,0,0,0,0,0,0,0,0,0,1,
+		        1,0,0,0,0,1,0,0,0,0,0,0,1,
+		        1,1,1,1,1,1,1,1,1,1,1,1,1,
 		},
-		Stride: 10,
+		Stride: 13,
+	}, Textures {
+		wallTexture,
 	})
 
 	container.Adopt(basicElements.NewLabel("Explore a 3D world!", false), false)
