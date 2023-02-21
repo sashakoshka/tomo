@@ -21,14 +21,43 @@ func (world DefaultWorld) At (position image.Point) int {
 	return world.Data[index]
 }
 
-type Camera struct {
-	X, Y  float64
-	Angle float64
-	Fov   float64
+type Vector struct {
+	X, Y float64
 }
 
-func (camera *Camera) Point () (image.Point) {
-	return image.Pt(int(camera.X), int(camera.Y))
+func (vector Vector) Point () (image.Point) {
+	return image.Pt(int(vector.X), int(vector.Y))
+}
+
+func (vector Vector) Add (other Vector) Vector {
+	return Vector {
+		vector.X + other.X,
+		vector.Y + other.Y,
+	}
+}
+
+func (vector Vector) Sub (other Vector) Vector {
+	return Vector {
+		vector.X - other.X,
+		vector.Y - other.Y,
+	}
+}
+
+func (vector Vector) Mul (by float64) Vector {
+	return Vector {
+		vector.X * by,
+		vector.Y * by,
+	}
+}
+
+func (vector Vector) Hypot () float64 {
+	return math.Hypot(vector.X, vector.Y)
+}
+
+type Camera struct {
+	Vector
+	Angle float64
+	Fov   float64
 }
 
 func (camera *Camera) Rotate (by float64) {
@@ -38,53 +67,115 @@ func (camera *Camera) Rotate (by float64) {
 }
 
 func (camera *Camera) Walk (by float64) {
-	dx, dy := camera.Delta()
-	camera.X += dx * by
-	camera.Y += dy * by
+	delta := camera.Delta()
+	camera.X += delta.X * by
+	camera.Y += delta.Y * by
 }
 
 func (camera *Camera) Strafe (by float64) {
-	dx, dy := camera.OffsetDelta()
-	camera.X += dx * by
-	camera.Y += dy * by
+	delta := camera.OffsetDelta()
+	camera.X += delta.X * by
+	camera.Y += delta.Y * by
 }
 
-func (camera *Camera) Delta () (x float64, y float64) {
-	return math.Cos(camera.Angle), math.Sin(camera.Angle)
+func (camera *Camera) Delta () Vector {
+	return Vector {
+		math.Cos(camera.Angle),
+		math.Sin(camera.Angle),
+	}
 }
 
-func (camera *Camera) OffsetDelta () (x float64, y float64) {
+func (camera *Camera) OffsetDelta () Vector {
 	offset := math.Pi / 2
-	return math.Cos(camera.Angle + offset), math.Sin(camera.Angle + offset)
+	return Vector {
+		math.Cos(camera.Angle + offset),
+		math.Sin(camera.Angle + offset),
+	}
 }
 
 type Ray struct {
-	X, Y   float64
+	Vector
 	Angle  float64
-	Precision int
 }
 
-func (ray *Ray) Cast (world World, max int) (distance float64) {
-	precision := 64
+func (ray *Ray) Cast (world World, max int) (distance float64, hit Vector) {
+	// return ray.castV(world, max)
+	if world.At(ray.Point()) > 0 {
+		return 0, Vector { }
+	}
+	hDistance, hPos := ray.castH(world, max)
+	vDistance, vPos := ray.castV(world, max)
+	if hDistance < vDistance {
+		return hDistance, hPos
+	} else {
+		return vDistance, vPos
+	}
+}
 
-	dX := math.Cos(ray.Angle) / float64(precision)
-	dY := math.Sin(ray.Angle) / float64(precision)
-	origX, origY := ray.X, ray.Y
+func (ray *Ray) castH (world World, max int) (distance float64, hit Vector) {
+	var position Vector
+	var delta    Vector
+	ray.Angle = math.Mod(ray.Angle, math.Pi * 2)
+	if ray.Angle < 0 {
+		ray.Angle += math.Pi * 2
+	}
+	tan := math.Tan(math.Pi - ray.Angle)
+	if ray.Angle > math.Pi {
+		// facing up
+		position.Y = math.Floor(ray.Y) - (1.0 / 64)
+		delta.Y = -1
+	} else if ray.Angle < math.Pi {
+		// facing down
+		position.Y = math.Floor(ray.Y) + 1
+		delta.Y = 1
+	} else {
+		// facing straight left or right
+		return float64(max), Vector { }
+	}
+	position.X = ray.X + (ray.Y - position.Y) / tan
+	delta.X    = -delta.Y / tan
 
-	wall  := 0
-	depth := 0
-	for wall == 0 && depth < max * precision {
-		ray.X += dX
-		ray.Y += dY
-		wall = world.At(ray.Point())
-		depth ++
+	// cast da ray
+	steps := 0
+	for {
+		cell := world.At(position.Point())
+		if cell > 0 || steps > max { break }
+		position = position.Add(delta)
+		steps ++
 	}
 
-	distanceX := origX - ray.X
-	distanceY := origY - ray.Y
-	return math.Sqrt(distanceX * distanceX + distanceY * distanceY)
+	return position.Sub(ray.Vector).Hypot(), position
 }
 
-func (ray *Ray) Point () (image.Point) {
-	return image.Pt(int(ray.X), int(ray.Y))
+func (ray *Ray) castV (world World, max int) (distance float64, hit Vector) {
+	var position Vector
+	var delta    Vector
+	tan := math.Tan(math.Pi - ray.Angle)
+	offsetAngle := math.Mod(ray.Angle + math.Pi / 2, math.Pi * 2)
+	if offsetAngle > math.Pi {
+		// facing left
+		position.X = math.Floor(ray.X) - (1.0 / 64)
+		delta.X = -1
+	} else if offsetAngle < math.Pi {
+		// facing right
+		position.X = math.Floor(ray.X) + 1
+		delta.X = 1
+	} else {
+		// facing straight left or right
+		return float64(max), Vector { }
+	}
+	position.Y = ray.Y + (ray.X - position.X) * tan
+	delta.Y    = -delta.X * tan
+
+	// cast da ray
+	steps := 0
+	for {
+		cell := world.At(position.Point())
+		if cell > 0 || steps > max { break }
+		position = position.Add(delta)
+		steps ++
+	}
+
+	return position.Sub(ray.Vector).Hypot(), position
+	return
 }

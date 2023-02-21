@@ -1,6 +1,8 @@
 package main
 
+// import "fmt"
 import "math"
+import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/config"
@@ -32,9 +34,11 @@ type Raycaster struct {
 func NewRaycaster (world World) (element *Raycaster) {
 	element = &Raycaster {
 		Camera: Camera {
-			X: 2,
-			Y: 2,
-			Angle: 1,
+			Vector: Vector {
+				X: 1.5,
+				Y: 1.5,
+			},
+			Angle: math.Pi / 3,
 			Fov:   1,
 		},
 		world: world,
@@ -103,16 +107,13 @@ func (element *Raycaster) drawAll () {
 	width  := bounds.Dx()
 	height := bounds.Dy()
 
-	ray := Ray {
-		Angle: element.Camera.Angle - element.Camera.Fov / 2,
-		Precision: 64,
-	}
+	ray := Ray { Angle: element.Camera.Angle - element.Camera.Fov / 2 }
 	
 	for x := 0; x < width; x ++ {
 		ray.X = element.Camera.X
 		ray.Y = element.Camera.Y
 		
-		distance    := ray.Cast(element.world, 8)
+		distance, _ := ray.Cast(element.world, 8)
 		distanceFac := float64(distance) / 8
 		distance    *= math.Cos(ray.Angle - element.Camera.Angle)
 		
@@ -150,4 +151,54 @@ func (element *Raycaster) drawAll () {
 		// increment angle
 		ray.Angle += element.Camera.Fov / float64(width)
 	}
+
+	// element.drawMinimap()
+}
+
+func (element *Raycaster) drawMinimap () {
+	bounds := element.Bounds()
+	scale  := 16
+	for y := 0; y < 10; y ++ {
+	for x := 0; x < 10; x ++ {
+		cellPt := image.Pt(x, y)
+		cell   := element.world.At(cellPt)
+		cellBounds :=
+			image.Rectangle {
+				cellPt.Mul(scale),
+				cellPt.Add(image.Pt(1, 1)).Mul(scale),
+			}.Add(bounds.Min)
+		cellColor  := color.RGBA { 0x22, 0x22, 0x22, 0xFF }
+		if cell == 1 {
+			cellColor = color.RGBA { 0xFF, 0xFF, 0xFF, 0xFF }
+		}
+		artist.FillRectangle (
+			element.core,
+			artist.NewUniform(cellColor),
+			cellBounds.Inset(1))
+	}}
+
+	playerPt := element.Camera.Mul(float64(scale)).Point().Add(bounds.Min)
+	playerAnglePt :=
+		element.Camera.Add(element.Camera.Delta()).
+		Mul(float64(scale)).Point().Add(bounds.Min)
+	ray := Ray { Vector: element.Camera.Vector, Angle: element.Camera.Angle }
+	_, hit := ray.Cast(element.world, 8)
+	hitPt := hit.Mul(float64(scale)).Point().Add(bounds.Min)
+	// fmt.Println(rayDistance)
+	
+	playerBounds := image.Rectangle { playerPt, playerPt }.Inset(scale / -8)
+	artist.FillEllipse (
+		element.core,
+		artist.Uhex(0xFFFFFFFF),
+		playerBounds)
+	artist.Line (
+		element.core,
+		artist.Uhex(0xFFFFFFFF), 1,
+		playerPt,
+		playerAnglePt)
+	artist.Line (
+		element.core,
+		artist.Uhex(0x00FF00FF), 1,
+		playerPt,
+		hitPt)
 }
