@@ -1,12 +1,16 @@
 package artist
 
-import "image/color"
+import "image"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
-// Pattern is capable of generating a pattern pixel by pixel.
+// Pattern is capable of drawing to a canvas within the bounds of a given
+// clipping rectangle.
 type Pattern interface {
-	// AtWhen returns the color of the pixel located at (x, y) relative to
-	// the origin point of the pattern (0, 0), when the pattern has the
-	// specified width and height. Patterns may ignore the width and height
-	// parameters, but it may be useful for some patterns such as gradients.
-	AtWhen (x, y, width, height int) (color.RGBA)
+	// Draw draws to destination, using the bounds of destination as a width
+	// and height for things like gradients, bevels, etc. The pattern may
+	// not draw outside the union of destination.Bounds() and clip. The
+	// clipping rectangle effectively takes a subset of the pattern. To
+	// change the bounds of the pattern itself, use canvas.Cut() on the
+	// destination before passing it to Draw().
+	Draw (destination canvas.Canvas, clip image.Rectangle)
 }
