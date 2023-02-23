@@ -39,3 +39,13 @@ func DrawBounds (
 		source.Draw(cut, clip)
 	}
 }
+
+// AllocateSample returns a new canvas containing the result of a pattern. The
+// resulting canvas can be sourced from shape drawing functions. I beg of you
+// please do not call this every time you need to draw a shape with a pattern on
+// it because that is horrible and cruel to the computer.
+func AllocateSample (source Pattern, width, height int) (allocated canvas.Canvas) {
+	allocated = canvas.NewBasicCanvas(width, height)
+	source.Draw(allocated, allocated.Bounds())
+	return
+} 
