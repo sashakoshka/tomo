@@ -14,3 +14,28 @@ type Pattern interface {
 	// destination before passing it to Draw().
 	Draw (destination canvas.Canvas, clip image.Rectangle)
 }
+
+// Draw lets you use several clipping rectangles to draw a pattern.
+func Draw (
+	destination canvas.Canvas,
+	source      Pattern,
+	clips       ...image.Rectangle,
+) {
+	for _, clip := range clips {
+		source.Draw(destination, clip)
+	}
+}
+
+// DrawBounds is like Draw, but lets you specify an overall bounding rectangle
+// for the pattern. The destination is cut to this rectangle.
+func DrawBounds (
+	destination canvas.Canvas,
+	bounds      image.Rectangle,
+	source      Pattern,
+	clips       ...image.Rectangle,
+) {
+	cut := canvas.Cut(destination, bounds)
+	for _, clip := range clips {
+		source.Draw(cut, clip)
+	}
+}
