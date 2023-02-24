@@ -2,8 +2,6 @@ package shapes
 
 import "math"
 import "image"
-import "image/color"
-// import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // FillEllipse draws the content of one canvas onto another, clipped by an
@@ -57,7 +55,7 @@ func StrokeEllipse (
 	
 	bounds := source.Bounds().Inset(weight - 1)
 
-	context := ellipsePlottingContext {
+	context := plottingContext {
 		dstData:   dstData,
 		dstStride: dstStride,
 		srcData:   srcData,
@@ -88,10 +86,10 @@ func StrokeEllipse (
 
 	// draw region 1
 	for decisionX < decisionY {
-		context.plot( int(x) + center.X,  int(y) + center.Y)
-		context.plot(-int(x) + center.X,  int(y) + center.Y)
-		context.plot( int(x) + center.X, -int(y) + center.Y)
-		context.plot(-int(x) + center.X, -int(y) + center.Y)
+		context.plotSource(image.Pt( int(x) + center.X,  int(y) + center.Y))
+		context.plotSource(image.Pt(-int(x) + center.X,  int(y) + center.Y))
+		context.plotSource(image.Pt( int(x) + center.X, -int(y) + center.Y))
+		context.plotSource(image.Pt(-int(x) + center.X, -int(y) + center.Y))
 
 		if (decision1 < 0) {
 			x ++
@@ -116,10 +114,10 @@ func StrokeEllipse (
 
 	// draw region 2
 	for y >= 0 {
-		context.plot( int(x) + center.X,  int(y) + center.Y)
-		context.plot(-int(x) + center.X,  int(y) + center.Y)
-		context.plot( int(x) + center.X, -int(y) + center.Y)
-		context.plot(-int(x) + center.X, -int(y) + center.Y)
+		context.plotSource(image.Pt( int(x) + center.X,  int(y) + center.Y))
+		context.plotSource(image.Pt(-int(x) + center.X,  int(y) + center.Y))
+		context.plotSource(image.Pt( int(x) + center.X, -int(y) + center.Y))
+		context.plotSource(image.Pt(-int(x) + center.X, -int(y) + center.Y))
 
 		if decision2 > 0 {
 			y --
@@ -135,29 +133,4 @@ func StrokeEllipse (
 				float64(radii.X * radii.X)
 		}
 	}
-}
-
-type ellipsePlottingContext struct {
-	dstData   []color.RGBA
-	dstStride int
-	srcData   []color.RGBA
-	srcStride int
-	weight    int
-	offset    image.Point
-	bounds    image.Rectangle
-}
-
-func (context ellipsePlottingContext) plot (x, y int) {
-	square :=
-		image.Rect(0, 0, context.weight, context.weight).
-		Sub(image.Pt(context.weight / 2, context.weight / 2)).
-		Add(image.Pt(x, y)).
-		Intersect(context.bounds)
-	
-	for y := square.Min.Y; y < square.Min.Y; y ++ {
-	for x := square.Min.X; x < square.Min.X; x ++ {
-		context.dstData[x + y * context.dstStride] =
-			context.srcData [
-				x + y * context.dstStride]
-	}}
 }

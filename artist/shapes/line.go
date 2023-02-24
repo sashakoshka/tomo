@@ -17,7 +17,6 @@ func ColorLine (
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	
 	updatedRegion = image.Rectangle { Min: min, Max: max }.Canon()
 	updatedRegion.Max.X ++
 	updatedRegion.Max.Y ++
@@ -25,13 +24,15 @@ func ColorLine (
 	data, stride := destination.Buffer()
 	bounds := destination.Bounds()
 	context := linePlottingContext {
-		dstData:   data,
-		dstStride: stride,
-		color:     color,
-		weight:    weight,
-		bounds:    bounds,
-		min:       min,
-		max:       max,
+		plottingContext: plottingContext {
+			dstData:   data,
+			dstStride: stride,
+			color:     color,
+			weight:    weight,
+			bounds:    bounds,
+		},
+		min: min,
+		max: max,
 	}
 	
 	if abs(max.Y - min.Y) < abs(max.X - min.X) {
@@ -46,13 +47,9 @@ func ColorLine (
 }
 
 type linePlottingContext struct {
-	dstData   []color.RGBA
-	dstStride int
-	color     color.RGBA
-	weight    int
-	bounds    image.Rectangle
-	min       image.Point
-	max       image.Point
+	plottingContext
+	min image.Point
+	max image.Point
 }
 
 func (context *linePlottingContext) swap () {
@@ -76,7 +73,7 @@ func (context linePlottingContext) lineLow () {
 
 	for ; point.X < context.max.X; point.X ++ {
 		if !point.In(context.bounds) { break }
-		context.plot(point)
+		context.plotColor(point)
 		if D > 0 {
 			D += 2 * (deltaY - deltaX)
 			point.Y += yi
@@ -101,7 +98,7 @@ func (context linePlottingContext) lineHigh () {
 
 	for ; point.Y < context.max.Y; point.Y ++ {
 		if !point.In(context.bounds) { break }
-		context.plot(point)
+		context.plotColor(point)
 		if D > 0 {
 			point.X += xi
 			D += 2 * (deltaX - deltaY)
@@ -114,17 +111,4 @@ func (context linePlottingContext) lineHigh () {
 func abs (n int) int {
 	if n < 0 { n *= -1}
 	return n
-}
-
-func (context linePlottingContext) plot (center image.Point) {
-	square :=
-		image.Rect(0, 0, context.weight, context.weight).
-		Sub(image.Pt(context.weight / 2, context.weight / 2)).
-		Add(center).
-		Intersect(context.bounds)
-
-	for y := square.Min.Y; y < square.Min.Y; y ++ {
-	for x := square.Min.X; x < square.Min.X; x ++ {
-		context.dstData[x + y * context.dstStride] = context.color
-	}}
 }
