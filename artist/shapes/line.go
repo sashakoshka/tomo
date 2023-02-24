@@ -1,4 +1,4 @@
-package artist
+package shapes
 
 import "image"
 import "image/color"
@@ -10,7 +10,7 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 // pattern.
 func Line (
 	destination canvas.Canvas,
-	source Pattern,
+	source      canvas.Canvas,
 	weight int,
 	min image.Point,
 	max image.Point,

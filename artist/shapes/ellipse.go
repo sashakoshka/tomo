@@ -1,14 +1,15 @@
-package artist
+package shapes
 
 import "math"
 import "image"
 import "image/color"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // FillEllipse draws a filled ellipse with the specified pattern.
 func FillEllipse (
 	destination canvas.Canvas,
-	source Pattern,
+	source artist.Pattern,
 	bounds image.Rectangle,
 ) (
 	updatedRegion image.Rectangle,
@@ -37,7 +38,7 @@ func FillEllipse (
 // and pattern.
 func StrokeEllipse (
 	destination canvas.Canvas,
-	source Pattern,
+	source artist.Pattern,
 	weight int,
 	bounds image.Rectangle,
 ) {
@@ -130,7 +131,7 @@ func StrokeEllipse (
 type ellipsePlottingContext struct {
 	data []color.RGBA
 	stride int
-	source Pattern
+	source artist.Pattern
 	width, height int
 	weight int
 	bounds image.Rectangle
