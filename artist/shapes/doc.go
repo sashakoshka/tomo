@@ -1,6 +1,6 @@
 // Package shapes provides some basic shape drawing routines.
 //
-// A word about patterns:
+// A word about using patterns with shape routines:
 //
 // Most drawing routines have a version that samples from other canvases, and a
 // version that samples from a solid color. None of these routines can use

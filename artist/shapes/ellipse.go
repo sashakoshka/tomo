@@ -3,19 +3,25 @@ package shapes
 import "math"
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+// import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
-// FillEllipse draws a filled ellipse with the specified pattern.
+// FillEllipse draws the content of one canvas onto another, clipped by an
+// ellipse stretched to the bounds of the source canvas. The offset point
+// defines where the origin point of the source canvas is positioned in relation
+// to the origin point of the destination canvas. To prevent the entire source
+// canvas's bounds from being used, it must be cut with canvas.Cut().
 func FillEllipse (
 	destination canvas.Canvas,
-	source artist.Pattern,
-	bounds image.Rectangle,
+	source      canvas.Canvas,
+	offset      image.Point,
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	bounds = bounds.Canon()
-	data, stride := destination.Buffer()
+	dstData, dstStride := destination.Buffer()
+	srcData, srcStride := source.Buffer()
+	
+	bounds := source.Bounds()
 	realWidth, realHeight := bounds.Dx(), bounds.Dy()
 	bounds = bounds.Intersect(destination.Bounds()).Canon()
 	if bounds.Empty() { return }
@@ -27,35 +33,38 @@ func FillEllipse (
 		xf := (float64(x) + 0.5) / float64(realWidth)  - 0.5
 		yf := (float64(y) + 0.5) / float64(realHeight) - 0.5
 		if math.Sqrt(xf * xf + yf * yf) <= 0.5 {
-			data[x + bounds.Min.X + (y + bounds.Min.Y) * stride] =
-				source.AtWhen(x, y, realWidth, realHeight)
+			dstData[x + offset.X + (y + offset.Y) * dstStride] =
+				srcData[x + y * srcStride]
 		}
 	}}
 	return
 }
 
-// StrokeEllipse draws the outline of an ellipse with the specified line weight
-// and pattern.
+// StrokeRectangle is similar to FillEllipse, but it draws an elliptical inset
+// outline of the source canvas onto the destination canvas. To prevent the
+// entire source canvas's bounds from being used, it must be cut with
+// canvas.Cut().
 func StrokeEllipse (
 	destination canvas.Canvas,
-	source artist.Pattern,
-	weight int,
-	bounds image.Rectangle,
+	source      canvas.Canvas,
+	offset      image.Point,
+	weight      int,
 ) {
 	if weight < 1 { return }
 
-	data, stride := destination.Buffer()
-	bounds = bounds.Canon().Inset(weight - 1)
-	width, height := bounds.Dx(), bounds.Dy()
+	dstData, dstStride := destination.Buffer()
+	srcData, srcStride := source.Buffer()
+	
+	bounds := source.Bounds().Inset(weight - 1)
 
 	context := ellipsePlottingContext {
-		data: data,
-		stride: stride,
-		source: source,
-		width: width,
-		height: height,
-		weight: weight,
-		bounds: bounds,
+		dstData:   dstData,
+		dstStride: dstStride,
+		srcData:   srcData,
+		srcStride: srcStride,
+		weight:    weight,
+		offset:    offset,
+		bounds:    bounds.Intersect(destination.Bounds()),
 	}
 	
 	bounds.Max.X -= 1
@@ -129,18 +138,26 @@ func StrokeEllipse (
 }
 
 type ellipsePlottingContext struct {
-	data []color.RGBA
-	stride int
-	source artist.Pattern
-	width, height int
-	weight int
-	bounds image.Rectangle
+	dstData   []color.RGBA
+	dstStride int
+	srcData   []color.RGBA
+	srcStride int
+	weight    int
+	offset    image.Point
+	bounds    image.Rectangle
 }
 
 func (context ellipsePlottingContext) plot (x, y int) {
-	if (image.Point { x, y }).In(context.bounds) {
-		squareAround (
-			context.data, context.stride, context.source, x, y,
-			context.width, context.height, context.weight)
-	}
+	square :=
+		image.Rect(0, 0, context.weight, context.weight).
+		Sub(image.Pt(context.weight / 2, context.weight / 2)).
+		Add(image.Pt(x, y)).
+		Intersect(context.bounds)
+	
+	for y := square.Min.Y; y < square.Min.Y; y ++ {
+	for x := square.Min.X; x < square.Min.X; x ++ {
+		context.dstData[x + y * context.dstStride] =
+			context.srcData [
+				x + y * context.dstStride]
+	}}
 }

@@ -6,14 +6,14 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // TODO: draw thick lines more efficiently
 
-// Line draws a line from one point to another with the specified weight and
-// pattern.
-func Line (
+// ColorLine draws a line from one point to another with the specified weight
+// and color.
+func ColorLine (
 	destination canvas.Canvas,
-	source      canvas.Canvas,
-	weight int,
-	min image.Point,
-	max image.Point,
+	color       color.RGBA,
+	weight      int,
+	min         image.Point,
+	max         image.Point,
 ) (
 	updatedRegion image.Rectangle,
 ) {
@@ -21,43 +21,49 @@ func Line (
 	updatedRegion = image.Rectangle { Min: min, Max: max }.Canon()
 	updatedRegion.Max.X ++
 	updatedRegion.Max.Y ++
-	width  := updatedRegion.Dx()
-	height := updatedRegion.Dy()
 	
-	if abs(max.Y - min.Y) <
-		abs(max.X - min.X) {
+	data, stride := destination.Buffer()
+	bounds := destination.Bounds()
+	context := linePlottingContext {
+		dstData:   data,
+		dstStride: stride,
+		color:     color,
+		weight:    weight,
+		bounds:    bounds,
+		min:       min,
+		max:       max,
+	}
+	
+	if abs(max.Y - min.Y) < abs(max.X - min.X) {
+		if max.X < min.X { context.swap() }
+		context.lineLow()
 		
-		if max.X < min.X {
-			temp := min
-			min = max
-			max = temp
-		}
-		lineLow(destination, source, weight, min, max, width, height)
 	} else {
-	
-		if max.Y < min.Y {
-			temp := min
-			min = max
-			max = temp
-		}
-		lineHigh(destination, source, weight, min, max, width, height)
+		if max.Y < min.Y { context.swap() }
+		context.lineHigh()
 	}
 	return
 }
 
-func lineLow (
-	destination canvas.Canvas,
-	source Pattern,
-	weight int,
-	min image.Point,
-	max image.Point,
-	width, height int,
-) {
-	data, stride := destination.Buffer()
-	bounds := destination.Bounds()
+type linePlottingContext struct {
+	dstData   []color.RGBA
+	dstStride int
+	color     color.RGBA
+	weight    int
+	bounds    image.Rectangle
+	min       image.Point
+	max       image.Point
+}
 
-	deltaX := max.X - min.X
-	deltaY := max.Y - min.Y
+func (context *linePlottingContext) swap () {
+	temp := context.max
+	context.max = context.min
+	context.min = temp
+}
+
+func (context linePlottingContext) lineLow () {
+	deltaX := context.max.X - context.min.X
+	deltaY := context.max.Y - context.min.Y
 	yi     := 1
 
 	if deltaY < 0 {
@@ -66,34 +72,23 @@ func lineLow (
 	}
 
 	D := (2 * deltaY) - deltaX
-	y := min.Y
+	point := context.min
 
-	for x := min.X; x < max.X; x ++ {
-		if !(image.Point { x, y }).In(bounds) { break }
-		squareAround(data, stride, source, x, y, width, height, weight)
-		// data[x + y * stride] = source.AtWhen(x, y, width, height)
+	for ; point.X < context.max.X; point.X ++ {
+		if !point.In(context.bounds) { break }
+		context.plot(point)
 		if D > 0 {
-			y += yi
 			D += 2 * (deltaY - deltaX)
+			point.Y += yi
 		} else {
 			D += 2 * deltaY
 		}
 	}
 }
 
-func lineHigh (
-	destination canvas.Canvas,
-	source Pattern,
-	weight int,
-	min image.Point,
-	max image.Point,
-	width, height int,
-) {
-	data, stride := destination.Buffer()
-	bounds := destination.Bounds()
-
-	deltaX := max.X - min.X
-	deltaY := max.Y - min.Y
+func (context linePlottingContext) lineHigh () {
+	deltaX := context.max.X - context.min.X
+	deltaY := context.max.Y - context.min.Y
 	xi     := 1
 
 	if deltaX < 0 {
@@ -102,14 +97,13 @@ func lineHigh (
 	}
 
 	D := (2 * deltaX) - deltaY
-	x := min.X
+	point := context.min
 
-	for y := min.Y; y < max.Y; y ++ {
-		if !(image.Point { x, y }).In(bounds) { break }
-		squareAround(data, stride, source, x, y, width, height, weight)
-		// data[x + y * stride] = source.AtWhen(x, y, width, height)
+	for ; point.Y < context.max.Y; point.Y ++ {
+		if !point.In(context.bounds) { break }
+		context.plot(point)
 		if D > 0 {
-			x += xi
+			point.X += xi
 			D += 2 * (deltaX - deltaY)
 		} else {
 			D += 2 * deltaX
@@ -117,27 +111,20 @@ func lineHigh (
 	}
 }
 
-func abs (in int) (out int) {
-	if in < 0 { in *= -1}
-	out = in
-	return
+func abs (n int) int {
+	if n < 0 { n *= -1}
+	return n
 }
 
-// TODO: this method of doing things sucks and can cause a segfault. we should
-// not be doing it this way
-func squareAround (
-	data   []color.RGBA,
-	stride int,
-	source Pattern,
-	x, y, patternWidth, patternHeight, diameter int,
-) {
-	minY := y - diameter + 1
-	minX := x - diameter + 1
-	maxY := y + diameter
-	maxX := x + diameter
-	for y = minY; y < maxY; y ++ {
-	for x = minX; x < maxX; x ++ {
-		data[x + y * stride] =
-			source.AtWhen(x, y, patternWidth, patternHeight)
+func (context linePlottingContext) plot (center image.Point) {
+	square :=
+		image.Rect(0, 0, context.weight, context.weight).
+		Sub(image.Pt(context.weight / 2, context.weight / 2)).
+		Add(center).
+		Intersect(context.bounds)
+
+	for y := square.Min.Y; y < square.Min.Y; y ++ {
+	for x := square.Min.X; x < square.Min.X; x ++ {
+		context.dstData[x + y * context.dstStride] = context.color
 	}}
 }

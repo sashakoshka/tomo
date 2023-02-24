@@ -4,11 +4,10 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
 
-// FillRectangle draws a rectangular subset of one canvas onto the other. The
-// offset point defines where the origin point of the source canvas is
-// positioned in relation to the origin point of the destination canvas. To
-// prevent the entire source canvas from being drawn, it must be cut with
-// canvas.Cut().
+// FillRectangle draws the content of one canvas onto another. The offset point
+// defines where the origin point of the source canvas is positioned in relation
+// to the origin point of the destination canvas. To prevent the entire source
+// canvas from being drawn, it must be cut with canvas.Cut().
 func FillRectangle (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
@@ -49,24 +48,7 @@ func StrokeRectangle (
 		FillRectangle(destination, source, offset)
 		return
 	}
-
-	top :=  image.Rect (
-		bounds.Min.X, bounds.Min.Y,
-		bounds.Max.X, insetBounds.Min.Y)
-	bottom := image.Rect (
-		bounds.Min.X, insetBounds.Max.Y,
-		bounds.Max.X, bounds.Max.Y)
-	left := image.Rect (
-		bounds.Min.X, insetBounds.Min.Y,
-		insetBounds.Min.X, insetBounds.Max.Y)
-	right := image.Rect (
-		insetBounds.Max.X, insetBounds.Min.Y,
-		bounds.Max.X, insetBounds.Max.Y)
-	
-	FillRectangle (destination, canvas.Cut(source, top),    offset)
-	FillRectangle (destination, canvas.Cut(source, bottom), offset)
-	FillRectangle (destination, canvas.Cut(source, left),   offset)
-	FillRectangle (destination, canvas.Cut(source, right),  offset)
+	FillRectangleShatter(destination, source, offset, insetBounds)
 }
 
 // FillRectangleShatter is like FillRectangle, but it does not draw in areas
@@ -75,10 +57,10 @@ func FillRectangleShatter (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
 	offset      image.Point,
-	rocks       []image.Rectangle,
+	rocks       ...image.Rectangle,
 ) {
-	tiles := shatter.Shatter(source.Bounds())
+	tiles := shatter.Shatter(source.Bounds(), rocks...)
 	for _, tile := range tiles {
-		tile
+		FillRectangle(destination, canvas.Cut(source, tile), offset)
 	}
 }
