@@ -4,8 +4,6 @@ import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
-// TODO: draw thick lines more efficiently
-
 // ColorLine draws a line from one point to another with the specified weight
 // and color.
 func ColorLine (

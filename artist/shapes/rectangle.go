@@ -1,8 +1,11 @@
 package shapes
 
 import "image"
+import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
+
+// TODO: return updatedRegion for all routines in this package
 
 // FillRectangle draws the content of one canvas onto another. The offset point
 // defines where the origin point of the source canvas is positioned in relation
@@ -59,8 +62,60 @@ func FillRectangleShatter (
 	offset      image.Point,
 	rocks       ...image.Rectangle,
 ) {
-	tiles := shatter.Shatter(source.Bounds(), rocks...)
+	tiles := shatter.Shatter(source.Bounds().Sub(offset), rocks...)
 	for _, tile := range tiles {
 		FillRectangle(destination, canvas.Cut(source, tile), offset)
 	}
+}
+
+// FillColorRectangle fills a rectangle within the destination canvas with a
+// solid color.
+func FillColorRectangle (
+	destination canvas.Canvas,
+	color       color.RGBA,
+	bounds      image.Rectangle,
+) (
+	updatedRegion image.Rectangle,
+) {
+	dstData, dstStride := destination.Buffer()
+	bounds = bounds.Canon().Intersect(destination.Bounds())
+	if bounds.Empty() { return }
+	
+	updatedRegion = bounds
+	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
+	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
+		dstData[x + y * dstStride] = color
+	}}
+	
+	return
+}
+
+// FillColorRectangleShatter is like FillColorRectangle, but it does not draw in
+// areas specified in "rocks".
+func FillColorRectangleShatter (
+	destination canvas.Canvas,
+	color       color.RGBA,
+	bounds      image.Rectangle,
+	rocks       ...image.Rectangle,
+) {
+	tiles := shatter.Shatter(bounds, rocks...)
+	for _, tile := range tiles {
+		FillColorRectangle(destination, color, tile)
+	}
+}
+
+// StrokeColorRectangle is similar to FillColorRectangle, but it draws an inset
+// outline of the given rectangle instead.
+func StrokeColorRectangle (
+	destination canvas.Canvas,
+	color       color.RGBA,
+	bounds      image.Rectangle,
+	weight      int,
+) {
+	insetBounds := bounds.Inset(weight)
+	if insetBounds.Empty() {
+		FillColorRectangle(destination, color, bounds)
+		return
+	}
+	FillColorRectangleShatter(destination, color, bounds, insetBounds)
 }
