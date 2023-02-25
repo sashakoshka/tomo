@@ -1,43 +1,37 @@
-package artist
+package patterns
 
 import "image"
-import "image/color"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
-// Texture is a struct that allows an image to be converted into a tiling
-// texture pattern.
+// Texture is a pattern that tiles the content of a canvas both horizontally and
+// vertically.
 type Texture struct {
-	data []color.RGBA
-	width, height int
+	canvas.Canvas
 }
 
-// NewTexture converts an image into a texture.
-func NewTexture (source image.Image) (texture Texture) {
-	bounds := source.Bounds()
-	texture.width  = bounds.Dx()
-	texture.height = bounds.Dy()
-	texture.data   = make([]color.RGBA, texture.width * texture.height)
-
-	index := 0
+// Draw tiles the pattern's canvas within the clipping bounds. The minimum
+// points of the pattern's canvas and the destination canvas will be lined up.
+func (pattern Texture) Draw (destination canvas.Canvas, clip image.Rectangle) {
+	bounds := clip.Canon().Intersect(destination.Bounds())
+	if bounds.Empty() { return }
+	
+	dstData, dstStride := destination.Buffer()
+	srcData, srcStride := pattern.Buffer()
+	srcBounds := pattern.Bounds()
+	
 	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
 	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
-		r, g, b, a := source.At(x, y).RGBA()
-		texture.data[index] = color.RGBA {
-			uint8(r >> 8),
-			uint8(g >> 8),
-			uint8(b >> 8),
-			uint8(a >> 8),
-		}
-		index ++
+		dstIndex := x + y * dstStride
+		srcIndex :=
+			wrap(x - bounds.Min.X, srcBounds.Min.X, srcBounds.Max.X) +
+			wrap(x - bounds.Min.Y, srcBounds.Min.Y, srcBounds.Max.Y) * srcStride
+		dstData[dstIndex] = srcData[srcIndex]
 	}}
-	return
 }
 
-// AtWhen returns the color at the specified x and y coordinates, wrapped to the
-// image's width. the width and height are ignored.
-func (texture Texture) AtWhen (x, y, width, height int) (pixel color.RGBA) {
-	x %= texture.width
-	y %= texture.height
-	if x < 0 { x += texture.width  }
-	if y < 0 { y += texture.height }
-	return texture.data[x + y * texture.width]
+func wrap (value, min, max int) int {
+	difference := max - min
+	value = (value - min) % difference
+	if value < 0 { value += difference }
+	return value + min
 }
