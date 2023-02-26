@@ -7,51 +7,44 @@ import "git.tebibyte.media/sashakoshka/tomo/shatter"
 
 // TODO: return updatedRegion for all routines in this package
 
-// FillRectangle draws the content of one canvas onto another. The offset point
-// defines where the origin point of the source canvas is positioned in relation
-// to the origin point of the destination canvas. To prevent the entire source
-// canvas from being drawn, it must be cut with canvas.Cut().
 func FillRectangle (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
-	offset      image.Point,
 ) (
 	updatedRegion image.Rectangle,
 ) {
 	dstData, dstStride := destination.Buffer()
 	srcData, srcStride := source.Buffer()
 
-	sourceBounds :=
-		source.Bounds().Canon().
-		Intersect(destination.Bounds().Sub(offset))
-	if sourceBounds.Empty() { return }
+	offset := source.Bounds().Min.Sub(destination.Bounds().Min)
+	bounds     := source.Bounds().Sub(offset).Intersect(destination.Bounds())
+	if bounds.Empty() { return }
+	updatedRegion = bounds
 	
-	updatedRegion = sourceBounds.Add(offset)
-	for y := sourceBounds.Min.Y; y < sourceBounds.Max.Y; y ++ {
-	for x := sourceBounds.Min.X; x < sourceBounds.Max.X; x ++ {
-		dstData[x + offset.X + (y + offset.Y) * dstStride] =
-			srcData[x + y * srcStride]
+	point := image.Point { }
+	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y ++ {
+	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X ++ {
+		offsetPoint := point.Add(offset)
+		dstIndex := point.X       + point.Y       * dstStride
+		srcIndex := offsetPoint.X + offsetPoint.Y * srcStride
+		dstData[dstIndex] = srcData[srcIndex]
 	}}
 
 	return
 }
 
-// StrokeRectangle is similar to FillRectangle, but it draws an inset outline of
-// the source canvas onto the destination canvas. To prevent the entire source
-// canvas's bounds from being used, it must be cut with canvas.Cut().
 func StrokeRectangle (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
-	offset      image.Point,
 	weight      int,
 ) {
-	bounds := source.Bounds()
+	bounds := destination.Bounds()
 	insetBounds := bounds.Inset(weight)
 	if insetBounds.Empty() {
-		FillRectangle(destination, source, offset)
+		FillRectangle(destination, source)
 		return
 	}
-	FillRectangleShatter(destination, source, offset, insetBounds)
+	FillRectangleShatter(destination, source, insetBounds)
 }
 
 // FillRectangleShatter is like FillRectangle, but it does not draw in areas
@@ -59,12 +52,14 @@ func StrokeRectangle (
 func FillRectangleShatter (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
-	offset      image.Point,
 	rocks       ...image.Rectangle,
 ) {
-	tiles := shatter.Shatter(source.Bounds().Sub(offset), rocks...)
+	tiles  := shatter.Shatter(destination.Bounds(), rocks...)
+	offset := source.Bounds().Min.Sub(destination.Bounds().Min)
 	for _, tile := range tiles {
-		FillRectangle(destination, canvas.Cut(source, tile), offset)
+		FillRectangle (
+			canvas.Cut(destination, tile),
+			canvas.Cut(source, tile.Add(offset)))
 	}
 }
 

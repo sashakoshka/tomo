@@ -5,23 +5,23 @@ import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
-// FillEllipse draws the content of one canvas onto another, clipped by an
-// ellipse stretched to the bounds of the source canvas. The offset point
-// defines where the origin point of the source canvas is positioned in relation
-// to the origin point of the destination canvas. To prevent the entire source
-// canvas's bounds from being used, it must be cut with canvas.Cut().
+// TODO: redo fill ellipse, stroke ellipse, etc. so that it only takes in
+// destination and source, using the bounds of destination as the bounds of the
+// ellipse and the bounds of source as the "clipping rectangle". Line up the Min
+// of both canvases.
+
 func FillEllipse (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
-	offset      image.Point,
 ) (
 	updatedRegion image.Rectangle,
 ) {
 	dstData, dstStride := destination.Buffer()
 	srcData, srcStride := source.Buffer()
 	
-	bounds     := source.Bounds().Intersect(destination.Bounds()).Canon()
-	realBounds := source.Bounds()
+	offset := source.Bounds().Min.Sub(destination.Bounds().Min)
+	bounds     := source.Bounds().Sub(offset).Intersect(destination.Bounds())
+	realBounds := destination.Bounds()
 	if bounds.Empty() { return }
 	updatedRegion = bounds
 
@@ -30,22 +30,17 @@ func FillEllipse (
 	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X ++ {
 		if inEllipse(point, realBounds) {
 			offsetPoint := point.Add(offset)
-			dstIndex := offsetPoint.X + (offsetPoint.Y) * dstStride
-			srcIndex := point.X + point.Y * srcStride
+			dstIndex := point.X       + point.Y       * dstStride
+			srcIndex := offsetPoint.X + offsetPoint.Y * srcStride
 			dstData[dstIndex] = srcData[srcIndex]
 		}
 	}}
 	return
 }
 
-// StrokeEllipse is similar to FillEllipse, but it draws an elliptical inset
-// outline of the source canvas onto the destination canvas. To prevent the
-// entire source canvas's bounds from being used, it must be cut with
-// canvas.Cut().
 func StrokeEllipse (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
-	offset      image.Point,
 	weight      int,
 ) {
 	if weight < 1 { return }
@@ -53,7 +48,10 @@ func StrokeEllipse (
 	dstData, dstStride := destination.Buffer()
 	srcData, srcStride := source.Buffer()
 	
-	bounds := source.Bounds().Inset(weight - 1)
+	bounds := destination.Bounds().Inset(weight - 1)
+	offset := source.Bounds().Min.Sub(destination.Bounds().Min)
+	realBounds := destination.Bounds()
+	if bounds.Empty() { return }
 
 	context := ellipsePlottingContext {
 		plottingContext: plottingContext {
@@ -63,9 +61,9 @@ func StrokeEllipse (
 			srcStride: srcStride,
 			weight:    weight,
 			offset:    offset,
-			bounds:    bounds.Intersect(destination.Bounds()),
+			bounds:    realBounds,
 		},
-		radii:  image.Pt(bounds.Dx() / 2 - 1, bounds.Dy() / 2 - 1),
+		radii:  image.Pt(bounds.Dx() / 2, bounds.Dy() / 2),
 	}
 	context.center = bounds.Min.Add(context.radii)
 	context.plotEllipse()
@@ -205,7 +203,7 @@ func StrokeColorEllipse (
 	if weight < 1 { return }
 
 	dstData, dstStride := destination.Buffer()
-	bounds = bounds.Inset(weight - 1)
+	insetBounds := bounds.Inset(weight - 1)
 
 	context := ellipsePlottingContext {
 		plottingContext: plottingContext {
@@ -215,9 +213,9 @@ func StrokeColorEllipse (
 			weight:    weight,
 			bounds:    bounds.Intersect(destination.Bounds()),
 		},
-		radii:  image.Pt(bounds.Dx() / 2 - 1, bounds.Dy() / 2 - 1),
+		radii: image.Pt(insetBounds.Dx() / 2, insetBounds.Dy() / 2),
 	}
-	context.center = bounds.Min.Add(context.radii)
+	context.center = insetBounds.Min.Add(context.radii)
 	context.plotEllipse()
 	return
 }

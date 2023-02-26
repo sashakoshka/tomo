@@ -11,12 +11,12 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(128, 128)
+	window, _ := tomo.NewWindow(480, 360)
 	window.SetTitle("Draw Test")
 	window.Adopt(testing.NewArtist())
 	window.OnClose(tomo.Stop)
 	window.Show()
 	go func () {
-		http.ListenAndServe("localhost:6060", nil)
+		http.ListenAndServe("localhost:9090", nil)
 	} ()
 }

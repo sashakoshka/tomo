@@ -3,6 +3,7 @@ package patterns
 import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 
 // Uniform is a pattern that draws a solid color.
@@ -15,13 +16,5 @@ func (pattern Uniform) Draw (destination canvas.Canvas, clip image.Rectangle) {
 
 // Uhex creates a new Uniform pattern from an RGBA integer value.
 func Uhex (color uint32) (uniform Uniform) {
-	return Uniform(hex(color))
-}
-
-func hex (color uint32) (c color.RGBA) {
-	c.A = uint8(color)
-	c.B = uint8(color >>  8)
-	c.G = uint8(color >> 16)
-	c.R = uint8(color >> 24)
-	return
+	return Uniform(artist.Hex(color))
 }
