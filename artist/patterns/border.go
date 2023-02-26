@@ -4,11 +4,39 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
+// Border is a pattern that behaves similarly to border-image in CSS. It divides
+// a source canvas into nine sections...
+//
+//                         Inset[1]
+//                         ┌──┴──┐
+//           ┌─┌─────┬─────┬─────┐
+//  Inset[0]─┤ │  0  │  1  │  2  │
+//           └─├─────┼─────┼─────┤
+//             │  3  │  4  │  5  │
+//             ├─────┼─────┼─────┤─┐
+//             │  6  │  7  │  8  │ ├─Inset[2]
+//             └─────┴─────┴─────┘─┘
+//             └──┬──┘
+//             Inset[3]
+//
+// ... Where the bounds of section 4 are defined as the application of the
+// pattern's inset to the canvas's bounds. The bounds of the other eight
+// sections are automatically sized around it.
+//
+// When drawn to a destination canvas, the bounds of sections 1, 3, 4, 5, and 7
+// are expanded or contracted to fit the destination's bounds. All sections
+// are rendered as if they are Texture patterns, meaning these flexible sections
+// will repeat to fill in any empty space.
+//
+// This pattern can be used to make a static image texture into something that
+// responds well to being resized.
 type Border struct {
 	canvas.Canvas
 	artist.Inset
 }
 
+// Draw draws the border pattern onto the destination canvas within the clipping
+// bounds.
 func (pattern Border) Draw (destination canvas.Canvas, clip image.Rectangle) {
 	bounds := clip.Canon().Intersect(destination.Bounds())
 	if bounds.Empty() { return }
