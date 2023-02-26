@@ -5,6 +5,7 @@ import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
+import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 
 // Default is the default theme.
 type Default struct { }
@@ -38,204 +39,37 @@ func (Default) Pattern (
 ) artist.Pattern {
 	switch pattern {
 	case PatternAccent:
-		return accentPattern
+	return patterns.Uhex(0xFF8800FF)
 	case PatternBackground:
-		return backgroundPattern
+	return patterns.Uhex(0x000000FF)
 	case PatternForeground:
-		if state.Disabled || c == C("basic", "spacer") {
-			return weakForegroundPattern
-		} else {
-			return foregroundPattern
-		}
-	case PatternDead:
-		return deadPattern
-	case PatternRaised:
-		if c == C("basic", "listEntry") {
-			if state.Focused {
-				if state.On {
-					return focusedOnListEntryPattern
-				} else {
-					return focusedListEntryPattern
-				}
-			} else {
-				if state.On {
-					return onListEntryPattern
-				} else {
-					return listEntryPattern
-				}
-			}
-		} else {
-			if state.Focused {
-				return selectedRaisedPattern
-			} else {
-				return raisedPattern
-			}
-		}
-	case PatternSunken:
-		if c == C("basic", "list") {
-			if state.Focused {
-				return focusedListPattern
-			} else {
-				return listPattern
-			}
-		} else if c == C("basic", "textBox") {
-			if state.Disabled {
-				return disabledInputPattern
-			} else {
-				if state.Focused {
-					return selectedInputPattern
-				} else {
-					return inputPattern
-				}
-			}
-		} else {
-			if state.Focused {
-				return focusedSunkenPattern
-			} else {
-				return sunkenPattern
-			}
-		}
-	case PatternPinboard:
-		if state.Focused {
-			return focusedTexturedSunkenPattern
-		} else {
-			return texturedSunkenPattern
-		}
-	case PatternButton:
-		if state.Disabled {
-			return disabledButtonPattern
-		} else {
-			if c == C("fun", "sharpKey") {
-				if state.Pressed {
-					return pressedDarkButtonPattern
-				} else {
-					return darkButtonPattern
-				}
-			} else if c == C("fun", "flatKey") {
-				if state.Pressed {
-					return pressedButtonPattern
-				} else {
-					return buttonPattern
-				}	
-			} else {
-				if state.Pressed || state.On && c == C("basic", "checkbox") {
-					if state.Focused {
-						return pressedSelectedButtonPattern
-					} else {
-						return pressedButtonPattern
-					}
-				} else {
-					if state.Focused {
-						return selectedButtonPattern
-					} else {
-						return buttonPattern
-					}
-				}
-			}
-		}
-	case PatternInput:
-		if state.Disabled {
-			return disabledInputPattern
-		} else {
-			if state.Focused {
-				return selectedInputPattern
-			} else {
-				return inputPattern
-			}
-		}
-	case PatternGutter:
-		if c == C("basic", "sliderVertical") || c == C("basic", "sliderHorizontal") {
-			if state.Disabled {
-				return disabledThinScrollGutterPattern
-			} else {
-				return thinScrollGutterPattern
-			}
-		} else {
-			if state.Disabled {
-				return disabledScrollGutterPattern
-			} else {
-				return scrollGutterPattern
-			}
-		}
-	case PatternHandle:
-		if state.Disabled {
-			return disabledScrollBarPattern
-		} else {
-			if state.Focused {
-				if state.Pressed {
-					return pressedSelectedScrollBarPattern
-				} else {
-					return selectedScrollBarPattern
-				}
-			} else {
-				if state.Pressed {
-					return pressedScrollBarPattern
-				} else {
-					return scrollBarPattern
-				}
-			}
-		}
-	default:
-		return uhex(0)
+	return patterns.Uhex(0xFFFFFFFF)
+	// case PatternDead:
+	// case PatternRaised:
+	// case PatternSunken:
+	// case PatternPinboard:
+	// case PatternButton:
+	// case PatternInput:
+	// case PatternGutter:
+	// case PatternHandle:
+	default: return patterns.Uhex(0x888888FF)
 	}
 }
 
-// Inset returns the default inset value for the given pattern.
-func (Default) Inset (pattern Pattern, c Case) Inset {
-	switch pattern {
-	case PatternRaised:
-		if c == C("basic", "listEntry") {
-			return Inset { 4, 6, 4, 6 }
-		} else {
-			return Inset { 2, 2, 2, 2 }
-		}
-		
-	case PatternSunken:
-		if c == C("basic", "list") {
-			return Inset { 2, 1, 2, 1 }
-		} else if c == C("basic", "progressBar") {
-			return Inset { 2, 1, 1, 2 }
-		} else {
-			return Inset { 2, 2, 2, 2 }
-		}
+// Padding returns the default padding value for the given pattern.
+func (Default) Padding (pattern Pattern, c Case) artist.Inset {
+	return artist.Inset { 4, 4, 4, 4}
+}
 
-	case PatternPinboard:
-		return Inset { 2, 2, 2, 2 }
-	
-	case PatternInput, PatternButton, PatternHandle:
-		return Inset { 2, 2, 2, 2}
-
-	default: return Inset { }
-	}
+// Margin returns the default margin value for the given pattern.
+func (Default) Margin (id Pattern, c Case) image.Point {
+	return image.Pt(4, 4)
 }
 
 // Hints returns rendering optimization hints for a particular pattern.
 // These are optional, but following them may result in improved
 // performance.
 func (Default) Hints (pattern Pattern, c Case) (hints Hints) {
-	switch pattern {
-	case PatternRaised:
-		if c == C("basic", "listEntry") {
-			hints.StaticInset = Inset { 0, 1, 0, 1 }
-		} else {
-			hints.StaticInset = Inset { 3, 3, 3, 3 }
-		}
-		
-	case PatternSunken:
-		if c == C("basic", "list") {
-			hints.StaticInset = Inset { 2, 1, 2, 1 }
-		} else {
-			hints.StaticInset = Inset { 3, 3, 3, 3 }
-		}
-		
-	case
-		PatternPinboard,
-		PatternInput,
-		PatternButton,
-		PatternHandle:
-		
-		hints.StaticInset = Inset { 3, 3, 3, 3 }
-	}
 	return
 }
 

@@ -12,3 +12,16 @@ type Uniform color.RGBA
 func (pattern Uniform) Draw (destination canvas.Canvas, clip image.Rectangle) {
 	shapes.FillColorRectangle(destination, color.RGBA(pattern), clip)
 }
+
+// Uhex creates a new Uniform pattern from an RGBA integer value.
+func Uhex (color uint32) (uniform Uniform) {
+	return Uniform(hex(color))
+}
+
+func hex (color uint32) (c color.RGBA) {
+	c.A = uint8(color)
+	c.B = uint8(color >>  8)
+	c.G = uint8(color >> 16)
+	c.R = uint8(color >> 24)
+	return
+}
