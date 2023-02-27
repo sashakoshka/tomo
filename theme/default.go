@@ -1,6 +1,7 @@
 package theme
 
 import "image"
+import "image/color"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
@@ -32,18 +33,9 @@ func (Default) Icon (string, IconSize, Case) canvas.Image {
 
 // Pattern returns a pattern from the default theme corresponding to the given
 // pattern ID.
-func (Default) Pattern (
-	pattern Pattern,
-	state PatternState,
-	c Case,
-) artist.Pattern {
-	switch pattern {
-	case PatternAccent:
-	return patterns.Uhex(0xFF8800FF)
-	case PatternBackground:
-	return patterns.Uhex(0x000000FF)
-	case PatternForeground:
-	return patterns.Uhex(0xFFFFFFFF)
+func (Default) Pattern (id Pattern, state State, c Case) artist.Pattern {
+	switch id {
+	case PatternBackground: return patterns.Uhex(0x000000FF)
 	// case PatternDead:
 	// case PatternRaised:
 	// case PatternSunken:
@@ -53,6 +45,14 @@ func (Default) Pattern (
 	// case PatternGutter:
 	// case PatternHandle:
 	default: return patterns.Uhex(0x888888FF)
+	}
+}
+
+func (Default) Color (id Color, state State, c Case) color.RGBA {
+	switch id {
+	case ColorAccent:     return artist.Hex(0xFF8800FF)
+	case ColorForeground: return artist.Hex(0xFFFFFFFF)
+	default:              return artist.Hex(0x888888FF)
 	}
 }
 

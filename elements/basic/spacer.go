@@ -2,7 +2,7 @@ package basicElements
 
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // Spacer can be used to put space between two elements..
@@ -61,14 +61,14 @@ func (element *Spacer) draw () {
 	bounds := element.Bounds()
 
 	if element.line {
-		pattern := element.theme.Pattern (
-			theme.PatternForeground,
-			theme.PatternState { })
-		artist.FillRectangle(element.core, pattern, bounds)
+		color := element.theme.Color (
+			theme.ColorForeground,
+			theme.State { })
+		shapes.FillColorRectangle(element.core, color, bounds)
 	} else {
 		pattern := element.theme.Pattern (
 			theme.PatternBackground,
-			theme.PatternState { })
-		artist.FillRectangle(element.core, pattern, bounds)
+			theme.State { })
+		pattern.Draw(element.core, bounds)
 	}
 }

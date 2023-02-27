@@ -34,6 +34,21 @@ func NewBasicCanvas (width, height int) (canvas BasicCanvas) {
 	return
 }
 
+// FromImage creates a new BasicCanvas from an image.Image.
+func FromImage (img image.Image) (canvas BasicCanvas) {
+	bounds := img.Bounds()
+	canvas = NewBasicCanvas(bounds.Dx(), bounds.Dy())
+	point := image.Point { }
+	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y ++ {
+	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X ++ {
+		canvasPoint := point.Sub(bounds.Min)
+		canvas.Set (
+			canvasPoint.X, canvasPoint.Y,
+			img.At(point.X, point.Y))
+	}}
+	return
+}
+
 // you know what it do
 func (canvas BasicCanvas) Bounds () (bounds image.Rectangle) {
 	return canvas.rect

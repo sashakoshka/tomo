@@ -218,10 +218,11 @@ func (element *Piano) SetConfig (new config.Config) {
 }
 
 func (element *Piano) updateMinimumSize () {
-	inset := element.theme.Inset(theme.PatternSunken)
+	padding := element.theme.Padding(theme.PatternSunken)
 	element.core.SetMinimumSize (
-		pianoKeyWidth * 7 * element.countOctaves() + inset[1] + inset[3],
-		64 + inset[0] + inset[2])
+		pianoKeyWidth * 7 * element.countOctaves() +
+		padding[1] + padding[3],
+		64 + padding[0] + padding[2])
 }
 
 func (element *Piano) countOctaves () int {
@@ -247,8 +248,8 @@ func (element *Piano) recalculate () {
 	element.flatKeys  = make([]pianoKey, element.countFlats())
 	element.sharpKeys = make([]pianoKey, element.countSharps())
 
-	inset  := element.theme.Inset(theme.PatternPinboard)
-	bounds := inset.Apply(element.Bounds())
+	padding  := element.theme.Padding(theme.PatternPinboard)
+	bounds := padding.Apply(element.Bounds())
 
 	dot := bounds.Min
 	note := element.low.Note(0)
@@ -280,7 +281,7 @@ func (element *Piano) recalculate () {
 }
 
 func (element *Piano) draw () {
-	state := theme.PatternState {
+	state := theme.State {
 		Focused: element.Focused(),
 		Disabled: !element.Enabled(),
 	}
@@ -303,28 +304,28 @@ func (element *Piano) draw () {
 	}
 	
 	pattern := element.theme.Pattern(theme.PatternPinboard, state)
-	artist.FillRectangleShatter (
-		element.core, pattern, element.Bounds(), element.contentBounds)
+	artist.DrawShatter (
+		element.core, pattern, element.contentBounds)
 }
 
 func (element *Piano) drawFlat (
 	bounds image.Rectangle,
 	pressed bool,
-	state theme.PatternState,
+	state theme.State,
 ) {
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
 		theme.PatternButton, state, theme.C("fun", "flatKey"))
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.DrawBounds(element.core, pattern, bounds)
 }
 
 func (element *Piano) drawSharp (
 	bounds image.Rectangle,
 	pressed bool,
-	state theme.PatternState,
+	state theme.State,
 ) {
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
 		theme.PatternButton, state, theme.C("fun", "sharpKey"))
-	artist.FillRectangle(element.core, pattern, bounds)
+	artist.DrawBounds(element.core, pattern, bounds)
 }

@@ -18,17 +18,9 @@ const (
 // This allows custom elements to follow themes, even those that do not
 // explicitly support them.
 type Pattern int; const (
-	// PatternAccent is the accent color of the theme. It is safe to assume
-	// that this is, by default, a solid color.
-	PatternAccent Pattern = iota
-
-	// PatternBackground is the background color of the theme. It is safe to
-	// assume that this is, by default, a solid color.
-	PatternBackground
-
-	// PatternForeground is the foreground text color of the theme. It is
-	// safe to assume that this is, by default, a solid color.
-	PatternForeground
+	// PatternBackground is the window background of the theme. It appears
+	// in things like containers and behind text.
+	PatternBackground Pattern = iota
 
 	// PatternDead is a pattern that is displayed on a "dead area" where no
 	// controls exist, but there still must be some indication of visual
@@ -57,6 +49,14 @@ type Pattern int; const (
 	PatternHandle
 )
 
+type Color int; const (
+	// ColorAccent is the accent color of the theme.
+	ColorAccent Color = iota
+
+	// ColorForeground is the text/icon color of the theme.
+	ColorForeground
+)
+
 // Hints specifies rendering hints for a particular pattern. Elements can take
 // these into account in order to gain extra performance.
 type Hints struct {
@@ -80,7 +80,11 @@ type Theme interface {
 
 	// Pattern returns an appropriate pattern given a pattern name, case,
 	// and state.
-	Pattern (Pattern, PatternState, Case) artist.Pattern
+	Pattern (Pattern, State, Case) artist.Pattern
+
+	// Color returns an appropriate pattern given a color name, case, and
+	// state.
+	Color (Color, State, Case) color.RGBA
 
 	// Padding returns how much space should be between the bounds of a
 	// pattern whatever an element draws inside of it.

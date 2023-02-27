@@ -221,8 +221,8 @@ func (element *List) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *List) scrollViewportHeight () (height int) {
-	inset := element.theme.Inset(theme.PatternSunken)
-	return element.Bounds().Dy() - inset[0] - inset[2]
+	padding := element.theme.Padding(theme.PatternSunken)
+	return element.Bounds().Dy() - padding[0] - padding[2]
 }
 
 func (element *List) maxScrollHeight () (height int) {
@@ -355,8 +355,8 @@ func (element *List) Select (index int) {
 }
 
 func (element *List) selectUnderMouse (x, y int) (updated bool) {
-	inset := element.theme.Inset(theme.PatternSunken)
-	bounds := inset.Apply(element.Bounds())
+	padding := element.theme.Padding(theme.PatternSunken)
+	bounds := padding.Apply(element.Bounds())
 	mousePoint := image.Pt(x, y)
 	dot := image.Pt (
 		bounds.Min.X,
@@ -398,8 +398,8 @@ func (element *List) changeSelectionBy (delta int) (updated bool) {
 
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
 	bounds := element.Bounds()
-	inset := element.theme.Inset(theme.PatternSunken)
-	entry.Resize(inset.Apply(bounds).Dx())
+	padding := element.theme.Padding(theme.PatternSunken)
+	entry.Resize(padding.Apply(bounds).Dx())
 	return entry
 }
 
@@ -425,17 +425,17 @@ func (element *List) updateMinimumSize () {
 		minimumHeight = element.contentHeight
 	}
 
-	inset := element.theme.Inset(theme.PatternSunken)
-	minimumHeight += inset[0] + inset[2]
+	padding := element.theme.Padding(theme.PatternSunken)
+	minimumHeight += padding[0] + padding[2]
 
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
 }
 
 func (element *List) draw () {
 	bounds      := element.Bounds()
-	inset       := element.theme.Inset(theme.PatternSunken)
-	innerBounds := inset.Apply(bounds)
-	state := theme.PatternState {
+	padding     := element.theme.Padding(theme.PatternSunken)
+	innerBounds := padding.Apply(bounds)
+	state := theme.State {
 		Disabled: !element.Enabled(),
 		Focused: element.Focused(),
 	}
@@ -460,6 +460,6 @@ func (element *List) draw () {
 		innerBounds.Dx(), element.contentHeight,
 	).Add(innerBounds.Min).Intersect(innerBounds)
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
-	artist.FillRectangleShatter (
+	artist.DrawShatter (
 		element.core, pattern, bounds, covered)
 }

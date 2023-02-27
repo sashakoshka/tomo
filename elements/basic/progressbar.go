@@ -3,7 +3,7 @@ package basicElements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // ProgressBar displays a visual indication of how far along a task is.
@@ -52,9 +52,10 @@ func (element *ProgressBar) SetConfig (new config.Config) {
 }
 
 func (element (ProgressBar)) updateMinimumSize() {
+	padding := element.theme.Padding(theme.PatternSunken)
 	element.core.SetMinimumSize (
-		element.config.Padding() * 2,
-		element.config.Padding() * 2)
+		padding[3] + padding[1],
+		padding[0] + padding[2])
 }
 
 func (element *ProgressBar) redo () {
@@ -67,18 +68,15 @@ func (element *ProgressBar) redo () {
 func (element *ProgressBar) draw () {
 	bounds := element.Bounds()
 
-	pattern := element.theme.Pattern (
-		theme.PatternSunken,
-		theme.PatternState { })
-	inset := element.theme.Inset(theme.PatternSunken)
-	artist.FillRectangle(element.core, pattern, bounds)
-	bounds = inset.Apply(bounds)
+	pattern := element.theme.Pattern(theme.PatternSunken, theme.State { })
+	padding := element.theme.Padding(theme.PatternSunken)
+	pattern.Draw(element.core, bounds)
+	bounds = padding.Apply(bounds)
 	meterBounds := image.Rect (
 		bounds.Min.X, bounds.Min.Y,
 		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
 		bounds.Max.Y)
-	accent := element.theme.Pattern (
-		theme.PatternAccent,
-		theme.PatternState { })
-	artist.FillRectangle(element.core, accent, meterBounds)
+	// TODO: maybe dont use the accent color here...
+	accent := element.theme.Color(theme.ColorAccent, theme.State { })
+	shapes.FillColorRectangle(element.core, accent, meterBounds)
 }

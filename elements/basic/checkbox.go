@@ -4,7 +4,6 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -146,8 +145,9 @@ func (element *Checkbox) updateMinimumSize () {
 	if element.text == "" {
 		element.core.SetMinimumSize(textBounds.Dy(), textBounds.Dy())
 	} else {
+		margin := element.theme.Margin(theme.PatternBackground)
 		element.core.SetMinimumSize (
-			textBounds.Dy() + element.config.Padding() + textBounds.Dx(),
+			textBounds.Dy() + margin.X + textBounds.Dx(),
 			textBounds.Dy())
 	}
 }
@@ -163,7 +163,7 @@ func (element *Checkbox) draw () {
 	bounds := element.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 
-	state := theme.PatternState {
+	state := theme.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
@@ -172,19 +172,20 @@ func (element *Checkbox) draw () {
 
 	backgroundPattern := element.theme.Pattern (
 		theme.PatternBackground, state)
-	artist.FillRectangle(element.core, backgroundPattern, bounds)
+	backgroundPattern.Draw(element.core, bounds)
 
 	pattern := element.theme.Pattern(theme.PatternButton, state)
-	artist.FillRectangle(element.core, pattern, boxBounds)
+	pattern.Draw(element.core, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
+	margin := element.theme.Margin(theme.PatternBackground)
 	offset := bounds.Min.Add(image.Point {
-		X: bounds.Dy() + element.config.Padding(),
+		X: bounds.Dy() + margin.X,
 	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := element.theme.Pattern(theme.PatternForeground, state)
+	foreground := element.theme.Color(theme.ColorForeground, state)
 	element.drawer.Draw(element.core, foreground, offset)
 }

@@ -48,3 +48,13 @@ func (inset Inset) Inverse () (prime Inset) {
 		inset[3] * -1,
 	}
 }
+
+// Horizontal returns the sum of SideRight and SideLeft.
+func (inset Inset) Horizontal () int {
+	return inset[SideRight] + inset[SideLeft]
+}
+
+// Vertical returns the sum of SideTop and SideBottom.
+func (inset Inset) Vertical () int {
+	return inset[SideTop] + inset[SideBottom]
+}

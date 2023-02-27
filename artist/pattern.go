@@ -2,6 +2,7 @@ package artist
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/shatter"
 
 // Pattern is capable of drawing to a canvas within the bounds of a given
 // clipping rectangle.
@@ -20,24 +21,38 @@ func Draw (
 	destination canvas.Canvas,
 	source      Pattern,
 	clips       ...image.Rectangle,
+) (
+	updatedRegion image.Rectangle,
 ) {
 	for _, clip := range clips {
 		source.Draw(destination, clip)
+		updatedRegion = updatedRegion.Union(clip)
 	}
+	return
 }
 
-// DrawBounds is like Draw, but lets you specify an overall bounding rectangle
-// for the pattern. The destination is cut to this rectangle.
+// DrawBounds lets you specify an overall bounding rectangle for drawing a
+// pattern. The destination is cut to this rectangle.
 func DrawBounds (
 	destination canvas.Canvas,
-	bounds      image.Rectangle,
 	source      Pattern,
-	clips       ...image.Rectangle,
+	bounds      image.Rectangle,
+) (
+	updatedRegion image.Rectangle,
 ) {
-	cut := canvas.Cut(destination, bounds)
-	for _, clip := range clips {
-		source.Draw(cut, clip)
-	}
+	return Draw(canvas.Cut(destination, bounds), source, bounds)
+}
+
+// DrawShatter is like an inverse of Draw, drawing nothing in the areas
+// specified in "rocks".
+func DrawShatter (
+	destination canvas.Canvas,
+	source      Pattern,
+	rocks       ...image.Rectangle,
+) (
+	updatedRegion image.Rectangle,
+) {
+	return Draw(destination, source, shatter.Shatter(destination.Bounds(), rocks...)...)
 }
 
 // AllocateSample returns a new canvas containing the result of a pattern. The

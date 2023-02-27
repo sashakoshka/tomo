@@ -9,6 +9,7 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
+import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // TextBox is a single-line text input.
@@ -92,9 +93,10 @@ func (element *TextBox) HandleMouseMove (x, y int) {
 }
 
 func (element *TextBox) atPosition (position image.Point) int {
+	padding := element.theme.Padding(theme.PatternSunken)
 	offset := element.Bounds().Min.Add (image.Pt (
-		element.config.Padding() - element.scroll,
-		element.config.Padding()))
+		padding[artist.SideLeft] - element.scroll,
+		padding[artist.SideTop]))
 	textBoundsMin := element.valueDrawer.LayoutBounds().Min
 	return element.valueDrawer.AtPosition (
 		fixedutil.Pt(position.Sub(offset).Add(textBoundsMin)))
@@ -251,7 +253,8 @@ func (element *TextBox) ScrollViewportBounds () (bounds image.Rectangle) {
 }
 
 func (element *TextBox) scrollViewportWidth () (width int) {
-	return element.Bounds().Inset(element.config.Padding()).Dx()
+	padding := element.theme.Padding(theme.PatternSunken)
+	return padding.Apply(element.Bounds()).Dx()
 }
 
 // ScrollTo scrolls the viewport to the specified point relative to
@@ -290,7 +293,8 @@ func (element *TextBox) runOnChange () {
 func (element *TextBox) scrollToCursor () {
 	if !element.core.HasImage() { return }
 
-	bounds := element.Bounds().Inset(element.config.Padding())
+	padding := element.theme.Padding(theme.PatternSunken)
+	bounds  := padding.Apply(element.Bounds())
 	bounds = bounds.Sub(bounds.Min)
 	bounds.Max.X -= element.valueDrawer.Em().Round()
 	cursorPosition := fixedutil.RoundPt (
@@ -329,11 +333,11 @@ func (element *TextBox) SetConfig (new config.Config) {
 
 func (element *TextBox) updateMinimumSize () {
 	textBounds := element.placeholderDrawer.LayoutBounds()
+	padding := element.theme.Padding(theme.PatternSunken)
 	element.core.SetMinimumSize (
-		textBounds.Dx() +
-		element.config.Padding() * 2,
-		element.placeholderDrawer.LineHeight().Round() +
-		element.config.Padding() * 2)
+		padding.Horizontal() + textBounds.Dx(),
+		padding.Vertical()   +
+		element.placeholderDrawer.LineHeight().Round())
 }
 
 func (element *TextBox) redo () {
@@ -346,30 +350,29 @@ func (element *TextBox) redo () {
 func (element *TextBox) draw () {
 	bounds := element.Bounds()
 
-	state := theme.PatternState {
+	state := theme.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 	}
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
-	inset   := element.theme.Inset(theme.PatternSunken)
-	innerCanvas := canvas.Cut(element.core, inset.Apply(bounds))
-	artist.FillRectangle(element.core, pattern, bounds)
+	padding := element.theme.Padding(theme.PatternSunken)
+	innerCanvas := canvas.Cut(element.core, padding.Apply(bounds))
+	pattern.Draw(element.core, bounds)
 	
 	offset := bounds.Min.Add (image.Point {
-		X: element.config.Padding() - element.scroll,
-		Y: element.config.Padding(),
+		X: -element.scroll,
+		Y: 0,
 	})
 
 	if element.Focused() && !element.dot.Empty() {
 		// draw selection bounds
-		accent := element.theme.Pattern (
-			theme.PatternAccent,  state)
+		accent := element.theme.Color(theme.ColorAccent,  state)
 		canon := element.dot.Canon()
 		foff  := fixedutil.Pt(offset)
 		start := element.valueDrawer.PositionAt(canon.Start).Add(foff)
 		end   := element.valueDrawer.PositionAt(canon.End).Add(foff)
 		end.Y += element.valueDrawer.LineHeight()
-		artist.FillRectangle (
+		shapes.FillColorRectangle (
 			innerCanvas,
 			accent,
 			image.Rectangle {
@@ -381,9 +384,9 @@ func (element *TextBox) draw () {
 	if len(element.text) == 0 {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
-		foreground := element.theme.Pattern (
-			theme.PatternForeground,
-			theme.PatternState { Disabled: true })
+		foreground := element.theme.Color (
+			theme.ColorForeground,
+			theme.State { Disabled: true })
 		element.placeholderDrawer.Draw (
 			innerCanvas,
 			foreground,
@@ -391,8 +394,7 @@ func (element *TextBox) draw () {
 	} else {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
-		foreground := element.theme.Pattern (
-			theme.PatternForeground,  state)
+		foreground := element.theme.Color(theme.ColorForeground, state)
 		element.valueDrawer.Draw (
 			innerCanvas,
 			foreground,
@@ -401,11 +403,10 @@ func (element *TextBox) draw () {
 	
 	if element.Focused() && element.dot.Empty() {
 		// draw cursor
-		foreground := element.theme.Pattern (
-			theme.PatternForeground,  state)
+		foreground := element.theme.Color(theme.ColorForeground, state)
 		cursorPosition := fixedutil.RoundPt (
 			element.valueDrawer.PositionAt(element.dot.End))
-		artist.Line (
+		shapes.ColorLine (
 			innerCanvas,
 			foreground, 1,
 			cursorPosition.Add(offset),

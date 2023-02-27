@@ -49,11 +49,11 @@ func (element *Mouse) redo () {
 
 func (element *Mouse) draw () {
 	bounds := element.Bounds()
-	pattern := element.theme.Pattern (
-		theme.PatternAccent,
-		theme.PatternState { },
+	accent := element.theme.Color (
+		theme.ColorAccent,
+		theme.State { },
 		element.c)
-	pattern.Draw(element.core, bounds)
+	shapes.FillColorRectangle(element.core, accent, bounds)
 	shapes.StrokeColorRectangle (
 		element.core,
 		artist.Hex(0x000000FF),

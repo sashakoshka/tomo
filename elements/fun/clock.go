@@ -3,9 +3,10 @@ package fun
 import "time"
 import "math"
 import "image"
+import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // AnalogClock can display the time of day in an analog format.
@@ -58,15 +59,15 @@ func (element *AnalogClock) redo () {
 func (element *AnalogClock) draw () {
 	bounds := element.Bounds()
 
-	state := theme.PatternState { }
+	state   := theme.State { }
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
-	inset   := element.theme.Inset(theme.PatternSunken)
-	artist.FillRectangle(element.core, pattern, bounds)
+	padding := element.theme.Padding(theme.PatternSunken)
+	pattern.Draw(element.core, bounds)
 
-	bounds = inset.Apply(bounds)
+	bounds = padding.Apply(bounds)
 
-	foreground := element.theme.Pattern(theme.PatternForeground, state)
-	accent     := element.theme.Pattern(theme.PatternAccent, state)
+	foreground := element.theme.Color(theme.ColorForeground, state)
+	accent     := element.theme.Color(theme.ColorAccent, state)
 
 	for hour := 0; hour < 12; hour ++ {
 		element.radialLine (
@@ -93,7 +94,7 @@ func (element *AnalogClock) FlexibleHeightFor (width int) (height int) {
 func (element *AnalogClock) OnFlexibleHeightChange (func ()) { }
 
 func (element *AnalogClock) radialLine (
-	source artist.Pattern,
+	source color.RGBA,
 	inner  float64,
 	outer  float64,
 	radian float64,
@@ -107,5 +108,5 @@ func (element *AnalogClock) radialLine (
 	max := element.Bounds().Min.Add(image.Pt (
 		int(math.Cos(radian) * outer * width + width),
 		int(math.Sin(radian) * outer * height + height)))
-	artist.Line(element.core, source, 1, min, max)
+	shapes.ColorLine(element.core, source, 1, min, max)
 }

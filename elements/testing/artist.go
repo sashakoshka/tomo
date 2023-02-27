@@ -80,7 +80,7 @@ func (element *Artist) draw () {
 	tiles := shatter.Shatter(c41.Bounds(), rocks...)
 	for index, tile := range tiles {
 		artist.DrawBounds (
-			element.core, tile,
+			element.core,
 			[]artist.Pattern {
 				patterns.Uhex(0xFF0000FF),
 				patterns.Uhex(0x00FF00FF),

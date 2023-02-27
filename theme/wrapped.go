@@ -1,6 +1,7 @@
 package theme
 
 import "image"
+import "image/color"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
@@ -26,9 +27,15 @@ func (wrapped Wrapped) Icon (name string, size IconSize) canvas.Image {
 }
 
 // Pattern returns an appropriate pattern given a pattern name and state.
-func (wrapped Wrapped) Pattern (id Pattern, state PatternState) artist.Pattern {
+func (wrapped Wrapped) Pattern (id Pattern, state State) artist.Pattern {
 	real := wrapped.ensure()
 	return real.Pattern(id, state, wrapped.Case)
+}
+
+// Color returns an appropriate color given a color name and state.
+func (wrapped Wrapped) Color (id Color, state State) color.RGBA {
+	real := wrapped.ensure()
+	return real.Color(id, state, wrapped.Case)
 }
 
 // Padding returns how much space should be between the bounds of a
