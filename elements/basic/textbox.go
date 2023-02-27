@@ -93,7 +93,7 @@ func (element *TextBox) HandleMouseMove (x, y int) {
 }
 
 func (element *TextBox) atPosition (position image.Point) int {
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(theme.PatternInput)
 	offset := element.Bounds().Min.Add (image.Pt (
 		padding[artist.SideLeft] - element.scroll,
 		padding[artist.SideTop]))
@@ -253,7 +253,7 @@ func (element *TextBox) ScrollViewportBounds () (bounds image.Rectangle) {
 }
 
 func (element *TextBox) scrollViewportWidth () (width int) {
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(theme.PatternInput)
 	return padding.Apply(element.Bounds()).Dx()
 }
 
@@ -293,7 +293,7 @@ func (element *TextBox) runOnChange () {
 func (element *TextBox) scrollToCursor () {
 	if !element.core.HasImage() { return }
 
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(theme.PatternInput)
 	bounds  := padding.Apply(element.Bounds())
 	bounds = bounds.Sub(bounds.Min)
 	bounds.Max.X -= element.valueDrawer.Em().Round()
@@ -333,7 +333,7 @@ func (element *TextBox) SetConfig (new config.Config) {
 
 func (element *TextBox) updateMinimumSize () {
 	textBounds := element.placeholderDrawer.LayoutBounds()
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(theme.PatternInput)
 	element.core.SetMinimumSize (
 		padding.Horizontal() + textBounds.Dx(),
 		padding.Vertical()   +
@@ -354,8 +354,8 @@ func (element *TextBox) draw () {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 	}
-	pattern := element.theme.Pattern(theme.PatternSunken, state)
-	padding := element.theme.Padding(theme.PatternSunken)
+	pattern := element.theme.Pattern(theme.PatternInput, state)
+	padding := element.theme.Padding(theme.PatternInput)
 	innerCanvas := canvas.Cut(element.core, padding.Apply(bounds))
 	pattern.Draw(element.core, bounds)
 	

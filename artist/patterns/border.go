@@ -44,9 +44,7 @@ func (pattern Border) Draw (destination canvas.Canvas, clip image.Rectangle) {
 	srcSections := nonasect(pattern.Bounds(), pattern.Inset)
 	srcTextures := [9]Texture { }
 	for index, section := range srcSections {
-		srcTextures[index] = Texture {
-			Canvas: canvas.Cut(pattern, section),
-		}
+		srcTextures[index].Canvas = canvas.Cut(pattern, section)
 	}
 	
 	dstSections := nonasect(destination.Bounds(), pattern.Inset)

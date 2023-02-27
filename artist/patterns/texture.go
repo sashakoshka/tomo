@@ -12,7 +12,8 @@ type Texture struct {
 // Draw tiles the pattern's canvas within the clipping bounds. The minimum
 // points of the pattern's canvas and the destination canvas will be lined up.
 func (pattern Texture) Draw (destination canvas.Canvas, clip image.Rectangle) {
-	bounds := clip.Canon().Intersect(destination.Bounds())
+	realBounds := destination.Bounds()
+	bounds := clip.Canon().Intersect(realBounds)
 	if bounds.Empty() { return }
 	
 	dstData, dstStride := destination.Buffer()
@@ -23,8 +24,8 @@ func (pattern Texture) Draw (destination canvas.Canvas, clip image.Rectangle) {
 	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
 		dstIndex := x + y * dstStride
 		srcIndex :=
-			wrap(x - bounds.Min.X, srcBounds.Min.X, srcBounds.Max.X) +
-			wrap(x - bounds.Min.Y, srcBounds.Min.Y, srcBounds.Max.Y) * srcStride
+			wrap(x - realBounds.Min.X, srcBounds.Min.X, srcBounds.Max.X) +
+			wrap(y - realBounds.Min.Y, srcBounds.Min.Y, srcBounds.Max.Y) * srcStride
 		dstData[dstIndex] = srcData[srcIndex]
 	}}
 }
