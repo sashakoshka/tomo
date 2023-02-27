@@ -117,8 +117,17 @@ func (Default) Color (id Color, state State, c Case) color.RGBA {
 }
 
 // Padding returns the default padding value for the given pattern.
-func (Default) Padding (pattern Pattern, c Case) artist.Inset {
-	return artist.Inset { 8, 8, 8, 8 }
+func (Default) Padding (id Pattern, c Case) artist.Inset {
+	switch id {
+	case PatternSunken:
+		if c == C("basic", "list") {
+			return artist.Inset { 2, 2, 2, 2 }
+		} else {
+			return artist.Inset { 8, 8, 8, 8 }
+		}
+	case PatternGutter:     return artist.Inset { }
+	default:                return artist.Inset { 8, 8, 8, 8 }
+	}
 }
 
 // Margin returns the default margin value for the given pattern.

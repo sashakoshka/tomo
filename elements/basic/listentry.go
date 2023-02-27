@@ -67,7 +67,7 @@ func (entry *ListEntry) Draw (
 		On: on,
 	}
 
-	pattern := entry.theme.Pattern (theme.PatternRaised, state)
+	pattern := entry.theme.Pattern(theme.PatternRaised, state)
 	padding := entry.theme.Padding(theme.PatternRaised)
 	bounds  := entry.Bounds().Add(offset)
 	artist.DrawBounds(destination, pattern, bounds)

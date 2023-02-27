@@ -4,6 +4,7 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -175,7 +176,7 @@ func (element *Checkbox) draw () {
 	backgroundPattern.Draw(element.core, bounds)
 
 	pattern := element.theme.Pattern(theme.PatternButton, state)
-	pattern.Draw(element.core, boxBounds)
+	artist.DrawBounds(element.core, pattern, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	margin := element.theme.Margin(theme.PatternBackground)
