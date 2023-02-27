@@ -461,5 +461,5 @@ func (element *List) draw () {
 	).Add(innerBounds.Min).Intersect(innerBounds)
 	pattern := element.theme.Pattern(theme.PatternSunken, state)
 	artist.DrawShatter (
-		element.core, pattern, bounds, covered)
+		element.core, pattern, covered)
 }

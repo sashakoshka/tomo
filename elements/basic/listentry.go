@@ -76,7 +76,7 @@ func (entry *ListEntry) Draw (
 	return entry.drawer.Draw (
 		destination,
 		foreground,
-		offset.Add(image.Pt(padding[3], padding[0])).
+		offset.Add(image.Pt(padding[artist.SideLeft], padding[artist.SideTop])).
 		Sub(entry.drawer.LayoutBounds().Min))
 }
 

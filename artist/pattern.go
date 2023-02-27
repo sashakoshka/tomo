@@ -52,7 +52,8 @@ func DrawShatter (
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	return Draw(destination, source, shatter.Shatter(destination.Bounds(), rocks...)...)
+	tiles := shatter.Shatter(destination.Bounds(), rocks...)
+	return Draw(destination, source, tiles...)
 }
 
 // AllocateSample returns a new canvas containing the result of a pattern. The
