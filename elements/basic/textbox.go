@@ -360,8 +360,8 @@ func (element *TextBox) draw () {
 	pattern.Draw(element.core, bounds)
 	
 	offset := bounds.Min.Add (image.Point {
-		X: -element.scroll,
-		Y: 0,
+		X: padding[artist.SideLeft] - element.scroll,
+		Y: padding[artist.SideTop],
 	})
 
 	if element.Focused() && !element.dot.Empty() {
