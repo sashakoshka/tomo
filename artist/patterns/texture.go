@@ -19,13 +19,16 @@ func (pattern Texture) Draw (destination canvas.Canvas, clip image.Rectangle) {
 	dstData, dstStride := destination.Buffer()
 	srcData, srcStride := pattern.Buffer()
 	srcBounds := pattern.Bounds()
-	
-	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
-	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
-		dstIndex := x + y * dstStride
+
+	point := image.Point { }
+	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y ++ {
+	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X ++ {
+		srcPoint := point.Sub(realBounds.Min).Add(srcBounds.Min)
+		
+		dstIndex := point.X + point.Y * dstStride
 		srcIndex :=
-			wrap(x - realBounds.Min.X, srcBounds.Min.X, srcBounds.Max.X) +
-			wrap(y - realBounds.Min.Y, srcBounds.Min.Y, srcBounds.Max.Y) * srcStride
+			wrap(srcPoint.X, srcBounds.Min.X, srcBounds.Max.X) +
+			wrap(srcPoint.Y, srcBounds.Min.Y, srcBounds.Max.Y) * srcStride
 		dstData[dstIndex] = srcData[srcIndex]
 	}}
 }

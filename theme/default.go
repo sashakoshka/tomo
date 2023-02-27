@@ -37,19 +37,19 @@ func init () {
 	// PatternDead
 	atlasCol(0, artist.Inset { })
 	// PatternRaised
-	atlasCol(1, artist.Inset { 6, 6, 6, 6 })
+	atlasCol(1, artist.Inset { 6, 6, 6, 6 }) // broken
 	// PatternSunken
 	atlasCol(2, artist.Inset { 4, 4, 4, 4 })
 	// PatternPinboard
 	atlasCol(3, artist.Inset { 2, 2, 2, 2 })
 	// PatternButton
-	atlasCol(4, artist.Inset { 6, 6, 6, 6 })
+	atlasCol(4, artist.Inset { 6, 6, 6, 6 }) // broken
 	// PatternInput
 	atlasCol(5, artist.Inset { 4, 4, 4, 4 })
 	// PatternGutter
 	atlasCol(6, artist.Inset { 4, 4, 4, 4 })
 	// PatternHandle
-	atlasCol(7, artist.Inset { 6, 6, 6, 6 })
+	atlasCol(7, artist.Inset { 6, 6, 6, 6 }) // broken
 }
 
 // Default is the default theme.

@@ -108,6 +108,16 @@ func (element *Artist) draw () {
 	c32 := element.cellAt(3, 2)
 	shapes.StrokeRectangle(c32, c41, 5)
 	
+	// 4, 2
+	c42 := element.cellAt(4, 2)
+	
+	// 0, 3
+	c03 := element.cellAt(0, 3)
+	patterns.Border {
+		Canvas: element.thingy(c42),
+		Inset:  artist.Inset { 8, 8, 8, 8 },
+	}.Draw(c03, c03.Bounds())
+	
 	// how long did that take to render?
 	drawTime := time.Since(drawStart)
 	textDrawer := textdraw.Drawer { }
@@ -164,4 +174,15 @@ func (element *Artist) cellAt (x, y int) (canvas.Canvas) {
 	return canvas.Cut (element.core, cellBounds.Add (image.Pt (
 		x * cellBounds.Dx(),
 		y * cellBounds.Dy())))
+}
+
+func (element *Artist) thingy (destination canvas.Canvas) (result canvas.Canvas) {
+	bounds := destination.Bounds()
+	bounds = image.Rect(0, 0, 32, 32).Add(bounds.Min)
+	shapes.FillColorRectangle(destination, artist.Hex(0x440000FF), bounds)
+	shapes.StrokeColorRectangle(destination, artist.Hex(0xFF0000FF), bounds, 1)
+	shapes.StrokeColorRectangle(destination, artist.Hex(0x004400FF), bounds.Inset(4), 1)
+	shapes.FillColorRectangle(destination, artist.Hex(0x004444FF), bounds.Inset(12))
+	shapes.StrokeColorRectangle(destination, artist.Hex(0x888888FF), bounds.Inset(8), 1)
+	return canvas.Cut(destination, bounds)
 }
