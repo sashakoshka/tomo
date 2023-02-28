@@ -2,7 +2,6 @@ package basicElements
 
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // Spacer can be used to put space between two elements..
@@ -22,7 +21,7 @@ func NewSpacer (line bool) (element *Spacer) {
 	element = &Spacer { line: line }
 	element.theme.Case = theme.C("basic", "spacer")
 	element.Core, element.core = core.NewCore(element.draw)
-	element.core.SetMinimumSize(1, 1)
+	element.updateMinimumSize()
 	return
 }
 
@@ -30,6 +29,7 @@ func NewSpacer (line bool) (element *Spacer) {
 func (element *Spacer) SetLine (line bool) {
 	if element.line == line { return }
 	element.line = line
+	element.updateMinimumSize()
 	if element.core.HasImage() {
 		element.draw()
 		element.core.DamageAll()
@@ -50,6 +50,17 @@ func (element *Spacer) SetConfig (new config.Config) {
 	element.redo()
 }
 
+func (element *Spacer) updateMinimumSize () {
+	if element.line {
+		padding := element.theme.Padding(theme.PatternLine)
+		element.core.SetMinimumSize (
+			padding.Horizontal(),
+			padding.Vertical())
+	} else {
+		element.core.SetMinimumSize(1, 1)
+	}
+}
+
 func (element *Spacer) redo () {
 	if !element.core.HasImage() {
 		element.draw()
@@ -61,10 +72,10 @@ func (element *Spacer) draw () {
 	bounds := element.Bounds()
 
 	if element.line {
-		color := element.theme.Color (
-			theme.ColorForeground,
+		pattern := element.theme.Pattern (
+			theme.PatternLine,
 			theme.State { })
-		shapes.FillColorRectangle(element.core, color, bounds)
+		pattern.Draw(element.core, bounds)
 	} else {
 		pattern := element.theme.Pattern (
 			theme.PatternBackground,

@@ -14,7 +14,7 @@ import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 //go:embed assets/wintergreen.png
 var defaultAtlasBytes []byte
 var defaultAtlas      canvas.Canvas
-var defaultTextures   [8][10]artist.Pattern
+var defaultTextures   [13][10]artist.Pattern
 
 func atlasCell (col, row int, border artist.Inset) {
 	bounds := image.Rect(0, 0, 16, 16).Add(image.Pt(col, row).Mul(16))
@@ -37,19 +37,30 @@ func init () {
 	// PatternDead
 	atlasCol(0, artist.Inset { })
 	// PatternRaised
-	atlasCol(1, artist.Inset { 6, 6, 6, 6 }) // broken
+	atlasCol(1, artist.Inset { 6, 6, 6, 6 })
 	// PatternSunken
 	atlasCol(2, artist.Inset { 4, 4, 4, 4 })
 	// PatternPinboard
 	atlasCol(3, artist.Inset { 2, 2, 2, 2 })
 	// PatternButton
-	atlasCol(4, artist.Inset { 6, 6, 6, 6 }) // broken
+	atlasCol(4, artist.Inset { 6, 6, 6, 6 })
 	// PatternInput
 	atlasCol(5, artist.Inset { 4, 4, 4, 4 })
 	// PatternGutter
 	atlasCol(6, artist.Inset { 4, 4, 4, 4 })
 	// PatternHandle
-	atlasCol(7, artist.Inset { 6, 6, 6, 6 }) // broken
+	atlasCol(7, artist.Inset { 6, 6, 6, 6 })
+	// PatternLine
+	atlasCol(8, artist.Inset { 1, 1, 1, 1 })
+
+	// PatternButton: basic.checkbox
+	atlasCol(9, artist.Inset { 3, 3, 3, 3 })
+	// PatternRaised: basic.listEntry
+	atlasCol(10, artist.Inset { 3, 3, 3, 3 })
+	// PatternRaised: fun.flatKey
+	atlasCol(11, artist.Inset { 3, 3, 5, 3 })
+	// PatternRaised: fun.sharpKey
+	atlasCol(12, artist.Inset { 3, 3, 4, 3 })
 }
 
 // Default is the default theme.
@@ -93,13 +104,25 @@ func (Default) Pattern (id Pattern, state State, c Case) artist.Pattern {
 	switch id {
 	case PatternBackground: return patterns.Uhex(0xaaaaaaFF)
 	case PatternDead:       return defaultTextures[0][offset]
-	case PatternRaised:     return defaultTextures[1][offset]
+	case PatternRaised:
+		if c == C("basic", "listEntry") {
+			return defaultTextures[10][offset]
+		} else {
+			return defaultTextures[1][offset]
+		}
 	case PatternSunken:     return defaultTextures[2][offset]
 	case PatternPinboard:   return defaultTextures[3][offset]
-	case PatternButton:     return defaultTextures[4][offset]
+	case PatternButton:
+		switch c {
+		case C("basic", "checkbox"): return defaultTextures[9][offset]
+		case C("fun", "flatKey"):    return defaultTextures[11][offset]
+		case C("fun", "sharpKey"):   return defaultTextures[12][offset]
+		default:                     return defaultTextures[4][offset]
+		}
 	case PatternInput:      return defaultTextures[5][offset]
 	case PatternGutter:     return defaultTextures[6][offset]
 	case PatternHandle:     return defaultTextures[7][offset]
+	case PatternLine:       return defaultTextures[8][offset]
 	default:                return patterns.Uhex(0xFF00FFFF)
 	}
 }
@@ -119,13 +142,26 @@ func (Default) Color (id Color, state State, c Case) color.RGBA {
 // Padding returns the default padding value for the given pattern.
 func (Default) Padding (id Pattern, c Case) artist.Inset {
 	switch id {
+	case PatternRaised:
+		if c == C("basic", "listEntry") {
+			return artist.Inset { 4, 4, 4, 4 }
+		} else {
+			return artist.Inset { 8, 8, 8, 8 }
+		}
 	case PatternSunken:
 		if c == C("basic", "list") {
+			return artist.Inset { 3, 3, 3, 3 }
+		} else {
+			return artist.Inset { 8, 8, 8, 8 }
+		}
+	case PatternPinboard:
+		if c == C("fun", "piano") {
 			return artist.Inset { 2, 2, 2, 2 }
 		} else {
 			return artist.Inset { 8, 8, 8, 8 }
 		}
 	case PatternGutter:     return artist.Inset { }
+	case PatternLine:       return artist.Inset { 1, 1, 1, 1 }
 	default:                return artist.Inset { 8, 8, 8, 8 }
 	}
 }

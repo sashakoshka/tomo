@@ -47,6 +47,9 @@ type Pattern int; const (
 
 	// PatternHandle is a handle that slides along a gutter.
 	PatternHandle
+
+	// PatternLine is an engraved line that separates things.
+	PatternLine
 )
 
 type Color int; const (

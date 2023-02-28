@@ -218,11 +218,11 @@ func (element *Piano) SetConfig (new config.Config) {
 }
 
 func (element *Piano) updateMinimumSize () {
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(theme.PatternPinboard)
 	element.core.SetMinimumSize (
 		pianoKeyWidth * 7 * element.countOctaves() +
-		padding[1] + padding[3],
-		64 + padding[0] + padding[2])
+		padding.Horizontal(),
+		64 + padding.Vertical())
 }
 
 func (element *Piano) countOctaves () int {
