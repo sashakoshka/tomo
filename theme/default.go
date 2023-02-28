@@ -14,7 +14,7 @@ import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 //go:embed assets/wintergreen.png
 var defaultAtlasBytes []byte
 var defaultAtlas      canvas.Canvas
-var defaultTextures   [13][10]artist.Pattern
+var defaultTextures   [13][9]artist.Pattern
 
 func atlasCell (col, row int, border artist.Inset) {
 	bounds := image.Rect(0, 0, 16, 16).Add(image.Pt(col, row).Mul(16))
@@ -47,7 +47,7 @@ func init () {
 	// PatternInput
 	atlasCol(5, artist.Inset { 4, 4, 4, 4 })
 	// PatternGutter
-	atlasCol(6, artist.Inset { 4, 4, 4, 4 })
+	atlasCol(6, artist.Inset { 7, 7, 7, 7 })
 	// PatternHandle
 	atlasCol(7, artist.Inset { 6, 6, 6, 6 })
 	// PatternLine
@@ -91,14 +91,13 @@ func (Default) Icon (string, IconSize, Case) canvas.Image {
 func (Default) Pattern (id Pattern, state State, c Case) artist.Pattern {
 	offset := 0; switch {
 	case state.Disabled:                 offset = 1
-	case state.Focused && state.Pressed: offset = 6
+	case state.Pressed && state.On:      offset = 4
 	case state.Focused && state.On:      offset = 7
-	case state.Invalid && state.Pressed: offset = 8
-	case state.Invalid && state.On:      offset = 9
-	case state.Invalid:                  offset = 5
-	case state.Focused:                  offset = 4
-	case state.Pressed:                  offset = 2
-	case state.On:                       offset = 3
+	case state.Invalid && state.On:      offset = 8
+	case state.On:                       offset = 2
+	case state.Pressed:                  offset = 3
+	case state.Focused:                  offset = 5
+	case state.Invalid:                  offset = 6
 	}
 
 	switch id {
@@ -144,13 +143,13 @@ func (Default) Padding (id Pattern, c Case) artist.Inset {
 	switch id {
 	case PatternRaised:
 		if c == C("basic", "listEntry") {
-			return artist.Inset { 4, 4, 4, 4 }
+			return artist.Inset { 4, 8, 4, 8 }
 		} else {
 			return artist.Inset { 8, 8, 8, 8 }
 		}
 	case PatternSunken:
 		if c == C("basic", "list") {
-			return artist.Inset { 3, 3, 3, 3 }
+			return artist.Inset { 4, 0, 3, 0 }
 		} else {
 			return artist.Inset { 8, 8, 8, 8 }
 		}
