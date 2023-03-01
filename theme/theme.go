@@ -50,6 +50,9 @@ type Pattern int; const (
 
 	// PatternLine is an engraved line that separates things.
 	PatternLine
+
+	// PatternMercury is a fill pattern for progress bars, meters, etc.
+	PatternMercury
 )
 
 type Color int; const (

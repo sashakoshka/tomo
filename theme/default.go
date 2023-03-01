@@ -14,7 +14,7 @@ import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 //go:embed assets/wintergreen.png
 var defaultAtlasBytes []byte
 var defaultAtlas      canvas.Canvas
-var defaultTextures   [13][9]artist.Pattern
+var defaultTextures   [14][9]artist.Pattern
 
 func atlasCell (col, row int, border artist.Inset) {
 	bounds := image.Rect(0, 0, 16, 16).Add(image.Pt(col, row).Mul(16))
@@ -52,6 +52,8 @@ func init () {
 	atlasCol(7, artist.Inset { 6, 6, 6, 6 })
 	// PatternLine
 	atlasCol(8, artist.Inset { 1, 1, 1, 1 })
+	// PatternMercury
+	atlasCol(13, artist.Inset { 2, 2, 2, 2 })
 
 	// PatternButton: basic.checkbox
 	atlasCol(9, artist.Inset { 3, 3, 3, 3 })
@@ -122,6 +124,7 @@ func (Default) Pattern (id Pattern, state State, c Case) artist.Pattern {
 	case PatternGutter:     return defaultTextures[6][offset]
 	case PatternHandle:     return defaultTextures[7][offset]
 	case PatternLine:       return defaultTextures[8][offset]
+	case PatternMercury:    return defaultTextures[13][offset]
 	default:                return patterns.Uhex(0xFF00FFFF)
 	}
 }
@@ -150,6 +153,8 @@ func (Default) Padding (id Pattern, c Case) artist.Inset {
 	case PatternSunken:
 		if c == C("basic", "list") {
 			return artist.Inset { 4, 0, 3, 0 }
+		} else if c == C("basic", "progressBar") {
+			return artist.Inset { 2, 1, 1, 2 }
 		} else {
 			return artist.Inset { 8, 8, 8, 8 }
 		}
@@ -161,6 +166,7 @@ func (Default) Padding (id Pattern, c Case) artist.Inset {
 		}
 	case PatternGutter:     return artist.Inset { }
 	case PatternLine:       return artist.Inset { 1, 1, 1, 1 }
+	case PatternMercury:    return artist.Inset { 5, 5, 5, 5 }
 	default:                return artist.Inset { 8, 8, 8, 8 }
 	}
 }

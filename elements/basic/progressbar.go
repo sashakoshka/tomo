@@ -3,7 +3,7 @@ package basicElements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // ProgressBar displays a visual indication of how far along a task is.
@@ -52,10 +52,11 @@ func (element *ProgressBar) SetConfig (new config.Config) {
 }
 
 func (element (ProgressBar)) updateMinimumSize() {
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding      := element.theme.Padding(theme.PatternSunken)
+	innerPadding := element.theme.Padding(theme.PatternMercury)
 	element.core.SetMinimumSize (
-		padding[3] + padding[1],
-		padding[0] + padding[2])
+		padding.Horizontal() + innerPadding.Horizontal(),
+		padding.Vertical()   + innerPadding.Vertical())
 }
 
 func (element *ProgressBar) redo () {
@@ -76,7 +77,6 @@ func (element *ProgressBar) draw () {
 		bounds.Min.X, bounds.Min.Y,
 		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
 		bounds.Max.Y)
-	// TODO: maybe dont use the accent color here...
-	accent := element.theme.Color(theme.ColorAccent, theme.State { })
-	shapes.FillColorRectangle(element.core, accent, meterBounds)
+	mercury := element.theme.Pattern(theme.PatternMercury, theme.State { })
+	artist.DrawBounds(element.core, mercury, meterBounds)
 }
