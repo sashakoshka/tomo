@@ -49,7 +49,7 @@ func init () {
 	// PatternGutter
 	atlasCol(6, artist.Inset { 7, 7, 7, 7 })
 	// PatternHandle
-	atlasCol(7, artist.Inset { 6, 6, 6, 6 })
+	atlasCol(7, artist.Inset { 3, 3, 3, 3 })
 	// PatternLine
 	atlasCol(8, artist.Inset { 1, 1, 1, 1 })
 	// PatternMercury
