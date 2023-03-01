@@ -86,8 +86,8 @@ func (window *Window) exposeEventFollows (event xproto.ConfigureNotifyEvent) (fo
 		untypedEvent := nextEvents[0]
 		if untypedEvent.Err == nil {
 			typedEvent, ok :=
-				untypedEvent.Event.(xproto.ConfigureNotifyEvent)
-			
+				untypedEvent.Event.(xproto.ExposeEvent)
+
 			if ok && typedEvent.Window == event.Window {
 				return true
 			}
