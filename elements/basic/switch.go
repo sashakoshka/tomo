@@ -149,7 +149,7 @@ func (element *Switch) updateMinimumSize () {
 	} else {
 		element.core.SetMinimumSize (
 			lineHeight * 2 +
-			element.config.Padding() +
+			element.theme.Margin(theme.PatternBackground).X +
 			textBounds.Dx(),
 			lineHeight)
 	}
@@ -160,14 +160,14 @@ func (element *Switch) draw () {
 	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy()).Add(bounds.Min)
 
-	state := theme.PatternState {
+	state := theme.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	}
 	backgroundPattern := element.theme.Pattern (
 		theme.PatternBackground, state)
-	artist.FillRectangle (element.core, backgroundPattern, bounds)
+	backgroundPattern.Draw(element.core, bounds)
 
 	if element.checked {
 		handleBounds.Min.X += bounds.Dy()
@@ -185,21 +185,22 @@ func (element *Switch) draw () {
 
 	gutterPattern := element.theme.Pattern (
 		theme.PatternGutter, state)
-	artist.FillRectangle(element.core, gutterPattern, gutterBounds)
+	artist.DrawBounds(element.core, gutterPattern, gutterBounds)
 	
 	handlePattern := element.theme.Pattern (
 		theme.PatternHandle, state)
-	artist.FillRectangle(element.core, handlePattern, handleBounds)
+	artist.DrawBounds(element.core, handlePattern, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := bounds.Min.Add(image.Point {
-		X: bounds.Dy() * 2 + element.config.Padding(),
+		X: bounds.Dy() * 2 +
+			element.theme.Margin(theme.PatternBackground).X,
 	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := element.theme.Pattern (
-		theme.PatternForeground, state)
+	foreground := element.theme.Color (
+		theme.ColorForeground, state)
 	element.drawer.Draw(element.core, foreground, offset)
 }

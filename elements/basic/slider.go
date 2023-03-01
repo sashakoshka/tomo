@@ -173,7 +173,7 @@ func (element *Slider) redo () {
 
 func (element *Slider) draw () {
 	bounds := element.Bounds()
-	element.track = element.theme.Inset(theme.PatternGutter).Apply(bounds)
+	element.track = element.theme.Padding(theme.PatternGutter).Apply(bounds)
 	if element.vertical {
 		barSize := element.track.Dx()
 		element.bar = image.Rect(0, 0, barSize, barSize).Add(bounds.Min)
@@ -190,16 +190,16 @@ func (element *Slider) draw () {
 		element.bar = element.bar.Add(image.Pt(int(barOffset), 0))
 	}
 
-	state := theme.PatternState {
+	state := theme.State {
 		Focused:  element.Focused(),
 		Disabled: !element.Enabled(),
 		Pressed:  element.dragging,
 	}
-	artist.FillRectangle (
+	artist.DrawBounds (
 		element.core,
 		element.theme.Pattern(theme.PatternGutter, state),
 		bounds)
-	artist.FillRectangle (
+	artist.DrawBounds (
 		element.core,
 		element.theme.Pattern(theme.PatternHandle, state),
 		element.bar)

@@ -7,6 +7,7 @@ import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 type ControlState struct {
@@ -202,9 +203,9 @@ func (element *Raycaster) drawMinimap () {
 		if cell > 0 {
 			cellColor = color.RGBA { 0xFF, 0xFF, 0xFF, 0xFF }
 		}
-		artist.FillRectangle (
+		shapes.FillColorRectangle (
 			element.core,
-			artist.NewUniform(cellColor),
+			cellColor,
 			cellBounds.Inset(1))
 	}}
 
@@ -217,18 +218,18 @@ func (element *Raycaster) drawMinimap () {
 	hitPt := hit.Mul(float64(scale)).Point().Add(bounds.Min)
 	
 	playerBounds := image.Rectangle { playerPt, playerPt }.Inset(scale / -8)
-	artist.FillEllipse (
+	shapes.FillColorEllipse (
 		element.core,
-		artist.Uhex(0xFFFFFFFF),
+		artist.Hex(0xFFFFFFFF),
 		playerBounds)
-	artist.Line (
+	shapes.ColorLine (
 		element.core,
-		artist.Uhex(0xFFFFFFFF), 1,
+		artist.Hex(0xFFFFFFFF), 1,
 		playerPt,
 		playerAnglePt)
-	artist.Line (
+	shapes.ColorLine (
 		element.core,
-		artist.Uhex(0x00FF00FF), 1,
+		artist.Hex(0x00FF00FF), 1,
 		playerPt,
 		hitPt)
 }

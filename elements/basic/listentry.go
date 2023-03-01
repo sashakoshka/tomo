@@ -47,8 +47,8 @@ func (entry *ListEntry) SetConfig (new config.Config) {
 }
 
 func (entry *ListEntry) updateBounds () {
-	inset := entry.theme.Inset(theme.PatternRaised)
-	entry.bounds = inset.Inverse().Apply(entry.drawer.LayoutBounds())
+	padding := entry.theme.Padding(theme.PatternRaised)
+	entry.bounds = padding.Inverse().Apply(entry.drawer.LayoutBounds())
 	entry.bounds = entry.bounds.Sub(entry.bounds.Min)
 	entry.minimumWidth = entry.bounds.Dx()
 	entry.bounds.Max.X = entry.width
@@ -62,23 +62,21 @@ func (entry *ListEntry) Draw (
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	state := theme.PatternState {
+	state := theme.State {
 		Focused: focused,
 		On: on,
 	}
 
-	pattern := entry.theme.Pattern (theme.PatternRaised, state)
-	inset := entry.theme.Inset(theme.PatternRaised)
-	artist.FillRectangle (
-		destination,
-		pattern,
-		entry.Bounds().Add(offset))	
+	pattern := entry.theme.Pattern(theme.PatternRaised, state)
+	padding := entry.theme.Padding(theme.PatternRaised)
+	bounds  := entry.Bounds().Add(offset)
+	artist.DrawBounds(destination, pattern, bounds)
 		
-	foreground := entry.theme.Pattern (theme.PatternForeground, state)
+	foreground := entry.theme.Color (theme.ColorForeground, state)
 	return entry.drawer.Draw (
 		destination,
 		foreground,
-		offset.Add(image.Pt(inset[3], inset[0])).
+		offset.Add(image.Pt(padding[artist.SideLeft], padding[artist.SideTop])).
 		Sub(entry.drawer.LayoutBounds().Min))
 }
 

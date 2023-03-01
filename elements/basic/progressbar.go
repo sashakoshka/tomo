@@ -52,9 +52,11 @@ func (element *ProgressBar) SetConfig (new config.Config) {
 }
 
 func (element (ProgressBar)) updateMinimumSize() {
+	padding      := element.theme.Padding(theme.PatternSunken)
+	innerPadding := element.theme.Padding(theme.PatternMercury)
 	element.core.SetMinimumSize (
-		element.config.Padding() * 2,
-		element.config.Padding() * 2)
+		padding.Horizontal() + innerPadding.Horizontal(),
+		padding.Vertical()   + innerPadding.Vertical())
 }
 
 func (element *ProgressBar) redo () {
@@ -67,18 +69,14 @@ func (element *ProgressBar) redo () {
 func (element *ProgressBar) draw () {
 	bounds := element.Bounds()
 
-	pattern := element.theme.Pattern (
-		theme.PatternSunken,
-		theme.PatternState { })
-	inset := element.theme.Inset(theme.PatternSunken)
-	artist.FillRectangle(element.core, pattern, bounds)
-	bounds = inset.Apply(bounds)
+	pattern := element.theme.Pattern(theme.PatternSunken, theme.State { })
+	padding := element.theme.Padding(theme.PatternSunken)
+	pattern.Draw(element.core, bounds)
+	bounds = padding.Apply(bounds)
 	meterBounds := image.Rect (
 		bounds.Min.X, bounds.Min.Y,
 		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
 		bounds.Max.Y)
-	accent := element.theme.Pattern (
-		theme.PatternAccent,
-		theme.PatternState { })
-	artist.FillRectangle(element.core, accent, meterBounds)
+	mercury := element.theme.Pattern(theme.PatternMercury, theme.State { })
+	artist.DrawBounds(element.core, mercury, meterBounds)
 }

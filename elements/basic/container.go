@@ -226,9 +226,9 @@ func (element *Container) redoAll () {
 	}
 	pattern := element.theme.Pattern (
 		theme.PatternBackground,
-		theme.PatternState { })
-	artist.FillRectangleShatter (
-		element.core, pattern, element.Bounds(), rocks...)
+		theme.State { })
+	artist.DrawShatter (
+		element.core, pattern, rocks...)
 
 	// cut our canvas up and give peices to child elements
 	for _, entry := range element.children {
@@ -311,9 +311,11 @@ func (element *Container) HandleKeyUp (key input.Key, modifiers input.Modifiers)
 }
 
 func (element *Container) FlexibleHeightFor (width int) (height int) {
+	margin := element.theme.Margin(theme.PatternBackground)
+	// TODO: have layouts take in x and y margins
 	return element.layout.FlexibleHeightFor (
 		element.children,
-		element.config.Margin(), width)
+		margin.X, width)
 }
 
 func (element *Container) OnFlexibleHeightChange (callback func ()) {
@@ -515,16 +517,20 @@ func (element *Container) childFocusRequestCallback (
 }
 
 func (element *Container) updateMinimumSize () {
-	width, height := element.layout.MinimumSize (
-		element.children, element.config.Margin())
+	margin := element.theme.Margin(theme.PatternBackground)
+	// TODO: have layouts take in x and y margins
+	width, height := element.layout.MinimumSize(element.children, margin.X)
 	if element.flexible {
 		height = element.layout.FlexibleHeightFor (
-			element.children, element.config.Margin(), width)
+			element.children,
+			margin.X, width)
 	}
 	element.core.SetMinimumSize(width, height)
 }
 
 func (element *Container) doLayout () {
+	margin := element.theme.Margin(theme.PatternBackground)
+	// TODO: have layouts take in x and y margins
 	element.layout.Arrange (
-		element.children, element.config.Margin(), element.Bounds())
+		element.children, margin.X, element.Bounds())
 }

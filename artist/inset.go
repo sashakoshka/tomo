@@ -1,6 +1,14 @@
-package theme
+package artist
 
 import "image"
+
+// Side represents one side of a rectangle.
+type Side int; const (
+	SideTop Side = iota
+	SideRight
+	SideBottom
+	SideLeft
+)
 
 // Inset represents an inset amount for all four sides of a rectangle. The top
 // side is at index zero, the right at index one, the bottom at index two, and
@@ -39,4 +47,14 @@ func (inset Inset) Inverse () (prime Inset) {
 		inset[2] * -1,
 		inset[3] * -1,
 	}
+}
+
+// Horizontal returns the sum of SideRight and SideLeft.
+func (inset Inset) Horizontal () int {
+	return inset[SideRight] + inset[SideLeft]
+}
+
+// Vertical returns the sum of SideTop and SideBottom.
+func (inset Inset) Vertical () int {
+	return inset[SideTop] + inset[SideBottom]
 }

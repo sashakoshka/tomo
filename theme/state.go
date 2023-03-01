@@ -8,7 +8,7 @@ package theme
 // specific elements.
 type Case struct { Namespace, Element string } 
  
-// C can be used as shorthand to generate a case struct as used in PatternState.
+// C can be used as shorthand to generate a case struct as used in State.
 func C (namespace, element string) (c Case) {
 	return Case {
 		Namespace: namespace,
@@ -16,14 +16,14 @@ func C (namespace, element string) (c Case) {
 	}
 }
 
-// PatternState lists parameters which can change the appearance of some
-// patterns. For example, passing a PatternState with Selected set to true may
-// result in a pattern that has a colored border within it.
-type PatternState struct {
+// State lists parameters which can change the appearance of some patterns and
+// colors. For example, passing a State with Selected set to true may result in
+// a pattern that has a colored border within it.
+type State struct {
 	// On should be set to true if the element that is using this pattern is
-	// in some sort of "on" state, such as if a checkbox is checked or a
-	// switch is toggled on. This is only necessary if the element in
-	// question is capable of being toggled.
+	// in some sort of selected or "on" state, such as if a checkbox is
+	// checked or a switch is toggled on. This is only necessary if the
+	// element in question is capable of being toggled or selected.
 	On bool
 
 	// Focused should be set to true if the element that is using this

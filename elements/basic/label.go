@@ -2,7 +2,6 @@ package basicElements
 
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -137,7 +136,9 @@ func (element *Label) SetConfig (new config.Config) {
 func (element *Label) updateMinimumSize () {
 	if element.wrap {
 		em := element.drawer.Em().Round()
-		if em < 1 { em = element.config.Padding() }
+		if em < 1 {
+			em = element.theme.Padding(theme.PatternBackground)[0]
+		}
 		element.core.SetMinimumSize (
 			em, element.drawer.LineHeight().Round())
 		if element.onFlexibleHeightChange != nil {
@@ -154,13 +155,13 @@ func (element *Label) draw () {
 
 	pattern := element.theme.Pattern (
 		theme.PatternBackground,
-		theme.PatternState { })
-	artist.FillRectangle(element.core, pattern, bounds)
+		theme.State { })
+	pattern.Draw(element.core, bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 
-	foreground :=  element.theme.Pattern (
-		theme.PatternForeground,
-		theme.PatternState { })
+	foreground :=  element.theme.Color (
+		theme.ColorForeground,
+		theme.State { })
 	element.drawer.Draw(element.core, foreground, bounds.Min.Sub(textBounds.Min))
 }

@@ -6,6 +6,7 @@ import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -121,7 +122,8 @@ func (element *Button) SetConfig (new config.Config) {
 
 func (element *Button) updateMinimumSize () {
 	textBounds := element.drawer.LayoutBounds()
-	minimumSize := textBounds.Inset(-element.config.Padding())
+	padding    := element.theme.Padding(theme.PatternButton)
+	minimumSize := padding.Inverse().Apply(textBounds)
 	element.core.SetMinimumSize(minimumSize.Dx(), minimumSize.Dy())
 }
 
@@ -138,8 +140,8 @@ func (element *Button) drawAndPush (partial bool) {
 	}
 }
 
-func (element *Button) state () theme.PatternState {
-	return theme.PatternState {
+func (element *Button) state () theme.State {
+	return theme.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
@@ -152,20 +154,20 @@ func (element *Button) drawBackground (partial bool) []image.Rectangle {
 	pattern := element.theme.Pattern(theme.PatternButton, state)
 	static  := element.theme.Hints(theme.PatternButton).StaticInset
 
-	if partial && static != (theme.Inset { }) {
-		return artist.FillRectangleShatter (
-			element.core, pattern, bounds, static.Apply(bounds))
+	if partial && static != (artist.Inset { }) {
+		tiles := shatter.Shatter(bounds, static.Apply(bounds))
+		artist.Draw(element.core, pattern, tiles...)
+		return tiles
 	} else {
-		return []image.Rectangle {
-			artist.FillRectangle(element.core, pattern, bounds),
-		}
+		pattern.Draw(element.core, bounds)
+		return []image.Rectangle { bounds }
 	}
 }
 
 func (element *Button) drawText (partial bool) image.Rectangle {
 	state      := element.state()
 	bounds     := element.Bounds()
-	foreground := element.theme.Pattern(theme.PatternForeground, state)
+	foreground := element.theme.Color(theme.ColorForeground, state)
 	sink       := element.theme.Sink(theme.PatternButton)
 
 	textBounds := element.drawer.LayoutBounds()
@@ -183,8 +185,7 @@ func (element *Button) drawText (partial bool) image.Rectangle {
 
 	if partial {
 		pattern := element.theme.Pattern(theme.PatternButton, state)
-		artist.FillRectangleClip (
-			element.core, pattern, bounds, region)
+		pattern.Draw(element.core, region)
 	}
 	
 	element.drawer.Draw(element.core, foreground, offset)

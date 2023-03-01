@@ -302,7 +302,7 @@ func (element *ScrollContainer) OnFocusMotionRequest (
 }
 
 func (element *ScrollContainer) childDamageCallback (region canvas.Canvas) {
-	element.core.DamageRegion(artist.Paste(element.core, region, image.Point { }))
+	element.core.DamageRegion(region.Bounds())
 }
 
 func (element *ScrollContainer) childFocusRequestCallback () (granted bool) {
@@ -352,8 +352,8 @@ func (element *ScrollContainer) recalculate () {
 	horizontal := &element.horizontal
 	vertical   := &element.vertical
 	
-	gutterInsetHorizontal := horizontal.theme.Inset(theme.PatternGutter)
-	gutterInsetVertical   := vertical.theme.Inset(theme.PatternGutter)
+	gutterInsetHorizontal := horizontal.theme.Padding(theme.PatternGutter)
+	gutterInsetVertical   := vertical.theme.Padding(theme.PatternGutter)
 
 	bounds     := element.Bounds()
 	thicknessHorizontal :=
@@ -438,8 +438,8 @@ func (element *ScrollContainer) recalculate () {
 
 func (element *ScrollContainer) draw () {
 	deadPattern := element.theme.Pattern (
-		theme.PatternDead, theme.PatternState { })
-	artist.FillRectangle (
+		theme.PatternDead, theme.State { })
+	artist.DrawBounds (
 		element.core, deadPattern,
 		image.Rect (
 			element.vertical.gutter.Min.X,
@@ -451,27 +451,27 @@ func (element *ScrollContainer) draw () {
 }
 
 func (element *ScrollContainer) drawHorizontalBar () {
-	state := theme.PatternState {
+	state := theme.State {
 		Disabled: !element.horizontal.enabled,
 		Pressed:  element.horizontal.dragging,
 	}
 	gutterPattern := element.horizontal.theme.Pattern(theme.PatternGutter, state)
-	artist.FillRectangle(element.core, gutterPattern, element.horizontal.gutter)
+	artist.DrawBounds(element.core, gutterPattern, element.horizontal.gutter)
 	
 	handlePattern := element.horizontal.theme.Pattern(theme.PatternHandle, state)
-	artist.FillRectangle(element.core, handlePattern, element.horizontal.bar)
+	artist.DrawBounds(element.core, handlePattern, element.horizontal.bar)
 }
 
 func (element *ScrollContainer) drawVerticalBar () {
-	state := theme.PatternState {
+	state := theme.State {
 		Disabled: !element.vertical.enabled,
 		Pressed:  element.vertical.dragging,
 	}
 	gutterPattern := element.vertical.theme.Pattern(theme.PatternGutter, state)
-	artist.FillRectangle(element.core, gutterPattern, element.vertical.gutter)
+	artist.DrawBounds(element.core, gutterPattern, element.vertical.gutter)
 	
 	handlePattern := element.vertical.theme.Pattern(theme.PatternHandle, state)
-	artist.FillRectangle(element.core, handlePattern, element.vertical.bar)
+	artist.DrawBounds(element.core, handlePattern, element.vertical.bar)
 }
 
 func (element *ScrollContainer) dragHorizontalBar (mousePosition image.Point) {
@@ -493,8 +493,8 @@ func (element *ScrollContainer) dragVerticalBar (mousePosition image.Point) {
 }
 
 func (element *ScrollContainer) updateMinimumSize () {
-	gutterInsetHorizontal := element.horizontal.theme.Inset(theme.PatternGutter)
-	gutterInsetVertical   := element.vertical.theme.Inset(theme.PatternGutter)
+	gutterInsetHorizontal := element.horizontal.theme.Padding(theme.PatternGutter)
+	gutterInsetVertical   := element.vertical.theme.Padding(theme.PatternGutter)
 
 	thicknessHorizontal :=
 		element.config.HandleWidth() +
