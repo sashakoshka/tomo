@@ -12,6 +12,8 @@ type LayoutEntry struct {
 }
 
 // TODO: have layouts take in artist.Inset for margin and padding
+// TODO: create a layout that only displays the first element and full screen.
+// basically a blank layout for containers that only ever have one element.
 
 // Layout is capable of arranging elements within a container. It is also able
 // to determine the minimum amount of room it needs to do so.
