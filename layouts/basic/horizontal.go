@@ -20,13 +20,14 @@ type Horizontal struct {
 func (layout Horizontal) Arrange (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 	bounds image.Rectangle,
 ) {
-	if layout.Pad { bounds = bounds.Inset(margin) }
+	if layout.Pad { bounds = bounds.Inset(padding) }
 	
 	// get width of expanding elements
 	expandingElementWidth := layout.expandingElementWidth (
-		entries, margin, bounds.Dx())
+		entries, margin, padding, bounds.Dx())
 
 	// set the size and position of each element
 	dot := bounds.Min
@@ -78,20 +79,21 @@ func (layout Horizontal) MinimumSize (
 func (layout Horizontal) FlexibleHeightFor (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 	width int,
 ) (
 	height int,
 ) {
-	if layout.Pad { width -= margin * 2 }
+	if layout.Pad { width -= padding * 2 }
 	
 	// get width of expanding elements
 	expandingElementWidth := layout.expandingElementWidth (
-		entries, margin, width)
+		entries, margin, padding, width)
 	
 	x, y := 0, 0
 	if layout.Pad {
-		x += margin
-		y += margin
+		x += padding
+		y += padding
 	}
 
 	// set the size and position of each element
@@ -110,7 +112,7 @@ func (layout Horizontal) FlexibleHeightFor (
 	}
 
 	if layout.Pad {
-		height += margin * 2
+		height += padding * 2
 	}
 	return
 }
@@ -118,6 +120,7 @@ func (layout Horizontal) FlexibleHeightFor (
 func (layout Horizontal) expandingElementWidth (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 	freeSpace int,
 ) (
 	width int,

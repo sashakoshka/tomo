@@ -20,9 +20,10 @@ type Vertical struct {
 func (layout Vertical) Arrange (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 	bounds image.Rectangle,
 ) {
-	if layout.Pad { bounds = bounds.Inset(margin) }
+	if layout.Pad { bounds = bounds.Inset(padding) }
 
 	// count the number of expanding elements and the amount of free space
 	// for them to collectively occupy, while gathering minimum heights.
@@ -78,6 +79,7 @@ func (layout Vertical) Arrange (
 func (layout Vertical) MinimumSize (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 ) (
 	width, height int,
 ) {
@@ -93,8 +95,8 @@ func (layout Vertical) MinimumSize (
 	}
 
 	if layout.Pad {
-		width  += margin * 2
-		height += margin * 2
+		width  += padding * 2
+		height += padding * 2
 	}
 	return
 }
@@ -104,13 +106,14 @@ func (layout Vertical) MinimumSize (
 func (layout Vertical) FlexibleHeightFor (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 	width int,
 ) (
 	height int,
 ) {
 	if layout.Pad {
-		width -= margin * 2
-		height += margin * 2
+		width  -= padding * 2
+		height += padding * 2
 	}
 	
 	for index, entry := range entries {

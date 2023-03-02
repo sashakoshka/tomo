@@ -10,7 +10,7 @@ import "git.tebibyte.media/sashakoshka/tomo/elements"
 // arranged at the bottom in a row called the control row, which is aligned to
 // the right, the last element being the rightmost one.
 type Dialog struct {
-	// If Gap is true, a gap will be placed between each element.
+	// If Mergin is true, a margin will be placed between each element.
 	Gap bool
 
 	// If Pad is true, there will be padding running along the inside of the
@@ -22,15 +22,16 @@ type Dialog struct {
 func (layout Dialog) Arrange (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 	bounds image.Rectangle,
 ) {
-	if layout.Pad { bounds = bounds.Inset(margin) }
+	if layout.Pad { bounds = bounds.Inset(padding) }
 	
 	controlRowWidth, controlRowHeight := 0, 0
 	if len(entries) > 1 {
 		controlRowWidth,
 		controlRowHeight = layout.minimumSizeOfControlRow (
-			entries[1:], margin)
+			entries[1:], margin, padding)
 	}
 
 	if len(entries) > 0 {
@@ -102,6 +103,7 @@ func (layout Dialog) Arrange (
 func (layout Dialog) MinimumSize (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 ) (
 	width, height int,
 ) {
@@ -115,7 +117,7 @@ func (layout Dialog) MinimumSize (
 		if layout.Gap { height += margin }
 		additionalWidth,
 		additionalHeight := layout.minimumSizeOfControlRow (
-			entries[1:], margin)
+			entries[1:], margin, padding)
 		height += additionalHeight
 		if additionalWidth > width {
 			width = additionalWidth
@@ -123,8 +125,8 @@ func (layout Dialog) MinimumSize (
 	}
 
 	if layout.Pad {
-		width  += margin * 2
-		height += margin * 2
+		width  += padding * 2
+		height += padding * 2
 	}
 	return
 }
@@ -134,6 +136,7 @@ func (layout Dialog) MinimumSize (
 func (layout Dialog) FlexibleHeightFor (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 	width int,
 ) (
 	height int,
@@ -155,12 +158,12 @@ func (layout Dialog) FlexibleHeightFor (
 	if len(entries) > 1 {
 		if layout.Gap { height += margin }
 		_, additionalHeight := layout.minimumSizeOfControlRow (
-			entries[1:], margin)
+			entries[1:], margin, padding)
 		height += additionalHeight
 	}
 
 	if layout.Pad {
-		height += margin * 2
+		height += padding * 2
 	}
 	return
 }
@@ -170,6 +173,7 @@ func (layout Dialog) FlexibleHeightFor (
 func (layout Dialog) minimumSizeOfControlRow (
 	entries []layouts.LayoutEntry,
 	margin int,
+	padding int,
 ) (
 	width, height int,
 ) {
