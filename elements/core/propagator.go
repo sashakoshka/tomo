@@ -21,6 +21,9 @@ type Propagator struct {
 	iterator ChildIterator
 	drags    [10]elements.MouseTarget
 	focused  bool
+
+	onFocusRequest func () (granted bool)
+	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
 }
 
 // NewPropagator creates a new event propagator that uses the specified iterator
@@ -45,7 +48,9 @@ func (propagator *Propagator) Focused () (focused bool) {
 // Focus focuses this element, if its parent element grants the
 // request.
 func (propagator *Propagator) Focus () {
-	// TODO
+	if propagator.onFocusRequest != nil {
+		propagator.onFocusRequest()
+	}
 }
 
 // HandleFocus causes this element to mark itself as focused. If the
@@ -60,23 +65,29 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 // HandleDeselection causes this element to mark itself and all of its children
 // as unfocused.
 func (propagator *Propagator) HandleUnfocus () {
-	// TODO
+	propagator.forFocusable (func (child elements.Focusable) bool {
+		child.HandleUnfocus()
+		return true
+	})
+	propagator.focused = false
 }
 
 // OnFocusRequest sets a function to be called when this element wants its
 // parent element to focus it. Parent elements should return true if the request
 // was granted, and false if it was not. If the parent element returns true, the
 // element acts as if a HandleFocus call was made with KeynavDirectionNeutral.
-func (propagator *Propagator) OnFocusRequest (func () (granted bool)) {
-	// TODO
+func (propagator *Propagator) OnFocusRequest (callback func () (granted bool)) {
+	propagator.onFocusRequest = callback
 }
 
 // OnFocusMotionRequest sets a function to be called when this element wants its
 // parent element to focus the element behind or in front of it, depending on
 // the specified direction. Parent elements should return true if the request
 // was granted, and false if it was not.
-func (propagator *Propagator) OnFocusMotionRequest (func (direction input.KeynavDirection) (granted bool)) {
-	// TODO
+func (propagator *Propagator) OnFocusMotionRequest (
+	callback func (direction input.KeynavDirection) (granted bool),
+) {
+	propagator.onFocusMotionRequest = callback
 }
 
 // HandleKeyDown propogates the keyboard event to the currently selected child.
