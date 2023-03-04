@@ -37,6 +37,7 @@ func NewContainer (layout layouts.Layout) (element *Container) {
 	element = &Container { }
 	element.theme.Case = theme.C("basic", "container")
 	element.Core, element.core = core.NewCore(element.redoAll)
+	element.Propagator = core.NewPropagator(element)
 	element.SetLayout(layout)
 	return
 }
