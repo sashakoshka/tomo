@@ -6,11 +6,9 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
-// ChildIterator represents an object that can iterate over a list of children,
-// calling a specified iterator function for each one. When keepGoing is false,
-// the iterator stops the current loop and OverChildren returns.
-type ChildIterator interface {
-	OverChildren  (func (child elements.Element) (keepGoing bool))
+// Parent represents an object that can provide access to a list of child
+// elements.
+type Parent interface {
 	Child         (index int) elements.Element
 	CountChildren () int
 }
@@ -20,7 +18,7 @@ type ChildIterator interface {
 // all of the event handlers. It also implements standard behavior for focus
 // propagation and keyboard navigation.
 type Propagator struct {
-	iterator ChildIterator
+	parent   Parent
 	drags    [10]elements.MouseTarget
 	focused  bool
 
@@ -28,13 +26,13 @@ type Propagator struct {
 	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
 }
 
-// NewPropagator creates a new event propagator that uses the specified iterator
+// NewPropagator creates a new event propagator that uses the specified parent
 // to access a list of child elements that will have events propagated to them.
-// If iterator is nil, the function will return nil.
-func NewPropagator (iterator ChildIterator) (propagator *Propagator) {
-	if iterator == nil { return nil }
+// If parent is nil, the function will return nil.
+func NewPropagator (parent Parent) (propagator *Propagator) {
+	if parent == nil { return nil }
 	propagator = &Propagator {
-		iterator: iterator,
+		parent: parent,
 	}
 	return
 }
@@ -83,7 +81,7 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 		// an element is currently focused, so we need to move the
 		// focus in the specified direction
 		firstFocusedChild :=
-			propagator.iterator.Child(firstFocused).
+			propagator.parent.Child(firstFocused).
 			(elements.Focusable)
 
 		// before we move the focus, the currently focused child
@@ -96,11 +94,11 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 		// find the previous/next focusable element relative to the
 		// currently focused element, if it exists.
 		for index := firstFocused + int(direction);
-			index < propagator.iterator.CountChildren() && index >= 0;
+			index < propagator.parent.CountChildren() && index >= 0;
 			index += int(direction) {
 
 			child, focusable :=
-				propagator.iterator.Child(index).
+				propagator.parent.Child(index).
 				(elements.Focusable)
 			if focusable && child.HandleFocus(direction) {
 				// we have found one, so we now actually move
@@ -222,7 +220,7 @@ func (propagator *Propagator) HandleMouseScroll (x, y int, deltaX, deltaY float6
 
 // SetTheme sets the theme of all children to the specified theme.
 func (propagator *Propagator) SetTheme (theme theme.Theme) {
-	propagator.iterator.OverChildren (func (child elements.Element) bool {
+	propagator.forChildren (func (child elements.Element) bool {
 		typedChild, themeable := child.(elements.Themeable)
 		if themeable {
 			typedChild.SetTheme(theme)
@@ -233,7 +231,7 @@ func (propagator *Propagator) SetTheme (theme theme.Theme) {
 
 // SetConfig sets the theme of all children to the specified config.
 func (propagator *Propagator) SetConfig (config config.Config) {
-	propagator.iterator.OverChildren (func (child elements.Element) bool {
+	propagator.forChildren (func (child elements.Element) bool {
 		typedChild, configurable := child.(elements.Configurable)
 		if configurable {
 			typedChild.SetConfig(config)
@@ -265,32 +263,38 @@ func (propagator *Propagator) focusLastFocusableElement (
 ) (
 	ok bool,
 ) {
-	focusables := []elements.Focusable { }
-	propagator.forFocusable (func (child elements.Focusable) bool {
-		focusables = append(focusables, child)
-		return true
-	})
-
-	for index := len(focusables) - 1; index >= 0; index -- {
-		child, focusable := focusables[index].(elements.Focusable)
-		if focusable && child.HandleFocus(direction) {
+	propagator.forChildrenReverse (func (child elements.Element) bool {
+		typedChild, focusable := child.(elements.Focusable)
+		if focusable && typedChild.HandleFocus(direction) {
 			propagator.focused = true
 			ok = true
-			break
+			return false
 		}
-	}
+		return true
+	})
 	return
 }
 
-
 // ----------- Iterator utilities ----------- //
 
-// TODO: remove ChildIterator.OverChildren, reimplement that here, rework these
-// methods based on that, add a reverse iteration method, and then rework
-// focusLastFocusableElement based on that.
+func (propagator *Propagator) forChildren (callback func (child elements.Element) bool) {
+	for index := 0; index < propagator.parent.CountChildren(); index ++ {
+		child := propagator.parent.Child(index)
+		if child == nil    { continue }
+		if callback(child) { break    }
+	}
+}
+
+func (propagator *Propagator) forChildrenReverse (callback func (child elements.Element) bool) {
+	for index := propagator.parent.CountChildren() - 1; index > 0; index -- {
+		child := propagator.parent.Child(index)
+		if child == nil    { continue }
+		if callback(child) { break    }
+	}
+}
 
 func (propagator *Propagator) childAt (position image.Point) (child elements.Element) {
-	propagator.iterator.OverChildren (func (current elements.Element) bool {
+	propagator.forChildren (func (current elements.Element) bool {
 		if position.In(current.Bounds()) {
 			child = current
 		}
@@ -300,7 +304,7 @@ func (propagator *Propagator) childAt (position image.Point) (child elements.Ele
 }
 
 func (propagator *Propagator) forFocused (callback func (child elements.Focusable) bool) {
-	propagator.iterator.OverChildren (func (child elements.Element) bool {
+	propagator.forChildren (func (child elements.Element) bool {
 		typedChild, focusable := child.(elements.Focusable)
 		if focusable && typedChild.Focused() {
 			if !callback(typedChild) { return false }
@@ -310,7 +314,7 @@ func (propagator *Propagator) forFocused (callback func (child elements.Focusabl
 }
 
 func (propagator *Propagator) forFocusable (callback func (child elements.Focusable) bool) {
-	propagator.iterator.OverChildren (func (child elements.Element) bool {
+	propagator.forChildren (func (child elements.Element) bool {
 		typedChild, focusable := child.(elements.Focusable)
 		if focusable {
 			if !callback(typedChild) { return false }
@@ -320,7 +324,7 @@ func (propagator *Propagator) forFocusable (callback func (child elements.Focusa
 }
 
 func (propagator *Propagator) forFlexible (callback func (child elements.Flexible) bool) {
-	propagator.iterator.OverChildren (func (child elements.Element) bool {
+	propagator.forChildren (func (child elements.Element) bool {
 		typedChild, flexible := child.(elements.Flexible)
 		if flexible {
 			if !callback(typedChild) { return false }
