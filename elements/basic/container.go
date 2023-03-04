@@ -14,11 +14,11 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 // them in a layout.
 type Container struct {
 	*core.Core
+	*core.Propagator
 	core core.CoreControl
 
 	layout    layouts.Layout
 	children  []layouts.LayoutEntry
-	drags     [10]elements.MouseTarget
 	warping   bool
 	focused   bool
 	focusable bool
@@ -27,9 +27,9 @@ type Container struct {
 	config config.Wrapped
 	theme  theme.Wrapped
 	
+	onFlexibleHeightChange func ()
 	onFocusRequest func () (granted bool)
 	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
-	onFlexibleHeightChange func ()
 }
 
 // NewContainer creates a new container.
@@ -241,11 +241,7 @@ func (element *Container) redoAll () {
 func (element *Container) SetTheme (new theme.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
-	for _, child := range element.children {
-		if child0, ok := child.Element.(elements.Themeable); ok {
-			child0.SetTheme(element.theme.Theme)
-		}
-	}
+	element.Propagator.SetTheme(new)
 	element.updateMinimumSize()
 	element.redoAll()
 }
@@ -253,188 +249,34 @@ func (element *Container) SetTheme (new theme.Theme) {
 // SetConfig sets the element's configuration.
 func (element *Container) SetConfig (new config.Config) {
 	if new == element.config.Config { return }
-	element.config.Config = new
-	for _, child := range element.children {
-		if child0, ok := child.Element.(elements.Configurable); ok {
-			child0.SetConfig(element.config)
-		}
-	}
+	element.Propagator.SetConfig(new)
 	element.updateMinimumSize()
 	element.redoAll()
 }
 
-func (element *Container) HandleMouseDown (x, y int, button input.Button) {
-	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(elements.MouseTarget)
-	if !handlesMouse { return }
-	element.drags[button] = child
-	child.HandleMouseDown(x, y, button)
-}
-
-func (element *Container) HandleMouseUp (x, y int, button input.Button) {
-	child := element.drags[button]
-	if child == nil { return }
-	element.drags[button] = nil
-	child.HandleMouseUp(x, y, button)
-}
-
-func (element *Container) HandleMouseMove (x, y int) {
-	for _, child := range element.drags {
-		if child == nil { continue }
-		child.HandleMouseMove(x, y)
-	}
-}
-
-func (element *Container) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
-	child, handlesMouse := element.ChildAt(image.Pt(x, y)).(elements.MouseTarget)
-	if !handlesMouse { return }
-	child.HandleMouseScroll(x, y, deltaX, deltaY)
-}
-
-func (element *Container) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
-	element.forFocused (func (child elements.Focusable) bool {
-		child0, handlesKeyboard := child.(elements.KeyboardTarget)
-		if handlesKeyboard {
-			child0.HandleKeyDown(key, modifiers)
-		}
-		return true
-	})
-}
-
-func (element *Container) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
-	element.forFocused (func (child elements.Focusable) bool {
-		child0, handlesKeyboard := child.(elements.KeyboardTarget)
-		if handlesKeyboard {
-			child0.HandleKeyUp(key, modifiers)
-		}
-		return true
-	})
-}
-
 func (element *Container) FlexibleHeightFor (width int) (height int) {
-	margin := element.theme.Margin(theme.PatternBackground)
-	// TODO: have layouts take in x and y margins
+	margin  := element.theme.Margin(theme.PatternBackground)
+	padding := element.theme.Padding(theme.PatternBackground)
+	// TODO: have layouts take in entire margins/padding
 	return element.layout.FlexibleHeightFor (
 		element.children,
-		margin.X, width)
+		margin.X, padding.Horizontal(), width)
 }
 
 func (element *Container) OnFlexibleHeightChange (callback func ()) {
 	element.onFlexibleHeightChange = callback
 }
 
-func (element *Container) Focused () (focused bool) {
-	return element.focused
-}
-
-func (element *Container) Focus () {
-	if element.onFocusRequest != nil {
-		element.onFocusRequest()
-	}
-}
-
-func (element *Container) HandleFocus (direction input.KeynavDirection) (ok bool) {
-	if !element.focusable { return false }
-	direction = direction.Canon()
-
-	firstFocused := element.firstFocused()
-	if firstFocused < 0 {
-		// no element is currently focused, so we need to focus either
-		// the first or last focusable element depending on the
-		// direction.
-		switch direction {
-		case input.KeynavDirectionNeutral, input.KeynavDirectionForward:
-			// if we recieve a neutral or forward direction, focus
-			// the first focusable element.
-			return element.focusFirstFocusableElement(direction)
-		
-		case input.KeynavDirectionBackward:
-			// if we recieve a backward direction, focus the last
-			// focusable element.
-			return element.focusLastFocusableElement(direction)
-		}
-	} else {
-		// an element is currently focused, so we need to move the
-		// focus in the specified direction
-		firstFocusedChild :=
-			element.children[firstFocused].Element.(elements.Focusable)
-
-		// before we move the focus, the currently focused child
-		// may also be able to move its focus. if the child is able
-		// to do that, we will let it and not move ours.
-		if firstFocusedChild.HandleFocus(direction) {
-			return true
-		}
-
-		// find the previous/next focusable element relative to the
-		// currently focused element, if it exists.
-		for index := firstFocused + int(direction);
-			index < len(element.children) && index >= 0;
-			index += int(direction) {
-
-			child, focusable :=
-				element.children[index].
-				Element.(elements.Focusable)
-			if focusable && child.HandleFocus(direction) {
-				// we have found one, so we now actually move
-				// the focus.
-				firstFocusedChild.HandleUnfocus()
-				element.focused = true
-				return true
-			}
-		}
-	}
-	
-	return false
-}
-
-func (element *Container) focusFirstFocusableElement (
-	direction input.KeynavDirection,
-) (
-	ok bool,
-) {
-	element.forFocusable (func (child elements.Focusable) bool {
-		if child.HandleFocus(direction) {
-			element.focused = true
-			ok = true
-			return false
-		}
-		return true
-	})
-	return
-}
-
-func (element *Container) focusLastFocusableElement (
-	direction input.KeynavDirection,
-) (
-	ok bool,
-) {
-	element.forFocusableBackward (func (child elements.Focusable) bool {
-		if child.HandleFocus(direction) {
-			element.focused = true
-			ok = true
-			return false
-		}
-		return true
-	})
-	return
-}
-
-func (element *Container) HandleUnfocus () {
-	element.focused = false
-	element.forFocused (func (child elements.Focusable) bool {
-		child.HandleUnfocus()
-		return true
-	})
-}
-
 func (element *Container) OnFocusRequest (callback func () (granted bool)) {
 	element.onFocusRequest = callback
+	element.Propagator.OnFocusRequest(callback)
 }
 
 func (element *Container) OnFocusMotionRequest (
 	callback func (direction input.KeynavDirection) (granted bool),
 ) {
 	element.onFocusMotionRequest = callback
+	element.Propagator.OnFocusMotionRequest(callback)
 }
 
 func (element *Container) forFocused (callback func (child elements.Focusable) bool) {
@@ -517,20 +359,24 @@ func (element *Container) childFocusRequestCallback (
 }
 
 func (element *Container) updateMinimumSize () {
-	margin := element.theme.Margin(theme.PatternBackground)
-	// TODO: have layouts take in x and y margins
-	width, height := element.layout.MinimumSize(element.children, margin.X)
+	margin  := element.theme.Margin(theme.PatternBackground)
+	padding := element.theme.Padding(theme.PatternBackground)
+	// TODO: have layouts take in entire margins/padding
+	width, height := element.layout.MinimumSize (
+		element.children, margin.X, padding.Horizontal())
 	if element.flexible {
 		height = element.layout.FlexibleHeightFor (
-			element.children,
-			margin.X, width)
+			element.children, margin.X,
+			padding.Horizontal(), width)
 	}
 	element.core.SetMinimumSize(width, height)
 }
 
 func (element *Container) doLayout () {
 	margin := element.theme.Margin(theme.PatternBackground)
-	// TODO: have layouts take in x and y margins
+	padding := element.theme.Padding(theme.PatternBackground)
+	// TODO: have layouts take in entire margins/padding
 	element.layout.Arrange (
-		element.children, margin.X, element.Bounds())
+		element.children, margin.X,
+		padding.Horizontal(), element.Bounds())
 }

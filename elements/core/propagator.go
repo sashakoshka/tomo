@@ -23,7 +23,6 @@ type Propagator struct {
 	focused  bool
 
 	onFocusRequest func () (granted bool)
-	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
 }
 
 // NewPropagator creates a new event propagator that uses the specified parent
@@ -137,9 +136,7 @@ func (propagator *Propagator) OnFocusRequest (callback func () (granted bool)) {
 // was granted, and false if it was not.
 func (propagator *Propagator) OnFocusMotionRequest (
 	callback func (direction input.KeynavDirection) (granted bool),
-) {
-	propagator.onFocusMotionRequest = callback
-}
+) { }
 
 // HandleKeyDown propogates the keyboard event to the currently selected child.
 func (propagator *Propagator) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
