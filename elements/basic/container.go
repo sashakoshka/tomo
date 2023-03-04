@@ -203,17 +203,6 @@ func (element *Container) ChildAt (point image.Point) (child elements.Element) {
 	return
 }
 
-func (element *Container) childPosition (child elements.Element) (position image.Point) {
-	for _, entry := range element.children {
-		if entry.Element == child {
-			position = entry.Bounds.Min
-			break
-		}
-	}
-
-	return
-}
-
 func (element *Container) redoAll () {
 	if !element.core.HasImage() { return }
 	// do a layout
@@ -235,7 +224,6 @@ func (element *Container) redoAll () {
 		entry.DrawTo(canvas.Cut(element.core, entry.Bounds))
 	}
 }
-
 
 // SetTheme sets the element's theme.
 func (element *Container) SetTheme (new theme.Theme) {
@@ -279,24 +267,6 @@ func (element *Container) OnFocusMotionRequest (
 	element.Propagator.OnFocusMotionRequest(callback)
 }
 
-func (element *Container) forFocused (callback func (child elements.Focusable) bool) {
-	for _, entry := range element.children {
-		child, focusable := entry.Element.(elements.Focusable)
-		if focusable && child.Focused() {
-			if !callback(child) { break }
-		}
-	}
-}
-
-func (element *Container) forFocusable (callback func (child elements.Focusable) bool) {
-	for _, entry := range element.children {
-		child, focusable := entry.Element.(elements.Focusable)
-		if focusable {
-			if !callback(child) { break }
-		}
-	}
-}
-
 func (element *Container) forFlexible (callback func (child elements.Flexible) bool) {
 	for _, entry := range element.children {
 		child, flexible := entry.Element.(elements.Flexible)
@@ -306,31 +276,16 @@ func (element *Container) forFlexible (callback func (child elements.Flexible) b
 	}
 }
 
-func (element *Container) forFocusableBackward (callback func (child elements.Focusable) bool) {
-	for index := len(element.children) - 1; index >= 0; index -- {
-		child, focusable := element.children[index].Element.(elements.Focusable)
-		if focusable {
-			if !callback(child) { break }
-		}
-	}
-}
-
-func (element *Container) firstFocused () (index int) {
-	for currentIndex, entry := range element.children {
-		child, focusable := entry.Element.(elements.Focusable)
-		if focusable && child.Focused() {
-			return currentIndex
-		}
-	}
-	return -1
-}
-
 func (element *Container) reflectChildProperties () {
 	element.focusable = false
-	element.forFocusable (func (elements.Focusable) bool {
-		element.focusable = true
-		return false
-	})
+	for _, entry := range element.children {
+		_, focusable := entry.Element.(elements.Focusable)
+		if focusable {
+			element.focusable = true
+			break
+		}
+	}
+	
 	element.flexible = false
 	element.forFlexible (func (elements.Flexible) bool {
 		element.flexible = true
@@ -348,13 +303,19 @@ func (element *Container) childFocusRequestCallback (
 ) {
 	if element.onFocusRequest != nil && element.onFocusRequest() {
 		element.focused = true
-		element.forFocused (func (child elements.Focusable) bool {
-			child.HandleUnfocus()
-			return true
-		})
+		element.unfocusAllChildren()
 		return true
 	} else {
 		return false
+	}
+}
+
+func (element *Container) unfocusAllChildren() {
+	for _, entry := range element.children {
+		child, focusable := entry.Element.(elements.Focusable)
+		if focusable && child.Focused() {
+			child.HandleUnfocus()
+		}
 	}
 }
 
