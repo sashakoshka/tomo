@@ -10,7 +10,9 @@ import "git.tebibyte.media/sashakoshka/tomo/elements"
 // calling a specified iterator function for each one. When keepGoing is false,
 // the iterator stops the current loop and OverChildren returns.
 type ChildIterator interface {
-	OverChildren (func (child elements.Element) (keepGoing bool))
+	OverChildren  (func (child elements.Element) (keepGoing bool))
+	Child         (index int) elements.Element
+	CountChildren () int
 }
 
 // Propagator is a struct that can be embedded into elements that contain one or
@@ -59,7 +61,58 @@ func (propagator *Propagator) Focus () {
 // marks itself as focused along with any applicable children and returns
 // true.
 func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (accepted bool) {
-	// TODO
+	direction = direction.Canon()
+
+	firstFocused := propagator.firstFocused()
+	if firstFocused < 0 {
+		// no element is currently focused, so we need to focus either
+		// the first or last focusable element depending on the
+		// direction.
+		switch direction {
+		case input.KeynavDirectionNeutral, input.KeynavDirectionForward:
+			// if we recieve a neutral or forward direction, focus
+			// the first focusable element.
+			return propagator.focusFirstFocusableElement(direction)
+		
+		case input.KeynavDirectionBackward:
+			// if we recieve a backward direction, focus the last
+			// focusable element.
+			return propagator.focusLastFocusableElement(direction)
+		}
+	} else {
+		// an element is currently focused, so we need to move the
+		// focus in the specified direction
+		firstFocusedChild :=
+			propagator.iterator.Child(firstFocused).
+			(elements.Focusable)
+
+		// before we move the focus, the currently focused child
+		// may also be able to move its focus. if the child is able
+		// to do that, we will let it and not move ours.
+		if firstFocusedChild.HandleFocus(direction) {
+			return true
+		}
+
+		// find the previous/next focusable element relative to the
+		// currently focused element, if it exists.
+		for index := firstFocused + int(direction);
+			index < propagator.iterator.CountChildren() && index >= 0;
+			index += int(direction) {
+
+			child, focusable :=
+				propagator.iterator.Child(index).
+				(elements.Focusable)
+			if focusable && child.HandleFocus(direction) {
+				// we have found one, so we now actually move
+				// the focus.
+				firstFocusedChild.HandleUnfocus()
+				propagator.focused = true
+				return true
+			}
+		}
+	}
+	
+	return false
 }
 
 // HandleDeselection causes this element to mark itself and all of its children
@@ -189,7 +242,52 @@ func (propagator *Propagator) SetConfig (config config.Config) {
 	})
 }
 
+// ----------- Focusing utilities ----------- //
+
+func (propagator *Propagator) focusFirstFocusableElement (
+	direction input.KeynavDirection,
+) (
+	ok bool,
+) {
+	propagator.forFocusable (func (child elements.Focusable) bool {
+		if child.HandleFocus(direction) {
+			propagator.focused = true
+			ok = true
+			return false
+		}
+		return true
+	})
+	return
+}
+
+func (propagator *Propagator) focusLastFocusableElement (
+	direction input.KeynavDirection,
+) (
+	ok bool,
+) {
+	focusables := []elements.Focusable { }
+	propagator.forFocusable (func (child elements.Focusable) bool {
+		focusables = append(focusables, child)
+		return true
+	})
+
+	for index := len(focusables) - 1; index >= 0; index -- {
+		child, focusable := focusables[index].(elements.Focusable)
+		if focusable && child.HandleFocus(direction) {
+			propagator.focused = true
+			ok = true
+			break
+		}
+	}
+	return
+}
+
+
 // ----------- Iterator utilities ----------- //
+
+// TODO: remove ChildIterator.OverChildren, reimplement that here, rework these
+// methods based on that, add a reverse iteration method, and then rework
+// focusLastFocusableElement based on that.
 
 func (propagator *Propagator) childAt (position image.Point) (child elements.Element) {
 	propagator.iterator.OverChildren (func (current elements.Element) bool {
@@ -230,15 +328,6 @@ func (propagator *Propagator) forFlexible (callback func (child elements.Flexibl
 		return true
 	})
 }
-
-// func (propagator *Propagator) forFocusableBackward (callback func (child elements.Focusable) bool) {
-	// for index := len(element.children) - 1; index >= 0; index -- {
-		// child, focusable := element.children[index].Element.(elements.Focusable)
-		// if focusable {
-			// if !callback(child) { break }
-		// }
-	// }
-// }
 
 func (propagator *Propagator) firstFocused () (index int) {
 	index = -1
