@@ -277,8 +277,8 @@ func (propagator *Propagator) focusLastFocusableElement (
 func (propagator *Propagator) forChildren (callback func (child elements.Element) bool) {
 	for index := 0; index < propagator.parent.CountChildren(); index ++ {
 		child := propagator.parent.Child(index)
-		if child == nil    { continue }
-		if callback(child) { break    }
+		if child == nil     { continue }
+		if !callback(child) { break    }
 	}
 }
 
