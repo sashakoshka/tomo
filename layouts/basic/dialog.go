@@ -1,6 +1,7 @@
 package basicLayouts
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
@@ -21,11 +22,11 @@ type Dialog struct {
 // Arrange arranges a list of entries into a dialog.
 func (layout Dialog) Arrange (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 	bounds image.Rectangle,
 ) {
-	if layout.Pad { bounds = bounds.Inset(padding) }
+	if layout.Pad { bounds = padding.Apply(bounds) }
 	
 	controlRowWidth, controlRowHeight := 0, 0
 	if len(entries) > 1 {
@@ -39,7 +40,7 @@ func (layout Dialog) Arrange (
 		main.Bounds.Min = bounds.Min
 		mainHeight := bounds.Dy() - controlRowHeight
 		if layout.Gap {
-			mainHeight -= margin
+			mainHeight -= margin.Y
 		}
 		main.Bounds.Max = main.Bounds.Min.Add(image.Pt(bounds.Dx(), mainHeight))
 		entries[0] = main
@@ -59,7 +60,7 @@ func (layout Dialog) Arrange (
 				freeSpace -= entryMinWidth
 			}
 			if index > 0 && layout.Gap {
-				freeSpace -= margin
+				freeSpace -= margin.X
 			}
 		}
 		expandingElementWidth := 0
@@ -75,7 +76,7 @@ func (layout Dialog) Arrange (
 
 		// set the size and position of each element in the control row
 		for index, entry := range entries[1:] {
-			if index > 0 && layout.Gap { dot.X += margin }
+			if index > 0 && layout.Gap { dot.X += margin.X }
 			
 			entry.Bounds.Min = dot
 			entryWidth := 0
@@ -102,8 +103,8 @@ func (layout Dialog) Arrange (
 // arrange the given list of entries.
 func (layout Dialog) MinimumSize (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 ) (
 	width, height int,
 ) {
@@ -114,7 +115,7 @@ func (layout Dialog) MinimumSize (
 	}
 
 	if len(entries) > 1 {
-		if layout.Gap { height += margin }
+		if layout.Gap { height += margin.X }
 		additionalWidth,
 		additionalHeight := layout.minimumSizeOfControlRow (
 			entries[1:], margin, padding)
@@ -125,8 +126,8 @@ func (layout Dialog) MinimumSize (
 	}
 
 	if layout.Pad {
-		width  += padding * 2
-		height += padding * 2
+		width  += padding.Horizontal()
+		height += padding.Vertical()
 	}
 	return
 }
@@ -135,14 +136,14 @@ func (layout Dialog) MinimumSize (
 // specified elements at the given width, taking into account flexible elements.
 func (layout Dialog) FlexibleHeightFor (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 	width int,
 ) (
 	height int,
 ) {
 	if layout.Pad {
-		width -= margin * 2
+		width -= padding.Horizontal()
 	}
 	
 	if len(entries) > 0 {
@@ -156,14 +157,14 @@ func (layout Dialog) FlexibleHeightFor (
 	}
 
 	if len(entries) > 1 {
-		if layout.Gap { height += margin }
+		if layout.Gap { height += margin.Y }
 		_, additionalHeight := layout.minimumSizeOfControlRow (
 			entries[1:], margin, padding)
 		height += additionalHeight
 	}
 
 	if layout.Pad {
-		height += padding * 2
+		height += padding.Vertical()
 	}
 	return
 }
@@ -172,8 +173,8 @@ func (layout Dialog) FlexibleHeightFor (
 // the control row.
 func (layout Dialog) minimumSizeOfControlRow (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 ) (
 	width, height int,
 ) {
@@ -184,7 +185,7 @@ func (layout Dialog) minimumSizeOfControlRow (
 		}
 		width += entryWidth
 		if layout.Gap && index > 0 {
-			width += margin
+			width += margin.X
 		}
 	}
 	return

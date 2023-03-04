@@ -1,6 +1,7 @@
 package basicLayouts
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
@@ -19,11 +20,11 @@ type Horizontal struct {
 // Arrange arranges a list of entries horizontally.
 func (layout Horizontal) Arrange (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 	bounds image.Rectangle,
 ) {
-	if layout.Pad { bounds = bounds.Inset(padding) }
+	if layout.Pad { bounds = padding.Apply(bounds) }
 	
 	// get width of expanding elements
 	expandingElementWidth := layout.expandingElementWidth (
@@ -32,7 +33,7 @@ func (layout Horizontal) Arrange (
 	// set the size and position of each element
 	dot := bounds.Min
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { dot.X += margin }
+		if index > 0 && layout.Gap { dot.X += margin.X }
 		
 		entry.Bounds.Min = dot
 		entryWidth := 0
@@ -52,7 +53,8 @@ func (layout Horizontal) Arrange (
 // arrange the given list of entries.
 func (layout Horizontal) MinimumSize (
 	entries []layouts.LayoutEntry,
-	margin int,
+	margin  image.Point,
+	padding artist.Inset,
 ) (
 	width, height int,
 ) {
@@ -63,13 +65,13 @@ func (layout Horizontal) MinimumSize (
 		}
 		width += entryWidth
 		if layout.Gap && index > 0 {
-			width += margin
+			width += margin.X
 		}
 	}
 
 	if layout.Pad {
-		width  += margin * 2
-		height += margin * 2
+		width  += padding.Horizontal()
+		height += padding.Vertical()
 	}
 	return
 }
@@ -78,13 +80,13 @@ func (layout Horizontal) MinimumSize (
 // specified elements at the given width, taking into account flexible elements.
 func (layout Horizontal) FlexibleHeightFor (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 	width int,
 ) (
 	height int,
 ) {
-	if layout.Pad { width -= padding * 2 }
+	if layout.Pad { width -= padding.Horizontal() }
 	
 	// get width of expanding elements
 	expandingElementWidth := layout.expandingElementWidth (
@@ -92,8 +94,8 @@ func (layout Horizontal) FlexibleHeightFor (
 	
 	x, y := 0, 0
 	if layout.Pad {
-		x += padding
-		y += padding
+		x += padding.Horizontal()
+		y += padding.Vertical()
 	}
 
 	// set the size and position of each element
@@ -108,19 +110,19 @@ func (layout Horizontal) FlexibleHeightFor (
 		if entryHeight > height { height = entryHeight }
 		
 		x += entryWidth
-		if index > 0 && layout.Gap { x += margin }
+		if index > 0 && layout.Gap { x += margin.X }
 	}
 
 	if layout.Pad {
-		height += padding * 2
+		height += padding.Vertical()
 	}
 	return
 }
 
 func (layout Horizontal) expandingElementWidth (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 	freeSpace int,
 ) (
 	width int,
@@ -137,7 +139,7 @@ func (layout Horizontal) expandingElementWidth (
 			freeSpace -= entryMinWidth
 		}
 		if index > 0 && layout.Gap {
-			freeSpace -= margin
+			freeSpace -= margin.X
 		}
 	}
 	

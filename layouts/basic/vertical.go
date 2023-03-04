@@ -1,6 +1,7 @@
 package basicLayouts
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
@@ -19,11 +20,11 @@ type Vertical struct {
 // Arrange arranges a list of entries vertically.
 func (layout Vertical) Arrange (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 	bounds image.Rectangle,
 ) {
-	if layout.Pad { bounds = bounds.Inset(padding) }
+	if layout.Pad { bounds = padding.Apply(bounds) }
 
 	// count the number of expanding elements and the amount of free space
 	// for them to collectively occupy, while gathering minimum heights.
@@ -46,7 +47,7 @@ func (layout Vertical) Arrange (
 			freeSpace -= entryMinHeight
 		}
 		if index > 0 && layout.Gap {
-			freeSpace -= margin
+			freeSpace -= margin.Y
 		}
 	}
 	
@@ -58,7 +59,7 @@ func (layout Vertical) Arrange (
 	// set the size and position of each element
 	dot := bounds.Min
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { dot.Y += margin }
+		if index > 0 && layout.Gap { dot.Y += margin.Y }
 		
 		entry.Bounds.Min = dot
 		entryHeight := 0
@@ -78,8 +79,8 @@ func (layout Vertical) Arrange (
 // arrange the given list of entries.
 func (layout Vertical) MinimumSize (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 ) (
 	width, height int,
 ) {
@@ -90,13 +91,13 @@ func (layout Vertical) MinimumSize (
 		}
 		height += entryHeight
 		if layout.Gap && index > 0 {
-			height += margin
+			height += margin.Y
 		}
 	}
 
 	if layout.Pad {
-		width  += padding * 2
-		height += padding * 2
+		width  += padding.Horizontal()
+		height += padding.Vertical()
 	}
 	return
 }
@@ -105,15 +106,15 @@ func (layout Vertical) MinimumSize (
 // specified elements at the given width, taking into account flexible elements.
 func (layout Vertical) FlexibleHeightFor (
 	entries []layouts.LayoutEntry,
-	margin int,
-	padding int,
+	margin  image.Point,
+	padding artist.Inset,
 	width int,
 ) (
 	height int,
 ) {
 	if layout.Pad {
-		width  -= padding * 2
-		height += padding * 2
+		width  -= padding.Horizontal()
+		height += padding.Vertical()
 	}
 	
 	for index, entry := range entries {
@@ -126,7 +127,7 @@ func (layout Vertical) FlexibleHeightFor (
 		}
 		
 		if layout.Gap && index > 0 {
-			height += margin
+			height += margin.Y
 		}
 	}
 	return

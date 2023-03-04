@@ -1,6 +1,7 @@
 package layouts
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // LayoutEntry associates an element with layout and positioning information so
@@ -24,7 +25,8 @@ type Layout interface {
 	// than what is returned by MinimumSize.
 	Arrange (
 		entries []LayoutEntry,
-		margin, padding int,
+		margin  image.Point,
+		padding artist.Inset,
 		bounds image.Rectangle,
 	)
 
@@ -32,7 +34,8 @@ type Layout interface {
 	// needs to properly arrange the given slice of layout entries.
 	MinimumSize (
 		entries []LayoutEntry,
-		margin, padding int,
+		margin  image.Point,
+		padding artist.Inset,
 	) (
 		width, height int,
 	)
@@ -42,8 +45,8 @@ type Layout interface {
 	// flexible elements.
 	FlexibleHeightFor (
 		entries []LayoutEntry,
-		margin int,
-		padding int,
+		margin  image.Point,
+		padding artist.Inset,
 		squeeze int,
 	) (
 		height int,

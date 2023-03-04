@@ -246,10 +246,9 @@ func (element *Container) SetConfig (new config.Config) {
 func (element *Container) FlexibleHeightFor (width int) (height int) {
 	margin  := element.theme.Margin(theme.PatternBackground)
 	padding := element.theme.Padding(theme.PatternBackground)
-	// TODO: have layouts take in entire margins/padding
 	return element.layout.FlexibleHeightFor (
 		element.children,
-		margin.X, padding.Horizontal(), width)
+		margin, padding, width)
 }
 
 func (element *Container) OnFlexibleHeightChange (callback func ()) {
@@ -323,13 +322,12 @@ func (element *Container) unfocusAllChildren() {
 func (element *Container) updateMinimumSize () {
 	margin  := element.theme.Margin(theme.PatternBackground)
 	padding := element.theme.Padding(theme.PatternBackground)
-	// TODO: have layouts take in entire margins/padding
 	width, height := element.layout.MinimumSize (
-		element.children, margin.X, padding.Horizontal())
+		element.children, margin, padding)
 	if element.flexible {
 		height = element.layout.FlexibleHeightFor (
-			element.children, margin.X,
-			padding.Horizontal(), width)
+			element.children, margin,
+			padding, width)
 	}
 	element.core.SetMinimumSize(width, height)
 }
@@ -337,8 +335,7 @@ func (element *Container) updateMinimumSize () {
 func (element *Container) doLayout () {
 	margin := element.theme.Margin(theme.PatternBackground)
 	padding := element.theme.Padding(theme.PatternBackground)
-	// TODO: have layouts take in entire margins/padding
 	element.layout.Arrange (
-		element.children, margin.X,
-		padding.Horizontal(), element.Bounds())
+		element.children, margin,
+		padding, element.Bounds())
 }
