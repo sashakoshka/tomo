@@ -3,6 +3,7 @@ package theme
 import "image"
 import "image/color"
 import "golang.org/x/image/font"
+import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
@@ -24,6 +25,12 @@ func (wrapped Wrapped) FontFace (style FontStyle, size FontSize) font.Face {
 func (wrapped Wrapped) Icon (name string, size IconSize) canvas.Image {
 	real := wrapped.ensure()
 	return real.Icon(name, size, wrapped.Case)
+}
+
+// MimeIcon returns an appropriate icon given file mime type.
+func (wrapped Wrapped) MimeIcon (mime data.Mime, size IconSize) canvas.Image {
+	real := wrapped.ensure()
+	return real.MimeIcon(mime, size, wrapped.Case)
 }
 
 // Pattern returns an appropriate pattern given a pattern name and state.
