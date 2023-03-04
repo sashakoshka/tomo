@@ -3,6 +3,7 @@ package theme
 import "image"
 import "image/color"
 import "golang.org/x/image/font"
+import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
@@ -83,6 +84,10 @@ type Theme interface {
 
 	// Icon returns an appropriate icon given an icon name, size, and case.
 	Icon (string, IconSize, Case) canvas.Image
+	
+	// Icon returns an appropriate icon given a file mime type, size, and,
+	// case.
+	MimeIcon (data.Mime, IconSize, Case) canvas.Image
 
 	// Pattern returns an appropriate pattern given a pattern name, case,
 	// and state.

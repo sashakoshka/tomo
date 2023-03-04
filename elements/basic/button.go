@@ -5,8 +5,8 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/shatter"
+// import "git.tebibyte.media/sashakoshka/tomo/artist"
+// import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -33,9 +33,7 @@ func NewButton (text string) (element *Button) {
 	element.theme.Case = theme.C("basic", "button")
 	element.Core, element.core = core.NewCore(element.drawAll)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore (func () {
-		element.drawAndPush(true)
-	})
+	element.focusableControl = core.NewFocusableCore(element.drawAndPush)
 	element.SetText(text)
 	return
 }
@@ -45,7 +43,7 @@ func (element *Button) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Focused() { element.Focus() }
 	if button != input.ButtonLeft { return }
 	element.pressed = true
-	element.drawAndPush(true)
+	element.drawAndPush()
 }
 
 func (element *Button) HandleMouseUp (x, y int, button input.Button) {
@@ -56,7 +54,7 @@ func (element *Button) HandleMouseUp (x, y int, button input.Button) {
 	if element.Enabled() && within && element.onClick != nil {
 		element.onClick()
 	}
-	element.drawAndPush(true)
+	element.drawAndPush()
 }
 
 func (element *Button) HandleMouseMove (x, y int) { }
@@ -66,14 +64,14 @@ func (element *Button) HandleKeyDown (key input.Key, modifiers input.Modifiers) 
 	if !element.Enabled() { return }
 	if key == input.KeyEnter {
 		element.pressed = true
-		element.drawAndPush(true)
+		element.drawAndPush()
 	}
 }
 
 func (element *Button) HandleKeyUp(key input.Key, modifiers input.Modifiers) {
 	if key == input.KeyEnter && element.pressed {
 		element.pressed = false
-		element.drawAndPush(true)
+		element.drawAndPush()
 		if !element.Enabled() { return }
 		if element.onClick != nil {
 			element.onClick()
@@ -98,7 +96,7 @@ func (element *Button) SetText (text string) {
 	element.text = text
 	element.drawer.SetText([]rune(text))
 	element.updateMinimumSize()
-	element.drawAndPush(false)
+	element.drawAndPush()
 }
 
 // SetTheme sets the element's theme.
@@ -109,7 +107,7 @@ func (element *Button) SetTheme (new theme.Theme) {
 		theme.FontStyleRegular,
 		theme.FontSizeNormal))
 	element.updateMinimumSize()
-	element.drawAndPush(false)
+	element.drawAndPush()
 }
 
 // SetConfig sets the element's configuration.
@@ -117,7 +115,7 @@ func (element *Button) SetConfig (new config.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
-	element.drawAndPush(false)
+	element.drawAndPush()
 }
 
 func (element *Button) updateMinimumSize () {
@@ -125,19 +123,6 @@ func (element *Button) updateMinimumSize () {
 	padding    := element.theme.Padding(theme.PatternButton)
 	minimumSize := padding.Inverse().Apply(textBounds)
 	element.core.SetMinimumSize(minimumSize.Dx(), minimumSize.Dy())
-}
-
-func (element *Button) drawAndPush (partial bool) {
-	if element.core.HasImage () {
-		if partial {
-			element.core.DamageRegion (append (
-				element.drawBackground(true),
-				element.drawText(true))...)
-		} else {
-			element.drawAll()
-			element.core.DamageAll()
-		}
-	}
 }
 
 func (element *Button) state () theme.State {
@@ -148,23 +133,28 @@ func (element *Button) state () theme.State {
 	}
 }
 
-func (element *Button) drawBackground (partial bool) []image.Rectangle {
-	state   := element.state()
-	bounds  := element.Bounds()
-	pattern := element.theme.Pattern(theme.PatternButton, state)
-	static  := element.theme.Hints(theme.PatternButton).StaticInset
-
-	if partial && static != (artist.Inset { }) {
-		tiles := shatter.Shatter(bounds, static.Apply(bounds))
-		artist.Draw(element.core, pattern, tiles...)
-		return tiles
-	} else {
-		pattern.Draw(element.core, bounds)
-		return []image.Rectangle { bounds }
+func (element *Button) drawAndPush () {
+	if element.core.HasImage () {
+		element.drawAll()
+		element.core.DamageAll()
 	}
 }
 
-func (element *Button) drawText (partial bool) image.Rectangle {
+func (element *Button) drawAll () {
+	element.drawBackground()
+	element.drawText()
+}
+
+func (element *Button) drawBackground () []image.Rectangle {
+	state   := element.state()
+	bounds  := element.Bounds()
+	pattern := element.theme.Pattern(theme.PatternButton, state)
+
+	pattern.Draw(element.core, bounds)
+	return []image.Rectangle { bounds }
+}
+
+func (element *Button) drawText () image.Rectangle {
 	state      := element.state()
 	bounds     := element.Bounds()
 	foreground := element.theme.Color(theme.ColorForeground, state)
@@ -182,17 +172,7 @@ func (element *Button) drawText (partial bool) image.Rectangle {
 	if element.pressed {
 		offset = offset.Add(sink)
 	}
-
-	if partial {
-		pattern := element.theme.Pattern(theme.PatternButton, state)
-		pattern.Draw(element.core, region)
-	}
 	
 	element.drawer.Draw(element.core, foreground, offset)
 	return region
-}
-
-func (element *Button) drawAll () {
-	element.drawBackground(false)
-	element.drawText(false)
 }

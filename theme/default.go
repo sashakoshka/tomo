@@ -6,6 +6,7 @@ import _ "embed"
 import _ "image/png"
 import "image/color"
 import "golang.org/x/image/font"
+import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
@@ -84,6 +85,13 @@ func (Default) FontFace (style FontStyle, size FontSize, c Case) font.Face {
 
 // Icon returns an icon from the default set corresponding to the given name.
 func (Default) Icon (string, IconSize, Case) canvas.Image {
+	// TODO
+	return nil
+}
+
+// MimeIcon returns an icon from the default set corresponding to the given mime.
+// type.
+func (Default) MimeIcon (data.Mime, IconSize, Case) canvas.Image {
 	// TODO
 	return nil
 }
