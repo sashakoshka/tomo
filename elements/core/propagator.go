@@ -23,7 +23,9 @@ type Propagator struct {
 
 // NewPropagator creates a new event propagator that uses the specified iterator
 // to access a list of child elements that will have events propagated to them.
+// If iterator is nil, the function will return nil.
 func NewPropagator (iterator ChildIterator) (propagator *Propagator) {
+	if iterator == nil { return nil }
 	propagator = &Propagator {
 		iterator: iterator,
 	}
@@ -32,69 +34,88 @@ func NewPropagator (iterator ChildIterator) (propagator *Propagator) {
 
 // Focused returns whether or not this element or any of its children
 // are currently focused.
-func (propagator *Propagator) Focused () (focused bool)
+func (propagator *Propagator) Focused () (focused bool) {
+	
+}
 
 // Focus focuses this element, if its parent element grants the
 // request.
-func (propagator *Propagator) Focus ()
+func (propagator *Propagator) Focus () {
+	
+}
 
 // HandleFocus causes this element to mark itself as focused. If the
-// element does not have children, it is disabled, or there are no more
-// selectable children in the given direction, it should return false
-// and do nothing. Otherwise, it should select itself and any children
-// (if applicable) and return true.
-func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (accepted bool)
+// element does not have children or there are no more focusable children in
+// the given direction, it should return false and do nothing. Otherwise, it
+// marks itself as focused along with any applicable children and returns
+// true.
+func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (accepted bool) {
+	
+}
 
-// HandleDeselection causes this element to mark itself and all of its
-// children as unfocused.
-func (propagator *Propagator) HandleUnfocus ()
+// HandleDeselection causes this element to mark itself and all of its children
+// as unfocused.
+func (propagator *Propagator) HandleUnfocus () {
+	
+}
 
-// OnFocusRequest sets a function to be called when this element wants
-// its parent element to focus it. Parent elements should return true if
-// the request was granted, and false if it was not. If the parent
-// element returns true, the element must act as if a HandleFocus call
-// was made with KeynavDirectionNeutral.
-func (propagator *Propagator) OnFocusRequest (func () (granted bool))
+// OnFocusRequest sets a function to be called when this element wants its
+// parent element to focus it. Parent elements should return true if the request
+// was granted, and false if it was not. If the parent element returns true, the
+// element acts as if a HandleFocus call was made with KeynavDirectionNeutral.
+func (propagator *Propagator) OnFocusRequest (func () (granted bool)) {
+	
+}
 
-// OnFocusMotionRequest sets a function to be called when this
-// element wants its parent element to focus the element behind or in
-// front of it, depending on the specified direction. Parent elements
-// should return true if the request was granted, and false if it was
-// not.
-func (propagator *Propagator) OnFocusMotionRequest (func (direction input.KeynavDirection) (granted bool))
+// OnFocusMotionRequest sets a function to be called when this element wants its
+// parent element to focus the element behind or in front of it, depending on
+// the specified direction. Parent elements should return true if the request
+// was granted, and false if it was not.
+func (propagator *Propagator) OnFocusMotionRequest (func (direction input.KeynavDirection) (granted bool)) {
+	
+}
 
-// HandleKeyDown is called when a key is pressed down or repeated while
-// this element has keyboard focus. It is important to note that not
-// every key down event is guaranteed to be paired with exactly one key
-// up event. This is the reason a list of modifier keys held down at the
-// time of the key press is given.
-func (propagator *Propagator) HandleKeyDown (key input.Key, modifiers input.Modifiers)
+// HandleKeyDown propogates the keyboard event to the currently selected child.
+func (propagator *Propagator) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+	
+}
 
-// HandleKeyUp is called when a key is released while this element has
-// keyboard focus.
-func (propagator *Propagator) HandleKeyUp (key input.Key, modifiers input.Modifiers)
+// HandleKeyUp propogates the keyboard event to the currently selected child.
+func (propagator *Propagator) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
+	
+}
 
-// HandleMouseDown is called when a mouse button is pressed down on this
-// element.
-func (propagator *Propagator) HandleMouseDown (x, y int, button input.Button)
+// HandleMouseDown propagates the mouse event to the element under the mouse
+// pointer.
+func (propagator *Propagator) HandleMouseDown (x, y int, button input.Button) {
+	
+}
 
-// HandleMouseUp is called when a mouse button is released that was
-// originally pressed down on this element.
-func (propagator *Propagator) HandleMouseUp (x, y int, button input.Button)
+// HandleMouseUp propagates the mouse event to the element that the released
+// mouse button was originally pressed on.
+func (propagator *Propagator) HandleMouseUp (x, y int, button input.Button) {
+	
+}
 
-// HandleMouseMove is called when the mouse is moved over this element,
-// or the mouse is moving while being held down and originally pressed
-// down on this element.
-func (propagator *Propagator) HandleMouseMove (x, y int)
+// HandleMouseMove propagates the mouse event to the element that was last
+// pressed down by the mouse if the mouse is currently being held down, else it
+// propagates the event to whichever element is underneath the mouse pointer.
+func (propagator *Propagator) HandleMouseMove (x, y int) {
+	
+}
 
-// HandleScroll is called when the mouse is scrolled. The X and Y
-// direction of the scroll event are passed as deltaX and deltaY.
-func (propagator *Propagator) HandleMouseScroll (x, y int, deltaX, deltaY float64)
+// HandleScroll propagates the mouse event to the element under the mouse
+// pointer.
+func (propagator *Propagator) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
+	
+}
 
-// SetTheme sets the element's theme to something fulfilling the
-// theme.Theme interface.
-func (propagator *Propagator) SetTheme (theme.Theme)
+// SetTheme sets the theme of all children to the specified theme.
+func (propagator *Propagator) SetTheme (theme.Theme) {
+	
+}
 
-// SetConfig sets the element's configuration to something fulfilling
-// the config.Config interface.
-func (propagator *Propagator) SetConfig (config.Config)
+// SetConfig sets the theme of all children to the specified config.
+func (propagator *Propagator) SetConfig (config.Config) {
+	
+}
