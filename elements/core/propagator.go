@@ -285,8 +285,8 @@ func (propagator *Propagator) forChildren (callback func (child elements.Element
 func (propagator *Propagator) forChildrenReverse (callback func (child elements.Element) bool) {
 	for index := propagator.parent.CountChildren() - 1; index > 0; index -- {
 		child := propagator.parent.Child(index)
-		if child == nil    { continue }
-		if callback(child) { break    }
+		if child == nil     { continue }
+		if !callback(child) { break    }
 	}
 }
 
