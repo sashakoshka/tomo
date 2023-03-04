@@ -66,15 +66,21 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 		// the first or last focusable element depending on the
 		// direction.
 		switch direction {
-		case input.KeynavDirectionNeutral, input.KeynavDirectionForward:
-			// if we recieve a neutral or forward direction, focus
-			// the first focusable element.
+		case input.KeynavDirectionForward:
+			// if we recieve a forward direction, focus the first
+			// focusable element.
 			return propagator.focusFirstFocusableElement(direction)
 		
 		case input.KeynavDirectionBackward:
 			// if we recieve a backward direction, focus the last
 			// focusable element.
 			return propagator.focusLastFocusableElement(direction)
+
+		case input.KeynavDirectionNeutral:
+			// if we recieve a neutral direction, just focus this
+			// element and nothing else.
+			propagator.focused = true
+			return true
 		}
 	} else {
 		// an element is currently focused, so we need to move the

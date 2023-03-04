@@ -20,8 +20,6 @@ type Container struct {
 	layout    layouts.Layout
 	children  []layouts.LayoutEntry
 	warping   bool
-	focused   bool
-	focusable bool
 	flexible  bool
 	
 	config config.Wrapped
@@ -277,13 +275,16 @@ func (element *Container) forFlexible (callback func (child elements.Flexible) b
 }
 
 func (element *Container) reflectChildProperties () {
-	element.focusable = false
+	focusable := false
 	for _, entry := range element.children {
 		_, focusable := entry.Element.(elements.Focusable)
 		if focusable {
-			element.focusable = true
+			focusable = true
 			break
 		}
+	}
+	if !focusable && element.Focused() {
+		element.Propagator.HandleUnfocus()
 	}
 	
 	element.flexible = false
@@ -291,9 +292,6 @@ func (element *Container) reflectChildProperties () {
 		element.flexible = true
 		return false
 	})
-	if !element.focusable {
-		element.focused = false
-	}
 }
 
 func (element *Container) childFocusRequestCallback (
@@ -302,20 +300,11 @@ func (element *Container) childFocusRequestCallback (
 	granted bool,
 ) {
 	if element.onFocusRequest != nil && element.onFocusRequest() {
-		element.focused = true
-		element.unfocusAllChildren()
+		element.Propagator.HandleUnfocus()
+		element.Propagator.HandleFocus(input.KeynavDirectionNeutral)
 		return true
 	} else {
 		return false
-	}
-}
-
-func (element *Container) unfocusAllChildren() {
-	for _, entry := range element.children {
-		child, focusable := entry.Element.(elements.Focusable)
-		if focusable && child.Focused() {
-			child.HandleUnfocus()
-		}
 	}
 }
 
