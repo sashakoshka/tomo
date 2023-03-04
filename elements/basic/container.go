@@ -160,6 +160,9 @@ func (element *Container) clearChildEventHandlers (child elements.Element) {
 
 // DisownAll removes all child elements from the container at once.
 func (element *Container) DisownAll () {
+	for _, entry := range element.children {
+		element.clearChildEventHandlers(entry.Element)
+	}
 	element.children = nil
 
 	element.updateMinimumSize()
