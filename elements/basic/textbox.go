@@ -92,11 +92,18 @@ func (element *TextBox) HandleMouseMove (x, y int) {
 	}
 }
 
-func (element *TextBox) atPosition (position image.Point) int {
-	padding := element.theme.Padding(theme.PatternInput)
-	offset := element.Bounds().Min.Add (image.Pt (
+func (element *TextBox) textOffset () image.Point {
+	padding     := element.theme.Padding(theme.PatternInput)
+	bounds      := element.Bounds()
+	innerBounds := padding.Apply(bounds)
+	textHeight  := element.valueDrawer.LineHeight().Round()
+	return bounds.Min.Add (image.Pt (
 		padding[artist.SideLeft] - element.scroll,
-		padding[artist.SideTop]))
+		padding[artist.SideTop] + (innerBounds.Dy() - textHeight) / 2))
+}
+
+func (element *TextBox) atPosition (position image.Point) int {
+	offset := element.textOffset()
 	textBoundsMin := element.valueDrawer.LayoutBounds().Min
 	return element.valueDrawer.AtPosition (
 		fixedutil.Pt(position.Sub(offset).Add(textBoundsMin)))
@@ -114,8 +121,6 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 	if element.onKeyDown != nil && element.onKeyDown(key, modifiers) {
 		return
 	}
-
-	// TODO: text selection with shift
 
 	scrollMemory := element.scroll
 	altered     := true
@@ -358,11 +363,7 @@ func (element *TextBox) draw () {
 	padding := element.theme.Padding(theme.PatternInput)
 	innerCanvas := canvas.Cut(element.core, padding.Apply(bounds))
 	pattern.Draw(element.core, bounds)
-	
-	offset := bounds.Min.Add (image.Point {
-		X: padding[artist.SideLeft] - element.scroll,
-		Y: padding[artist.SideTop],
-	})
+	offset := element.textOffset()
 
 	if element.Focused() && !element.dot.Empty() {
 		// draw selection bounds
