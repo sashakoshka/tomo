@@ -1,6 +1,7 @@
 package popups
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
@@ -35,11 +36,23 @@ func NewDialog (
 ) {
 	window, _ = tomo.NewWindow(2, 2)
 	window.SetTitle(title)
-	
+
 	container := basicElements.NewContainer(basicLayouts.Dialog { true, true })
 	window.Adopt(container)
 
-	container.Adopt(basicElements.NewLabel(message, false), true)
+	messageContainer := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
+	iconId := theme.IconInformation
+	switch kind {
+	case DialogKindInfo:     iconId = theme.IconInformation
+	case DialogKindQuestion: iconId = theme.IconQuestion
+	case DialogKindWarning:  iconId = theme.IconWarning
+	case DialogKindError:    iconId = theme.IconError
+	}
+	
+	messageContainer.Adopt(basicElements.NewIcon(iconId, theme.IconSizeSmall), false)
+	messageContainer.Adopt(basicElements.NewLabel(message, false), true)
+	container.Adopt(messageContainer, true)
+	
 	if len(buttons) == 0 {
 		button := basicElements.NewButton("OK")
 		button.OnClick(window.Close)

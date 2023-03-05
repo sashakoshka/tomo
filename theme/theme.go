@@ -132,7 +132,7 @@ const (
 
 const (
 	// Action icons
-	IconOpen = iota + 0x100
+	IconOpen Icon = iota + 0x100
 	IconSave
 	IconSaveAs
 	IconNew
@@ -172,7 +172,7 @@ const (
 
 const (
 	// Status icons
-	IconInformation = iota + 0x180
+	IconInformation Icon = iota + 0x180
 	IconQuestion
 	IconWarning
 	IconError)
