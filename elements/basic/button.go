@@ -222,10 +222,6 @@ func (element *Button) drawText () {
 		offset.Y -= textBounds.Dy() / 2
 		offset.Y -= textBounds.Min.Y
 		offset.X -= textBounds.Min.X
-		
-		if element.pressed {
-			offset = offset.Add(sink)
-		}
 	}
 
 	if element.hasIcon {
@@ -254,6 +250,9 @@ func (element *Button) drawText () {
 	}
 
 	if element.showText {
+		if element.pressed {
+			offset = offset.Add(sink)
+		}
 		element.drawer.Draw(element.core, foreground, offset)
 	}
 }
