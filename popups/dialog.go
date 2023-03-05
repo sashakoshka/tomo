@@ -55,6 +55,7 @@ func NewDialog (
 	
 	if len(buttons) == 0 {
 		button := basicElements.NewButton("OK")
+		button.SetIcon(theme.IconYes)
 		button.OnClick(window.Close)
 		container.Adopt(button, false)
 		button.Focus()

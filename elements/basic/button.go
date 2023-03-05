@@ -23,6 +23,9 @@ type Button struct {
 	
 	config config.Wrapped
 	theme  theme.Wrapped
+
+	hasIcon bool
+	iconId  theme.Icon
 	
 	onClick func ()
 }
@@ -99,6 +102,23 @@ func (element *Button) SetText (text string) {
 	element.drawAndPush()
 }
 
+// SetIcon sets the icon of the button.
+func (element *Button) SetIcon (id theme.Icon) {
+	if element.hasIcon && element.iconId == id { return }
+	element.hasIcon = true
+	element.iconId = id
+	element.updateMinimumSize()
+	element.drawAndPush()
+}
+
+// ClearIcon removes the button's icon, if it exists.
+func (element *Button) ClearIcon () {
+	if !element.hasIcon { return }
+	element.hasIcon = false
+	element.updateMinimumSize()
+	element.drawAndPush()
+}
+
 // SetTheme sets the element's theme.
 func (element *Button) SetTheme (new theme.Theme) {
 	if new == element.theme.Theme { return }
@@ -119,9 +139,21 @@ func (element *Button) SetConfig (new config.Config) {
 }
 
 func (element *Button) updateMinimumSize () {
-	textBounds := element.drawer.LayoutBounds()
-	padding    := element.theme.Padding(theme.PatternButton)
+	textBounds  := element.drawer.LayoutBounds()
+	padding     := element.theme.Padding(theme.PatternButton)
+	margin      := element.theme.Margin(theme.PatternButton)
 	minimumSize := padding.Inverse().Apply(textBounds)
+	minimumSize  = minimumSize.Sub(minimumSize.Min)
+	if element.hasIcon {
+		icon := element.theme.Icon(element.iconId, theme.IconSizeSmall) 
+		if icon != nil {
+			bounds := icon.Bounds()
+			minimumSize.Max.X += margin.X + bounds.Dx()
+			if minimumSize.Max.Y < bounds.Dy() {
+				minimumSize.Max.Y = bounds.Dy()
+			}
+		}
+	}
 	element.core.SetMinimumSize(minimumSize.Dx(), minimumSize.Dy())
 }
 
@@ -154,11 +186,12 @@ func (element *Button) drawBackground () []image.Rectangle {
 	return []image.Rectangle { bounds }
 }
 
-func (element *Button) drawText () image.Rectangle {
+func (element *Button) drawText () {
 	state      := element.state()
 	bounds     := element.Bounds()
 	foreground := element.theme.Color(theme.ColorForeground, state)
 	sink       := element.theme.Sink(theme.PatternButton)
+	margin     := element.theme.Margin(theme.PatternButton)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := image.Point {
@@ -167,12 +200,30 @@ func (element *Button) drawText () image.Rectangle {
 	}
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
-	region := textBounds.Union(textBounds.Add(sink)).Add(offset)
 	
 	if element.pressed {
 		offset = offset.Add(sink)
 	}
+
+	if element.hasIcon {
+		icon := element.theme.Icon(element.iconId, theme.IconSizeSmall) 
+		if icon != nil {
+			iconBounds := icon.Bounds()
+			addedWidth := margin.X + iconBounds.Dx()
+			iconOffset := offset
+			iconOffset.X -= addedWidth / 2
+			iconOffset.Y =
+				bounds.Min.Y +
+				(bounds.Dy() -
+				iconBounds.Dy()) / 2
+			if element.pressed {
+				iconOffset.Y += sink.Y
+			}
+			offset.X += addedWidth / 2
+
+			icon.Draw(element.core, foreground, iconOffset)
+		}
+	}
 	
 	element.drawer.Draw(element.core, foreground, offset)
-	return region
 }
