@@ -5,7 +5,6 @@ import "image/color"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // IconSize is a type representing valid icon sizes.
 type IconSize int
@@ -148,6 +147,7 @@ type Icon int; const (
 	IconRemoveBookmark
 	IconAddFavorite
 	IconRemoveFavorite
+	
 	IconPlay
 	IconPause
 	IconStop
@@ -197,11 +197,11 @@ type Theme interface {
 	FontFace (FontStyle, FontSize, Case) font.Face
 
 	// Icon returns an appropriate icon given an icon name, size, and case.
-	Icon (string, IconSize, Case) canvas.Image
+	Icon (string, IconSize, Case) artist.Icon
 	
 	// Icon returns an appropriate icon given a file mime type, size, and,
 	// case.
-	MimeIcon (data.Mime, IconSize, Case) canvas.Image
+	MimeIcon (data.Mime, IconSize, Case) artist.Icon
 
 	// Pattern returns an appropriate pattern given a pattern name, case,
 	// and state.

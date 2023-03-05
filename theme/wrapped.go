@@ -5,7 +5,6 @@ import "image/color"
 import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // Wrapped wraps any theme and injects a case into it automatically so that it
 // doesn't need to be specified for each query. Additionally, if the underlying
@@ -22,13 +21,13 @@ func (wrapped Wrapped) FontFace (style FontStyle, size FontSize) font.Face {
 }
 
 // Icon returns an appropriate icon given an icon name.
-func (wrapped Wrapped) Icon (name string, size IconSize) canvas.Image {
+func (wrapped Wrapped) Icon (name string, size IconSize) artist.Icon {
 	real := wrapped.ensure()
 	return real.Icon(name, size, wrapped.Case)
 }
 
 // MimeIcon returns an appropriate icon given file mime type.
-func (wrapped Wrapped) MimeIcon (mime data.Mime, size IconSize) canvas.Image {
+func (wrapped Wrapped) MimeIcon (mime data.Mime, size IconSize) artist.Icon {
 	real := wrapped.ensure()
 	return real.MimeIcon(mime, size, wrapped.Case)
 }

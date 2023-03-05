@@ -84,14 +84,14 @@ func (Default) FontFace (style FontStyle, size FontSize, c Case) font.Face {
 }
 
 // Icon returns an icon from the default set corresponding to the given name.
-func (Default) Icon (string, IconSize, Case) canvas.Image {
+func (Default) Icon (string, IconSize, Case) artist.Icon {
 	// TODO
 	return nil
 }
 
 // MimeIcon returns an icon from the default set corresponding to the given mime.
 // type.
-func (Default) MimeIcon (data.Mime, IconSize, Case) canvas.Image {
+func (Default) MimeIcon (data.Mime, IconSize, Case) artist.Icon {
 	// TODO
 	return nil
 }
