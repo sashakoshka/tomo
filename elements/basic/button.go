@@ -156,7 +156,6 @@ func (element *Button) updateMinimumSize () {
 		minimumSize = element.drawer.LayoutBounds()
 	}
 	
-	minimumSize = padding.Inverse().Apply(minimumSize)
 	minimumSize = minimumSize.Sub(minimumSize.Min)
 	
 	if element.hasIcon {
@@ -172,6 +171,8 @@ func (element *Button) updateMinimumSize () {
 			}
 		}
 	}
+	
+	minimumSize = padding.Inverse().Apply(minimumSize)
 	element.core.SetMinimumSize(minimumSize.Dx(), minimumSize.Dy())
 }
 
@@ -210,14 +211,15 @@ func (element *Button) drawText () {
 	foreground := element.theme.Color(theme.ColorForeground, state)
 	sink       := element.theme.Sink(theme.PatternButton)
 	margin     := element.theme.Margin(theme.PatternButton)
-	var offset image.Point
+	
+	offset := image.Pt (
+		bounds.Dx() / 2,
+		bounds.Dy() / 2).Add(bounds.Min)
 
 	if element.showText {
 		textBounds := element.drawer.LayoutBounds()
-		offset = image.Point {
-			X: bounds.Min.X + (bounds.Dx() - textBounds.Dx()) / 2,
-			Y: bounds.Min.Y + (bounds.Dy() - textBounds.Dy()) / 2,
-		}
+		offset.X -= textBounds.Dx() / 2
+		offset.Y -= textBounds.Dy() / 2
 		offset.Y -= textBounds.Min.Y
 		offset.X -= textBounds.Min.X
 		
@@ -231,25 +233,27 @@ func (element *Button) drawText () {
 		if icon != nil {
 			iconBounds := icon.Bounds()
 			addedWidth := iconBounds.Dx()
+			iconOffset := offset
 
 			if element.showText {
 				addedWidth += margin.X
 			}
 			
-			iconOffset := offset
 			iconOffset.X -= addedWidth / 2
 			iconOffset.Y =
 				bounds.Min.Y +
 				(bounds.Dy() -
 				iconBounds.Dy()) / 2
 			if element.pressed {
-				iconOffset.Y += sink.Y
+				iconOffset = iconOffset.Add(sink)
 			}
 			offset.X += addedWidth / 2
 
 			icon.Draw(element.core, foreground, iconOffset)
 		}
 	}
-	
-	element.drawer.Draw(element.core, foreground, offset)
+
+	if element.showText {
+		element.drawer.Draw(element.core, foreground, offset)
+	}
 }

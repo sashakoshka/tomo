@@ -22,6 +22,12 @@ func run () {
 	container.Adopt(icons(theme.IconHome, theme.IconRepositories), true)
 	container.Adopt(icons(theme.IconFile, theme.IconCD), true)
 	container.Adopt(icons(theme.IconOpen, theme.IconRemoveBookmark), true)
+
+	closeButton := basicElements.NewButton("Ok")
+	closeButton.SetIcon(theme.IconYes)
+	closeButton.ShowText(false)
+	closeButton.OnClick(tomo.Stop)
+	container.Adopt(closeButton, false)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
