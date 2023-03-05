@@ -16,8 +16,6 @@ const (
 )
 
 // Pattern lists a number of cannonical pattern types, each with its own ID.
-// This allows custom elements to follow themes, even those that do not
-// explicitly support them.
 type Pattern int; const (
 	// PatternBackground is the window background of the theme. It appears
 	// in things like containers and behind text.
@@ -56,12 +54,128 @@ type Pattern int; const (
 	PatternMercury
 )
 
+// Color lits a number of cannonical colors, each with its own ID.
 type Color int; const (
 	// ColorAccent is the accent color of the theme.
 	ColorAccent Color = iota
 
 	// ColorForeground is the text/icon color of the theme.
 	ColorForeground
+)
+
+// Icon lists a number of cannonical icons, each with its own ID.
+type Icon int; const (
+	// Place icons
+	IconHome Icon = iota
+	Icon3DObjects
+	IconPictures
+	IconVideos
+	IconMusic
+	IconArchives
+	IconBooks
+	IconDocuments
+	IconFonts
+	IconPrograms
+	IconLibraries
+	IconDownloads
+	IconRepositories
+	IconSettings
+
+	// Object icons
+	IconFile = iota + 0x80
+	IconDirectory
+	IconPopulatedDirectory
+	
+	IconStorage
+	IconMagneticTape
+	IconFloppyDisk
+	IconHDD
+	IconSSD
+	IconFlashDrive
+	IconMemoryCard
+	IconRomDisk
+	IconRamDisk
+	IconCD
+	IconDVD
+
+	IconNetwork
+	IconInternet
+
+	IconDevice
+	IconServer
+	IconNetworkSwitch
+	IconRouter
+	IconDesktop
+	IconLaptop
+	IconTablet
+	IconPhone
+	IconCamera
+
+	IconPeripheral
+	IconKeyboard
+	IconMouse
+	IconTrackpad
+	IconPenTablet
+	IconMonitor
+	IconSpeaker
+	IconMicrophone
+	IconWebcam
+	IconGameController
+
+	IconPort
+	IconNetworkPort
+	IconUSBPort
+	IconParallelPort
+	IconSerialPort
+	IconPS2Port
+	IconMonitorPort
+
+	// Action icons
+	IconOpen = iota + 0x100
+	IconSave
+	IconSaveAs
+	IconNew
+	IconNewFolder
+	IconDelete
+
+	IconCut
+	IconCopy
+	IconPaste
+
+	IconAdd
+	IconRemove
+	IconAddBookmark
+	IconRemoveBookmark
+	IconAddFavorite
+	IconRemoveFavorite
+	IconPlay
+	IconPause
+	IconStop
+	IconFastForward
+	IconRewind
+	IconToEnd
+	IconToBeginning
+	IconRecord
+	IconVolumeUp
+	IconVolumeDown
+	IconMute
+
+	IconBackward
+	IconForward
+	IconRefresh
+	IconHistory
+
+	IconYes
+	IconNo
+
+	// Status icons
+	IconInformation = iota + 0x180
+	IconQuestion
+	IconWarning
+	IconError
+
+	// Tool icons
+	
 )
 
 // Hints specifies rendering hints for a particular pattern. Elements can take
