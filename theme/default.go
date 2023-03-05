@@ -16,6 +16,9 @@ import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 var defaultAtlasBytes []byte
 var defaultAtlas      canvas.Canvas
 var defaultTextures   [14][9]artist.Pattern
+//go:embed assets/wintergreen-icons-small.png
+var defaultIconsSmallAtlasBytes []byte
+var defaultIconsSmall [640]binaryIcon
 
 func atlasCell (col, row int, border artist.Inset) {
 	bounds := image.Rect(0, 0, 16, 16).Add(image.Pt(col, row).Mul(16))
@@ -29,6 +32,51 @@ func atlasCol (col int, border artist.Inset) {
 	for index, _ := range defaultTextures[col] {
 		atlasCell(col, index, border)
 	}
+}
+
+type binaryIcon struct {
+	data   []bool
+	stride int
+}
+
+func (icon binaryIcon) Draw (destination canvas.Canvas, color color.RGBA, at image.Point) {
+	bounds := icon.Bounds().Add(at).Intersect(destination.Bounds())
+	point := image.Point { }
+	data, stride := destination.Buffer()
+
+	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y ++ {
+	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X ++ {
+		srcPoint := point.Sub(at)
+		srcIndex := srcPoint.X + srcPoint.Y * icon.stride
+		dstIndex := point.X + point.Y * stride
+		if icon.data[srcIndex] {
+			data[dstIndex] = color
+		}
+	}}
+}
+
+func (icon binaryIcon) Bounds () image.Rectangle {
+	return image.Rect(0, 0, icon.stride, len(icon.data) / icon.stride)
+}
+
+func binaryIconFrom (source image.Image, clip image.Rectangle) (icon binaryIcon) {
+	bounds := source.Bounds().Intersect(clip)
+	if bounds.Empty() { return }
+	
+	icon.stride = bounds.Dx()
+	icon.data   = make([]bool, bounds.Dx() * bounds.Dy())
+
+	point    := image.Point { }
+	dstIndex := 0
+	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y ++ {
+	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X ++ {
+		r, g, b, a := source.At(point.X, point.Y).RGBA()
+		if a > 0x8000 && (r + g + b) / 3 < 0x8000 {
+			icon.data[dstIndex] = true
+		}
+		dstIndex ++
+	}}
+	return
 }
 
 func init () {
@@ -64,6 +112,20 @@ func init () {
 	atlasCol(11, artist.Inset { 3, 3, 5, 3 })
 	// PatternRaised: fun.sharpKey
 	atlasCol(12, artist.Inset { 3, 3, 4, 3 })
+
+	// set up small icons
+	defaultIconsSmallAtlasImage, _, _ := image.Decode (
+		bytes.NewReader(defaultIconsSmallAtlasBytes))
+	bounds    := defaultIconsSmallAtlasImage.Bounds()
+	point     := image.Point { }
+	iconIndex := 0
+	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y += 16 {
+	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X += 16 {
+		defaultIconsSmall[iconIndex] = binaryIconFrom (
+			defaultIconsSmallAtlasImage,
+			image.Rect(0, 0, 16, 16).Add(point))
+		iconIndex ++
+	}}
 }
 
 // Default is the default theme.
@@ -84,9 +146,17 @@ func (Default) FontFace (style FontStyle, size FontSize, c Case) font.Face {
 }
 
 // Icon returns an icon from the default set corresponding to the given name.
-func (Default) Icon (string, IconSize, Case) artist.Icon {
-	// TODO
-	return nil
+func (Default) Icon (id Icon, size IconSize, c Case) artist.Icon {
+	if size == IconSizeLarge {
+		// TODO
+		return nil
+	} else {
+		if id < 0 || int(id) >= len(defaultIconsSmall) {
+			return nil
+		} else {
+			return defaultIconsSmall[id]
+		}
+	}
 }
 
 // MimeIcon returns an icon from the default set corresponding to the given mime.

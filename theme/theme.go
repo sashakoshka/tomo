@@ -78,10 +78,11 @@ type Icon int; const (
 	IconLibraries
 	IconDownloads
 	IconRepositories
-	IconSettings
+	IconSettings)
 
+const (
 	// Object icons
-	IconFile = iota + 0x80
+	IconFile Icon = iota + 0x80
 	IconDirectory
 	IconPopulatedDirectory
 	
@@ -127,8 +128,9 @@ type Icon int; const (
 	IconParallelPort
 	IconSerialPort
 	IconPS2Port
-	IconMonitorPort
+	IconMonitorPort)
 
+const (
 	// Action icons
 	IconOpen = iota + 0x100
 	IconSave
@@ -166,17 +168,18 @@ type Icon int; const (
 	IconHistory
 
 	IconYes
-	IconNo
+	IconNo)
 
+const (
 	// Status icons
 	IconInformation = iota + 0x180
 	IconQuestion
 	IconWarning
-	IconError
+	IconError)
 
+const (
 	// Tool icons
-	
-)
+	)
 
 // Hints specifies rendering hints for a particular pattern. Elements can take
 // these into account in order to gain extra performance.
@@ -197,7 +200,7 @@ type Theme interface {
 	FontFace (FontStyle, FontSize, Case) font.Face
 
 	// Icon returns an appropriate icon given an icon name, size, and case.
-	Icon (string, IconSize, Case) artist.Icon
+	Icon (Icon, IconSize, Case) artist.Icon
 	
 	// Icon returns an appropriate icon given a file mime type, size, and,
 	// case.

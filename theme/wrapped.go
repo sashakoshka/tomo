@@ -21,9 +21,9 @@ func (wrapped Wrapped) FontFace (style FontStyle, size FontSize) font.Face {
 }
 
 // Icon returns an appropriate icon given an icon name.
-func (wrapped Wrapped) Icon (name string, size IconSize) artist.Icon {
+func (wrapped Wrapped) Icon (id Icon, size IconSize) artist.Icon {
 	real := wrapped.ensure()
-	return real.Icon(name, size, wrapped.Case)
+	return real.Icon(id, size, wrapped.Case)
 }
 
 // MimeIcon returns an appropriate icon given file mime type.
