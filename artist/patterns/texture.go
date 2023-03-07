@@ -24,8 +24,11 @@ func (pattern Texture) Draw (destination canvas.Canvas, clip image.Rectangle) {
 	srcPoint := bounds.Min.Sub(realBounds.Min).Add(srcBounds.Min)
 	srcPoint.X = wrap(srcPoint.X, srcBounds.Min.X, srcBounds.Max.X)
 	srcPoint.Y = wrap(srcPoint.Y, srcBounds.Min.Y, srcBounds.Max.Y)
+	srcPointXStart := srcPoint.X
 	
 	for dstPoint.Y = bounds.Min.Y; dstPoint.Y < bounds.Max.Y; dstPoint.Y ++ {
+		srcPoint.X = srcPointXStart
+		
 		for dstPoint.X = bounds.Min.X; dstPoint.X < bounds.Max.X; dstPoint.X ++ {
 			dstIndex := dstPoint.X + dstPoint.Y * dstStride
 			srcIndex :=
