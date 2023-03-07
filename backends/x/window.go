@@ -12,6 +12,7 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
+// import "runtime/debug"
 
 type Window struct {
 	backend *Backend
@@ -290,6 +291,7 @@ func (window *Window) childDrawCallback (region canvas.Canvas) {
 func (window *Window) paste (canvas canvas.Canvas) (updatedRegion image.Rectangle) {
 	data, stride := canvas.Buffer()
 	bounds := canvas.Bounds().Intersect(window.xCanvas.Bounds())
+	// debug.PrintStack()
 	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
 	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
 		rgba := data[x + y * stride]

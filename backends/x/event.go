@@ -1,5 +1,6 @@
 package x
 
+import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
@@ -47,8 +48,8 @@ func (window *Window) handleExpose (
 	connection *xgbutil.XUtil,
 	event xevent.ExposeEvent,
 ) {
-	_ = window.compressExpose(*event.ExposeEvent)
-	window.redrawChildEntirely()
+	_, region := window.compressExpose(*event.ExposeEvent)
+	window.pushRegion(region)
 }
 
 func (window *Window) handleConfigureNotify (
@@ -234,7 +235,13 @@ func (window *Window) compressExpose (
 	firstEvent xproto.ExposeEvent,
 ) (
 	lastEvent xproto.ExposeEvent,
+	region image.Rectangle,
 ) {
+	region = image.Rect (
+		int(firstEvent.X), int(firstEvent.Y),
+		int(firstEvent.X + firstEvent.Width),
+		int(firstEvent.Y + firstEvent.Height))
+	
 	window.backend.connection.Sync()
 	xevent.Read(window.backend.connection, false)
 	lastEvent = firstEvent
@@ -245,8 +252,12 @@ func (window *Window) compressExpose (
 		typedEvent, ok := untypedEvent.Event.(xproto.ExposeEvent)
 		if !ok { continue }
 
-		// FIXME: union all areas into the last event
 		if firstEvent.Window == typedEvent.Window {
+			region = region.Union (image.Rect (
+				int(typedEvent.X), int(typedEvent.Y),
+				int(typedEvent.X + typedEvent.Width),
+				int(typedEvent.Y + typedEvent.Height)))
+		
 			lastEvent = typedEvent
 			defer func (index int) {
 				xevent.DequeueAt(window.backend.connection, index)
