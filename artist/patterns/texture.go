@@ -20,17 +20,30 @@ func (pattern Texture) Draw (destination canvas.Canvas, clip image.Rectangle) {
 	srcData, srcStride := pattern.Buffer()
 	srcBounds := pattern.Bounds()
 
-	point := image.Point { }
-	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y ++ {
-	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X ++ {
-		srcPoint := point.Sub(realBounds.Min).Add(srcBounds.Min)
-		
-		dstIndex := point.X + point.Y * dstStride
-		srcIndex :=
-			wrap(srcPoint.X, srcBounds.Min.X, srcBounds.Max.X) +
-			wrap(srcPoint.Y, srcBounds.Min.Y, srcBounds.Max.Y) * srcStride
-		dstData[dstIndex] = srcData[srcIndex]
-	}}
+	dstPoint := image.Point { }
+	srcPoint := bounds.Min.Sub(realBounds.Min).Add(srcBounds.Min)
+	srcPoint.X = wrap(srcPoint.X, srcBounds.Min.X, srcBounds.Max.X)
+	srcPoint.Y = wrap(srcPoint.Y, srcBounds.Min.Y, srcBounds.Max.Y)
+	
+	for dstPoint.Y = bounds.Min.Y; dstPoint.Y < bounds.Max.Y; dstPoint.Y ++ {
+		for dstPoint.X = bounds.Min.X; dstPoint.X < bounds.Max.X; dstPoint.X ++ {
+			dstIndex := dstPoint.X + dstPoint.Y * dstStride
+			srcIndex :=
+				srcPoint.X +
+				srcPoint.Y * srcStride
+			dstData[dstIndex] = srcData[srcIndex]
+
+			srcPoint.X ++
+			if srcPoint.X >= srcBounds.Max.X {
+				srcPoint.X = srcBounds.Min.X
+			}
+		}
+
+		srcPoint.Y ++
+		if srcPoint.Y >= srcBounds.Max.Y {
+			srcPoint.Y = srcBounds.Min.Y
+		}
+	}
 }
 
 func wrap (value, min, max int) int {

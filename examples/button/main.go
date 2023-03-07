@@ -3,6 +3,8 @@ package main
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
+import _ "net/http/pprof"
+import "net/http"
 
 func main () {
 	tomo.Run(run)
@@ -26,4 +28,9 @@ func run () {
 	window.Adopt(button)
 	window.OnClose(tomo.Stop)
 	window.Show()
+
+	// just some stuff for profiling, this is not needed for tomo
+	go func () {
+		http.ListenAndServe("localhost:9090", nil)
+	} ()
 }
