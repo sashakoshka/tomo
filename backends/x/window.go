@@ -238,6 +238,9 @@ func (window *Window) reallocateCanvas () {
 	newHeight := window.metrics.height
 	larger    := newWidth > previousWidth || newHeight > previousHeight
 	smaller   := newWidth < previousWidth / 2 || newHeight < previousHeight / 2
+
+	allocStep := 128
+	
 	if larger || smaller {
 		if window.xCanvas != nil {
 			window.xCanvas.Destroy()
@@ -246,8 +249,8 @@ func (window *Window) reallocateCanvas () {
 			window.backend.connection,
 			image.Rect (
 				0, 0,
-				(newWidth  / 64) * 64 + 64,
-				(newHeight / 64) * 64 + 64))
+				(newWidth  / allocStep + 1) * allocStep,
+				(newHeight / allocStep + 1) * allocStep))
 		window.xCanvas.CreatePixmap()
 	}
 	
@@ -291,16 +294,23 @@ func (window *Window) childDrawCallback (region canvas.Canvas) {
 func (window *Window) paste (canvas canvas.Canvas) (updatedRegion image.Rectangle) {
 	data, stride := canvas.Buffer()
 	bounds := canvas.Bounds().Intersect(window.xCanvas.Bounds())
+
+	dstStride := window.xCanvas.Stride
+	dstData   := window.xCanvas.Pix
+	
 	// debug.PrintStack()
-	for x := bounds.Min.X; x < bounds.Max.X; x ++ {
 	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
-		rgba := data[x + y * stride]
-		index := x * 4 + y * window.xCanvas.Stride
-		window.xCanvas.Pix[index + 0] = rgba.B
-		window.xCanvas.Pix[index + 1] = rgba.G
-		window.xCanvas.Pix[index + 2] = rgba.R
-		window.xCanvas.Pix[index + 3] = rgba.A
-	}}
+		srcYComponent := y * stride
+		dstYComponent := y * dstStride
+		for x := bounds.Min.X; x < bounds.Max.X; x ++ {
+			rgba := data[srcYComponent + x]
+			index := dstYComponent + x * 4
+			dstData[index + 0] = rgba.B
+			dstData[index + 1] = rgba.G
+			dstData[index + 2] = rgba.R
+			dstData[index + 3] = rgba.A
+		}
+	}
 
 	return bounds
 }

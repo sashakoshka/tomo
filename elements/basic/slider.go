@@ -83,7 +83,24 @@ func (element *Slider) HandleMouseMove (x, y int) {
 func (element *Slider) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Slider) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
-	// TODO: handle left and right arrows
+	switch key {
+	case input.KeyUp:
+		element.changeValue(0.1)
+	case input.KeyDown:
+		element.changeValue(-0.1)
+	case input.KeyRight:
+		if element.vertical {
+			element.changeValue(-0.1)
+		} else {
+			element.changeValue(0.1)
+		}
+	case input.KeyLeft:
+		if element.vertical {
+			element.changeValue(0.1)
+		} else {
+			element.changeValue(-0.1)
+		}
+	}
 }
 
 func (element *Slider) HandleKeyUp (key input.Key, modifiers input.Modifiers) { }
@@ -132,6 +149,20 @@ func (element *Slider) SetConfig (new config.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
+	element.redo()
+}
+
+func (element *Slider) changeValue (delta float64) {
+	element.value += delta
+	if element.value < 0 {
+		element.value = 0
+	}
+	if element.value > 1 {
+		element.value = 1
+	}
+	if element.onRelease != nil {
+		element.onRelease()
+	}
 	element.redo()
 }
 
