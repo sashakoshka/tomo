@@ -3,7 +3,7 @@ package main
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/testing"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
-import _ "git.tebibyte.media/sashakoshka/ezprof/hook"
+import "git.tebibyte.media/sashakoshka/ezprof/ez"
 
 func main () {
 	tomo.Run(run)
@@ -14,4 +14,5 @@ func run () {
 	window.SetTitle("Draw Test")
 	window.Adopt(testing.NewArtist())
 	window.OnClose(tomo.Stop)
+	ez.Prof()
 }

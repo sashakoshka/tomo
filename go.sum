@@ -1,5 +1,9 @@
 git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309011813-4cd4374e3830 h1:McIAkTzD4y0tS7YprTOwRu8a8NTsMKtomQnvxnCdOmg=
 git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309011813-4cd4374e3830/go.mod h1:cpXX8SAUDEvZX5m7scoyruavUhEqQ1SByfWzPFHkTbg=
+git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309013013-f7ee80c8f908 h1:kFdch6JQ/gWESn/vLeKzImzf3Xx1it2MkZqBwrSnR1Q=
+git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309013013-f7ee80c8f908/go.mod h1:cpXX8SAUDEvZX5m7scoyruavUhEqQ1SByfWzPFHkTbg=
+git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309013201-fc0de8121523 h1:1KaoiGetWYIDQKts6yas1hW+4ObkuTm6+TkFpl6jZxg=
+git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309013201-fc0de8121523/go.mod h1:cpXX8SAUDEvZX5m7scoyruavUhEqQ1SByfWzPFHkTbg=
 github.com/BurntSushi/freetype-go v0.0.0-20160129220410-b763ddbfe298 h1:1qlsVAQJXZHsaM8b6OLVo6muQUQd4CwkH/D3fnnbHXA=
 github.com/BurntSushi/freetype-go v0.0.0-20160129220410-b763ddbfe298/go.mod h1:D+QujdIlUNfa0igpNMk6UIvlb6C252URs4yupRUV4lQ=
 github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966 h1:lTG4HQym5oPKjL7nGs+csTgiDna685ZXjxijkne828g=

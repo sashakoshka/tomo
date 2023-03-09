@@ -3,6 +3,7 @@ package main
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
+import "git.tebibyte.media/sashakoshka/ezprof/ez"
 
 func main () {
 	tomo.Run(run)
@@ -26,4 +27,5 @@ func run () {
 	window.Adopt(button)
 	window.OnClose(tomo.Stop)
 	window.Show()
+	ez.Prof()
 }
