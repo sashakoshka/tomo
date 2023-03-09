@@ -11,8 +11,8 @@ func main () {
 
 func run () {
 	window, _ := tomo.NewWindow(480, 360)
-	window.SetTitle("Draw Test")
 	window.Adopt(testing.NewArtist())
 	window.OnClose(tomo.Stop)
+	window.Show()
 	ez.Prof()
 }

@@ -16,6 +16,7 @@ var backend Backend
 // the backend experiences a fatal error.
 func Run (callback func ()) (err error) {
 	backend, err = instantiateBackend()
+	if err != nil { return }
 	config := parseConfig()
 	backend.SetConfig(config)
 	backend.SetTheme(parseTheme(config.ThemePath()))
