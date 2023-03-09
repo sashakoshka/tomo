@@ -3,6 +3,7 @@ module git.tebibyte.media/sashakoshka/tomo
 go 1.19
 
 require (
+	git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309011813-4cd4374e3830
 	github.com/faiface/beep v1.1.0
 	github.com/jezek/xgbutil v0.0.0-20210302171758-530099784e66
 	golang.org/x/image v0.3.0

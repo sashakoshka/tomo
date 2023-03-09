@@ -123,6 +123,9 @@ func (element *Slider) SetValue (value float64) {
 	if element.value == value { return }
 
 	element.value = value
+	if element.onRelease != nil {
+		element.onRelease()
+	}
 	element.redo()
 }
 
