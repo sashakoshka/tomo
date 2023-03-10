@@ -123,7 +123,11 @@ func (element *ScrollBar) HandleMouseMove (x, y int) {
 }
 
 func (element *ScrollBar) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
-	
+	if element.vertical {
+		element.scrollBy(int(deltaY))
+	} else {
+		element.scrollBy(int(deltaX))
+	}
 }
 
 // SetEnabled sets whether or not the scroll bar can be interacted with.
