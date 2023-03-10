@@ -207,6 +207,13 @@ func (element *Container) ChildAt (point image.Point) (child elements.Element) {
 
 func (element *Container) redoAll () {
 	if !element.core.HasImage() { return }
+
+	// remove child canvasses so that any operations done in here will not
+	// cause a child to draw to a wack ass canvas.
+	for _, entry := range element.children {
+		entry.DrawTo(nil)
+	}
+	
 	// do a layout
 	element.doLayout()
 

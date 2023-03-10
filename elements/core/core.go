@@ -50,7 +50,7 @@ func (core *Core) MinimumSize () (width, height int) {
 // overridden.
 func (core *Core) DrawTo (canvas canvas.Canvas) {
 	core.canvas = canvas
-	if core.drawSizeChange != nil {
+	if core.drawSizeChange != nil && core.canvas != nil {
 		core.drawSizeChange()
 	}
 }

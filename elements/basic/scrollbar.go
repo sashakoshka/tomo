@@ -15,6 +15,9 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 // the user is trying to move the handle to. A program can check to see if this
 // value is valid, move the viewport, and give the scroll bar the new viewport
 // bounds (which will then cause it to move the handle).
+//
+// Typically, you wont't want to use a ScrollBar by itself. A ScrollContainer is
+// better for most cases.
 type ScrollBar struct {
 	*core.Core
 	core core.CoreControl
@@ -47,9 +50,16 @@ func NewScrollBar (vertical bool) (element *ScrollBar) {
 	} else {
 		element.theme.Case = theme.C("basic", "scrollBarVertical")
 	}
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element.handleResize)
 	element.updateMinimumSize()
 	return
+}
+
+func (element *ScrollBar) handleResize () {
+	if element.core.HasImage() {
+		element.recalculate()
+		element.draw()
+	}
 }
 
 func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
@@ -59,7 +69,7 @@ func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
 	if point.In(element.bar) {
 		// the mouse is pressed down within the bar's handle
 		element.dragging   = true
-		element.redo()
+		element.drawAndPush()
 		element.dragOffset = point
 		element.dragTo(point)
 	} else {
@@ -100,7 +110,7 @@ func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
 func (element *ScrollBar) HandleMouseUp (x, y int, button input.Button) {
 	if element.dragging {
 		element.dragging = false
-		element.redo()
+		element.drawAndPush()
 	}
 }
 
@@ -118,7 +128,7 @@ func (element *ScrollBar) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
 func (element *ScrollBar) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
-	element.redo()
+	element.drawAndPush()
 }
 
 // Enabled returns whether or not the element is enabled.
@@ -130,7 +140,8 @@ func (element *ScrollBar) Enabled () (enabled bool) {
 func (element *ScrollBar) SetBounds (content, viewport image.Rectangle) {
 	element.contentBounds  = content
 	element.viewportBounds = viewport
-	element.redo()
+	element.recalculate()
+	element.drawAndPush()
 }
 
 // OnScroll sets a function to be called when the user tries to move the scroll
@@ -146,7 +157,7 @@ func (element *ScrollBar) OnScroll (callback func (viewport image.Point)) {
 func (element *ScrollBar) SetTheme (new theme.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
-	element.redo()
+	element.drawAndPush()
 }
 
 // SetConfig sets the element's configuration.
@@ -154,7 +165,7 @@ func (element *ScrollBar) SetConfig (new config.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
-	element.redo()
+	element.drawAndPush()
 }
 
 func (element *ScrollBar) isAfterHandle (point image.Point) bool {
@@ -227,10 +238,11 @@ func (element *ScrollBar) recalculateVertical () {
 		element.bar.Min.X = element.track.Min.X
 		element.bar.Max.X = element.track.Max.X
 
-		scale := float64(element.track.Dy()) /
+		ratio :=
+			float64(element.track.Dy()) /
 			float64(contentBounds.Dy())
-		element.bar.Min.Y = int(float64(viewportBounds.Min.Y) * scale)
-		element.bar.Max.Y = int(float64(viewportBounds.Max.Y) * scale)
+		element.bar.Min.Y = int(float64(viewportBounds.Min.Y) * ratio)
+		element.bar.Max.Y = int(float64(viewportBounds.Max.Y) * ratio)
 		
 		element.bar.Min.Y += element.track.Min.Y
 		element.bar.Max.Y += element.track.Min.Y
@@ -243,7 +255,30 @@ func (element *ScrollBar) recalculateVertical () {
 }
 
 func (element *ScrollBar) recalculateHorizontal () {
-	
+	bounds := element.Bounds()
+	padding := element.theme.Padding(theme.PatternGutter)
+	element.track = padding.Apply(bounds)
+
+	contentBounds  := element.contentBounds
+	viewportBounds := element.viewportBounds
+	if element.Enabled() {
+		element.bar.Min.Y = element.track.Min.Y
+		element.bar.Max.Y = element.track.Max.Y
+
+		ratio :=
+			float64(element.track.Dy()) /
+			float64(contentBounds.Dy())
+		element.bar.Min.X = int(float64(viewportBounds.Min.X) * ratio)
+		element.bar.Max.X = int(float64(viewportBounds.Max.X) * ratio)
+		
+		element.bar.Min.X += element.track.Min.X
+		element.bar.Max.X += element.track.Min.X
+	}
+
+	// if the handle is out of bounds, don't display it
+	if element.bar.Dx() >= element.track.Dx() {
+		element.bar = image.Rectangle { }
+	}
 }
 
 func (element *ScrollBar) updateMinimumSize () {
@@ -259,7 +294,7 @@ func (element *ScrollBar) updateMinimumSize () {
 	}
 }
 
-func (element *ScrollBar) redo () {
+func (element *ScrollBar) drawAndPush () {
 	if element.core.HasImage () {
 		element.draw()
 		element.core.DamageAll()
