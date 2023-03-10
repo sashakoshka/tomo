@@ -14,7 +14,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(2, 2)
+	window, _ := tomo.NewWindow(200, 216)
 	window.SetTitle("Clock")
 	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)

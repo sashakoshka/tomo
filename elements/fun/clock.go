@@ -84,15 +84,6 @@ func (element *AnalogClock) draw () {
 	element.radialLine(accent,     0, 0.7, (second - 15) / 30 * math.Pi)
 }
 
-// FlexibleHeightFor constrains the clock's minimum size to a 1:1 aspect ratio.
-func (element *AnalogClock) FlexibleHeightFor (width int) (height int) {
-	return width
-}
-
-// OnFlexibleHeightChange sets a function to be called when the parameters
-// affecting the clock's flexible height change.
-func (element *AnalogClock) OnFlexibleHeightChange (func ()) { }
-
 func (element *AnalogClock) radialLine (
 	source color.RGBA,
 	inner  float64,
