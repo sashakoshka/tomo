@@ -49,7 +49,7 @@ func NewDialog (
 	case DialogKindError:    iconId = theme.IconError
 	}
 	
-	messageContainer.Adopt(basicElements.NewIcon(iconId, theme.IconSizeSmall), false)
+	messageContainer.Adopt(basicElements.NewIcon(iconId, theme.IconSizeLarge), false)
 	messageContainer.Adopt(basicElements.NewLabel(message, false), true)
 	container.Adopt(messageContainer, true)
 	

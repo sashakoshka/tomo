@@ -19,6 +19,9 @@ var defaultTextures   [14][9]artist.Pattern
 //go:embed assets/wintergreen-icons-small.png
 var defaultIconsSmallAtlasBytes []byte
 var defaultIconsSmall [640]binaryIcon
+//go:embed assets/wintergreen-icons-large.png
+var defaultIconsLargeAtlasBytes []byte
+var defaultIconsLarge [640]binaryIcon
 
 func atlasCell (col, row int, border artist.Inset) {
 	bounds := image.Rect(0, 0, 16, 16).Add(image.Pt(col, row).Mul(16))
@@ -116,14 +119,34 @@ func init () {
 	// set up small icons
 	defaultIconsSmallAtlasImage, _, _ := image.Decode (
 		bytes.NewReader(defaultIconsSmallAtlasBytes))
-	bounds    := defaultIconsSmallAtlasImage.Bounds()
 	point     := image.Point { }
 	iconIndex := 0
-	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y += 16 {
-	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X += 16 {
+	for point.Y = 0; point.Y < 20; point.Y ++ {
+	for point.X = 0; point.X < 32; point.X ++ {
 		defaultIconsSmall[iconIndex] = binaryIconFrom (
 			defaultIconsSmallAtlasImage,
-			image.Rect(0, 0, 16, 16).Add(point))
+			image.Rect(0, 0, 16, 16).Add(point.Mul(16)))
+		iconIndex ++
+	}}
+
+	// set up large icons
+	defaultIconsLargeAtlasImage, _, _ := image.Decode (
+		bytes.NewReader(defaultIconsLargeAtlasBytes))
+	point     = image.Point { }
+	iconIndex = 0
+	for point.Y = 0; point.Y < 8; point.Y ++ {
+	for point.X = 0; point.X < 32; point.X ++ {
+		defaultIconsLarge[iconIndex] = binaryIconFrom (
+			defaultIconsLargeAtlasImage,
+			image.Rect(0, 0, 32, 32).Add(point.Mul(32)))
+		iconIndex ++
+	}}
+	iconIndex = 384
+	for point.Y = 8; point.Y < 12; point.Y ++ {
+	for point.X = 0; point.X < 32; point.X ++ {
+		defaultIconsLarge[iconIndex] = binaryIconFrom (
+			defaultIconsLargeAtlasImage,
+			image.Rect(0, 0, 32, 32).Add(point.Mul(32)))
 		iconIndex ++
 	}}
 }
@@ -148,8 +171,11 @@ func (Default) FontFace (style FontStyle, size FontSize, c Case) font.Face {
 // Icon returns an icon from the default set corresponding to the given name.
 func (Default) Icon (id Icon, size IconSize, c Case) artist.Icon {
 	if size == IconSizeLarge {
-		// TODO
-		return nil
+		if id < 0 || int(id) >= len(defaultIconsLarge) {
+			return nil
+		} else {
+			return defaultIconsLarge[id]
+		}
 	} else {
 		if id < 0 || int(id) >= len(defaultIconsSmall) {
 			return nil
