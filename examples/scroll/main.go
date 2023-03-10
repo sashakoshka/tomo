@@ -24,17 +24,27 @@ func run () {
 		Gap: true,
 	})
 	list := basicElements.NewList (
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil),
-		basicElements.NewListEntry("something", nil))
+		basicElements.NewListEntry("This is list item 0", nil),
+		basicElements.NewListEntry("This is list item 1", nil),
+		basicElements.NewListEntry("This is list item 2", nil),
+		basicElements.NewListEntry("This is list item 3", nil),
+		basicElements.NewListEntry("This is list item 4", nil),
+		basicElements.NewListEntry("This is list item 5", nil),
+		basicElements.NewListEntry("This is list item 6", nil),
+		basicElements.NewListEntry("This is list item 7", nil),
+		basicElements.NewListEntry("This is list item 8", nil),
+		basicElements.NewListEntry("This is list item 9", nil),
+		basicElements.NewListEntry("This is list item 10", nil),
+		basicElements.NewListEntry("This is list item 11", nil),
+		basicElements.NewListEntry("This is list item 12", nil),
+		basicElements.NewListEntry("This is list item 13", nil),
+		basicElements.NewListEntry("This is list item 14", nil),
+		basicElements.NewListEntry("This is list item 15", nil),
+		basicElements.NewListEntry("This is list item 16", nil),
+		basicElements.NewListEntry("This is list item 17", nil),
+		basicElements.NewListEntry("This is list item 18", nil),
+		basicElements.NewListEntry("This is list item 19", nil),
+		basicElements.NewListEntry("This is list item 20", nil))
 	list.Collapse(0, 32)
 	scrollBar := basicElements.NewScrollBar(true)
 	list.OnScrollBoundsChange (func () {
@@ -46,12 +56,15 @@ func run () {
 		list.ScrollTo(viewport)
 	})
 	
-	container.Adopt(basicElements.NewLabel("look at this non sense", false), false)
+	container.Adopt(basicElements.NewLabel("A ScrollContainer:", false), false)
 	scrollContainer.Adopt(textBox)
 	container.Adopt(scrollContainer, false)
-	container.Adopt(basicElements.NewLabel("what does that scrollbar do?", false), false)
 	disconnectedContainer.Adopt(list, false)
-	disconnectedContainer.Adopt(basicElements.NewSpacer(true), true)
+	disconnectedContainer.Adopt (basicElements.NewLabel (
+		"Notice how the scroll bar to the right can be used to " +
+		"control the list, despite not even touching it. It is " +
+		"indeed a thing you can do. It is also terrible UI design so " +
+		"don't do it.", true), true)
 	disconnectedContainer.Adopt(scrollBar, false)
 	container.Adopt(disconnectedContainer, true)
 	

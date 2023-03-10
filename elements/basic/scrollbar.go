@@ -70,7 +70,9 @@ func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
 		// the mouse is pressed down within the bar's handle
 		element.dragging   = true
 		element.drawAndPush()
-		element.dragOffset = point
+		element.dragOffset =
+			point.Sub(element.bar.Min).
+			Add(element.Bounds().Min)
 		element.dragTo(point)
 	} else {
 		// the mouse is pressed down within the bar's gutter
@@ -178,9 +180,11 @@ func (element *ScrollBar) isAfterHandle (point image.Point) bool {
 
 func (element *ScrollBar) fallbackDragOffset () image.Point {
 	if element.vertical {
-		return element.bar.Min.Add(image.Pt(0, element.bar.Dy() / 2))
+		return element.Bounds().Min.
+			Add(image.Pt(0, element.bar.Dy() / 2))
 	} else {
-		return element.bar.Min.Add(image.Pt(element.bar.Dx() / 2, 0))
+		return element.Bounds().Min.
+			Add(image.Pt(element.bar.Dx() / 2, 0))
 	}
 }
 
