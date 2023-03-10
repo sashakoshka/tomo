@@ -16,7 +16,6 @@ func run () {
 	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
-
 	textBox := basicElements.NewTextBox("", copypasta)
 	scrollContainer := basicElements.NewScrollContainer(true, false)
 
@@ -56,8 +55,8 @@ func run () {
 		list.ScrollTo(viewport)
 	})
 	
-	container.Adopt(basicElements.NewLabel("A ScrollContainer:", false), false)
 	scrollContainer.Adopt(textBox)
+	container.Adopt(basicElements.NewLabel("A ScrollContainer:", false), false)
 	container.Adopt(scrollContainer, false)
 	disconnectedContainer.Adopt(list, false)
 	disconnectedContainer.Adopt (basicElements.NewLabel (

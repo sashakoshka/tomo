@@ -71,7 +71,7 @@ func (element *Container) Adopt (child elements.Element, expand bool) {
 		element.core.DamageAll()
 	})
 	if child0, ok := child.(elements.Flexible); ok {
-		child0.OnFlexibleHeightChange(element.updateMinimumSize)
+		child0.OnFlexibleHeightChange(element.notifyFlexibleChange)
 	}
 	if child0, ok := child.(elements.Focusable); ok {
 		child0.OnFocusRequest (func () (granted bool) {
@@ -323,12 +323,13 @@ func (element *Container) updateMinimumSize () {
 	padding := element.theme.Padding(theme.PatternBackground)
 	width, height := element.layout.MinimumSize (
 		element.children, margin, padding)
-	if element.flexible {
-		height = element.layout.FlexibleHeightFor (
-			element.children, margin,
-			padding, width)
-	}
 	element.core.SetMinimumSize(width, height)
+}
+
+func (element *Container) notifyFlexibleChange () {
+	if element.onFlexibleHeightChange != nil {
+		element.onFlexibleHeightChange()
+	}	
 }
 
 func (element *Container) doLayout () {
