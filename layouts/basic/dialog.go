@@ -3,7 +3,6 @@ package basicLayouts
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Dialog arranges elements in the form of a dialog box. The first element is
 // positioned above as the main focus of the dialog, and is set to expand
@@ -132,45 +131,6 @@ func (layout Dialog) MinimumSize (
 	return
 }
 
-// FlexibleHeightFor Returns the minimum height the layout needs to lay out the
-// specified elements at the given width, taking into account flexible elements.
-func (layout Dialog) FlexibleHeightFor (
-	entries []layouts.LayoutEntry,
-	margin  image.Point,
-	padding artist.Inset,
-	width int,
-) (
-	height int,
-) {
-	if layout.Pad {
-		width -= padding.Horizontal()
-	}
-	
-	if len(entries) > 0 {
-		mainChildHeight := 0
-		if child, flexible := entries[0].Element.(elements.Flexible); flexible {
-			mainChildHeight = child.FlexibleHeightFor(width)
-		} else {
-			_, mainChildHeight = entries[0].MinimumSize()
-		}
-		height += mainChildHeight
-	}
-
-	if len(entries) > 1 {
-		if layout.Gap { height += margin.Y }
-		_, additionalHeight := layout.minimumSizeOfControlRow (
-			entries[1:], margin, padding)
-		height += additionalHeight
-	}
-
-	if layout.Pad {
-		height += padding.Vertical()
-	}
-	return
-}
-
-// TODO: possibly flatten this method to account for flexible elements within
-// the control row.
 func (layout Dialog) minimumSizeOfControlRow (
 	entries []layouts.LayoutEntry,
 	margin  image.Point,

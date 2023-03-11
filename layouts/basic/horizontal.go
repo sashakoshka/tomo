@@ -3,7 +3,6 @@ package basicLayouts
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Horizontal arranges elements horizontally. Elements at the start of the entry
 // list will be positioned on the left, and elements at the end of the entry
@@ -71,49 +70,6 @@ func (layout Horizontal) MinimumSize (
 
 	if layout.Pad {
 		width  += padding.Horizontal()
-		height += padding.Vertical()
-	}
-	return
-}
-
-// FlexibleHeightFor Returns the minimum height the layout needs to lay out the
-// specified elements at the given width, taking into account flexible elements.
-func (layout Horizontal) FlexibleHeightFor (
-	entries []layouts.LayoutEntry,
-	margin  image.Point,
-	padding artist.Inset,
-	width int,
-) (
-	height int,
-) {
-	if layout.Pad { width -= padding.Horizontal() }
-	
-	// get width of expanding elements
-	expandingElementWidth := layout.expandingElementWidth (
-		entries, margin, padding, width)
-	
-	x, y := 0, 0
-	if layout.Pad {
-		x += padding.Horizontal()
-		y += padding.Vertical()
-	}
-
-	// set the size and position of each element
-	for index, entry := range entries {
-		entryWidth, entryHeight := entry.MinimumSize()
-		if entry.Expand {
-			entryWidth = expandingElementWidth
-		}
-		if child, flexible := entry.Element.(elements.Flexible); flexible {
-			entryHeight = child.FlexibleHeightFor(entryWidth)
-		}
-		if entryHeight > height { height = entryHeight }
-		
-		x += entryWidth
-		if index > 0 && layout.Gap { x += margin.X }
-	}
-
-	if layout.Pad {
 		height += padding.Vertical()
 	}
 	return

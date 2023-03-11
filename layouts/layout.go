@@ -12,10 +12,6 @@ type LayoutEntry struct {
 	Expand bool
 }
 
-// TODO: have layouts take in artist.Inset for margin and padding
-// TODO: create a layout that only displays the first element and full screen.
-// basically a blank layout for containers that only ever have one element.
-
 // Layout is capable of arranging elements within a container. It is also able
 // to determine the minimum amount of room it needs to do so.
 type Layout interface {
@@ -38,17 +34,5 @@ type Layout interface {
 		padding artist.Inset,
 	) (
 		width, height int,
-	)
-
-	// FlexibleHeightFor Returns the minimum height the layout needs to lay
-	// out the specified elements at the given width, taking into account
-	// flexible elements.
-	FlexibleHeightFor (
-		entries []LayoutEntry,
-		margin  image.Point,
-		padding artist.Inset,
-		squeeze int,
-	) (
-		height int,
 	)
 }
