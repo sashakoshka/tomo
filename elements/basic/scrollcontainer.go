@@ -131,9 +131,6 @@ func (element *ScrollContainer) clearChildEventHandlers (child elements.Scrollab
 			child0.HandleUnfocus()
 		}
 	}
-	if child0, ok := child.(elements.Flexible); ok {
-		child0.OnFlexibleHeightChange(nil)
-	}
 }
 
 // SetTheme sets the element's theme.

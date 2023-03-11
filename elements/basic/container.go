@@ -20,12 +20,10 @@ type Container struct {
 	layout    layouts.Layout
 	children  []layouts.LayoutEntry
 	warping   bool
-	flexible  bool
 	
 	config config.Wrapped
 	theme  theme.Wrapped
 	
-	onFlexibleHeightChange func ()
 	onFocusRequest func () (granted bool)
 	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
 }
@@ -70,9 +68,6 @@ func (element *Container) Adopt (child elements.Element, expand bool) {
 		element.redoAll()
 		element.core.DamageAll()
 	})
-	if child0, ok := child.(elements.Flexible); ok {
-		child0.OnFlexibleHeightChange(element.notifyFlexibleChange)
-	}
 	if child0, ok := child.(elements.Focusable); ok {
 		child0.OnFocusRequest (func () (granted bool) {
 			return element.childFocusRequestCallback(child0)
@@ -152,9 +147,6 @@ func (element *Container) clearChildEventHandlers (child elements.Element) {
 		if child0.Focused() {
 			child0.HandleUnfocus()
 		}
-	}
-	if child0, ok := child.(elements.Flexible); ok {
-		child0.OnFlexibleHeightChange(nil)
 	}
 }
 
@@ -251,18 +243,6 @@ func (element *Container) SetConfig (new config.Config) {
 	element.redoAll()
 }
 
-func (element *Container) FlexibleHeightFor (width int) (height int) {
-	margin  := element.theme.Margin(theme.PatternBackground)
-	padding := element.theme.Padding(theme.PatternBackground)
-	return element.layout.FlexibleHeightFor (
-		element.children,
-		margin, padding, width)
-}
-
-func (element *Container) OnFlexibleHeightChange (callback func ()) {
-	element.onFlexibleHeightChange = callback
-}
-
 func (element *Container) OnFocusRequest (callback func () (granted bool)) {
 	element.onFocusRequest = callback
 	element.Propagator.OnFocusRequest(callback)
@@ -273,15 +253,6 @@ func (element *Container) OnFocusMotionRequest (
 ) {
 	element.onFocusMotionRequest = callback
 	element.Propagator.OnFocusMotionRequest(callback)
-}
-
-func (element *Container) forFlexible (callback func (child elements.Flexible) bool) {
-	for _, entry := range element.children {
-		child, flexible := entry.Element.(elements.Flexible)
-		if flexible {
-			if !callback(child) { break }
-		}
-	}
 }
 
 func (element *Container) reflectChildProperties () {
@@ -296,12 +267,6 @@ func (element *Container) reflectChildProperties () {
 	if !focusable && element.Focused() {
 		element.Propagator.HandleUnfocus()
 	}
-	
-	element.flexible = false
-	element.forFlexible (func (elements.Flexible) bool {
-		element.flexible = true
-		return false
-	})
 }
 
 func (element *Container) childFocusRequestCallback (
@@ -324,12 +289,6 @@ func (element *Container) updateMinimumSize () {
 	width, height := element.layout.MinimumSize (
 		element.children, margin, padding)
 	element.core.SetMinimumSize(width, height)
-}
-
-func (element *Container) notifyFlexibleChange () {
-	if element.onFlexibleHeightChange != nil {
-		element.onFlexibleHeightChange()
-	}	
 }
 
 func (element *Container) doLayout () {
