@@ -267,7 +267,6 @@ func (element *ScrollContainer) layout () (
 }
 
 func (element *ScrollContainer) draw () {
-	// XOR
 	if element.horizontal != nil && element.vertical != nil {
 		bounds := element.Bounds()
 		bounds.Min = image.Pt (
