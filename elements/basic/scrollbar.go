@@ -274,8 +274,8 @@ func (element *ScrollBar) recalculateHorizontal () {
 		element.bar.Max.Y = element.track.Max.Y
 
 		ratio :=
-			float64(element.track.Dy()) /
-			float64(contentBounds.Dy())
+			float64(element.track.Dx()) /
+			float64(contentBounds.Dx())
 		element.bar.Min.X = int(float64(viewportBounds.Min.X) * ratio)
 		element.bar.Max.X = int(float64(viewportBounds.Max.X) * ratio)
 		
