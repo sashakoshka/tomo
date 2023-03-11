@@ -267,11 +267,23 @@ func (element *DocumentContainer) ScrollTo (position image.Point) {
 	if position.Y < 0 {
 		position.Y = 0
 	}
+	maxScrollHeight := element.maxScrollHeight()
+	if position.Y > maxScrollHeight {
+		position.Y = maxScrollHeight
+	}
 	element.scroll = position
 	if element.core.HasImage() && !element.warping {
 		element.redoAll()
 		element.core.DamageAll()
 	}
+}
+
+func (element *DocumentContainer) maxScrollHeight () (height int) {
+	padding := element.theme.Padding(theme.PatternSunken)
+	viewportHeight := element.Bounds().Dy() - padding.Vertical()
+	height = element.contentBounds.Dy() - viewportHeight
+	if height < 0 { height = 0 }
+	return
 }
 
 // ScrollAxes returns the supported axes for scrolling.
@@ -339,4 +351,6 @@ func (element *DocumentContainer) doLayout () {
 		element.contentBounds = element.contentBounds.Union(entry.Bounds)
 		dot.Y += height
 	}
+	element.contentBounds =
+		element.contentBounds.Sub(element.contentBounds.Min)
 }

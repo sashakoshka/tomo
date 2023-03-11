@@ -21,6 +21,16 @@ func run () {
 		"text-wrapped labels.", true))
 	document.Adopt (basicElements.NewButton (
 		"You can also include normal elements like buttons,"))
+	document.Adopt (basicElements.NewButton (
+		"You can also include normal elements like buttons,"))
+	document.Adopt (basicElements.NewButton (
+		"You can also include normal elements like buttons,"))
+	document.Adopt (basicElements.NewButton (
+		"You can also include normal elements like buttons,"))
+	document.Adopt (basicElements.NewButton (
+		"You can also include normal elements like buttons,"))
+	document.Adopt (basicElements.NewButton (
+		"You can also include normal elements like buttons,"))
 	document.Adopt (basicElements.NewCheckbox (
 		"checkboxes,", true))
 	document.Adopt(basicElements.NewTextBox("", "And text boxes."))
