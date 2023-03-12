@@ -186,6 +186,12 @@ func (element *DocumentContainer) redoAll () {
 	
 	// do a layout
 	element.doLayout()
+	
+	maxScrollHeight := element.maxScrollHeight()
+	if element.scroll.Y > maxScrollHeight {
+		element.scroll.Y = maxScrollHeight
+		element.doLayout()
+	}
 
 	// draw a background
 	rocks := make([]image.Rectangle, len(element.children))
