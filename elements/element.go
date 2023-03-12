@@ -9,13 +9,14 @@ import "git.tebibyte.media/sashakoshka/tomo/config"
 // Element represents a basic on-screen object.
 type Element interface {
 	// Bounds reports the element's bounding box. This must reflect the
-	// bounding box of the last canvas given to the element by DrawTo.
+	// bounding last given to the element by DrawTo.
 	Bounds () (bounds image.Rectangle)
 
-	// DrawTo sets this element's canvas. This should only be called by the
-	// parent element. This is typically a region of the parent element's
-	// canvas.
-	DrawTo (canvas canvas.Canvas)
+	// DrawTo gives the element a canvas to draw on, along with a bounding
+	// box to be used for laying out the element. This should only be called
+	// by the parent element. This is typically a region of the parent
+	// element's canvas.
+	DrawTo (canvas canvas.Canvas, bounds image.Rectangle)
 
 	// OnDamage sets a function to be called when an area of the element is
 	// drawn on and should be pushed to the screen.
