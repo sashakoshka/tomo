@@ -10,20 +10,24 @@ import "git.tebibyte.media/sashakoshka/tomo/shatter"
 func FillRectangle (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
+	bounds      image.Rectangle,
 ) (
 	updatedRegion image.Rectangle,
 ) {
 	dstData, dstStride := destination.Buffer()
 	srcData, srcStride := source.Buffer()
 
-	offset := source.Bounds().Min.Sub(destination.Bounds().Min)
-	bounds     := source.Bounds().Sub(offset).Intersect(destination.Bounds())
-	if bounds.Empty() { return }
-	updatedRegion = bounds
+	offset     := source.Bounds().Min.Sub(destination.Bounds().Min)
+	drawBounds :=
+		source.Bounds().Sub(offset).
+		Intersect(destination.Bounds()).
+		Intersect(bounds)
+	if drawBounds.Empty() { return }
+	updatedRegion = drawBounds
 	
 	point := image.Point { }
-	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y ++ {
-	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X ++ {
+	for point.Y = drawBounds.Min.Y; point.Y < drawBounds.Max.Y; point.Y ++ {
+	for point.X = drawBounds.Min.X; point.X < drawBounds.Max.X; point.X ++ {
 		offsetPoint := point.Add(offset)
 		dstIndex := point.X       + point.Y       * dstStride
 		srcIndex := offsetPoint.X + offsetPoint.Y * srcStride
@@ -36,15 +40,16 @@ func FillRectangle (
 func StrokeRectangle (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
+	bounds      image.Rectangle,
 	weight      int,
+) (
+	updatedRegion image.Rectangle,
 ) {
-	bounds := destination.Bounds()
 	insetBounds := bounds.Inset(weight)
 	if insetBounds.Empty() {
-		FillRectangle(destination, source)
-		return
+		return FillRectangle(destination, source, bounds)
 	}
-	FillRectangleShatter(destination, source, insetBounds)
+	return FillRectangleShatter(destination, source, insetBounds)
 }
 
 // FillRectangleShatter is like FillRectangle, but it does not draw in areas
@@ -52,15 +57,19 @@ func StrokeRectangle (
 func FillRectangleShatter (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
+	bounds      image.Rectangle,
 	rocks       ...image.Rectangle,
+) (
+	updatedRegion image.Rectangle,
 ) {
-	tiles  := shatter.Shatter(destination.Bounds(), rocks...)
-	offset := source.Bounds().Min.Sub(destination.Bounds().Min)
+	tiles := shatter.Shatter(bounds, rocks...)
 	for _, tile := range tiles {
 		FillRectangle (
 			canvas.Cut(destination, tile),
-			canvas.Cut(source, tile.Add(offset)))
+			source, tile)
+		updatedRegion = updatedRegion.Union(tile)
 	}
+	return
 }
 
 // FillColorRectangle fills a rectangle within the destination canvas with a
@@ -92,11 +101,15 @@ func FillColorRectangleShatter (
 	color       color.RGBA,
 	bounds      image.Rectangle,
 	rocks       ...image.Rectangle,
+) (
+	updatedRegion image.Rectangle,
 ) {
 	tiles := shatter.Shatter(bounds, rocks...)
 	for _, tile := range tiles {
 		FillColorRectangle(destination, color, tile)
+		updatedRegion = updatedRegion.Union(tile)
 	}
+	return
 }
 
 // StrokeColorRectangle is similar to FillColorRectangle, but it draws an inset
@@ -106,11 +119,12 @@ func StrokeColorRectangle (
 	color       color.RGBA,
 	bounds      image.Rectangle,
 	weight      int,
+) (
+	updatedRegion image.Rectangle,
 ) {
 	insetBounds := bounds.Inset(weight)
 	if insetBounds.Empty() {
-		FillColorRectangle(destination, color, bounds)
-		return
+		return FillColorRectangle(destination, color, bounds)
 	}
-	FillColorRectangleShatter(destination, color, bounds, insetBounds)
+	return FillColorRectangleShatter(destination, color, bounds, insetBounds)
 }
