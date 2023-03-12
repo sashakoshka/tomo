@@ -257,7 +257,7 @@ func (window *Window) redrawChildEntirely () {
 
 func (window *Window) resizeChildToFit () {
 	window.skipChildDrawCallback = true
-	window.child.DrawTo(window.canvas)
+	window.child.DrawTo(window.canvas, window.canvas.Bounds())
 	window.skipChildDrawCallback = false
 }
 
