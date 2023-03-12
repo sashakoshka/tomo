@@ -79,34 +79,32 @@ func (element *Artist) draw () {
 	}
 	tiles := shatter.Shatter(c41.Bounds(), rocks...)
 	for index, tile := range tiles {
-		artist.DrawBounds (
-			element.core,
-			[]artist.Pattern {
-				patterns.Uhex(0xFF0000FF),
-				patterns.Uhex(0x00FF00FF),
-				patterns.Uhex(0xFF00FFFF),
-				patterns.Uhex(0xFFFF00FF),
-				patterns.Uhex(0x00FFFFFF),
-			} [index % 5], tile)
+		[]artist.Pattern {
+			patterns.Uhex(0xFF0000FF),
+			patterns.Uhex(0x00FF00FF),
+			patterns.Uhex(0xFF00FFFF),
+			patterns.Uhex(0xFFFF00FF),
+			patterns.Uhex(0x00FFFFFF),
+		} [index % 5].Draw(element.core, tile)
 	}
 
 	// 0, 2
 	c02 := element.cellAt(0, 2)
 	shapes.StrokeColorRectangle(c02, artist.Hex(0x888888FF), c02.Bounds(), 1)
-	shapes.FillEllipse(c02, c41)
+	shapes.FillEllipse(c02, c41, c02.Bounds())
 
 	// 1, 2
 	c12 := element.cellAt(1, 2)
 	shapes.StrokeColorRectangle(c12, artist.Hex(0x888888FF), c12.Bounds(), 1)
-	shapes.StrokeEllipse(c12, c41, 5)
+	shapes.StrokeEllipse(c12, c41, c12.Bounds(), 5)
 	
 	// 2, 2
 	c22 := element.cellAt(2, 2)
-	shapes.FillRectangle(c22, c41)
+	shapes.FillRectangle(c22, c41, c22.Bounds())
 
 	// 3, 2
 	c32 := element.cellAt(3, 2)
-	shapes.StrokeRectangle(c32, c41, 5)
+	shapes.StrokeRectangle(c32, c41, c32.Bounds(), 5)
 	
 	// 4, 2
 	c42 := element.cellAt(4, 2)
