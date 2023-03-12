@@ -20,7 +20,7 @@ func Fill (destination canvas.Canvas, source Pattern) (updated image.Rectangle) 
 	return destination.Bounds()
 }
 
-// Draw lets you draw several subsets of 
+// DrawClip lets you draw several subsets of a pattern at once.
 func DrawClip (
 	destination canvas.Canvas,
 	source      Pattern,

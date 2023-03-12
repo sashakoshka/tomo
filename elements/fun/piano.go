@@ -305,7 +305,7 @@ func (element *Piano) draw () {
 	
 	pattern := element.theme.Pattern(theme.PatternPinboard, state)
 	artist.DrawShatter (
-		element.core, pattern, element.contentBounds)
+		element.core, pattern, element.Bounds(), element.contentBounds)
 }
 
 func (element *Piano) drawFlat (
