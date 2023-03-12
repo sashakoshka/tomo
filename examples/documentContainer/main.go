@@ -1,5 +1,8 @@
 package main
 
+import "os"
+import "image"
+import _ "image/png"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
@@ -9,8 +12,14 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(480, 360)
+	window, _ := tomo.NewWindow(383, 360)
 	window.SetTitle("Scroll")
+	
+	file, err := os.Open("assets/banner.png")
+	if err != nil { panic(err.Error()); return  }
+	logo, _, err := image.Decode(file)
+	file.Close()
+	if err != nil { panic(err.Error()); return  }
 
 	scrollContainer := basicElements.NewScrollContainer(false, true)
 	document := basicElements.NewDocumentContainer()
@@ -18,21 +27,12 @@ func run () {
 	document.Adopt (basicElements.NewLabel (
 		"A document container is a vertically stacked container " +
 		"capable of properly laying out flexible elements such as " +
-		"text-wrapped labels.", true))
+		"text-wrapped labels. You can also include normal elements " +
+		"like:", true))
 	document.Adopt (basicElements.NewButton (
-		"You can also include normal elements like buttons,"))
-	document.Adopt (basicElements.NewButton (
-		"You can also include normal elements like buttons,"))
-	document.Adopt (basicElements.NewButton (
-		"You can also include normal elements like buttons,"))
-	document.Adopt (basicElements.NewButton (
-		"You can also include normal elements like buttons,"))
-	document.Adopt (basicElements.NewButton (
-		"You can also include normal elements like buttons,"))
-	document.Adopt (basicElements.NewButton (
-		"You can also include normal elements like buttons,"))
+		"Buttons,"))
 	document.Adopt (basicElements.NewCheckbox (
-		"checkboxes,", true))
+		"Checkboxes,", true))
 	document.Adopt(basicElements.NewTextBox("", "And text boxes."))
 	document.Adopt (basicElements.NewSpacer(true))
 	document.Adopt (basicElements.NewLabel (
@@ -43,6 +43,7 @@ func run () {
 		"forms of hypertext (like HTML, gemtext, markdown, etc.), " +
 		"lay out a settings menu with descriptive label text between " +
 		"control groups like in iOS, or list comment or chat histories.", true))
+	document.Adopt(basicElements.NewImage(logo))
 
 	scrollContainer.Adopt(document)
 	window.Adopt(scrollContainer)

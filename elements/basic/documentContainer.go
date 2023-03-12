@@ -222,9 +222,6 @@ func (element *DocumentContainer) SetTheme (new theme.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.Propagator.SetTheme(new)
-	element.core.SetMinimumSize (
-		element.theme.Padding(theme.PatternBackground).Horizontal(),
-		element.theme.Padding(theme.PatternBackground).Vertical(),)
 	element.redoAll()
 }
 
@@ -331,6 +328,7 @@ func (element *DocumentContainer) doLayout () {
 	bounds := padding.Apply(element.Bounds())
 	element.contentBounds = image.Rectangle { }
 
+	minimumWidth := 0
 	dot := bounds.Min.Sub(element.scroll)
 	for index, entry := range element.children {
 		if index > 0 {
@@ -338,6 +336,9 @@ func (element *DocumentContainer) doLayout () {
 		}
 	
 		width, height := entry.MinimumSize()
+		if width > minimumWidth {
+			minimumWidth = width
+		}
 		if width < bounds.Dx() {
 			width = bounds.Dx()
 		}
@@ -351,6 +352,10 @@ func (element *DocumentContainer) doLayout () {
 		element.contentBounds = element.contentBounds.Union(entry.Bounds)
 		dot.Y += height
 	}
+	
 	element.contentBounds =
-		element.contentBounds.Sub(element.contentBounds.Min)
+		element.contentBounds.Sub(element.contentBounds.Min)	
+	element.core.SetMinimumSize (
+		minimumWidth + padding.Horizontal(),
+		padding.Vertical())
 }
