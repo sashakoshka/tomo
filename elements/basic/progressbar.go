@@ -3,7 +3,6 @@ package basicElements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // ProgressBar displays a visual indication of how far along a task is.

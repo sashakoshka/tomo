@@ -1,6 +1,7 @@
 package main
 
 import "time"
+import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
@@ -30,14 +31,17 @@ func NewGame (world World, textures Textures) (game *Game) {
 	return
 }
 
-func (game *Game) DrawTo (canvas canvas.Canvas) {
+func (game *Game) DrawTo (canvas canvas.Canvas, bounds image.Rectangle) {
 	if canvas == nil {
-		game.stopChan <- true
+		select {
+		case game.stopChan <- true:
+		default:
+		}
 	} else if !game.running {
 		game.running = true
 		go game.run()
 	}
-	game.Raycaster.DrawTo(canvas)
+	game.Raycaster.DrawTo(canvas, bounds)
 }
 
 func (game *Game) Stamina () float64 {
