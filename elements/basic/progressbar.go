@@ -78,5 +78,5 @@ func (element *ProgressBar) draw () {
 		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
 		bounds.Max.Y)
 	mercury := element.theme.Pattern(theme.PatternMercury, theme.State { })
-	artist.DrawBounds(element.core, mercury, meterBounds)
+	mercury.Draw(element.core, meterBounds)
 }

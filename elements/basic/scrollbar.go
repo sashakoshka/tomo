@@ -315,12 +315,10 @@ func (element *ScrollBar) draw () {
 		Disabled: !element.Enabled(),
 		Pressed:  element.dragging,
 	}
-	artist.DrawBounds (
+	element.theme.Pattern(theme.PatternGutter, state).Draw (
 		element.core,
-		element.theme.Pattern(theme.PatternGutter, state),
 		bounds)
-	artist.DrawBounds (
+	element.theme.Pattern(theme.PatternHandle, state).Draw (
 		element.core,
-		element.theme.Pattern(theme.PatternHandle, state),
 		element.bar)
 }

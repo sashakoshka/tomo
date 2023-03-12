@@ -138,7 +138,7 @@ func (element *Container) Disown (child elements.Element) {
 }
 
 func (element *Container) clearChildEventHandlers (child elements.Element) {
-	child.DrawTo(nil)
+	child.DrawTo(nil, image.Rectangle { })
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
 	if child0, ok := child.(elements.Focusable); ok {
@@ -203,7 +203,7 @@ func (element *Container) redoAll () {
 	// remove child canvasses so that any operations done in here will not
 	// cause a child to draw to a wack ass canvas.
 	for _, entry := range element.children {
-		entry.DrawTo(nil)
+		entry.DrawTo(nil, entry.Bounds)
 	}
 	
 	// do a layout
@@ -217,12 +217,13 @@ func (element *Container) redoAll () {
 	pattern := element.theme.Pattern (
 		theme.PatternBackground,
 		theme.State { })
-	artist.DrawShatter (
-		element.core, pattern, rocks...)
+	artist.DrawShatter(element.core, pattern, element.Bounds(), rocks...)
 
 	// cut our canvas up and give peices to child elements
 	for _, entry := range element.children {
-		entry.DrawTo(canvas.Cut(element.core, entry.Bounds))
+		entry.DrawTo (
+			canvas.Cut(element.core, entry.Bounds),
+			entry.Bounds)
 	}
 }
 

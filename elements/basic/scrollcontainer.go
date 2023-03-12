@@ -120,7 +120,7 @@ func (element *ScrollContainer) setChildEventHandlers (child elements.Element) {
 }
 
 func (element *ScrollContainer) clearChildEventHandlers (child elements.Scrollable) {
-	child.DrawTo(nil)
+	child.DrawTo(nil, image.Rectangle { })
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
 	child.OnScrollBoundsChange(nil)
@@ -198,19 +198,26 @@ func (element *ScrollContainer) Child (index int) (child elements.Element) {
 func (element *ScrollContainer) redoAll () {
 	if !element.core.HasImage() { return }
 
-	if element.child      != nil { element.child.DrawTo(nil)      }
-	if element.horizontal != nil { element.horizontal.DrawTo(nil) }
-	if element.vertical   != nil { element.vertical.DrawTo(nil)   }
+	zr := image.Rectangle { }
+	if element.child      != nil { element.child.DrawTo(nil, zr)      }
+	if element.horizontal != nil { element.horizontal.DrawTo(nil, zr) }
+	if element.vertical   != nil { element.vertical.DrawTo(nil, zr)   }
 	
 	childBounds, horizontalBounds, verticalBounds := element.layout()
 	if element.child != nil {
-		element.child.DrawTo(canvas.Cut(element.core, childBounds))
+		element.child.DrawTo (
+			canvas.Cut(element.core, childBounds),
+			childBounds)
 	}
 	if element.horizontal != nil {
-		element.horizontal.DrawTo(canvas.Cut(element.core, horizontalBounds))
+		element.horizontal.DrawTo (
+			canvas.Cut(element.core, horizontalBounds),
+			horizontalBounds)
 	}
 	if element.vertical != nil {
-		element.vertical.DrawTo(canvas.Cut(element.core, verticalBounds))
+		element.vertical.DrawTo (
+			canvas.Cut(element.core, verticalBounds),
+			verticalBounds)
 	}
 	element.draw()
 }

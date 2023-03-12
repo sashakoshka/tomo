@@ -176,7 +176,7 @@ func (element *Checkbox) draw () {
 	backgroundPattern.Draw(element.core, bounds)
 
 	pattern := element.theme.Pattern(theme.PatternButton, state)
-	artist.DrawBounds(element.core, pattern, boxBounds)
+	pattern.Draw(element.core, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	margin := element.theme.Margin(theme.PatternBackground)

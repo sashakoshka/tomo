@@ -123,7 +123,7 @@ func (element *DocumentContainer) Disown (child elements.Element) {
 }
 
 func (element *DocumentContainer) clearChildEventHandlers (child elements.Element) {
-	child.DrawTo(nil)
+	child.DrawTo(nil, image.Rectangle { })
 	child.OnDamage(nil)
 	child.OnMinimumSizeChange(nil)
 	if child0, ok := child.(elements.Focusable); ok {
@@ -201,8 +201,7 @@ func (element *DocumentContainer) redoAll () {
 	pattern := element.theme.Pattern (
 		theme.PatternBackground,
 		theme.State { })
-	artist.DrawShatter (
-		element.core, pattern, rocks...)
+	artist.DrawShatter(element.core, pattern, element.Bounds(), rocks...)
 
 	element.partition()
 	if element.onScrollBoundsChange != nil {
@@ -212,13 +211,15 @@ func (element *DocumentContainer) redoAll () {
 
 func (element *DocumentContainer) partition () {
 	for _, entry := range element.children {
-		entry.DrawTo(nil)
+		entry.DrawTo(nil, entry.Bounds)
 	}
 
 	// cut our canvas up and give peices to child elements
 	for _, entry := range element.children {
 		if entry.Bounds.Overlaps(element.Bounds()) {
-			entry.DrawTo(canvas.Cut(element.core, entry.Bounds))
+			entry.DrawTo (	
+				canvas.Cut(element.core, entry.Bounds),
+				entry.Bounds)
 		}
 	}
 }

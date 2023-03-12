@@ -4,7 +4,6 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // Slider is a slider control with a floating point value between zero and one.
@@ -229,12 +228,10 @@ func (element *Slider) draw () {
 		Disabled: !element.Enabled(),
 		Pressed:  element.dragging,
 	}
-	artist.DrawBounds (
+	element.theme.Pattern(theme.PatternGutter, state).Draw (
 		element.core,
-		element.theme.Pattern(theme.PatternGutter, state),
 		bounds)
-	artist.DrawBounds (
+	element.theme.Pattern(theme.PatternHandle, state).Draw (
 		element.core,
-		element.theme.Pattern(theme.PatternHandle, state),
 		element.bar)
 }

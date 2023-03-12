@@ -70,7 +70,7 @@ func (entry *ListEntry) Draw (
 	pattern := entry.theme.Pattern(theme.PatternRaised, state)
 	padding := entry.theme.Padding(theme.PatternRaised)
 	bounds  := entry.Bounds().Add(offset)
-	artist.DrawBounds(destination, pattern, bounds)
+	pattern.Draw(destination, bounds)
 		
 	foreground := entry.theme.Color (theme.ColorForeground, state)
 	return entry.drawer.Draw (
