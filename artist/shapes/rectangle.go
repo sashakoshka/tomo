@@ -49,7 +49,7 @@ func StrokeRectangle (
 	if insetBounds.Empty() {
 		return FillRectangle(destination, source, bounds)
 	}
-	return FillRectangleShatter(destination, source, insetBounds)
+	return FillRectangleShatter(destination, source, bounds, insetBounds)
 }
 
 // FillRectangleShatter is like FillRectangle, but it does not draw in areas

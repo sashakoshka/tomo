@@ -68,7 +68,7 @@ func StrokeEllipse (
 		},
 		radii:  image.Pt(drawBounds.Dx() / 2, drawBounds.Dy() / 2),
 	}
-	context.center = bounds.Min.Add(context.radii)
+	context.center = drawBounds.Min.Add(context.radii)
 	context.plotEllipse()
 }
 
