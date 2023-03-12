@@ -87,7 +87,6 @@ func (element *Container) Adopt (child elements.Element, expand bool) {
 
 	// refresh stale data
 	element.updateMinimumSize()
-	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
 		element.redoAll()
 		element.core.DamageAll()
@@ -130,7 +129,6 @@ func (element *Container) Disown (child elements.Element) {
 	}
 
 	element.updateMinimumSize()
-	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
 		element.redoAll()
 		element.core.DamageAll()
@@ -158,7 +156,6 @@ func (element *Container) DisownAll () {
 	element.children = nil
 
 	element.updateMinimumSize()
-	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {
 		element.redoAll()
 		element.core.DamageAll()
@@ -254,20 +251,6 @@ func (element *Container) OnFocusMotionRequest (
 ) {
 	element.onFocusMotionRequest = callback
 	element.Propagator.OnFocusMotionRequest(callback)
-}
-
-func (element *Container) reflectChildProperties () {
-	focusable := false
-	for _, entry := range element.children {
-		_, focusable := entry.Element.(elements.Focusable)
-		if focusable {
-			focusable = true
-			break
-		}
-	}
-	if !focusable && element.Focused() {
-		element.Propagator.HandleUnfocus()
-	}
 }
 
 func (element *Container) childFocusRequestCallback (

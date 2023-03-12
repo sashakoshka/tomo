@@ -1,5 +1,6 @@
 package core
 
+// import "runtime/debug"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 
 // FocusableCore is a struct that can be embedded into objects to make them
@@ -71,6 +72,7 @@ func (core *FocusableCore) HandleFocus (
 // HandleUnfocus causes this element to mark itself as unfocused.
 func (core *FocusableCore) HandleUnfocus () {
 	core.focused = false
+	// debug.PrintStack()
 	if core.drawFocusChange != nil { core.drawFocusChange() }
 }
 
