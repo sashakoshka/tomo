@@ -4,6 +4,7 @@ import "os"
 import "image"
 import _ "image/png"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
 
@@ -44,6 +45,17 @@ func run () {
 		"lay out a settings menu with descriptive label text between " +
 		"control groups like in iOS, or list comment or chat histories.", true))
 	document.Adopt(basicElements.NewImage(logo))
+	document.Adopt (basicElements.NewLabel (
+		"Oh, you're a switch? Then name all of these switches:", true))
+	for i := 0; i < 3; i ++ {
+		switchContainer := basicElements.NewContainer (basicLayouts.Horizontal {
+			Gap: true,
+		})
+		for i := 0; i < 10; i ++ {
+			switchContainer.Adopt(basicElements.NewSwitch("", false), true)
+		}
+		document.Adopt(switchContainer)
+	}
 
 	scrollContainer.Adopt(document)
 	window.Adopt(scrollContainer)
