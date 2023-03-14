@@ -23,7 +23,7 @@ type Artist struct {
 // NewArtist creates a new artist test element.
 func NewArtist () (element *Artist) {
 	element = &Artist { }
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	element.core.SetMinimumSize(240, 240)
 	return
 }
