@@ -10,27 +10,26 @@ import "git.tebibyte.media/sashakoshka/tomo/config"
 type Element interface {
 	// Bounds reports the element's bounding box. This must reflect the
 	// bounding last given to the element by DrawTo.
-	Bounds () (bounds image.Rectangle)
-
-	// DrawTo gives the element a canvas to draw on, along with a bounding
-	// box to be used for laying out the element. This should only be called
-	// by the parent element. This is typically a region of the parent
-	// element's canvas.
-	DrawTo (canvas canvas.Canvas, bounds image.Rectangle)
-
-	// OnDamage sets a function to be called when an area of the element is
-	// drawn on and should be pushed to the screen.
-	OnDamage (callback func (region canvas.Canvas))
-
+	Bounds () image.Rectangle
+	
 	// MinimumSize specifies the minimum amount of pixels this element's
 	// width and height may be set to. If the element is given a resize
 	// event with dimensions smaller than this, it will use its minimum
 	// instead of the offending dimension(s).
 	MinimumSize () (width, height int)
 
-	// OnMinimumSizeChange sets a function to be called when the element's
-	// minimum size is changed.
-	OnMinimumSizeChange (callback func ())
+	// SetParent sets the parent container of the element. This should only
+	// be called by the parent when the element is adopted. If parent is set
+	// to nil, it will mark itself as not having a parent. If this method is
+	// passed a non-nil value and the element already has a parent, it will
+	// panic.
+	SetParent (Parent)
+
+	// DrawTo gives the element a canvas to draw on, along with a bounding
+	// box to be used for laying out the element. This should only be called
+	// by the parent element. This is typically a region of the parent
+	// element's canvas.
+	DrawTo (canvas canvas.Canvas, bounds image.Rectangle, onDamage func (region image.Rectangle))
 }
 
 // Focusable represents an element that has keyboard navigation support. This
@@ -41,7 +40,7 @@ type Focusable interface {
 
 	// Focused returns whether or not this element or any of its children
 	// are currently focused.
-	Focused () (selected bool)
+	Focused () bool
 
 	// Focus focuses this element, if its parent element grants the
 	// request.
@@ -57,20 +56,6 @@ type Focusable interface {
 	// HandleDeselection causes this element to mark itself and all of its
 	// children as unfocused.
 	HandleUnfocus ()
-
-	// OnFocusRequest sets a function to be called when this element wants
-	// its parent element to focus it. Parent elements should return true if
-	// the request was granted, and false if it was not. If the parent
-	// element returns true, the element must act as if a HandleFocus call
-	// was made with KeynavDirectionNeutral.
-	OnFocusRequest (func () (granted bool))
-
-	// OnFocusMotionRequest sets a function to be called when this
-	// element wants its parent element to focus the element behind or in
-	// front of it, depending on the specified direction. Parent elements
-	// should return true if the request was granted, and false if it was
-	// not.
-	OnFocusMotionRequest (func (direction input.KeynavDirection) (granted bool))
 }
 
 // KeyboardTarget represents an element that can receive keyboard input.
@@ -93,9 +78,6 @@ type KeyboardTarget interface {
 type MouseTarget interface {
 	Element
 
-	// Each of these handler methods is passed the position of the mouse
-	// cursor at the time of the event as x, y.
-
 	// HandleMouseDown is called when a mouse button is pressed down on this
 	// element.
 	HandleMouseDown (x, y int, button input.Button)
@@ -103,15 +85,25 @@ type MouseTarget interface {
 	// HandleMouseUp is called when a mouse button is released that was
 	// originally pressed down on this element.
 	HandleMouseUp (x, y int, button input.Button)
+}
 
-	// HandleMouseMove is called when the mouse is moved over this element,
+// MotionTarget represents an element that can receive mouse motion events.
+type MotionTarget interface {
+	Element
+
+	// HandleMotion is called when the mouse is moved over this element,
 	// or the mouse is moving while being held down and originally pressed
 	// down on this element.
-	HandleMouseMove (x, y int)
+	HandleMotion (x, y int)
+}
+
+// ScrollTarget represents an element that can receive mouse scroll events.
+type ScrollTarget interface {
+	Element
 
 	// HandleScroll is called when the mouse is scrolled. The X and Y
 	// direction of the scroll event are passed as deltaX and deltaY.
-	HandleMouseScroll (x, y int, deltaX, deltaY float64)
+	HandleScroll (x, y int, deltaX, deltaY float64)
 }
 
 // Flexible represents an element who's preferred minimum height can change in
@@ -132,11 +124,7 @@ type Flexible interface {
 	//
 	// It is important to note that if a parent container checks for
 	// flexible chilren, it itself will likely need to be flexible.
-	FlexibleHeightFor (width int) (height int)
-
-	// OnFlexibleHeightChange sets a function to be called when the
-	// parameters affecting this element's flexible height are changed.
-	OnFlexibleHeightChange (callback func ())
+	FlexibleHeightFor (width int) int
 }
 
 // Scrollable represents an element that can be scrolled. It acts as a viewport
@@ -145,11 +133,11 @@ type Scrollable interface {
 	Element
 
 	// ScrollContentBounds returns the full content size of the element.
-	ScrollContentBounds () (bounds image.Rectangle)
+	ScrollContentBounds () image.Rectangle
 
 	// ScrollViewportBounds returns the size and position of the element's
 	// viewport relative to ScrollBounds.
-	ScrollViewportBounds () (bounds image.Rectangle)
+	ScrollViewportBounds () image.Rectangle
 
 	// ScrollTo scrolls the viewport to the specified point relative to
 	// ScrollBounds.
@@ -157,10 +145,6 @@ type Scrollable interface {
 
 	// ScrollAxes returns the supported axes for scrolling.
 	ScrollAxes () (horizontal, vertical bool)
-
-	// OnScrollBoundsChange sets a function to be called when the element's
-	// ScrollContentBounds, ScrollViewportBounds, or ScrollAxes are changed.
-	OnScrollBoundsChange (callback func ())
 }
 
 // Collapsible represents an element who's minimum width and height can be
