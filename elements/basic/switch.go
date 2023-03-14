@@ -4,7 +4,6 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -185,11 +184,11 @@ func (element *Switch) draw () {
 
 	gutterPattern := element.theme.Pattern (
 		theme.PatternGutter, state)
-	artist.DrawBounds(element.core, gutterPattern, gutterBounds)
+	gutterPattern.Draw(element.core, gutterBounds)
 	
 	handlePattern := element.theme.Pattern (
 		theme.PatternHandle, state)
-	artist.DrawBounds(element.core, handlePattern, handleBounds)
+	handlePattern.Draw(element.core, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := bounds.Min.Add(image.Point {

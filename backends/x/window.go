@@ -96,9 +96,6 @@ func (window *Window) Adopt (child elements.Element) {
 		window.child.OnDamage(nil)
 		window.child.OnMinimumSizeChange(nil)
 	}
-	if previousChild, ok := window.child.(elements.Flexible); ok {
-		previousChild.OnFlexibleHeightChange(nil)
-	}
 	if previousChild, ok := window.child.(elements.Focusable); ok {
 		previousChild.OnFocusRequest(nil)
 		previousChild.OnFocusMotionRequest(nil)
@@ -114,9 +111,6 @@ func (window *Window) Adopt (child elements.Element) {
 	}
 	if newChild, ok := child.(elements.Configurable); ok {
 		newChild.SetConfig(window.config)
-	}
-	if newChild, ok := child.(elements.Flexible); ok {
-		newChild.OnFlexibleHeightChange(window.resizeChildToFit)
 	}
 	if newChild, ok := child.(elements.Focusable); ok {
 		newChild.OnFocusRequest(window.childSelectionRequestCallback)
@@ -263,26 +257,7 @@ func (window *Window) redrawChildEntirely () {
 
 func (window *Window) resizeChildToFit () {
 	window.skipChildDrawCallback = true
-	if child, ok := window.child.(elements.Flexible); ok {
-		minimumHeight := child.FlexibleHeightFor(window.metrics.width)
-		minimumWidth, _ := child.MinimumSize()
-		
-		icccm.WmNormalHintsSet (
-			window.backend.connection,
-			window.xWindow.Id,
-			&icccm.NormalHints {
-				Flags:     icccm.SizeHintPMinSize,
-				MinWidth:  uint(minimumWidth),
-				MinHeight: uint(minimumHeight),
-			})
-				
-		if window.metrics.height >= minimumHeight &&
-			window.metrics.width >= minimumWidth {
-			window.child.DrawTo(window.canvas)
-		}
-	} else {
-		window.child.DrawTo(window.canvas)
-	}
+	window.child.DrawTo(window.canvas, window.canvas.Bounds())
 	window.skipChildDrawCallback = false
 }
 

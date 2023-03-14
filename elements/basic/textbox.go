@@ -81,7 +81,6 @@ func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 
 func (element *TextBox) HandleMouseMove (x, y int) {
 	if !element.Enabled() { return }
-	if !element.Focused() { element.Focus() }
 
 	if element.dragging {
 		runeIndex := element.atPosition(image.Pt(x, y))

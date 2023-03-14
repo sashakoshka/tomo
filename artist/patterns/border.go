@@ -37,9 +37,9 @@ type Border struct {
 
 // Draw draws the border pattern onto the destination canvas within the clipping
 // bounds.
-func (pattern Border) Draw (destination canvas.Canvas, clip image.Rectangle) {
-	bounds := clip.Canon().Intersect(destination.Bounds())
-	if bounds.Empty() { return }
+func (pattern Border) Draw (destination canvas.Canvas, bounds image.Rectangle) {
+	drawBounds := bounds.Canon().Intersect(destination.Bounds())
+	if drawBounds.Empty() { return }
 
 	srcSections := nonasect(pattern.Bounds(), pattern.Inset)
 	srcTextures := [9]Texture { }
@@ -47,9 +47,9 @@ func (pattern Border) Draw (destination canvas.Canvas, clip image.Rectangle) {
 		srcTextures[index].Canvas = canvas.Cut(pattern, section)
 	}
 	
-	dstSections := nonasect(destination.Bounds(), pattern.Inset)
+	dstSections := nonasect(bounds, pattern.Inset)
 	for index, section := range dstSections {
-		srcTextures[index].Draw(canvas.Cut(destination, section), clip)
+		srcTextures[index].Draw(destination, section)
 	}
 }
 

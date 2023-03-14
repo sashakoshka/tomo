@@ -1,5 +1,6 @@
 package basicElements
 
+import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
@@ -13,6 +14,9 @@ type Label struct {
 	wrap   bool
 	text   string
 	drawer textdraw.Drawer
+
+	forcedColumns int
+	forcedRows    int
 	
 	config config.Wrapped
 	theme  theme.Wrapped
@@ -54,6 +58,17 @@ func (element *Label) handleResize () {
 	}
 	element.draw()
 	return
+}
+
+// EmCollapse forces a minimum width and height upon the label. The width is
+// measured in emspaces, and the height is measured in lines. If a zero value is
+// given for a dimension, its minimum will be determined by the label's content.
+// If the label's content is greater than these dimensions, it will be truncated
+// to fit.
+func (element *Label) EmCollapse (columns int, rows int) {
+	element.forcedColumns = columns
+	element.forcedRows    = rows
+	element.updateMinimumSize()
 }
 
 // FlexibleHeightFor returns the reccomended height for this element based on
@@ -134,20 +149,35 @@ func (element *Label) SetConfig (new config.Config) {
 }
 
 func (element *Label) updateMinimumSize () {
+	var width, height int
+	
 	if element.wrap {
 		em := element.drawer.Em().Round()
 		if em < 1 {
 			em = element.theme.Padding(theme.PatternBackground)[0]
 		}
-		element.core.SetMinimumSize (
-			em, element.drawer.LineHeight().Round())
+		width, height = em, element.drawer.LineHeight().Round()
 		if element.onFlexibleHeightChange != nil {
 			element.onFlexibleHeightChange()
 		}
 	} else {
 		bounds := element.drawer.LayoutBounds()
-		element.core.SetMinimumSize(bounds.Dx(), bounds.Dy())
+		width, height = bounds.Dx(), bounds.Dy()
 	}
+
+	if element.forcedColumns > 0 {
+		width = int (
+			element.drawer.Em().
+			Mul(fixed.I(element.forcedColumns)))
+	}
+
+	if element.forcedRows > 0 {
+		height = int (
+			element.drawer.LineHeight().
+			Mul(fixed.I(element.forcedRows)))
+	}
+
+	element.core.SetMinimumSize(width, height)
 }
 
 func (element *Label) draw () {
@@ -160,7 +190,7 @@ func (element *Label) draw () {
 
 	textBounds := element.drawer.LayoutBounds()
 
-	foreground :=  element.theme.Color (
+	foreground := element.theme.Color (
 		theme.ColorForeground,
 		theme.State { })
 	element.drawer.Draw(element.core, foreground, bounds.Min.Sub(textBounds.Min))

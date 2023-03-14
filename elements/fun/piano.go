@@ -305,7 +305,7 @@ func (element *Piano) draw () {
 	
 	pattern := element.theme.Pattern(theme.PatternPinboard, state)
 	artist.DrawShatter (
-		element.core, pattern, element.contentBounds)
+		element.core, pattern, element.Bounds(), element.contentBounds)
 }
 
 func (element *Piano) drawFlat (
@@ -316,7 +316,7 @@ func (element *Piano) drawFlat (
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
 		theme.PatternButton, state, theme.C("fun", "flatKey"))
-	artist.DrawBounds(element.core, pattern, bounds)
+	pattern.Draw(element.core, bounds)
 }
 
 func (element *Piano) drawSharp (
@@ -327,5 +327,5 @@ func (element *Piano) drawSharp (
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
 		theme.PatternButton, state, theme.C("fun", "sharpKey"))
-	artist.DrawBounds(element.core, pattern, bounds)
+	pattern.Draw(element.core, bounds)
 }

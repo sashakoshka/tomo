@@ -9,25 +9,24 @@ type Texture struct {
 	canvas.Canvas
 }
 
-// Draw tiles the pattern's canvas within the clipping bounds. The minimum
+// Draw tiles the pattern's canvas within the given bounds. The minimum
 // points of the pattern's canvas and the destination canvas will be lined up.
-func (pattern Texture) Draw (destination canvas.Canvas, clip image.Rectangle) {
-	realBounds := destination.Bounds()
-	bounds := clip.Canon().Intersect(realBounds)
-	if bounds.Empty() { return }
+func (pattern Texture) Draw (destination canvas.Canvas, bounds image.Rectangle) {
+	drawBounds := bounds.Canon().Intersect(destination.Bounds())
+	if drawBounds.Empty() { return }
 	
 	dstData, dstStride := destination.Buffer()
 	srcData, srcStride := pattern.Buffer()
 	srcBounds := pattern.Bounds()
 
 	dstPoint := image.Point { }
-	srcPoint := bounds.Min.Sub(realBounds.Min).Add(srcBounds.Min)
+	srcPoint := drawBounds.Min.Sub(bounds.Min).Add(srcBounds.Min)
 	srcPoint.X = wrap(srcPoint.X, srcBounds.Min.X, srcBounds.Max.X)
 	srcPoint.Y = wrap(srcPoint.Y, srcBounds.Min.Y, srcBounds.Max.Y)
 	
-	for dstPoint.Y = bounds.Min.Y; dstPoint.Y < bounds.Max.Y; dstPoint.Y ++ {
+	for dstPoint.Y = drawBounds.Min.Y; dstPoint.Y < drawBounds.Max.Y; dstPoint.Y ++ {
 		srcPoint.X = srcBounds.Min.X
-		dstPoint.X = bounds.Min.X
+		dstPoint.X = drawBounds.Min.X
 		dstYComponent := dstPoint.Y * dstStride
 		srcYComponent := srcPoint.Y * srcStride
 		
@@ -42,7 +41,7 @@ func (pattern Texture) Draw (destination canvas.Canvas, clip image.Rectangle) {
 			}
 
 			dstPoint.X ++
-			if dstPoint.X >= bounds.Max.X {
+			if dstPoint.X >= drawBounds.Max.X {
 				break
 			}
 		}

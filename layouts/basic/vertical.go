@@ -3,7 +3,6 @@ package basicLayouts
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Vertical arranges elements vertically. Elements at the start of the entry
 // list will be positioned at the top, and elements at the end of the entry list
@@ -32,13 +31,7 @@ func (layout Vertical) Arrange (
 	minimumHeights := make([]int, len(entries))
 	expandingElements := 0
 	for index, entry := range entries {
-		var entryMinHeight int
-
-		if child, flexible := entry.Element.(elements.Flexible); flexible {
-			entryMinHeight = child.FlexibleHeightFor(bounds.Dx())
-		} else {
-			_, entryMinHeight = entry.MinimumSize()
-		}
+		_, entryMinHeight := entry.MinimumSize()
 		minimumHeights[index] = entryMinHeight
 		
 		if entry.Expand {
@@ -98,37 +91,6 @@ func (layout Vertical) MinimumSize (
 	if layout.Pad {
 		width  += padding.Horizontal()
 		height += padding.Vertical()
-	}
-	return
-}
-
-// FlexibleHeightFor Returns the minimum height the layout needs to lay out the
-// specified elements at the given width, taking into account flexible elements.
-func (layout Vertical) FlexibleHeightFor (
-	entries []layouts.LayoutEntry,
-	margin  image.Point,
-	padding artist.Inset,
-	width int,
-) (
-	height int,
-) {
-	if layout.Pad {
-		width  -= padding.Horizontal()
-		height += padding.Vertical()
-	}
-	
-	for index, entry := range entries {
-		child, flexible := entry.Element.(elements.Flexible)
-		if flexible {
-			height += child.FlexibleHeightFor(width)
-		} else {
-			_, entryHeight := entry.MinimumSize()
-			height += entryHeight
-		}
-		
-		if layout.Gap && index > 0 {
-			height += margin.Y
-		}
 	}
 	return
 }

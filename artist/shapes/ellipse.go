@@ -13,6 +13,7 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 func FillEllipse (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
+	bounds      image.Rectangle,
 ) (
 	updatedRegion image.Rectangle,
 ) {
@@ -20,15 +21,17 @@ func FillEllipse (
 	srcData, srcStride := source.Buffer()
 	
 	offset := source.Bounds().Min.Sub(destination.Bounds().Min)
-	bounds     := source.Bounds().Sub(offset).Intersect(destination.Bounds())
-	realBounds := destination.Bounds()
+	drawBounds :=
+		source.Bounds().Sub(offset).
+		Intersect(destination.Bounds()).
+		Intersect(bounds)
 	if bounds.Empty() { return }
 	updatedRegion = bounds
 
 	point := image.Point { }
-	for point.Y = bounds.Min.Y; point.Y < bounds.Max.Y; point.Y ++ {
-	for point.X = bounds.Min.X; point.X < bounds.Max.X; point.X ++ {
-		if inEllipse(point, realBounds) {
+	for point.Y = drawBounds.Min.Y; point.Y < drawBounds.Max.Y; point.Y ++ {
+	for point.X = drawBounds.Min.X; point.X < drawBounds.Max.X; point.X ++ {
+		if inEllipse(point, bounds) {
 			offsetPoint := point.Add(offset)
 			dstIndex := point.X       + point.Y       * dstStride
 			srcIndex := offsetPoint.X + offsetPoint.Y * srcStride
@@ -41,6 +44,7 @@ func FillEllipse (
 func StrokeEllipse (
 	destination canvas.Canvas,
 	source      canvas.Canvas,
+	bounds      image.Rectangle,
 	weight      int,
 ) {
 	if weight < 1 { return }
@@ -48,10 +52,9 @@ func StrokeEllipse (
 	dstData, dstStride := destination.Buffer()
 	srcData, srcStride := source.Buffer()
 	
-	bounds := destination.Bounds().Inset(weight - 1)
+	drawBounds := destination.Bounds().Inset(weight - 1)
 	offset := source.Bounds().Min.Sub(destination.Bounds().Min)
-	realBounds := destination.Bounds()
-	if bounds.Empty() { return }
+	if drawBounds.Empty() { return }
 
 	context := ellipsePlottingContext {
 		plottingContext: plottingContext {
@@ -61,11 +64,11 @@ func StrokeEllipse (
 			srcStride: srcStride,
 			weight:    weight,
 			offset:    offset,
-			bounds:    realBounds,
+			bounds:    bounds,
 		},
-		radii:  image.Pt(bounds.Dx() / 2, bounds.Dy() / 2),
+		radii:  image.Pt(drawBounds.Dx() / 2, drawBounds.Dy() / 2),
 	}
-	context.center = bounds.Min.Add(context.radii)
+	context.center = drawBounds.Min.Add(context.radii)
 	context.plotEllipse()
 }
 

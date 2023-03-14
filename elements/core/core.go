@@ -8,6 +8,7 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 // widgets. It is meant to be embedded directly into a struct.
 type Core struct {
 	canvas canvas.Canvas
+	bounds image.Rectangle
 
 	metrics struct {
 		minimumWidth  int
@@ -37,7 +38,7 @@ func NewCore (
 // overridden.
 func (core *Core) Bounds () (bounds image.Rectangle) {
 	if core.canvas == nil { return }
-	return core.canvas.Bounds()
+	return core.bounds
 }
 
 // MinimumSize fulfils the tomo.Element interface. This should not need to be
@@ -48,8 +49,9 @@ func (core *Core) MinimumSize () (width, height int) {
 
 // DrawTo fulfills the tomo.Element interface. This should not need to be
 // overridden.
-func (core *Core) DrawTo (canvas canvas.Canvas) {
+func (core *Core) DrawTo (canvas canvas.Canvas, bounds image.Rectangle) {
 	core.canvas = canvas
+	core.bounds = bounds
 	if core.drawSizeChange != nil && core.canvas != nil {
 		core.drawSizeChange()
 	}

@@ -3,7 +3,6 @@ package basicElements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // ProgressBar displays a visual indication of how far along a task is.
@@ -78,5 +77,5 @@ func (element *ProgressBar) draw () {
 		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
 		bounds.Max.Y)
 	mercury := element.theme.Pattern(theme.PatternMercury, theme.State { })
-	artist.DrawBounds(element.core, mercury, meterBounds)
+	mercury.Draw(element.core, meterBounds)
 }

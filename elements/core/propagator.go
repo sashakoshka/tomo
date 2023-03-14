@@ -326,16 +326,6 @@ func (propagator *Propagator) forFocusable (callback func (child elements.Focusa
 	})
 }
 
-func (propagator *Propagator) forFlexible (callback func (child elements.Flexible) bool) {
-	propagator.forChildren (func (child elements.Element) bool {
-		typedChild, flexible := child.(elements.Flexible)
-		if flexible {
-			if !callback(typedChild) { return false }
-		}
-		return true
-	})
-}
-
 func (propagator *Propagator) firstFocused () int {
 	for index := 0; index < propagator.parent.CountChildren(); index ++ {
 		child, focusable := propagator.parent.Child(index).(elements.Focusable)
