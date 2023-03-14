@@ -1,4 +1,4 @@
-package element
+package elements
 
 import "git.tebibyte.media/sashakoshka/tomo/input"
 

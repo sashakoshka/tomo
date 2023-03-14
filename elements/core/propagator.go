@@ -6,9 +6,9 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
-// Parent represents an object that can provide access to a list of child
+// Container represents an object that can provide access to a list of child
 // elements.
-type Parent interface {
+type Container interface {
 	Child         (index int) elements.Element
 	CountChildren () int
 }
@@ -18,20 +18,20 @@ type Parent interface {
 // all of the event handlers. It also implements standard behavior for focus
 // propagation and keyboard navigation.
 type Propagator struct {
-	parent   Parent
-	drags    [10]elements.MouseTarget
-	focused  bool
-
-	onFocusRequest func () (granted bool)
+	core      CoreControl
+	container Container
+	drags     [10]elements.MouseTarget
+	focused   bool
 }
 
-// NewPropagator creates a new event propagator that uses the specified parent
-// to access a list of child elements that will have events propagated to them.
-// If parent is nil, the function will return nil.
-func NewPropagator (parent Parent) (propagator *Propagator) {
-	if parent == nil { return nil }
+// NewPropagator creates a new event propagator that uses the specified
+// container to access a list of child elements that will have events propagated
+// to them. If container is nil, the function will return nil.
+func NewPropagator (container Container, core CoreControl) (propagator *Propagator) {
+	if container == nil { return nil }
 	propagator = &Propagator {
-		parent: parent,
+		core:      core,
+		container: container,
 	}
 	return
 }
@@ -47,8 +47,12 @@ func (propagator *Propagator) Focused () (focused bool) {
 // Focus focuses this element, if its parent element grants the
 // request.
 func (propagator *Propagator) Focus () {
-	if propagator.onFocusRequest != nil {
-		propagator.onFocusRequest()
+	if propagator.focused == true { return }
+	parent := propagator.core.Parent()
+	if parent, ok := parent.(elements.FocusableParent); ok && parent != nil {
+		propagator.focused = parent.RequestFocus (
+			propagator.core.Outer().(elements.Focusable),
+			input.KeynavDirectionNeutral)
 	}
 }
 
@@ -86,7 +90,7 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 		// an element is currently focused, so we need to move the
 		// focus in the specified direction
 		firstFocusedChild :=
-			propagator.parent.Child(firstFocused).
+			propagator.container.Child(firstFocused).
 			(elements.Focusable)
 
 		// before we move the focus, the currently focused child
@@ -99,11 +103,11 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 		// find the previous/next focusable element relative to the
 		// currently focused element, if it exists.
 		for index := firstFocused + int(direction);
-			index < propagator.parent.CountChildren() && index >= 0;
+			index < propagator.container.CountChildren() && index >= 0;
 			index += int(direction) {
 
 			child, focusable :=
-				propagator.parent.Child(index).
+				propagator.container.Child(index).
 				(elements.Focusable)
 			if focusable && child.HandleFocus(direction) {
 				// we have found one, so we now actually move
@@ -127,22 +131,6 @@ func (propagator *Propagator) HandleUnfocus () {
 	})
 	propagator.focused = false
 }
-
-// OnFocusRequest sets a function to be called when this element wants its
-// parent element to focus it. Parent elements should return true if the request
-// was granted, and false if it was not. If the parent element returns true, the
-// element acts as if a HandleFocus call was made with KeynavDirectionNeutral.
-func (propagator *Propagator) OnFocusRequest (callback func () (granted bool)) {
-	propagator.onFocusRequest = callback
-}
-
-// OnFocusMotionRequest sets a function to be called when this element wants its
-// parent element to focus the element behind or in front of it, depending on
-// the specified direction. Parent elements should return true if the request
-// was granted, and false if it was not.
-func (propagator *Propagator) OnFocusMotionRequest (
-	callback func (direction input.KeynavDirection) (granted bool),
-) { }
 
 // HandleKeyDown propogates the keyboard event to the currently selected child.
 func (propagator *Propagator) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
@@ -194,18 +182,16 @@ func (propagator *Propagator) HandleMouseUp (x, y int, button input.Button) {
 func (propagator *Propagator) HandleMouseMove (x, y int) {
 	handled := false
 	for _, child := range propagator.drags {
-		if child != nil {
-			child.HandleMouseMove(x, y)
+		if child, ok := child.(elements.MotionTarget); ok {
+			child.HandleMotion(x, y)
 			handled = true
 		}
 	}
 
-	if handled {
-		child, handlesMouse :=
-			propagator.childAt(image.Pt(x, y)).
-			(elements.MouseTarget)
-		if handlesMouse {
-			child.HandleMouseMove(x, y)
+	if !handled {
+		child := propagator.childAt(image.Pt(x, y))
+		if child, ok := child.(elements.MotionTarget); ok {
+			child.HandleMotion(x, y)
 		}
 	}
 }
@@ -213,11 +199,9 @@ func (propagator *Propagator) HandleMouseMove (x, y int) {
 // HandleScroll propagates the mouse event to the element under the mouse
 // pointer.
 func (propagator *Propagator) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
-	child, handlesMouse :=
-		propagator.childAt(image.Pt(x, y)).
-		(elements.MouseTarget)
-	if handlesMouse {
-		child.HandleMouseScroll(x, y, deltaX, deltaY)
+	child := propagator.childAt(image.Pt(x, y))
+	if child, ok := child.(elements.ScrollTarget); ok {
+		child.HandleScroll(x, y, deltaX, deltaY)
 	}
 }
 
@@ -281,16 +265,16 @@ func (propagator *Propagator) focusLastFocusableElement (
 // ----------- Iterator utilities ----------- //
 
 func (propagator *Propagator) forChildren (callback func (child elements.Element) bool) {
-	for index := 0; index < propagator.parent.CountChildren(); index ++ {
-		child := propagator.parent.Child(index)
+	for index := 0; index < propagator.container.CountChildren(); index ++ {
+		child := propagator.container.Child(index)
 		if child == nil     { continue }
 		if !callback(child) { break    }
 	}
 }
 
 func (propagator *Propagator) forChildrenReverse (callback func (child elements.Element) bool) {
-	for index := propagator.parent.CountChildren() - 1; index > 0; index -- {
-		child := propagator.parent.Child(index)
+	for index := propagator.container.CountChildren() - 1; index > 0; index -- {
+		child := propagator.container.Child(index)
 		if child == nil     { continue }
 		if !callback(child) { break    }
 	}
@@ -327,8 +311,8 @@ func (propagator *Propagator) forFocusable (callback func (child elements.Focusa
 }
 
 func (propagator *Propagator) firstFocused () int {
-	for index := 0; index < propagator.parent.CountChildren(); index ++ {
-		child, focusable := propagator.parent.Child(index).(elements.Focusable)
+	for index := 0; index < propagator.container.CountChildren(); index ++ {
+		child, focusable := propagator.container.Child(index).(elements.Focusable)
 		if focusable && child.Focused() {
 			return index
 		}
