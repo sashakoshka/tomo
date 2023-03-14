@@ -30,7 +30,7 @@ type Backend struct {
 	theme  theme.Theme
 	config config.Config
 
-	windows map[xproto.Window] *Window
+	windows map[xproto.Window] *window
 
 	open bool
 }
@@ -38,7 +38,7 @@ type Backend struct {
 // NewBackend instantiates an X backend.
 func NewBackend () (output tomo.Backend, err error) {
 	backend := &Backend {
-		windows: map[xproto.Window] *Window { },
+		windows: map[xproto.Window] *window { },
 		doChannel: make(chan func (), 0),
 		theme:  theme.Default  { },
 		config: config.Default { },
@@ -79,7 +79,7 @@ func (backend *Backend) Stop () {
 	if !backend.open { return }
 	backend.open = false
 	
-	toClose := []*Window { }
+	toClose := []*window { }
 	for _, window := range backend.windows {
 		toClose = append(toClose, window)
 	}
