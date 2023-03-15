@@ -103,6 +103,7 @@ func (window *window) Adopt (child elements.Element) {
 	
 	// adopt new child
 	window.child = child
+	child.SetParent(window)
 	if newChild, ok := child.(elements.Themeable); ok {
 		newChild.SetTheme(window.theme)
 	}
