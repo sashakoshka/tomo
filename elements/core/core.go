@@ -58,7 +58,7 @@ func (core *Core) MinimumSize () (width, height int) {
 // overridden, unless you want to detect when the element is parented or
 // unparented.
 func (core *Core) SetParent (parent elements.Parent) {
-	if core.parent != nil {
+	if parent != nil && core.parent != nil {
 		panic("core.SetParent: element already has a parent")
 	}
 
