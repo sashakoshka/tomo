@@ -20,7 +20,7 @@ type ProgressBar struct {
 func NewProgressBar (progress float64) (element *ProgressBar) {
 	element = &ProgressBar { progress: progress }
 	element.theme.Case = theme.C("basic", "progressBar")
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	return
 }
 

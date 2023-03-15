@@ -29,7 +29,7 @@ type Label struct {
 func NewLabel (text string, wrap bool) (element *Label) {
 	element = &Label { }
 	element.theme.Case = theme.C("basic", "label")
-	element.Core, element.core = core.NewCore(element.handleResize)
+	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.SetWrap(wrap)
 	element.SetText(text)
 	return

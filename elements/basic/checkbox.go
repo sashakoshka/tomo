@@ -29,9 +29,9 @@ type Checkbox struct {
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked }
 	element.theme.Case = theme.C("basic", "checkbox")
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.redo)
+	element.focusableControl = core.NewFocusableCore(element.core, element.redo)
 	element.SetText(text)
 	return
 }
@@ -64,9 +64,6 @@ func (element *Checkbox) HandleMouseUp (x, y int, button input.Button) {
 		element.onToggle()
 	}
 }
-
-func (element *Checkbox) HandleMouseMove (x, y int) { }
-func (element *Checkbox) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Checkbox) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if key == input.KeyEnter {

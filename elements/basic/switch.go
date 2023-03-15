@@ -33,9 +33,9 @@ func NewSwitch (text string, on bool) (element *Switch) {
 		text: text,
 	}
 	element.theme.Case = theme.C("basic", "switch")
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.redo)
+	element.focusableControl = core.NewFocusableCore(element.core, element.redo)
 	element.drawer.SetText([]rune(text))
 	element.updateMinimumSize()
 	return

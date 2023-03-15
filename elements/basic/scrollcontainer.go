@@ -31,12 +31,12 @@ type ScrollContainer struct {
 func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 	element = &ScrollContainer { }
 	element.theme.Case = theme.C("basic", "scrollContainer")
-	element.Core, element.core = core.NewCore(element.redoAll)
-	element.Propagator = core.NewPropagator(element)
+	element.Core, element.core = core.NewCore(element, element.redoAll)
+	element.Propagator = core.NewPropagator(element, element.core)
 
 	if horizontal {
 		element.horizontal = NewScrollBar(false)
-		element.setChildEventHandlers(element.horizontal)
+		element.setUpChild(element.horizontal)
 		element.horizontal.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
 				element.child.ScrollTo(viewport)
@@ -50,7 +50,7 @@ func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 	}
 	if vertical {
 		element.vertical = NewScrollBar(true)
-		element.setChildEventHandlers(element.vertical)
+		element.setUpChild(element.vertical)
 		element.vertical.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
 				element.child.ScrollTo(viewport)
@@ -72,13 +72,13 @@ func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 func (element *ScrollContainer) Adopt (child elements.Scrollable) {
 	// disown previous child if it exists
 	if element.child != nil {
-		element.clearChildEventHandlers(child)
+		element.disownChild(child)
 	}
 
 	// adopt new child
 	element.child = child
 	if child != nil {
-		element.setChildEventHandlers(child)
+		element.setUpChild(child)
 	}
 	
 	element.updateEnabled()
@@ -89,47 +89,44 @@ func (element *ScrollContainer) Adopt (child elements.Scrollable) {
 	}
 }
 
-func (element *ScrollContainer) setChildEventHandlers (child elements.Element) {
-	if child0, ok := child.(elements.Themeable); ok {
-		child0.SetTheme(element.theme.Theme)
+func (element *ScrollContainer) setUpChild (child elements.Element) {
+	child.SetParent(element)
+	if child, ok := child.(elements.Themeable); ok {
+		child.SetTheme(element.theme.Theme)
 	}
-	if child0, ok := child.(elements.Configurable); ok {
-		child0.SetConfig(element.config.Config)
-	}
-	child.OnDamage (func (region canvas.Canvas) {
-		element.core.DamageRegion(region.Bounds())
-	})
-	child.OnMinimumSizeChange (func () {
-		element.updateMinimumSize()
-		element.redoAll()
-		element.core.DamageAll()
-	})
-	if child0, ok := child.(elements.Focusable); ok {
-		child0.OnFocusRequest (func () (granted bool) {
-			return element.childFocusRequestCallback(child0)
-		})
-		child0.OnFocusMotionRequest (
-			func (direction input.KeynavDirection) (granted bool) {
-				if element.onFocusMotionRequest == nil { return }
-				return element.onFocusMotionRequest(direction)
-			})
-	}
-	if child0, ok := child.(elements.Scrollable); ok {
-		child0.OnScrollBoundsChange(element.childScrollBoundsChangeCallback)
+	if child, ok := child.(elements.Configurable); ok {
+		child.SetConfig(element.config.Config)
 	}
 }
 
-func (element *ScrollContainer) clearChildEventHandlers (child elements.Scrollable) {
-	child.DrawTo(nil, image.Rectangle { })
-	child.OnDamage(nil)
-	child.OnMinimumSizeChange(nil)
-	child.OnScrollBoundsChange(nil)
-	if child0, ok := child.(elements.Focusable); ok {
-		child0.OnFocusRequest(nil)
-		child0.OnFocusMotionRequest(nil)
-		if child0.Focused() {
-			child0.HandleUnfocus()
+func (element *ScrollContainer) disownChild (child elements.Scrollable) {
+	child.DrawTo(nil, image.Rectangle { }, nil)
+	child.SetParent(nil)
+	if child, ok := child.(elements.Focusable); ok {
+		if child.Focused() {
+			child.HandleUnfocus()
 		}
+	}
+}
+
+// NotifyMinimumSizeChange notifies the container that the minimum size of a
+// child element has changed.
+func (element *ScrollContainer) NotifyMinimumSizeChange (child elements.Element) {
+	element.redoAll()
+	element.core.DamageAll()
+}
+
+// NotifyScrollBoundsChange notifies the container that the scroll bounds or
+// axes of a child have changed.
+func (element *ScrollContainer) NotifyScrollBoundsChange (child elements.Scrollable) {
+	element.updateEnabled()
+	viewportBounds := element.child.ScrollViewportBounds()
+	contentBounds  := element.child.ScrollContentBounds()
+	if element.horizontal != nil {
+		element.horizontal.SetBounds(contentBounds, viewportBounds)
+	}
+	if element.vertical != nil {
+		element.vertical.SetBounds(contentBounds, viewportBounds)
 	}
 }
 
@@ -155,18 +152,6 @@ func (element *ScrollContainer) HandleMouseScroll (
 	deltaX, deltaY float64,
 ) {
 	element.scrollChildBy(int(deltaX), int(deltaY))
-}
-
-func (element *ScrollContainer) OnFocusRequest (callback func () (granted bool)) {
-	element.onFocusRequest = callback
-	element.Propagator.OnFocusRequest(callback)
-}
-
-func (element *ScrollContainer) OnFocusMotionRequest (
-	callback func (direction input.KeynavDirection) (granted bool),
-) {
-	element.onFocusMotionRequest = callback
-	element.Propagator.OnFocusMotionRequest(callback)
 }
 
 // CountChildren returns the amount of children contained within this element.
@@ -199,25 +184,25 @@ func (element *ScrollContainer) redoAll () {
 	if !element.core.HasImage() { return }
 
 	zr := image.Rectangle { }
-	if element.child      != nil { element.child.DrawTo(nil, zr)      }
-	if element.horizontal != nil { element.horizontal.DrawTo(nil, zr) }
-	if element.vertical   != nil { element.vertical.DrawTo(nil, zr)   }
+	if element.child      != nil { element.child.DrawTo(nil, zr, nil)      }
+	if element.horizontal != nil { element.horizontal.DrawTo(nil, zr, nil) }
+	if element.vertical   != nil { element.vertical.DrawTo(nil, zr, nil)   }
 	
 	childBounds, horizontalBounds, verticalBounds := element.layout()
 	if element.child != nil {
 		element.child.DrawTo (
 			canvas.Cut(element.core, childBounds),
-			childBounds)
+			childBounds, element.childDamageCallback)
 	}
 	if element.horizontal != nil {
 		element.horizontal.DrawTo (
 			canvas.Cut(element.core, horizontalBounds),
-			horizontalBounds)
+			horizontalBounds, element.childDamageCallback)
 	}
 	if element.vertical != nil {
 		element.vertical.DrawTo (
 			canvas.Cut(element.core, verticalBounds),
-			verticalBounds)
+			verticalBounds, element.childDamageCallback)
 	}
 	element.draw()
 }
@@ -230,18 +215,8 @@ func (element *ScrollContainer) scrollChildBy (x, y int) {
 	element.child.ScrollTo(scrollPoint)
 }
 
-func (element *ScrollContainer) childFocusRequestCallback (
-	child elements.Focusable,
-) (
-	granted bool,
-) {
-	if element.onFocusRequest != nil && element.onFocusRequest() {
-		element.Propagator.HandleUnfocus()
-		element.Propagator.HandleFocus(input.KeynavDirectionNeutral)
-		return true
-	} else {
-		return false
-	}
+func (element *ScrollContainer) childDamageCallback (region image.Rectangle) {
+	element.core.DamageRegion(region)
 }
 
 func (element *ScrollContainer) layout () (
@@ -306,18 +281,6 @@ func (element *ScrollContainer) updateMinimumSize () {
 		}
 	}
 	element.core.SetMinimumSize(width, height)
-}
-
-func (element *ScrollContainer) childScrollBoundsChangeCallback () {
-	element.updateEnabled()
-	viewportBounds := element.child.ScrollViewportBounds()
-	contentBounds  := element.child.ScrollContentBounds()
-	if element.horizontal != nil {
-		element.horizontal.SetBounds(contentBounds, viewportBounds)
-	}
-	if element.vertical != nil {
-		element.vertical.SetBounds(contentBounds, viewportBounds)
-	}
 }
 
 func (element *ScrollContainer) updateEnabled () {

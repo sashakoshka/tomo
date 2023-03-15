@@ -7,6 +7,7 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // List is an element that contains several objects that a user can select.
@@ -29,7 +30,6 @@ type List struct {
 	config config.Wrapped
 	theme  theme.Wrapped
 	
-	onScrollBoundsChange func ()
 	onNoEntrySelected func ()
 }
 
@@ -37,9 +37,9 @@ type List struct {
 func NewList (entries ...ListEntry) (element *List) {
 	element = &List { selectedEntry: -1 }
 	element.theme.Case = theme.C("basic", "list")
-	element.Core, element.core = core.NewCore(element.handleResize)
+	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore (func () {
+	element.focusableControl = core.NewFocusableCore (element.core, func () {
 		if element.core.HasImage () {
 			element.draw()
 			element.core.DamageAll()
@@ -64,8 +64,8 @@ func (element *List) handleResize () {
 		element.scroll = element.maxScrollHeight()
 	}
 	element.draw()
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 
@@ -102,8 +102,8 @@ func (element *List) redo () {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 
@@ -210,8 +210,8 @@ func (element *List) ScrollTo (position image.Point) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 
@@ -231,10 +231,6 @@ func (element *List) maxScrollHeight () (height int) {
 		element.scrollViewportHeight()
 	if height < 0 { height = 0 }
 	return
-}
-
-func (element *List) OnScrollBoundsChange (callback func ()) {
-	element.onScrollBoundsChange = callback
 }
 
 // OnNoEntrySelected sets a function to be called when the user chooses to
@@ -263,8 +259,8 @@ func (element *List) Append (entry ListEntry) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 
@@ -296,8 +292,8 @@ func (element *List) Insert (index int, entry ListEntry) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 
@@ -319,8 +315,8 @@ func (element *List) Remove (index int) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 
@@ -341,8 +337,8 @@ func (element *List) Replace (index int, entry ListEntry) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 

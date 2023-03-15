@@ -49,7 +49,7 @@ func NewScrollBar (vertical bool) (element *ScrollBar) {
 	} else {
 		element.theme.Case = theme.C("basic", "scrollBarVertical")
 	}
-	element.Core, element.core = core.NewCore(element.handleResize)
+	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.updateMinimumSize()
 	return
 }

@@ -39,9 +39,9 @@ func NewSlider (value float64, vertical bool) (element *Slider) {
 	} else {
 		element.theme.Case = theme.C("basic", "sliderHorizontal")
 	}
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.redo)
+	element.focusableControl = core.NewFocusableCore(element.core, element.redo)
 	element.updateMinimumSize()
 	return
 }
