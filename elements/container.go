@@ -18,7 +18,15 @@ type FocusableParent interface {
 	// keyboard focus. If the parent grants the request, the method will
 	// return true and the child element should behave as if a HandleFocus
 	// call was made.
-	RequestFocus (child Focusable, direction input.KeynavDirection) (granted bool)
+	RequestFocus (child Focusable) (granted bool)
+
+	// RequestFocusMotion notifies the parent that a child element wants the
+	// focus to be moved to the next focusable element.
+	RequestFocusNext (child Focusable)
+	
+	// RequestFocusMotion notifies the parent that a child element wants the
+	// focus to be moved to the previous focusable element.
+	RequestFocusPrevious (child Focusable)
 }
 
 // FlexibleParent represents a parent that accounts for elements with

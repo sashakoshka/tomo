@@ -122,6 +122,43 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 	return false
 }
 
+// RequestFocus notifies the parent that a child element is requesting
+// keyboard focus. If the parent grants the request, the method will
+// return true and the child element should behave as if a HandleFocus
+// call was made.
+func (propagator *Propagator) RequestFocus (
+	child elements.Focusable,
+) (
+	granted bool,
+) {
+	// TODO implement this, and also implement it for the x backend window
+	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
+		if parent.RequestFocus(propagator) {
+			propagator.focused = true
+			granted = true
+		}
+	}
+	return
+}
+
+// RequestFocusMotion notifies the parent that a child element wants the
+// focus to be moved to the next focusable element.
+func (propagator *Propagator) RequestFocusNext (child elements.Focusable) {
+	if !propagator.focused { return }
+	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
+		parent.RequestFocusNext(propagator)
+	}
+}
+
+// RequestFocusMotion notifies the parent that a child element wants the
+// focus to be moved to the previous focusable element.
+func (propagator *Propagator) RequestFocusPrevious (child elements.Focusable) {
+	if !propagator.focused { return }
+	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
+		parent.RequestFocusPrevious(propagator)
+	}
+}
+
 // HandleDeselection causes this element to mark itself and all of its children
 // as unfocused.
 func (propagator *Propagator) HandleUnfocus () {

@@ -44,8 +44,7 @@ func (core *FocusableCore) Focus () {
 	parent := core.core.Parent()
 	if parent, ok := parent.(elements.FocusableParent); ok && parent != nil {
 		core.focused = parent.RequestFocus (
-			core.core.Outer().(elements.Focusable),
-			input.KeynavDirectionNeutral)
+			core.core.Outer().(elements.Focusable))
 	}
 }
 
