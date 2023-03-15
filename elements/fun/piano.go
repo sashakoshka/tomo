@@ -53,12 +53,12 @@ func NewPiano (low, high music.Octave) (element *Piano) {
 	}
 	
 	element.theme.Case = theme.C("fun", "piano")
-	element.Core, element.core = core.NewCore (func () {
+	element.Core, element.core = core.NewCore (element, func () {
 		element.recalculate()
 		element.draw()
 	})
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.redo)
+	element.focusableControl = core.NewFocusableCore(element.core, element.redo)
 	element.updateMinimumSize()
 	return
 }
