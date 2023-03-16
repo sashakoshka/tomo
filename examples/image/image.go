@@ -9,7 +9,7 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
+import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
 	tomo.Run(run)

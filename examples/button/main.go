@@ -2,7 +2,7 @@ package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
+import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/ezprof/ez"
 
 func main () {

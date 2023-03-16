@@ -10,7 +10,7 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/x"
+import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 const sampleRate = 44100
 const bufferSize = 256
