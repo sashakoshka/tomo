@@ -49,9 +49,9 @@ func NewRaycaster (world World, textures Textures) (element *Raycaster) {
 		textures: textures,
 		renderDistance: 8,
 	}
-	element.Core, element.core = core.NewCore(element.drawAll)
+	element.Core, element.core = core.NewCore(element, element.drawAll)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.Draw)
+	element.focusableControl = core.NewFocusableCore(element.core, element.Draw)
 	element.core.SetMinimumSize(64, 64)
 	return
 }
