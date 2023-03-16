@@ -43,12 +43,6 @@ func (element *DocumentContainer) Adopt (child elements.Element) {
 	if child0, ok := child.(elements.Configurable); ok {
 		child0.SetConfig(element.config.Config)
 	}
-	// if child0, ok := child.(elements.Flexible); ok {
-		// child0.OnFlexibleHeightChange (func () {
-			// element.redoAll()
-			// element.core.DamageAll()
-		// })
-	// }
 
 	// add child
 	element.children = append (element.children, layouts.LayoutEntry {
@@ -210,6 +204,16 @@ func (element *DocumentContainer) NotifyMinimumSizeChange (child elements.Elemen
 	element.redoAll()
 	element.core.DamageAll()
 }
+
+// NotifyFlexibleHeightChange notifies the parent that the parameters
+// affecting a child's flexible height have changed. This method is
+// expected to be called by flexible child element when their content
+// changes.
+func (element *DocumentContainer) NotifyFlexibleHeightChange (child elements.Flexible) {
+	element.redoAll()
+	element.core.DamageAll()
+}
+
 
 // SetTheme sets the element's theme.
 func (element *DocumentContainer) SetTheme (new theme.Theme) {
