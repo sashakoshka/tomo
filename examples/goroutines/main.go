@@ -3,10 +3,11 @@ package main
 import "os"
 import "time"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
+import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
+import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -16,7 +17,7 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(200, 216)
 	window.SetTitle("Clock")
-	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
+	container := containers.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
 	clock := fun.NewAnalogClock(time.Now())

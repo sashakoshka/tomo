@@ -7,6 +7,7 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
+import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -22,8 +23,8 @@ func run () {
 	file.Close()
 	if err != nil { panic(err.Error()); return  }
 
-	scrollContainer := basicElements.NewScrollContainer(false, true)
-	document := basicElements.NewDocumentContainer()
+	scrollContainer := containers.NewScrollContainer(false, true)
+	document := containers.NewDocumentContainer()
 
 	document.Adopt (basicElements.NewLabel (
 		"A document container is a vertically stacked container " +
@@ -48,7 +49,7 @@ func run () {
 	document.Adopt (basicElements.NewLabel (
 		"Oh, you're a switch? Then name all of these switches:", true))
 	for i := 0; i < 3; i ++ {
-		switchContainer := basicElements.NewContainer (basicLayouts.Horizontal {
+		switchContainer := containers.NewContainer (basicLayouts.Horizontal {
 			Gap: true,
 		})
 		for i := 0; i < 10; i ++ {

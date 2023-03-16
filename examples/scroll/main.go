@@ -5,6 +5,7 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
+import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -13,13 +14,13 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(480, 360)
 	window.SetTitle("Scroll")
-	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
+	container := containers.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
 	textBox := basicElements.NewTextBox("", copypasta)
-	scrollContainer := basicElements.NewScrollContainer(true, false)
+	scrollContainer := containers.NewScrollContainer(true, false)
 
-	disconnectedContainer := basicElements.NewContainer (basicLayouts.Horizontal {
+	disconnectedContainer := containers.NewContainer (basicLayouts.Horizontal {
 		Gap: true,
 	})
 	list := basicElements.NewList (

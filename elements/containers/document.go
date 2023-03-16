@@ -1,4 +1,4 @@
-package basicElements
+package containers
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
@@ -28,7 +28,7 @@ type DocumentContainer struct {
 // NewDocumentContainer creates a new document container.
 func NewDocumentContainer () (element *DocumentContainer) {
 	element = &DocumentContainer { }
-	element.theme.Case = theme.C("basic", "documentContainer")
+	element.theme.Case = theme.C("containers", "documentContainer")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 	return

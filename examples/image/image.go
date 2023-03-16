@@ -10,6 +10,7 @@ import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
+import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -25,7 +26,7 @@ func run () {
 	file.Close()
 	if err != nil { fatalError(err); return  }
 
-	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
+	container := containers.NewContainer(basicLayouts.Vertical { true, true })
 	logoImage := basicElements.NewImage(logo)
 	button    := basicElements.NewButton("Show me a gopher instead")
 	button.OnClick (func () { container.Warp (func () {

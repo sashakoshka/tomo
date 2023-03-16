@@ -8,6 +8,7 @@ import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
+import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 //go:embed wall.png
 var wallTextureBytes []uint8
@@ -20,7 +21,7 @@ func run () {
 	window, _ := tomo.NewWindow(640, 480)
 	window.SetTitle("Raycaster")
 
-	container := basicElements.NewContainer(basicLayouts.Vertical { false, false })
+	container := containers.NewContainer(basicLayouts.Vertical { false, false })
 	window.Adopt(container)
 
 	wallTexture, _ := TextureFrom(bytes.NewReader(wallTextureBytes))
@@ -47,7 +48,7 @@ func run () {
 		wallTexture,
 	})
 
-	topBar := basicElements.NewContainer(basicLayouts.Horizontal { true, true })
+	topBar := containers.NewContainer(basicLayouts.Horizontal { true, true })
 	staminaBar := basicElements.NewProgressBar(game.Stamina())
 	healthBar  := basicElements.NewProgressBar(game.Health())
 	

@@ -10,6 +10,7 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
+import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 const sampleRate = 44100
@@ -33,10 +34,10 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("Piano")
-	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
-	controlBar := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
+	container := containers.NewContainer(basicLayouts.Vertical { true, true })
+	controlBar := containers.NewContainer(basicLayouts.Horizontal { true, false })
 
-	waveformColumn := basicElements.NewContainer(basicLayouts.Vertical { true, false })
+	waveformColumn := containers.NewContainer(basicLayouts.Vertical { true, false })
 	waveformList := basicElements.NewList (
 		basicElements.NewListEntry("Sine",     func(){ waveform = 0 }),
 		basicElements.NewListEntry("Triangle", func(){ waveform = 3 }),
@@ -47,8 +48,8 @@ func run () {
 	waveformList.OnNoEntrySelected (func(){waveformList.Select(0)})
 	waveformList.Select(0)
 
-	adsrColumn := basicElements.NewContainer(basicLayouts.Vertical { true, false })
-	adsrGroup := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
+	adsrColumn := containers.NewContainer(basicLayouts.Vertical { true, false })
+	adsrGroup := containers.NewContainer(basicLayouts.Horizontal { true, false })
 	attackSlider  := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Attack, true)
 	decaySlider   := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Decay, true)
 	sustainSlider := basicElements.NewSlider(adsr.Sustain, true)
@@ -71,7 +72,7 @@ func run () {
 		gain = math.Pow(gainSlider.Value(), 2)
 	})
 
-	patchColumn := basicElements.NewContainer(basicLayouts.Vertical { true, false })
+	patchColumn := containers.NewContainer(basicLayouts.Vertical { true, false })
 	patch := func (w int, a, d time.Duration, s float64, r time.Duration) func () {
 		return func () {
 			waveform = w
@@ -107,7 +108,7 @@ func run () {
 			2, 3000, 60, 0, 0)),
 	)
 	patchList.Collapse(0, 32)
-	patchScrollBox := basicElements.NewScrollContainer(false, true)
+	patchScrollBox := containers.NewScrollContainer(false, true)
 	
 	piano := fun.NewPiano(2, 5)
 	piano.OnPress(playNote)

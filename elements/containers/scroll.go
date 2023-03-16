@@ -1,4 +1,4 @@
-package basicElements
+package containers
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
@@ -7,6 +7,7 @@ import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 
 // ScrollContainer is a container that is capable of holding a scrollable
 // element.
@@ -16,8 +17,8 @@ type ScrollContainer struct {
 	core core.CoreControl
 	
 	child      elements.Scrollable
-	horizontal *ScrollBar
-	vertical   *ScrollBar
+	horizontal *basicElements.ScrollBar
+	vertical   *basicElements.ScrollBar
 	
 	config config.Wrapped
 	theme  theme.Wrapped
@@ -30,12 +31,12 @@ type ScrollContainer struct {
 // bars.
 func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 	element = &ScrollContainer { }
-	element.theme.Case = theme.C("basic", "scrollContainer")
+	element.theme.Case = theme.C("containers", "scrollContainer")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 
 	if horizontal {
-		element.horizontal = NewScrollBar(false)
+		element.horizontal = basicElements.NewScrollBar(false)
 		element.setUpChild(element.horizontal)
 		element.horizontal.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
@@ -49,7 +50,7 @@ func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 		})
 	}
 	if vertical {
-		element.vertical = NewScrollBar(true)
+		element.vertical = basicElements.NewScrollBar(true)
 		element.setUpChild(element.vertical)
 		element.vertical.OnScroll (func (viewport image.Point) {
 			if element.child != nil {

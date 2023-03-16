@@ -1,4 +1,4 @@
-package basicElements
+package containers
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
@@ -31,7 +31,7 @@ type Container struct {
 // NewContainer creates a new container.
 func NewContainer (layout layouts.Layout) (element *Container) {
 	element = &Container { }
-	element.theme.Case = theme.C("basic", "container")
+	element.theme.Case = theme.C("containers", "container")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 	element.SetLayout(layout)

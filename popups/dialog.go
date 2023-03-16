@@ -5,6 +5,7 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
+import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 // DialogKind defines the semantic role of a dialog window.
 type DialogKind int
@@ -37,10 +38,10 @@ func NewDialog (
 	window, _ = tomo.NewWindow(2, 2)
 	window.SetTitle(title)
 
-	container := basicElements.NewContainer(basicLayouts.Dialog { true, true })
+	container := containers.NewContainer(basicLayouts.Dialog { true, true })
 	window.Adopt(container)
 
-	messageContainer := basicElements.NewContainer(basicLayouts.Horizontal { true, false })
+	messageContainer := containers.NewContainer(basicLayouts.Horizontal { true, false })
 	iconId := theme.IconInformation
 	switch kind {
 	case DialogKindInfo:     iconId = theme.IconInformation

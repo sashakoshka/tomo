@@ -4,6 +4,7 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
+import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
@@ -14,7 +15,7 @@ func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("Checkboxes")
 
-	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
+	container := containers.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
 	container.Adopt (basicElements.NewLabel (

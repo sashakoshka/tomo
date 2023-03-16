@@ -5,6 +5,7 @@ import "git.tebibyte.media/sashakoshka/tomo/flow"
 import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
+import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -13,7 +14,7 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("adventure")
-	container := basicElements.NewContainer(basicLayouts.Vertical { true, true })
+	container := containers.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
 	var world flow.Flow
