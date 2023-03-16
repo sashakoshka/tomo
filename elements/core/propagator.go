@@ -132,6 +132,7 @@ func (propagator *Propagator) RequestFocus (
 ) {
 	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
 		if parent.RequestFocus(propagator.core.Outer().(elements.Focusable)) {
+			propagator.HandleUnfocus()
 			propagator.focused = true
 			granted = true
 		}
