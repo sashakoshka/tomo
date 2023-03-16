@@ -3,31 +3,38 @@ package core
 import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Core is a struct that implements some core functionality common to most
 // widgets. It is meant to be embedded directly into a struct.
 type Core struct {
 	canvas canvas.Canvas
 	bounds image.Rectangle
+	parent elements.Parent
+	outer  elements.Element
 
 	metrics struct {
 		minimumWidth  int
 		minimumHeight int
 	}
 
-	drawSizeChange      func ()
-	onMinimumSizeChange func ()
-	onDamage func (region canvas.Canvas)
+	drawSizeChange func ()
+	onDamage       func (region image.Rectangle)
 }
 
-// NewCore creates a new element core and its corresponding control.
+// NewCore creates a new element core and its corresponding control given the
+// element that it will be a part of. If outer is nil, this function will return
+// nil.
 func NewCore (
+	outer elements.Element,
 	drawSizeChange func (),
 ) (
 	core *Core,
 	control CoreControl,
 ) {
+	if outer == nil { return }
 	core = &Core {
+		outer:          outer,
 		drawSizeChange: drawSizeChange,
 	}
 	control = CoreControl { core: core }
@@ -47,26 +54,30 @@ func (core *Core) MinimumSize () (width, height int) {
 	return core.metrics.minimumWidth, core.metrics.minimumHeight
 }
 
+// MinimumSize fulfils the tomo.Element interface. This should not need to be
+// overridden, unless you want to detect when the element is parented or
+// unparented.
+func (core *Core) SetParent (parent elements.Parent) {
+	if parent != nil && core.parent != nil {
+		panic("core.SetParent: element already has a parent")
+	}
+
+	core.parent = parent
+}
+
 // DrawTo fulfills the tomo.Element interface. This should not need to be
 // overridden.
-func (core *Core) DrawTo (canvas canvas.Canvas, bounds image.Rectangle) {
-	core.canvas = canvas
-	core.bounds = bounds
+func (core *Core) DrawTo (
+	canvas   canvas.Canvas,
+	bounds   image.Rectangle,
+	onDamage func (region image.Rectangle),
+) {
+	core.canvas   = canvas
+	core.bounds   = bounds
+	core.onDamage = onDamage
 	if core.drawSizeChange != nil && core.canvas != nil {
 		core.drawSizeChange()
 	}
-}
-
-// OnDamage fulfils the tomo.Element interface. This should not need to be
-// overridden.
-func (core *Core) OnDamage (callback func (region canvas.Canvas)) {
-	core.onDamage = callback
-}
-
-// OnMinimumSizeChange fulfils the tomo.Element interface. This should not need
-// to be overridden.
-func (core *Core) OnMinimumSizeChange (callback func ()) {
-	core.onMinimumSizeChange = callback
 }
 
 // CoreControl is a struct that can exert control over a Core struct. It can be
@@ -106,6 +117,16 @@ func (control CoreControl) Buffer () (data []color.RGBA, stride int) {
 	return control.core.canvas.Buffer()
 }
 
+// Parent returns the element's parent.
+func (control CoreControl) Parent () elements.Parent {
+	return control.core.parent
+}
+
+// Outer returns the outer element given when the control was constructed.
+func (control CoreControl) Outer () elements.Element {
+	return control.core.outer
+}
+
 // HasImage returns true if the core has an allocated image buffer, and false if
 // it doesn't.
 func (control CoreControl) HasImage () (has bool) {
@@ -118,8 +139,7 @@ func (control CoreControl) DamageRegion (regions ...image.Rectangle) {
 	if control.core.canvas == nil { return }
 	if control.core.onDamage != nil {
 		for _, region := range regions {
-			control.core.onDamage (
-				canvas.Cut(control.core.canvas, region))
+			control.core.onDamage(region)
 		}
 	}
 }
@@ -141,8 +161,8 @@ func (control CoreControl) SetMinimumSize (width, height int) {
 
 	core.metrics.minimumWidth  = width
 	core.metrics.minimumHeight = height
-	if control.core.onMinimumSizeChange != nil {
-		control.core.onMinimumSizeChange()
+	if control.core.parent != nil {
+		control.core.parent.NotifyMinimumSizeChange(control.core.outer)
 	}
 }
 

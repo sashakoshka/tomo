@@ -33,9 +33,9 @@ func NewSwitch (text string, on bool) (element *Switch) {
 		text: text,
 	}
 	element.theme.Case = theme.C("basic", "switch")
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.redo)
+	element.focusableControl = core.NewFocusableCore(element.core, element.redo)
 	element.drawer.SetText([]rune(text))
 	element.updateMinimumSize()
 	return
@@ -66,9 +66,6 @@ func (element *Switch) HandleMouseUp (x, y int, button input.Button) {
 		element.onToggle()
 	}
 }
-
-func (element *Switch) HandleMouseMove (x, y int) { }
-func (element *Switch) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Switch) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if key == input.KeyEnter {

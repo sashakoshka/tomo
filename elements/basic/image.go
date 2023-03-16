@@ -13,7 +13,7 @@ type Image struct {
 
 func NewImage (image image.Image) (element *Image) {
 	element = &Image { buffer: canvas.FromImage(image) }
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	bounds := image.Bounds()
 	element.core.SetMinimumSize(bounds.Dx(), bounds.Dy())
 	return

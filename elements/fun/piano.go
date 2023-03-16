@@ -53,12 +53,12 @@ func NewPiano (low, high music.Octave) (element *Piano) {
 	}
 	
 	element.theme.Case = theme.C("fun", "piano")
-	element.Core, element.core = core.NewCore (func () {
+	element.Core, element.core = core.NewCore (element, func () {
 		element.recalculate()
 		element.draw()
 	})
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.redo)
+	element.focusableControl = core.NewFocusableCore(element.core, element.redo)
 	element.updateMinimumSize()
 	return
 }
@@ -88,12 +88,10 @@ func (element *Piano) HandleMouseUp (x, y int, button input.Button) {
 	element.redo()
 }
 
-func (element *Piano) HandleMouseMove (x, y int) {
+func (element *Piano) HandleMotion (x, y int) {
 	if element.pressed == nil { return }
 	element.pressUnderMouseCursor(image.Pt(x, y))
 }
-
-func (element *Piano) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Piano) pressUnderMouseCursor (point image.Point) {
 	// find out which note is being pressed

@@ -14,7 +14,7 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 // import "runtime/debug"
 
-type Window struct {
+type window struct {
 	backend *Backend
 	xWindow *xwindow.Window
 	xCanvas *xgraphics.Image
@@ -40,7 +40,7 @@ func (backend *Backend) NewWindow (
 ) {
 	if backend == nil { panic("nil backend") }
 
-	window := &Window { backend: backend }
+	window := &window { backend: backend }
 
 	window.xWindow, err = xwindow.Generate(backend.connection)
 	if err != nil { return }
@@ -90,37 +90,51 @@ func (backend *Backend) NewWindow (
 	return
 }
 
-func (window *Window) Adopt (child elements.Element) {
+func (window *window) NotifyMinimumSizeChange (child elements.Element) {
+	window.childMinimumSizeChangeCallback(child.MinimumSize())
+}
+
+func (window *window) RequestFocus (
+	child elements.Focusable,
+) (
+	granted bool,
+) {
+	return true
+}
+
+func (window *window) RequestFocusNext (child elements.Focusable) {
+	if child, ok := window.child.(elements.Focusable); ok {
+		if !child.HandleFocus(input.KeynavDirectionForward) {
+			child.HandleUnfocus()
+		}
+	}
+}
+
+func (window *window) RequestFocusPrevious (child elements.Focusable) {
+	if child, ok := window.child.(elements.Focusable); ok {
+		if !child.HandleFocus(input.KeynavDirectionBackward) {
+			child.HandleUnfocus()
+		}
+	}
+}
+
+func (window *window) Adopt (child elements.Element) {
 	// disown previous child
 	if window.child != nil {
-		window.child.OnDamage(nil)
-		window.child.OnMinimumSizeChange(nil)
-	}
-	if previousChild, ok := window.child.(elements.Focusable); ok {
-		previousChild.OnFocusRequest(nil)
-		previousChild.OnFocusMotionRequest(nil)
-		if previousChild.Focused() {
-			previousChild.HandleUnfocus()
-		}
+		window.child.SetParent(nil)
+		window.child.DrawTo(nil, image.Rectangle { }, nil)
 	}
 	
 	// adopt new child
 	window.child = child
+	child.SetParent(window)
 	if newChild, ok := child.(elements.Themeable); ok {
 		newChild.SetTheme(window.theme)
 	}
 	if newChild, ok := child.(elements.Configurable); ok {
 		newChild.SetConfig(window.config)
 	}
-	if newChild, ok := child.(elements.Focusable); ok {
-		newChild.OnFocusRequest(window.childSelectionRequestCallback)
-	}
 	if child != nil {
-		child.OnDamage(window.childDrawCallback)
-		child.OnMinimumSizeChange (func () {
-			window.childMinimumSizeChangeCallback (
-				child.MinimumSize())
-		})
 		if !window.childMinimumSizeChangeCallback(child.MinimumSize()) {
 			window.resizeChildToFit()
 			window.redrawChildEntirely()
@@ -128,19 +142,19 @@ func (window *Window) Adopt (child elements.Element) {
 	}
 }
 
-func (window *Window) Child () (child elements.Element) {
+func (window *window) Child () (child elements.Element) {
 	child = window.child
 	return
 }
 
-func (window *Window) SetTitle (title string) {
+func (window *window) SetTitle (title string) {
 	ewmh.WmNameSet (
 		window.backend.connection,
 		window.xWindow.Id,
 		title)
 }
 
-func (window *Window) SetIcon (sizes []image.Image) {
+func (window *window) SetIcon (sizes []image.Image) {
 	wmIcons := []ewmh.WmIcon { }
 	
 	for _, icon := range sizes {
@@ -179,7 +193,7 @@ func (window *Window) SetIcon (sizes []image.Image) {
 		wmIcons)
 }
 
-func (window *Window) Show () {
+func (window *window) Show () {
 	if window.child == nil {
 		window.xCanvas.For (func (x, y int) xgraphics.BGRA {
 			return xgraphics.BGRA { }
@@ -191,35 +205,35 @@ func (window *Window) Show () {
 	window.xWindow.Map()
 }
 
-func (window *Window) Hide () {
+func (window *window) Hide () {
 	window.xWindow.Unmap()
 }
 
-func (window *Window) Close () {
+func (window *window) Close () {
 	if window.onClose != nil { window.onClose() }
 	delete(window.backend.windows, window.xWindow.Id)
 	window.xWindow.Destroy()
 }
 
-func (window *Window) OnClose (callback func ()) {
+func (window *window) OnClose (callback func ()) {
 	window.onClose = callback
 }
 
-func (window *Window) SetTheme (theme theme.Theme) {
+func (window *window) SetTheme (theme theme.Theme) {
 	window.theme = theme
 	if child, ok := window.child.(elements.Themeable); ok {
 		child.SetTheme(theme)
 	}
 }
 
-func (window *Window) SetConfig (config config.Config) {
+func (window *window) SetConfig (config config.Config) {
 	window.config = config
 	if child, ok := window.child.(elements.Configurable); ok {
 		child.SetConfig(config)
 	}
 }
 
-func (window *Window) reallocateCanvas () {
+func (window *window) reallocateCanvas () {
 	window.canvas.Reallocate(window.metrics.width, window.metrics.height)
 
 	previousWidth, previousHeight := 0, 0
@@ -250,23 +264,28 @@ func (window *Window) reallocateCanvas () {
 	
 }
 
-func (window *Window) redrawChildEntirely () {
-	window.pushRegion(window.paste(window.canvas))
-	
+func (window *window) redrawChildEntirely () {
+	window.paste(window.canvas.Bounds())
+	window.pushRegion(window.canvas.Bounds())
 }
 
-func (window *Window) resizeChildToFit () {
+func (window *window) resizeChildToFit () {
 	window.skipChildDrawCallback = true
-	window.child.DrawTo(window.canvas, window.canvas.Bounds())
+	window.child.DrawTo (
+		window.canvas,
+		window.canvas.Bounds(),
+		window.childDrawCallback)
 	window.skipChildDrawCallback = false
 }
 
-func (window *Window) childDrawCallback (region canvas.Canvas) {
+func (window *window) childDrawCallback (region image.Rectangle) {
 	if window.skipChildDrawCallback { return }
-	window.pushRegion(window.paste(region))
+	window.paste(region)
+	window.pushRegion(region)
 }
 
-func (window *Window) paste (canvas canvas.Canvas) (updatedRegion image.Rectangle) {
+func (window *window) paste (region image.Rectangle) {
+	canvas := canvas.Cut(window.canvas, region)
 	data, stride := canvas.Buffer()
 	bounds := canvas.Bounds().Intersect(window.xCanvas.Bounds())
 
@@ -286,11 +305,9 @@ func (window *Window) paste (canvas canvas.Canvas) (updatedRegion image.Rectangl
 			dstData[index + 3] = rgba.A
 		}
 	}
-
-	return bounds
 }
 
-func (window *Window) childMinimumSizeChangeCallback (width, height int) (resized bool) {
+func (window *window) childMinimumSizeChangeCallback (width, height int) (resized bool) {
 	icccm.WmNormalHintsSet (
 		window.backend.connection,
 		window.xWindow.Id,
@@ -312,28 +329,7 @@ func (window *Window) childMinimumSizeChangeCallback (width, height int) (resize
 	return false
 }
 
-func (window *Window) childSelectionRequestCallback () (granted bool) {
-	if _, ok := window.child.(elements.Focusable); ok {
-		return true
-	}
-	return false
-}
-
-func (window *Window) childSelectionMotionRequestCallback (
-	direction input.KeynavDirection,
-) (
-	granted bool,
-) {
-	if child, ok := window.child.(elements.Focusable); ok {
-		if !child.HandleFocus(direction) {
-			child.HandleUnfocus()
-		}
-		return true
-	}
-	return true
-}
-
-func (window *Window) pushRegion (region image.Rectangle) {
+func (window *window) pushRegion (region image.Rectangle) {
 	if window.xCanvas == nil { panic("whoopsie!!!!!!!!!!!!!!") }
 	image, ok := window.xCanvas.SubImage(region).(*xgraphics.Image)
 	if ok {

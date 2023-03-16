@@ -1,7 +1,6 @@
 package basicElements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
@@ -22,9 +21,7 @@ type DocumentContainer struct {
 	
 	config config.Wrapped
 	theme  theme.Wrapped
-	
-	onFocusRequest       func () (granted bool)
-	onFocusMotionRequest func (input.KeynavDirection) (granted bool)
+
 	onScrollBoundsChange func ()
 }
 
@@ -32,8 +29,8 @@ type DocumentContainer struct {
 func NewDocumentContainer () (element *DocumentContainer) {
 	element = &DocumentContainer { }
 	element.theme.Case = theme.C("basic", "documentContainer")
-	element.Core, element.core = core.NewCore(element.redoAll)
-	element.Propagator = core.NewPropagator(element)
+	element.Core, element.core = core.NewCore(element, element.redoAll)
+	element.Propagator = core.NewPropagator(element, element.core)
 	return
 }
 
@@ -46,34 +43,13 @@ func (element *DocumentContainer) Adopt (child elements.Element) {
 	if child0, ok := child.(elements.Configurable); ok {
 		child0.SetConfig(element.config.Config)
 	}
-	child.OnDamage (func (region canvas.Canvas) {
-		element.core.DamageRegion(region.Bounds())
-	})
-	child.OnMinimumSizeChange (func () {
-		element.redoAll()
-		element.core.DamageAll()
-	})
-	if child0, ok := child.(elements.Flexible); ok {
-		child0.OnFlexibleHeightChange (func () {
-			element.redoAll()
-			element.core.DamageAll()
-		})
-	}
-	if child0, ok := child.(elements.Focusable); ok {
-		child0.OnFocusRequest (func () (granted bool) {
-			return element.childFocusRequestCallback(child0)
-		})
-		child0.OnFocusMotionRequest (
-			func (direction input.KeynavDirection) (granted bool) {
-				if element.onFocusMotionRequest == nil { return }
-				return element.onFocusMotionRequest(direction)
-			})
-	}
 
 	// add child
 	element.children = append (element.children, layouts.LayoutEntry {
 		Element: child,
 	})
+
+	child.SetParent(element)
 
 	// refresh stale data
 	element.reflectChildProperties()
@@ -123,14 +99,12 @@ func (element *DocumentContainer) Disown (child elements.Element) {
 }
 
 func (element *DocumentContainer) clearChildEventHandlers (child elements.Element) {
-	child.DrawTo(nil, image.Rectangle { })
-	child.OnDamage(nil)
-	child.OnMinimumSizeChange(nil)
-	if child0, ok := child.(elements.Focusable); ok {
-		child0.OnFocusRequest(nil)
-		child0.OnFocusMotionRequest(nil)
-		if child0.Focused() {
-			child0.HandleUnfocus()
+	child.DrawTo(nil, image.Rectangle { }, nil)
+	child.SetParent(nil)
+	
+	if child, ok := child.(elements.Focusable); ok {
+		if child.Focused() {
+			child.HandleUnfocus()
 		}
 	}
 }
@@ -204,14 +178,14 @@ func (element *DocumentContainer) redoAll () {
 	artist.DrawShatter(element.core, pattern, element.Bounds(), rocks...)
 
 	element.partition()
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 
 func (element *DocumentContainer) partition () {
 	for _, entry := range element.children {
-		entry.DrawTo(nil, entry.Bounds)
+		entry.DrawTo(nil, entry.Bounds, nil)
 	}
 
 	// cut our canvas up and give peices to child elements
@@ -219,10 +193,29 @@ func (element *DocumentContainer) partition () {
 		if entry.Bounds.Overlaps(element.Bounds()) {
 			entry.DrawTo (	
 				canvas.Cut(element.core, entry.Bounds),
-				entry.Bounds)
+				entry.Bounds, func (region image.Rectangle) {
+					element.core.DamageRegion(region)
+				})
 		}
 	}
 }
+
+// NotifyMinimumSizeChange notifies the container that the minimum size of a
+// child element has changed.
+func (element *DocumentContainer) NotifyMinimumSizeChange (child elements.Element) {
+	element.redoAll()
+	element.core.DamageAll()
+}
+
+// NotifyFlexibleHeightChange notifies the parent that the parameters
+// affecting a child's flexible height have changed. This method is
+// expected to be called by flexible child element when their content
+// changes.
+func (element *DocumentContainer) NotifyFlexibleHeightChange (child elements.Flexible) {
+	element.redoAll()
+	element.core.DamageAll()
+}
+
 
 // SetTheme sets the element's theme.
 func (element *DocumentContainer) SetTheme (new theme.Theme) {
@@ -237,18 +230,6 @@ func (element *DocumentContainer) SetConfig (new config.Config) {
 	if new == element.config.Config { return }
 	element.Propagator.SetConfig(new)
 	element.redoAll()
-}
-
-func (element *DocumentContainer) OnFocusRequest (callback func () (granted bool)) {
-	element.onFocusRequest = callback
-	element.Propagator.OnFocusRequest(callback)
-}
-
-func (element *DocumentContainer) OnFocusMotionRequest (
-	callback func (direction input.KeynavDirection) (granted bool),
-) {
-	element.onFocusMotionRequest = callback
-	element.Propagator.OnFocusMotionRequest(callback)
 }
 
 // ScrollContentBounds returns the full content size of the element.
@@ -282,6 +263,12 @@ func (element *DocumentContainer) ScrollTo (position image.Point) {
 	}
 }
 
+// OnScrollBoundsChange sets a function to be called when the element's viewport
+// bounds, content bounds, or scroll axes change.
+func (element *DocumentContainer) OnScrollBoundsChange (callback func ()) {
+	element.onScrollBoundsChange = callback
+}
+
 func (element *DocumentContainer) maxScrollHeight () (height int) {
 	padding := element.theme.Padding(theme.PatternSunken)
 	viewportHeight := element.Bounds().Dy() - padding.Vertical()
@@ -295,12 +282,6 @@ func (element *DocumentContainer) ScrollAxes () (horizontal, vertical bool) {
 	return false, true
 }
 
-// OnScrollBoundsChange sets a function to be called when the element's
-// ScrollContentBounds, ScrollViewportBounds, or ScrollAxes are changed.
-func (element *DocumentContainer) OnScrollBoundsChange(callback func()) {
-	element.onScrollBoundsChange = callback
-}
-
 func (element *DocumentContainer) reflectChildProperties () {
 	focusable := false
 	for _, entry := range element.children {
@@ -312,20 +293,6 @@ func (element *DocumentContainer) reflectChildProperties () {
 	}
 	if !focusable && element.Focused() {
 		element.Propagator.HandleUnfocus()
-	}
-}
-
-func (element *DocumentContainer) childFocusRequestCallback (
-	child elements.Focusable,
-) (
-	granted bool,
-) {
-	if element.onFocusRequest != nil && element.onFocusRequest() {
-		element.Propagator.HandleUnfocus()
-		element.Propagator.HandleFocus(input.KeynavDirectionNeutral)
-		return true
-	} else {
-		return false
 	}
 }
 

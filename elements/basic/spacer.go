@@ -20,7 +20,7 @@ type Spacer struct {
 func NewSpacer (line bool) (element *Spacer) {
 	element = &Spacer { line: line }
 	element.theme.Case = theme.C("basic", "spacer")
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	element.updateMinimumSize()
 	return
 }

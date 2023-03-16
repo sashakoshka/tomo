@@ -32,8 +32,8 @@ type Container struct {
 func NewContainer (layout layouts.Layout) (element *Container) {
 	element = &Container { }
 	element.theme.Case = theme.C("basic", "container")
-	element.Core, element.core = core.NewCore(element.redoAll)
-	element.Propagator = core.NewPropagator(element)
+	element.Core, element.core = core.NewCore(element, element.redoAll)
+	element.Propagator = core.NewPropagator(element, element.core)
 	element.SetLayout(layout)
 	return
 }
@@ -51,33 +51,13 @@ func (element *Container) SetLayout (layout layouts.Layout) {
 // the element will expand (instead of contract to its minimum size), in
 // whatever way is defined by the current layout.
 func (element *Container) Adopt (child elements.Element, expand bool) {
-	// set event handlers
 	if child0, ok := child.(elements.Themeable); ok {
 		child0.SetTheme(element.theme.Theme)
 	}
 	if child0, ok := child.(elements.Configurable); ok {
 		child0.SetConfig(element.config.Config)
 	}
-	child.OnDamage (func (region canvas.Canvas) {
-		element.core.DamageRegion(region.Bounds())
-	})
-	child.OnMinimumSizeChange (func () {
-		// TODO: this could probably stand to be more efficient. I mean
-		// seriously?
-		element.updateMinimumSize()
-		element.redoAll()
-		element.core.DamageAll()
-	})
-	if child0, ok := child.(elements.Focusable); ok {
-		child0.OnFocusRequest (func () (granted bool) {
-			return element.childFocusRequestCallback(child0)
-		})
-		child0.OnFocusMotionRequest (
-			func (direction input.KeynavDirection) (granted bool) {
-				if element.onFocusMotionRequest == nil { return }
-				return element.onFocusMotionRequest(direction)
-			})
-	}
+	child.SetParent(element)
 
 	// add child
 	element.children = append (element.children, layouts.LayoutEntry {
@@ -136,14 +116,12 @@ func (element *Container) Disown (child elements.Element) {
 }
 
 func (element *Container) clearChildEventHandlers (child elements.Element) {
-	child.DrawTo(nil, image.Rectangle { })
-	child.OnDamage(nil)
-	child.OnMinimumSizeChange(nil)
-	if child0, ok := child.(elements.Focusable); ok {
-		child0.OnFocusRequest(nil)
-		child0.OnFocusMotionRequest(nil)
-		if child0.Focused() {
-			child0.HandleUnfocus()
+	child.DrawTo(nil, image.Rectangle { }, nil)
+	child.SetParent(nil)
+	
+	if child, ok := child.(elements.Focusable); ok {
+		if child.Focused() {
+			child.HandleUnfocus()
 		}
 	}
 }
@@ -200,7 +178,7 @@ func (element *Container) redoAll () {
 	// remove child canvasses so that any operations done in here will not
 	// cause a child to draw to a wack ass canvas.
 	for _, entry := range element.children {
-		entry.DrawTo(nil, entry.Bounds)
+		entry.DrawTo(nil, entry.Bounds, nil)
 	}
 	
 	// do a layout
@@ -220,8 +198,18 @@ func (element *Container) redoAll () {
 	for _, entry := range element.children {
 		entry.DrawTo (
 			canvas.Cut(element.core, entry.Bounds),
-			entry.Bounds)
+			entry.Bounds, func (region image.Rectangle) {
+				element.core.DamageRegion(region)
+			})
 	}
+}
+
+// NotifyMinimumSizeChange notifies the container that the minimum size of a
+// child element has changed.
+func (element *Container) NotifyMinimumSizeChange (child elements.Element) {
+	element.updateMinimumSize()
+	element.redoAll()
+	element.core.DamageAll()
 }
 
 // SetTheme sets the element's theme.
@@ -239,32 +227,6 @@ func (element *Container) SetConfig (new config.Config) {
 	element.Propagator.SetConfig(new)
 	element.updateMinimumSize()
 	element.redoAll()
-}
-
-func (element *Container) OnFocusRequest (callback func () (granted bool)) {
-	element.onFocusRequest = callback
-	element.Propagator.OnFocusRequest(callback)
-}
-
-func (element *Container) OnFocusMotionRequest (
-	callback func (direction input.KeynavDirection) (granted bool),
-) {
-	element.onFocusMotionRequest = callback
-	element.Propagator.OnFocusMotionRequest(callback)
-}
-
-func (element *Container) childFocusRequestCallback (
-	child elements.Focusable,
-) (
-	granted bool,
-) {
-	if element.onFocusRequest != nil && element.onFocusRequest() {
-		element.Propagator.HandleUnfocus()
-		element.Propagator.HandleFocus(input.KeynavDirectionNeutral)
-		return true
-	} else {
-		return false
-	}
 }
 
 func (element *Container) updateMinimumSize () {
