@@ -31,7 +31,11 @@ func NewGame (world World, textures Textures) (game *Game) {
 	return
 }
 
-func (game *Game) DrawTo (canvas canvas.Canvas, bounds image.Rectangle) {
+func (game *Game) DrawTo (
+	canvas canvas.Canvas,
+	bounds image.Rectangle,
+	onDamage func (image.Rectangle),
+) {
 	if canvas == nil {
 		select {
 		case game.stopChan <- true:
@@ -41,7 +45,7 @@ func (game *Game) DrawTo (canvas canvas.Canvas, bounds image.Rectangle) {
 		game.running = true
 		go game.run()
 	}
-	game.Raycaster.DrawTo(canvas, bounds)
+	game.Raycaster.DrawTo(canvas, bounds, onDamage)
 }
 
 func (game *Game) Stamina () float64 {

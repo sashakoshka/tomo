@@ -19,7 +19,7 @@ func NewIcon (id theme.Icon, size theme.IconSize) (element *Icon) {
 		size: size,
 	}
 	element.theme.Case = theme.C("basic", "icon")
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	element.updateMinimumSize()
 	return
 }

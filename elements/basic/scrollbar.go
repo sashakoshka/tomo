@@ -49,7 +49,7 @@ func NewScrollBar (vertical bool) (element *ScrollBar) {
 	} else {
 		element.theme.Case = theme.C("basic", "scrollBarVertical")
 	}
-	element.Core, element.core = core.NewCore(element.handleResize)
+	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.updateMinimumSize()
 	return
 }
@@ -115,13 +115,13 @@ func (element *ScrollBar) HandleMouseUp (x, y int, button input.Button) {
 	}
 }
 
-func (element *ScrollBar) HandleMouseMove (x, y int) {
+func (element *ScrollBar) HandleMotion (x, y int) {
 	if element.dragging {
 		element.dragTo(image.Pt(x, y))
 	}
 }
 
-func (element *ScrollBar) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
+func (element *ScrollBar) HandleScroll (x, y int, deltaX, deltaY float64) {
 	if element.vertical {
 		element.scrollBy(int(deltaY))
 	} else {

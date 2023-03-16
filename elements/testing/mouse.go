@@ -24,7 +24,7 @@ type Mouse struct {
 // NewMouse creates a new mouse test element.
 func NewMouse () (element *Mouse) {
 	element = &Mouse { c: theme.C("testing", "mouse") }
-	element.Core, element.core = core.NewCore(element.draw)
+	element.Core, element.core = core.NewCore(element, element.draw)
 	element.core.SetMinimumSize(32, 32)
 	return
 }
@@ -82,7 +82,7 @@ func (element *Mouse) HandleMouseUp (x, y int, button input.Button) {
 	element.lastMousePos = mousePos
 }
 
-func (element *Mouse) HandleMouseMove (x, y int) {
+func (element *Mouse) HandleMotion (x, y int) {
 	if !element.drawing { return }
 	mousePos := image.Pt(x, y)
 	element.core.DamageRegion (shapes.ColorLine (
@@ -90,5 +90,3 @@ func (element *Mouse) HandleMouseMove (x, y int) {
 		element.lastMousePos, mousePos))
 	element.lastMousePos = mousePos
 }
-
-func (element *Mouse) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }

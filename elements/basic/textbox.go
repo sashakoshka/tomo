@@ -6,6 +6,7 @@ import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
@@ -42,9 +43,9 @@ type TextBox struct {
 func NewTextBox (placeholder, value string) (element *TextBox) {
 	element = &TextBox { }
 	element.theme.Case = theme.C("basic", "textBox")
-	element.Core, element.core = core.NewCore(element.handleResize)
+	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore (func () {
+	element.focusableControl = core.NewFocusableCore (element.core, func () {
 		if element.core.HasImage () {
 			element.draw()
 			element.core.DamageAll()
@@ -60,8 +61,8 @@ func NewTextBox (placeholder, value string) (element *TextBox) {
 func (element *TextBox) handleResize () {
 	element.scrollToCursor()
 	element.draw()
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 
@@ -79,7 +80,7 @@ func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 	}
 }
 
-func (element *TextBox) HandleMouseMove (x, y int) {
+func (element *TextBox) HandleMotion (x, y int) {
 	if !element.Enabled() { return }
 
 	if element.dragging {
@@ -113,8 +114,6 @@ func (element *TextBox) HandleMouseUp (x, y int, button input.Button) {
 		element.dragging = false
 	}
 }
-
-func (element *TextBox) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) {
 	if element.onKeyDown != nil && element.onKeyDown(key, modifiers) {
@@ -187,9 +186,10 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 		element.scrollToCursor()
 	}
 
-	if (textChanged || scrollMemory != element.scroll) &&
-		element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if (textChanged || scrollMemory != element.scroll) {
+		if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+			parent.NotifyScrollBoundsChange(element)
+		}
 	}
 	
 	if altered {
@@ -240,6 +240,12 @@ func (element *TextBox) OnChange (callback func ()) {
 	element.onChange = callback
 }
 
+// OnScrollBoundsChange sets a function to be called when the element's viewport
+// bounds, content bounds, or scroll axes change.
+func (element *TextBox) OnScrollBoundsChange (callback func ()) {
+	element.onScrollBoundsChange = callback
+}
+
 // ScrollContentBounds returns the full content size of the element.
 func (element *TextBox) ScrollContentBounds () (bounds image.Rectangle) {
 	bounds = element.valueDrawer.LayoutBounds()
@@ -274,18 +280,14 @@ func (element *TextBox) ScrollTo (position image.Point) {
 	if element.scroll > maxPosition { element.scroll = maxPosition }
 
 	element.redo()
-	if element.onScrollBoundsChange != nil {
-		element.onScrollBoundsChange()
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
 	}
 }
 
 // ScrollAxes returns the supported axes for scrolling.
 func (element *TextBox) ScrollAxes () (horizontal, vertical bool) {
 	return true, false
-}
-
-func (element *TextBox) OnScrollBoundsChange (callback func ()) {
-	element.onScrollBoundsChange = callback
 }
 
 func (element *TextBox) runOnChange () {

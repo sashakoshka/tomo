@@ -35,9 +35,9 @@ type Button struct {
 func NewButton (text string) (element *Button) {
 	element = &Button { showText: true }
 	element.theme.Case = theme.C("basic", "button")
-	element.Core, element.core = core.NewCore(element.drawAll)
+	element.Core, element.core = core.NewCore(element, element.drawAll)
 	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.drawAndPush)
+	element.focusableControl = core.NewFocusableCore(element.core, element.drawAndPush)
 	element.SetText(text)
 	return
 }
@@ -60,9 +60,6 @@ func (element *Button) HandleMouseUp (x, y int, button input.Button) {
 	}
 	element.drawAndPush()
 }
-
-func (element *Button) HandleMouseMove (x, y int) { }
-func (element *Button) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Button) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if !element.Enabled() { return }

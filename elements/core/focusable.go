@@ -2,15 +2,15 @@ package core
 
 // import "runtime/debug"
 import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // FocusableCore is a struct that can be embedded into objects to make them
 // focusable, giving them the default keynav behavior.
 type FocusableCore struct {
+	core CoreControl
 	focused bool
 	enabled bool
 	drawFocusChange func ()
-	onFocusRequest func () (granted bool)
-	onFocusMotionRequest func(input.KeynavDirection) (granted bool)
 }
 
 // NewFocusableCore creates a new focusability core and its corresponding
@@ -18,16 +18,18 @@ type FocusableCore struct {
 // state changes (which it should), a callback to draw and push the update can
 // be specified. 
 func NewFocusableCore (
+	core CoreControl,
 	drawFocusChange func (),
 ) (	
-	core *FocusableCore,
+	focusable *FocusableCore,
 	control FocusableCoreControl,
 ) {
-	core = &FocusableCore {
+	focusable = &FocusableCore {
+		core: core,
 		drawFocusChange: drawFocusChange,
 		enabled: true,
 	}
-	control = FocusableCoreControl { core: core }
+	control = FocusableCoreControl { core: focusable }
 	return
 }
 
@@ -39,13 +41,10 @@ func (core *FocusableCore) Focused () (focused bool) {
 // Focus focuses this element, if its parent element grants the request.
 func (core *FocusableCore) Focus () {
 	if !core.enabled || core.focused { return }
-	if core.onFocusRequest != nil {
-		if core.onFocusRequest() {
-			core.focused = true
-			if core.drawFocusChange != nil {
-				core.drawFocusChange()
-			}
-		}
+	parent := core.core.Parent()
+	if parent, ok := parent.(elements.FocusableParent); ok {
+		core.focused = parent.RequestFocus (
+			core.core.Outer().(elements.Focusable))
 	}
 }
 
@@ -74,24 +73,6 @@ func (core *FocusableCore) HandleUnfocus () {
 	core.focused = false
 	// debug.PrintStack()
 	if core.drawFocusChange != nil { core.drawFocusChange() }
-}
-
-// OnFocusRequest sets a function to be called when this element
-// wants its parent element to focus it. Parent elements should return
-// true if the request was granted, and false if it was not.
-func (core *FocusableCore) OnFocusRequest (callback func () (granted bool)) {
-	core.onFocusRequest = callback
-}
-
-// OnFocusMotionRequest sets a function to be called when this
-// element wants its parent element to focus the element behind or in
-// front of it, depending on the specified direction. Parent elements
-// should return true if the request was granted, and false if it was
-// not.
-func (core *FocusableCore) OnFocusMotionRequest (
-	callback func (direction input.KeynavDirection) (granted bool),
-) {
-	core.onFocusMotionRequest = callback
 }
 
 // Enabled returns whether or not the element is enabled.

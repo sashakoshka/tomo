@@ -14,7 +14,7 @@ type scrollSum struct {
 
 const scrollDistance = 16
 
-func (sum *scrollSum) add (button xproto.Button, window *Window, state uint16) {
+func (sum *scrollSum) add (button xproto.Button, window *window, state uint16) {
 	shift := 
 		(state & xproto.ModMaskShift)                    > 0 ||
 		(state & window.backend.modifierMasks.shiftLock) > 0
@@ -44,7 +44,7 @@ func (sum *scrollSum) add (button xproto.Button, window *Window, state uint16) {
 
 }
 
-func (window *Window) handleExpose (
+func (window *window) handleExpose (
 	connection *xgbutil.XUtil,
 	event xevent.ExposeEvent,
 ) {
@@ -52,7 +52,7 @@ func (window *Window) handleExpose (
 	window.pushRegion(region)
 }
 
-func (window *Window) handleConfigureNotify (
+func (window *window) handleConfigureNotify (
 	connection *xgbutil.XUtil,
 	event xevent.ConfigureNotifyEvent,
 ) {
@@ -81,7 +81,7 @@ func (window *Window) handleConfigureNotify (
 	}
 }
 
-func (window *Window) exposeEventFollows (event xproto.ConfigureNotifyEvent) (found bool) {	
+func (window *window) exposeEventFollows (event xproto.ConfigureNotifyEvent) (found bool) {	
 	nextEvents := xevent.Peek(window.backend.connection)
 	if len(nextEvents) > 0 {
 		untypedEvent := nextEvents[0]
@@ -97,7 +97,7 @@ func (window *Window) exposeEventFollows (event xproto.ConfigureNotifyEvent) (fo
 	return false
 }
 
-func (window *Window) modifiersFromState (
+func (window *window) modifiersFromState (
 	state uint16,
 ) (
 	modifiers input.Modifiers,
@@ -114,7 +114,7 @@ func (window *Window) modifiersFromState (
 	}
 }
 
-func (window *Window) handleKeyPress (
+func (window *window) handleKeyPress (
 	connection *xgbutil.XUtil,
 	event xevent.KeyPressEvent,
 ) {
@@ -141,7 +141,7 @@ func (window *Window) handleKeyPress (
 	}
 }
 
-func (window *Window) handleKeyRelease (
+func (window *window) handleKeyRelease (
 	connection *xgbutil.XUtil,
 	event xevent.KeyReleaseEvent,
 ) {
@@ -175,23 +175,25 @@ func (window *Window) handleKeyRelease (
 	}
 }
 
-func (window *Window) handleButtonPress (
+func (window *window) handleButtonPress (
 	connection *xgbutil.XUtil,
 	event xevent.ButtonPressEvent,
 ) {
 	if window.child == nil { return }
 	
-	if child, ok := window.child.(elements.MouseTarget); ok {
-		buttonEvent := *event.ButtonPressEvent
-		if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
+	buttonEvent := *event.ButtonPressEvent
+	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
+		if child, ok := window.child.(elements.ScrollTarget); ok {
 			sum := scrollSum { }
 			sum.add(buttonEvent.Detail, window, buttonEvent.State)
 			window.compressScrollSum(buttonEvent, &sum)
-			child.HandleMouseScroll (
+			child.HandleScroll (
 				int(buttonEvent.EventX),
 				int(buttonEvent.EventY),
 				float64(sum.x), float64(sum.y))
-		} else {
+		}
+	} else {
+		if child, ok := window.child.(elements.MouseTarget); ok {
 			child.HandleMouseDown (
 				int(buttonEvent.EventX),
 				int(buttonEvent.EventY),
@@ -201,7 +203,7 @@ func (window *Window) handleButtonPress (
 	
 }
 
-func (window *Window) handleButtonRelease (
+func (window *window) handleButtonRelease (
 	connection *xgbutil.XUtil,
 	event xevent.ButtonReleaseEvent,
 ) {
@@ -217,21 +219,21 @@ func (window *Window) handleButtonRelease (
 	}
 }
 
-func (window *Window) handleMotionNotify (
+func (window *window) handleMotionNotify (
 	connection *xgbutil.XUtil,
 	event xevent.MotionNotifyEvent,
 ) {
 	if window.child == nil { return }
 	
-	if child, ok := window.child.(elements.MouseTarget); ok {
+	if child, ok := window.child.(elements.MotionTarget); ok {
 		motionEvent := window.compressMotionNotify(*event.MotionNotifyEvent)
-		child.HandleMouseMove (
+		child.HandleMotion (
 			int(motionEvent.EventX),
 			int(motionEvent.EventY))
 	}
 }
 
-func (window *Window) compressExpose (
+func (window *window) compressExpose (
 	firstEvent xproto.ExposeEvent,
 ) (
 	lastEvent xproto.ExposeEvent,
@@ -268,7 +270,7 @@ func (window *Window) compressExpose (
 	return
 }
 
-func (window *Window) compressConfigureNotify (
+func (window *window) compressConfigureNotify (
 	firstEvent xproto.ConfigureNotifyEvent,
 ) (
 	lastEvent xproto.ConfigureNotifyEvent,
@@ -296,7 +298,7 @@ func (window *Window) compressConfigureNotify (
 	return
 }
 
-func (window *Window) compressScrollSum (
+func (window *window) compressScrollSum (
 	firstEvent xproto.ButtonPressEvent,
 	sum *scrollSum,
 ) {
@@ -323,7 +325,7 @@ func (window *Window) compressScrollSum (
 	return
 }
 
-func (window *Window) compressMotionNotify (
+func (window *window) compressMotionNotify (
 	firstEvent xproto.MotionNotifyEvent,
 ) (
 	lastEvent xproto.MotionNotifyEvent,
