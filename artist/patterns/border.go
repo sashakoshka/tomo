@@ -24,8 +24,8 @@ import "git.tebibyte.media/sashakoshka/tomo/artist"
 // sections are automatically sized around it.
 //
 // When drawn to a destination canvas, the bounds of sections 1, 3, 4, 5, and 7
-// are expanded or contracted to fit the destination's bounds. All sections
-// are rendered as if they are Texture patterns, meaning these flexible sections
+// are expanded or contracted to fit the given drawing bounds. All sections are
+// rendered as if they are Texture patterns, meaning these flexible sections
 // will repeat to fill in any empty space.
 //
 // This pattern can be used to make a static image texture into something that
@@ -35,7 +35,7 @@ type Border struct {
 	artist.Inset
 }
 
-// Draw draws the border pattern onto the destination canvas within the clipping
+// Draw draws the border pattern onto the destination canvas within the given
 // bounds.
 func (pattern Border) Draw (destination canvas.Canvas, bounds image.Rectangle) {
 	drawBounds := bounds.Canon().Intersect(destination.Bounds())
