@@ -80,7 +80,7 @@ func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 	}
 }
 
-func (element *TextBox) HandleMouseMove (x, y int) {
+func (element *TextBox) HandleMotion (x, y int) {
 	if !element.Enabled() { return }
 
 	if element.dragging {
@@ -114,8 +114,6 @@ func (element *TextBox) HandleMouseUp (x, y int, button input.Button) {
 		element.dragging = false
 	}
 }
-
-func (element *TextBox) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) {
 	if element.onKeyDown != nil && element.onKeyDown(key, modifiers) {

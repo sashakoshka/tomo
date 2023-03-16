@@ -148,7 +148,7 @@ func (element *List) HandleMouseUp (x, y int, button input.Button) {
 	element.pressed = false
 }
 
-func (element *List) HandleMouseMove (x, y int) {
+func (element *List) HandleMotion (x, y int) {
 	if element.pressed {
 		if element.selectUnderMouse(x, y) && element.core.HasImage() {
 			element.draw()
@@ -156,8 +156,6 @@ func (element *List) HandleMouseMove (x, y int) {
 		}
 	}
 }
-
-func (element *List) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *List) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if !element.Enabled() { return }

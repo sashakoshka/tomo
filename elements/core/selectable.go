@@ -42,7 +42,7 @@ func (core *FocusableCore) Focused () (focused bool) {
 func (core *FocusableCore) Focus () {
 	if !core.enabled || core.focused { return }
 	parent := core.core.Parent()
-	if parent, ok := parent.(elements.FocusableParent); ok && parent != nil {
+	if parent, ok := parent.(elements.FocusableParent); ok {
 		core.focused = parent.RequestFocus (
 			core.core.Outer().(elements.Focusable))
 	}

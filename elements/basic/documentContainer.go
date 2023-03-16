@@ -49,6 +49,8 @@ func (element *DocumentContainer) Adopt (child elements.Element) {
 		Element: child,
 	})
 
+	child.SetParent(element)
+
 	// refresh stale data
 	element.reflectChildProperties()
 	if element.core.HasImage() && !element.warping {

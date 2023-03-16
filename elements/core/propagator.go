@@ -212,10 +212,10 @@ func (propagator *Propagator) HandleMouseUp (x, y int, button input.Button) {
 	}
 }
 
-// HandleMouseMove propagates the mouse event to the element that was last
+// HandleMotion propagates the mouse event to the element that was last
 // pressed down by the mouse if the mouse is currently being held down, else it
 // propagates the event to whichever element is underneath the mouse pointer.
-func (propagator *Propagator) HandleMouseMove (x, y int) {
+func (propagator *Propagator) HandleMotion (x, y int) {
 	handled := false
 	for _, child := range propagator.drags {
 		if child, ok := child.(elements.MotionTarget); ok {
@@ -234,7 +234,7 @@ func (propagator *Propagator) HandleMouseMove (x, y int) {
 
 // HandleScroll propagates the mouse event to the element under the mouse
 // pointer.
-func (propagator *Propagator) HandleMouseScroll (x, y int, deltaX, deltaY float64) {
+func (propagator *Propagator) HandleScroll (x, y int, deltaX, deltaY float64) {
 	child := propagator.childAt(image.Pt(x, y))
 	if child, ok := child.(elements.ScrollTarget); ok {
 		child.HandleScroll(x, y, deltaX, deltaY)

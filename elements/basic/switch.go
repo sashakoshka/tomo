@@ -67,9 +67,6 @@ func (element *Switch) HandleMouseUp (x, y int, button input.Button) {
 	}
 }
 
-func (element *Switch) HandleMouseMove (x, y int) { }
-func (element *Switch) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
-
 func (element *Switch) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if key == input.KeyEnter {
 		element.pressed = true

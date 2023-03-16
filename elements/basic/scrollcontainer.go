@@ -147,7 +147,7 @@ func (element *ScrollContainer) SetConfig (new config.Config) {
 	element.redoAll()
 }
 
-func (element *ScrollContainer) HandleMouseScroll (
+func (element *ScrollContainer) HandleScroll (
 	x, y int,
 	deltaX, deltaY float64,
 ) {

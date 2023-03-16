@@ -68,7 +68,7 @@ func (element *Slider) HandleMouseUp (x, y int, button input.Button) {
 	element.redo()
 }
 
-func (element *Slider) HandleMouseMove (x, y int) {
+func (element *Slider) HandleMotion (x, y int) {
 	if element.dragging {
 		element.dragging = true
 		element.value = element.valueFor(x, y)
@@ -79,7 +79,7 @@ func (element *Slider) HandleMouseMove (x, y int) {
 	}
 }
 
-func (element *Slider) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
+func (element *Slider) HandleScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Slider) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	switch key {
