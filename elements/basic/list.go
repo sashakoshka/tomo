@@ -30,7 +30,8 @@ type List struct {
 	config config.Wrapped
 	theme  theme.Wrapped
 	
-	onNoEntrySelected func ()
+	onNoEntrySelected    func ()
+	onScrollBoundsChange func ()
 }
 
 // NewList creates a new list element with the specified entries.
@@ -238,6 +239,12 @@ func (element *List) maxScrollHeight () (height int) {
 // list or by pressing the escape key.
 func (element *List) OnNoEntrySelected (callback func ()) {
 	element.onNoEntrySelected = callback
+}
+
+// OnScrollBoundsChange sets a function to be called when the element's viewport
+// bounds, content bounds, or scroll axes change.
+func (element *List) OnScrollBoundsChange (callback func ()) {
+	element.onScrollBoundsChange = callback
 }
 
 // CountEntries returns the amount of entries in the list.

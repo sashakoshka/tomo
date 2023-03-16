@@ -21,6 +21,8 @@ type DocumentContainer struct {
 	
 	config config.Wrapped
 	theme  theme.Wrapped
+
+	onScrollBoundsChange func ()
 }
 
 // NewDocumentContainer creates a new document container.
@@ -253,6 +255,12 @@ func (element *DocumentContainer) ScrollTo (position image.Point) {
 		element.redoAll()
 		element.core.DamageAll()
 	}
+}
+
+// OnScrollBoundsChange sets a function to be called when the element's viewport
+// bounds, content bounds, or scroll axes change.
+func (element *DocumentContainer) OnScrollBoundsChange (callback func ()) {
+	element.onScrollBoundsChange = callback
 }
 
 func (element *DocumentContainer) maxScrollHeight () (height int) {

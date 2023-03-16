@@ -34,6 +34,7 @@ type TextBox struct {
 	
 	onKeyDown func (key input.Key, modifiers input.Modifiers) (handled bool)
 	onChange  func ()
+	onScrollBoundsChange func ()
 }
 
 // NewTextBox creates a new text box with the specified placeholder text, and
@@ -239,6 +240,12 @@ func (element *TextBox) OnKeyDown (
 
 func (element *TextBox) OnChange (callback func ()) {
 	element.onChange = callback
+}
+
+// OnScrollBoundsChange sets a function to be called when the element's viewport
+// bounds, content bounds, or scroll axes change.
+func (element *TextBox) OnScrollBoundsChange (callback func ()) {
+	element.onScrollBoundsChange = callback
 }
 
 // ScrollContentBounds returns the full content size of the element.
