@@ -124,20 +124,22 @@ func (window *window) Adopt (child elements.Element) {
 		window.child.SetParent(nil)
 		window.child.DrawTo(nil, image.Rectangle { }, nil)
 	}
-	
-	// adopt new child
-	window.child = child
-	child.SetParent(window)
-	if newChild, ok := child.(elements.Themeable); ok {
-		newChild.SetTheme(window.theme)
-	}
-	if newChild, ok := child.(elements.Configurable); ok {
-		newChild.SetConfig(window.config)
-	}
+
 	if child != nil {
-		if !window.childMinimumSizeChangeCallback(child.MinimumSize()) {
-			window.resizeChildToFit()
-			window.redrawChildEntirely()
+		// adopt new child
+		window.child = child
+		child.SetParent(window)
+		if newChild, ok := child.(elements.Themeable); ok {
+			newChild.SetTheme(window.theme)
+		}
+		if newChild, ok := child.(elements.Configurable); ok {
+			newChild.SetConfig(window.config)
+		}
+		if child != nil {
+			if !window.childMinimumSizeChangeCallback(child.MinimumSize()) {
+				window.resizeChildToFit()
+				window.redrawChildEntirely()
+			}
 		}
 	}
 }
@@ -211,6 +213,8 @@ func (window *window) Hide () {
 
 func (window *window) Close () {
 	if window.onClose != nil { window.onClose() }
+	window.Hide()
+	window.Adopt(nil)
 	delete(window.backend.windows, window.xWindow.Id)
 	window.xWindow.Destroy()
 }
