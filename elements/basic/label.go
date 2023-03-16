@@ -11,6 +11,7 @@ type Label struct {
 	*core.Core
 	core core.CoreControl
 
+	align  textdraw.Align
 	wrap   bool
 	text   string
 	drawer textdraw.Drawer
@@ -113,6 +114,20 @@ func (element *Label) SetWrap (wrap bool) {
 		element.drawer.SetMaxHeight(0)
 	}
 	element.wrap = wrap
+	element.updateMinimumSize()
+	
+	if element.core.HasImage () {
+		element.draw()
+		element.core.DamageAll()
+	}
+}
+
+// SetAlign sets the alignment method of the label.
+func (element *Label) SetAlign (align textdraw.Align) {
+	if align == element.align { return }
+	
+	element.align = align
+	element.drawer.SetAlign(align)
 	element.updateMinimumSize()
 	
 	if element.core.HasImage () {
