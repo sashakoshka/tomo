@@ -1,3 +1,8 @@
+// Package layouts defines a layout interface which a container element can
+// accept to have its child elements automatically arranged by any layout that
+// satisfies it.
+//
+// Sub-packages of layouts contain several pre-made ones.
 package layouts
 
 import "image"

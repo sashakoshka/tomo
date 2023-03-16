@@ -1,3 +1,4 @@
+// Package shatter provides boolean operations for image.Rectangle.
 package shatter
 
 import "image"

@@ -1,3 +1,4 @@
+// Package input defines keyboard and mouse code constants.
 package input
 
 import "unicode"

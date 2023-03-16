@@ -1,3 +1,4 @@
+// Package dirs provides access to standard system and user directories.
 package dirs
 
 import "os"

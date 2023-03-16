@@ -1,3 +1,4 @@
+// Package flow allows an asynchronous process to be written sequentially.
 package flow
 
 // Flow represents any multi-stage process that relies on callbacks to advance
