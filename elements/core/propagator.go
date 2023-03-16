@@ -51,8 +51,7 @@ func (propagator *Propagator) Focus () {
 	parent := propagator.core.Parent()
 	if parent, ok := parent.(elements.FocusableParent); ok && parent != nil {
 		propagator.focused = parent.RequestFocus (
-			propagator.core.Outer().(elements.Focusable),
-			input.KeynavDirectionNeutral)
+			propagator.core.Outer().(elements.Focusable))
 	}
 }
 
@@ -131,9 +130,8 @@ func (propagator *Propagator) RequestFocus (
 ) (
 	granted bool,
 ) {
-	// TODO implement this, and also implement it for the x backend window
 	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
-		if parent.RequestFocus(propagator) {
+		if parent.RequestFocus(propagator.core.Outer().(elements.Focusable)) {
 			propagator.focused = true
 			granted = true
 		}
@@ -146,7 +144,7 @@ func (propagator *Propagator) RequestFocus (
 func (propagator *Propagator) RequestFocusNext (child elements.Focusable) {
 	if !propagator.focused { return }
 	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
-		parent.RequestFocusNext(propagator)
+		parent.RequestFocusNext(propagator.core.Outer().(elements.Focusable))
 	}
 }
 
@@ -155,7 +153,7 @@ func (propagator *Propagator) RequestFocusNext (child elements.Focusable) {
 func (propagator *Propagator) RequestFocusPrevious (child elements.Focusable) {
 	if !propagator.focused { return }
 	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
-		parent.RequestFocusPrevious(propagator)
+		parent.RequestFocusPrevious(propagator.core.Outer().(elements.Focusable))
 	}
 }
 

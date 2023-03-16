@@ -94,6 +94,30 @@ func (window *window) NotifyMinimumSizeChange (child elements.Element) {
 	window.childMinimumSizeChangeCallback(child.MinimumSize())
 }
 
+func (window *window) RequestFocus (
+	child elements.Focusable,
+) (
+	granted bool,
+) {
+	return true
+}
+
+func (window *window) RequestFocusNext (child elements.Focusable) {
+	if child, ok := window.child.(elements.Focusable); ok {
+		if !child.HandleFocus(input.KeynavDirectionForward) {
+			child.HandleUnfocus()
+		}
+	}
+}
+
+func (window *window) RequestFocusPrevious (child elements.Focusable) {
+	if child, ok := window.child.(elements.Focusable); ok {
+		if !child.HandleFocus(input.KeynavDirectionBackward) {
+			child.HandleUnfocus()
+		}
+	}
+}
+
 func (window *window) Adopt (child elements.Element) {
 	// disown previous child
 	if window.child != nil {
@@ -303,27 +327,6 @@ func (window *window) childMinimumSizeChangeCallback (width, height int) (resize
 	}
 
 	return false
-}
-
-func (window *window) childSelectionRequestCallback () (granted bool) {
-	if _, ok := window.child.(elements.Focusable); ok {
-		return true
-	}
-	return false
-}
-
-func (window *window) childSelectionMotionRequestCallback (
-	direction input.KeynavDirection,
-) (
-	granted bool,
-) {
-	if child, ok := window.child.(elements.Focusable); ok {
-		if !child.HandleFocus(direction) {
-			child.HandleUnfocus()
-		}
-		return true
-	}
-	return true
 }
 
 func (window *window) pushRegion (region image.Rectangle) {

@@ -1,7 +1,5 @@
 package elements
 
-import "git.tebibyte.media/sashakoshka/tomo/input"
-
 // Parent represents a type capable of containing child elements.
 type Parent interface {
 	// NotifyMinimumSizeChange notifies the container that a child element's
