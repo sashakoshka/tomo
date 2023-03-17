@@ -1,8 +1,10 @@
 package basicLayouts
 
 import "image"
+import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
 
 // Vertical arranges elements vertically. Elements at the start of the entry
 // list will be positioned at the top, and elements at the end of the entry list
@@ -24,46 +26,28 @@ func (layout Vertical) Arrange (
 	bounds image.Rectangle,
 ) {
 	if layout.Pad { bounds = padding.Apply(bounds) }
+	
+	// get height  of expanding elements
+	expandingElementHeight, minimumHeights := layout.expandingElementHeight (
+		entries, margin, padding, bounds.Dy())
 
-	// count the number of expanding elements and the amount of free space
-	// for them to collectively occupy, while gathering minimum heights.
-	freeSpace := bounds.Dy()
-	minimumHeights := make([]int, len(entries))
-	expandingElements := 0
-	for index, entry := range entries {
-		_, entryMinHeight := entry.MinimumSize()
-		minimumHeights[index] = entryMinHeight
-		
-		if entry.Expand {
-			expandingElements ++
-		} else {
-			freeSpace -= entryMinHeight
-		}
-		if index > 0 && layout.Gap {
-			freeSpace -= margin.Y
-		}
-	}
-	
-	expandingElementHeight := 0
-	if expandingElements > 0 {
-		expandingElementHeight = freeSpace / expandingElements
-	}
-	
 	// set the size and position of each element
-	dot := bounds.Min
+	dot := fixedutil.Pt(bounds.Min)
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { dot.Y += margin.Y }
+		if index > 0 && layout.Gap { dot.Y += fixed.I(margin.Y) }
 		
-		entry.Bounds.Min = dot
-		entryHeight := 0
+		entry.Bounds.Min = fixedutil.FloorPt(dot)
+		entryHeight := fixed.Int26_6(0)
 		if entry.Expand {
 			entryHeight = expandingElementHeight
 		} else {
-			entryHeight = minimumHeights[index]
+			entryHeight = fixed.I(minimumHeights[index])
 		}
 		dot.Y += entryHeight
 		entryBounds := entry.Bounds
-		entry.Bounds.Max = entryBounds.Min.Add(image.Pt(bounds.Dx(), entryHeight))
+		entry.Bounds.Max = entryBounds.Min.Add (
+			image.Pt(bounds.Dx(),
+			entryHeight.Floor()))
 		entries[index] = entry
 	}
 }
@@ -91,6 +75,39 @@ func (layout Vertical) MinimumSize (
 	if layout.Pad {
 		width  += padding.Horizontal()
 		height += padding.Vertical()
+	}
+	return
+}
+
+func (layout Vertical) expandingElementHeight (
+	entries []layouts.LayoutEntry,
+	margin  image.Point,
+	padding artist.Inset,
+	freeSpace int,
+) (
+	height fixed.Int26_6,
+	minimumHeights []int,
+) {
+	// count the number of expanding elements and the amount of free space
+	// for them to collectively occupy, while gathering minimum heights.
+	minimumHeights = make([]int, len(entries))
+	expandingElements := 0
+	for index, entry := range entries {
+		_, entryMinHeight := entry.MinimumSize()
+		minimumHeights[index] = entryMinHeight
+		
+		if entry.Expand {
+			expandingElements ++
+		} else {
+			freeSpace -= entryMinHeight
+		}
+		if index > 0 && layout.Gap {
+			freeSpace -= margin.Y
+		}
+	}
+	
+	if expandingElements > 0 {
+		height = fixed.I(freeSpace) / fixed.Int26_6(expandingElements)
 	}
 	return
 }
