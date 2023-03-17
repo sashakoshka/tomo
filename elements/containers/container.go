@@ -41,6 +41,7 @@ func NewContainer (layout layouts.Layout) (element *Container) {
 // SetLayout sets the layout of this container.
 func (element *Container) SetLayout (layout layouts.Layout) {
 	element.layout = layout
+	element.updateMinimumSize()
 	if element.core.HasImage() {
 		element.redoAll()
 		element.core.DamageAll()

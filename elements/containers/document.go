@@ -52,7 +52,7 @@ func (element *DocumentContainer) Adopt (child elements.Element) {
 	child.SetParent(element)
 
 	// refresh stale data
-	element.reflectChildProperties()
+	element.updateMinimumSize()
 	if element.core.HasImage() && !element.warping {
 		element.redoAll()
 		element.core.DamageAll()
@@ -91,7 +91,7 @@ func (element *DocumentContainer) Disown (child elements.Element) {
 		}
 	}
 
-	element.reflectChildProperties()
+	element.updateMinimumSize()
 	if element.core.HasImage() && !element.warping {
 		element.redoAll()
 		element.core.DamageAll()
@@ -116,7 +116,7 @@ func (element *DocumentContainer) DisownAll () {
 	}
 	element.children = nil
 
-	element.reflectChildProperties()
+	element.updateMinimumSize()
 	if element.core.HasImage() && !element.warping {
 		element.redoAll()
 		element.core.DamageAll()
@@ -282,27 +282,12 @@ func (element *DocumentContainer) ScrollAxes () (horizontal, vertical bool) {
 	return false, true
 }
 
-func (element *DocumentContainer) reflectChildProperties () {
-	focusable := false
-	for _, entry := range element.children {
-		_, focusable := entry.Element.(elements.Focusable)
-		if focusable {
-			focusable = true
-			break
-		}
-	}
-	if !focusable && element.Focused() {
-		element.Propagator.HandleUnfocus()
-	}
-}
-
 func (element *DocumentContainer) doLayout () {
 	margin := element.theme.Margin(theme.PatternBackground)
 	padding := element.theme.Padding(theme.PatternBackground)
 	bounds := padding.Apply(element.Bounds())
 	element.contentBounds = image.Rectangle { }
 
-	minimumWidth := 0
 	dot := bounds.Min.Sub(element.scroll)
 	for index, entry := range element.children {
 		if index > 0 {
@@ -310,9 +295,6 @@ func (element *DocumentContainer) doLayout () {
 		}
 	
 		width, height := entry.MinimumSize()
-		if width > minimumWidth {
-			minimumWidth = width
-		}
 		if width < bounds.Dx() {
 			width = bounds.Dx()
 		}
@@ -328,7 +310,18 @@ func (element *DocumentContainer) doLayout () {
 	}
 	
 	element.contentBounds =
-		element.contentBounds.Sub(element.contentBounds.Min)	
+		element.contentBounds.Sub(element.contentBounds.Min)
+}
+
+func (element *DocumentContainer) updateMinimumSize () {
+	padding := element.theme.Padding(theme.PatternBackground)
+	minimumWidth := 0
+	for _, entry := range element.children {
+		width, _ := entry.MinimumSize()
+		if width > minimumWidth {
+			minimumWidth = width
+		}
+	}
 	element.core.SetMinimumSize (
 		minimumWidth + padding.Horizontal(),
 		padding.Vertical())
