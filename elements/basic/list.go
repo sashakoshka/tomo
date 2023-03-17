@@ -65,9 +65,7 @@ func (element *List) handleResize () {
 		element.scroll = element.maxScrollHeight()
 	}
 	element.draw()
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
-		parent.NotifyScrollBoundsChange(element)
-	}
+	element.scrollBoundsChange()
 }
 
 // SetTheme sets the element's theme.
@@ -103,9 +101,7 @@ func (element *List) redo () {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
-		parent.NotifyScrollBoundsChange(element)
-	}
+	element.scrollBoundsChange()
 }
 
 // Collapse forces a minimum width and height upon the list. If a zero value is
@@ -209,9 +205,7 @@ func (element *List) ScrollTo (position image.Point) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
-		parent.NotifyScrollBoundsChange(element)
-	}
+	element.scrollBoundsChange()
 }
 
 // ScrollAxes returns the supported axes for scrolling.
@@ -264,9 +258,7 @@ func (element *List) Append (entry ListEntry) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
-		parent.NotifyScrollBoundsChange(element)
-	}
+	element.scrollBoundsChange()
 }
 
 // EntryAt returns the entry at the specified index. If the index is out of
@@ -297,9 +289,7 @@ func (element *List) Insert (index int, entry ListEntry) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
-		parent.NotifyScrollBoundsChange(element)
-	}
+	element.scrollBoundsChange()
 }
 
 // Remove removes the entry at the specified index. If the index is out of
@@ -320,9 +310,7 @@ func (element *List) Remove (index int) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
-		parent.NotifyScrollBoundsChange(element)
-	}
+	element.scrollBoundsChange()
 }
 
 // Replace replaces the entry at the specified index with another. If the index
@@ -342,9 +330,7 @@ func (element *List) Replace (index int, entry ListEntry) {
 		element.draw()
 		element.core.DamageAll()
 	}
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
-		parent.NotifyScrollBoundsChange(element)
-	}
+	element.scrollBoundsChange()
 }
 
 // Select selects a specific item in the list. If the index is out of bounds,
@@ -430,6 +416,15 @@ func (element *List) updateMinimumSize () {
 	minimumHeight += padding[0] + padding[2]
 
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
+}
+
+func (element *List) scrollBoundsChange () {
+	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
+	}
+	if element.onScrollBoundsChange != nil {
+		element.onScrollBoundsChange()
+	}
 }
 
 func (element *List) draw () {
