@@ -1,8 +1,10 @@
 package basicLayouts
 
 import "image"
+import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
 
 // Horizontal arranges elements horizontally. Elements at the start of the entry
 // list will be positioned on the left, and elements at the end of the entry
@@ -30,19 +32,21 @@ func (layout Horizontal) Arrange (
 		entries, margin, padding, bounds.Dx())
 
 	// set the size and position of each element
-	dot := bounds.Min
+	dot := fixedutil.Pt(bounds.Min)
 	for index, entry := range entries {
-		if index > 0 && layout.Gap { dot.X += margin.X }
+		if index > 0 && layout.Gap { dot.X += fixed.I(margin.X) }
 		
-		entry.Bounds.Min = dot
-		entryWidth := 0
+		entry.Bounds.Min = fixedutil.FloorPt(dot)
+		entryWidth := fixed.Int26_6(0)
 		if entry.Expand {
 			entryWidth = expandingElementWidth
 		} else {
-			entryWidth, _ = entry.MinimumSize()
+			min, _ := entry.MinimumSize()
+			entryWidth = fixed.I(min)
 		}
 		dot.X += entryWidth
-		entry.Bounds.Max = entry.Bounds.Min.Add(image.Pt(entryWidth, bounds.Dy()))
+		entry.Bounds.Max = entry.Bounds.Min.Add (
+			image.Pt(entryWidth.Floor(), bounds.Dy()))
 
 		entries[index] = entry
 	}
@@ -81,7 +85,7 @@ func (layout Horizontal) expandingElementWidth (
 	padding artist.Inset,
 	freeSpace int,
 ) (
-	width int,
+	width fixed.Int26_6,
 ) {
 	expandingElements := 0
 
@@ -100,7 +104,7 @@ func (layout Horizontal) expandingElementWidth (
 	}
 	
 	if expandingElements > 0 {
-		width = freeSpace / expandingElements
+		width = fixed.I(freeSpace) / fixed.Int26_6(expandingElements)
 	}
 	return
 }
