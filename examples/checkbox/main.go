@@ -18,10 +18,12 @@ func run () {
 	container := containers.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
 
-	container.Adopt (basicElements.NewLabel (
+	introText := basicElements.NewLabel (
 		"We advise you to not read thPlease listen to me. I am " +
 		"trapped inside the example code. This is the only way for " +
-		"me to communicate.", true), true)
+		"me to communicate.", true)
+	introText.EmCollapse(0, 5)
+	container.Adopt(introText, true)
 	container.Adopt(basicElements.NewSpacer(true), false)
 	container.Adopt(basicElements.NewCheckbox("Oh god", false), false)
 	container.Adopt(basicElements.NewCheckbox("Can you hear them", true), false)

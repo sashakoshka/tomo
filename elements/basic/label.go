@@ -181,15 +181,15 @@ func (element *Label) updateMinimumSize () {
 	}
 
 	if element.forcedColumns > 0 {
-		width = int (
+		width =
 			element.drawer.Em().
-			Mul(fixed.I(element.forcedColumns)))
+			Mul(fixed.I(element.forcedColumns)).Floor()
 	}
 
 	if element.forcedRows > 0 {
-		height = int (
+		height =
 			element.drawer.LineHeight().
-			Mul(fixed.I(element.forcedRows)))
+			Mul(fixed.I(element.forcedRows)).Floor()
 	}
 
 	element.core.SetMinimumSize(width, height)
