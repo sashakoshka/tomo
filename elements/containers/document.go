@@ -181,6 +181,9 @@ func (element *DocumentContainer) redoAll () {
 	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
 		parent.NotifyScrollBoundsChange(element)
 	}
+	if element.onScrollBoundsChange != nil {
+		element.onScrollBoundsChange()
+	}
 }
 
 func (element *DocumentContainer) partition () {
