@@ -98,10 +98,11 @@ func (word WordLayout) FirstRune () rune {
 
 // LineLayout contains layout information for a single line.
 type LineLayout struct {
-	Y          fixed.Int26_6
-	Width      fixed.Int26_6
-	SpaceAfter fixed.Int26_6
-	Words      []WordLayout
+	Y            fixed.Int26_6
+	Width        fixed.Int26_6
+	ContentWidth fixed.Int26_6
+	SpaceAfter   fixed.Int26_6
+	Words        []WordLayout
 	BreakAfter bool
 }
 
@@ -147,12 +148,15 @@ func DoLine (text []rune, face font.Face, maxWidth fixed.Int26_6) (line LineLayo
 		isFirstWord = false
 	}
 
+	// set the width of the line's content.
+	line.ContentWidth = lastWord.X + lastWord.Width
+
 	// set the line's width. this is subject to be overridden by the
 	// TypeSetter to match the longest line.
 	if maxWidth > 0 {
 		line.Width = maxWidth
 	} else {
-		line.Width      = lastWord.X + lastWord.Width
+		line.Width      = line.ContentWidth
 		line.SpaceAfter = lastWord.SpaceAfter
 	}
 	return
@@ -161,5 +165,44 @@ func DoLine (text []rune, face font.Face, maxWidth fixed.Int26_6) (line LineLayo
 // Align aligns the text in the line according to the specified alignment
 // method.
 func (line *LineLayout) Align (align Align) {
-	// TODO
+	if len(line.Words) == 0 { return }
+
+	if align == AlignJustify {
+		line.justify()
+		return
+	}
+
+	leftOffset := -line.Words[0].X
+
+	if align == AlignCenter {
+		leftOffset += (line.Width - line.ContentWidth) / 2
+	} else if align == AlignRight {
+		leftOffset += line.Width - line.ContentWidth
+	}
+
+	for index := range line.Words {
+		line.Words[index].X += leftOffset
+	}
+}
+
+func (line *LineLayout) justify () {
+	if len(line.Words) < 2 {
+		line.Align(AlignLeft)
+		return
+	}
+
+	// We are going to be moving the words, so we can't take SpaceAfter into
+	// account.
+	trueContentWidth := fixed.Int26_6(0)
+	for _, word := range line.Words {
+		trueContentWidth += word.Width
+	}
+
+	spaceCount   := fixed.Int26_6(len(line.Words) - 1)
+	spacePerWord := (line.Width - trueContentWidth) / spaceCount
+	x := fixed.Int26_6(0)
+	for index, word := range line.Words {
+		line.Words[index].X = x
+		x += spacePerWord + word.Width
+	}
 }

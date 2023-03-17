@@ -95,7 +95,11 @@ func (setter *TypeSetter) needAlignedLayout () {
 	setter.alignClean = true
 
 	for index := range setter.lines {
-		setter.lines[index].Align(setter.align)
+		align := setter.align
+		if index == len(setter.lines) - 1 && align == AlignJustify {
+			align = AlignLeft
+		}
+		setter.lines[index].Align(align)
 	}
 }
 
