@@ -20,7 +20,7 @@ type Default struct { }
 
 // HandleWidth returns the default handle width value.
 func (Default) HandleWidth () int {
-	return 16
+	return 15
 }
 
 // ScrollVelocity returns the default scroll velocity value.
