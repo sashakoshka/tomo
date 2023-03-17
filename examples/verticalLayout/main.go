@@ -12,7 +12,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(2, 2)
+	window, _ := tomo.NewWindow(128, 128)
 	window.SetTitle("vertical stack")
 
 	container := containers.NewContainer(basicLayouts.Vertical { true, true })

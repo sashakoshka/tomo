@@ -12,7 +12,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(2, 2)
+	window, _ := tomo.NewWindow(192, 192)
 	window.SetTitle("adventure")
 	container := containers.NewContainer(basicLayouts.Vertical { true, true })
 	window.Adopt(container)
