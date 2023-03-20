@@ -244,13 +244,16 @@ func (element *List) CountEntries () (count int) {
 	return len(element.entries)
 }
 
-// Append adds an entry to the end of the list.
-func (element *List) Append (entry ListEntry) {
+// Append adds one or more entries to the end of the list.
+func (element *List) Append (entries ...ListEntry) {
 	// append
-	entry = element.resizeEntryToFit(entry)
-	entry.SetTheme(element.theme.Theme)
-	entry.SetConfig(element.config)
-	element.entries = append(element.entries, entry)
+	for index, entry := range entries {
+		entry = element.resizeEntryToFit(entry)
+		entry.SetTheme(element.theme.Theme)
+		entry.SetConfig(element.config)
+		entries[index] = entry
+	}
+	element.entries = append(element.entries, entries...)
 
 	// recalculate, redraw, notify
 	element.updateMinimumSize()
@@ -303,6 +306,19 @@ func (element *List) Remove (index int) {
 	element.entries = append (
 		element.entries[:index],
 		element.entries[index + 1:]...)
+
+	// recalculate, redraw, notify
+	element.updateMinimumSize()
+	if element.core.HasImage() {
+		element.draw()
+		element.core.DamageAll()
+	}
+	element.scrollBoundsChange()
+}
+
+// Clear removes all entries from the list.
+func (element *List) Clear () {
+	element.entries = nil
 
 	// recalculate, redraw, notify
 	element.updateMinimumSize()
