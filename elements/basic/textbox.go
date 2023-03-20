@@ -34,6 +34,7 @@ type TextBox struct {
 	
 	onKeyDown func (key input.Key, modifiers input.Modifiers) (handled bool)
 	onChange  func ()
+	onEnter   func ()
 	onScrollBoundsChange func ()
 }
 
@@ -124,6 +125,11 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 	altered     := true
 	textChanged := false
 	switch {
+	case key == input.KeyEnter:
+		if element.onEnter != nil {
+			element.onEnter()
+		}
+	
 	case key == input.KeyBackspace:
 		if len(element.text) < 1 { break }
 		element.text, element.dot = textmanip.Backspace (
@@ -234,6 +240,10 @@ func (element *TextBox) OnKeyDown (
 	callback func (key input.Key, modifiers input.Modifiers) (handled bool),
 ) {
 	element.onKeyDown = callback
+}
+
+func (element *TextBox) OnEnter (callback func ()) {
+	element.onEnter = callback
 }
 
 func (element *TextBox) OnChange (callback func ()) {
