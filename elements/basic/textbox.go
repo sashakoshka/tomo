@@ -171,6 +171,10 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 				element.dot,
 				modifiers.Control)
 		}
+
+	case key == 'a' && modifiers.Control:
+		element.dot.Start = 0
+		element.dot.End   = len(element.text)
 		
 	case key.Printable():
 		element.text, element.dot = textmanip.Type (
