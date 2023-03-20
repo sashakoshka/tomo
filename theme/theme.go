@@ -64,6 +64,9 @@ type Color int; const (
 
 // Icon lists a number of cannonical icons, each with its own ID.
 type Icon int; const (
+	// IconNone specifies no icon.
+	IconNone = -1
+
 	// Place icons
 	IconHome Icon = iota
 	Icon3DObjects
@@ -168,7 +171,9 @@ const (
 	IconHistory
 
 	IconYes
-	IconNo)
+	IconNo
+
+	IconUpward)
 
 const (
 	// Status icons

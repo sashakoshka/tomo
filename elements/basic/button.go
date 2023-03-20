@@ -100,19 +100,18 @@ func (element *Button) SetText (text string) {
 	element.drawAndPush()
 }
 
-// SetIcon sets the icon of the button.
+// SetIcon sets the icon of the button. Passing theme.IconNone removes the
+// current icon if it exists.
 func (element *Button) SetIcon (id theme.Icon) {
-	if element.hasIcon && element.iconId == id { return }
-	element.hasIcon = true
-	element.iconId = id
-	element.updateMinimumSize()
-	element.drawAndPush()
-}
-
-// ClearIcon removes the button's icon, if it exists.
-func (element *Button) ClearIcon () {
-	if !element.hasIcon { return }
-	element.hasIcon = false
+	if id == theme.IconNone {
+		element.hasIcon = false
+		element.updateMinimumSize()
+		element.drawAndPush()
+	} else {
+		if element.hasIcon && element.iconId == id { return }
+		element.hasIcon = true
+		element.iconId = id
+	}
 	element.updateMinimumSize()
 	element.drawAndPush()
 }
@@ -145,26 +144,21 @@ func (element *Button) SetConfig (new config.Config) {
 }
 
 func (element *Button) updateMinimumSize () {
-	padding     := element.theme.Padding(theme.PatternButton)
-	margin      := element.theme.Margin(theme.PatternButton)
-	var minimumSize image.Rectangle
+	padding := element.theme.Padding(theme.PatternButton)
+	margin  := element.theme.Margin(theme.PatternButton)
 
-	if element.showText {
-		minimumSize = element.drawer.LayoutBounds()
-	}
-	
-	minimumSize = minimumSize.Sub(minimumSize.Min)
+	textBounds  := element.drawer.LayoutBounds()
+	minimumSize := textBounds.Sub(textBounds.Min)
 	
 	if element.hasIcon {
 		icon := element.theme.Icon(element.iconId, theme.IconSizeSmall) 
 		if icon != nil {
 			bounds := icon.Bounds()
-			minimumSize.Max.X += bounds.Dx()
 			if element.showText {
+				minimumSize.Max.X += bounds.Dx()
 				minimumSize.Max.X += margin.X
-			}
-			if minimumSize.Max.Y < bounds.Dy() {
-				minimumSize.Max.Y = bounds.Dy()
+			} else {
+				minimumSize.Max.X = bounds.Dx()
 			}
 		}
 	}
