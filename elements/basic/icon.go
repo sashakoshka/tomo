@@ -24,6 +24,16 @@ func NewIcon (id theme.Icon, size theme.IconSize) (element *Icon) {
 	return
 }
 
+func (element *Icon) SetIcon (id theme.Icon, size theme.IconSize) {
+	element.id   = id
+	element.size = size
+	element.updateMinimumSize()
+	if element.core.HasImage() {
+		element.draw()
+		element.core.DamageAll()
+	}
+}
+
 // SetTheme sets the element's theme.
 func (element *Icon) SetTheme (new theme.Theme) {
 	if new == element.theme.Theme { return }
