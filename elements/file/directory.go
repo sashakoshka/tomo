@@ -137,7 +137,10 @@ func (element *DirectoryView) Update () error {
 		element.children[index].DirEntry = entry
 	}
 	
-	element.redoAll()
+	if element.core.HasImage() {
+		element.redoAll()
+		element.core.DamageAll()
+	}
 	return err
 }
 

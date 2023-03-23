@@ -42,11 +42,15 @@ func run () {
 	
 	scrollContainer  := containers.NewScrollContainer(false, true)
 	directoryView, _ := fileElements.NewDirectoryView(homeDir, nil)
-	choose := func (filePath string) {
-		directoryView.SetLocation(filePath, nil)
+	updateStatus := func () {
+		filePath, _ := directoryView.Location()
 		directory.SetLocation(filePath, nil)
 		locationInput.SetValue(filePath)
 		baseName.SetText(filepath.Base(filePath))
+	}
+	choose := func (filePath string) {
+		directoryView.SetLocation(filePath, nil)
+		updateStatus()
 	}
 	directoryView.OnChoose(choose)
 	locationInput.OnEnter (func () {
@@ -55,12 +59,19 @@ func run () {
 	choose(homeDir)
 	backButton.OnClick (func () {
 		directoryView.Backward()
+		updateStatus()
 	})
 	forwardButton.OnClick (func () {
 		directoryView.Forward()
+		updateStatus()
 	})
 	refreshButton.OnClick (func () {
 		directoryView.Update()
+		updateStatus()
+	})
+	upwardButton.OnClick (func () {
+		filePath, _ := directoryView.Location()
+		choose(filepath.Dir(filePath))
 	})
 	
 	controlBar.Adopt(backButton,    false)
