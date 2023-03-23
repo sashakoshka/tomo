@@ -8,6 +8,7 @@ import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/config"
+import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
@@ -15,6 +16,8 @@ type fileLayoutEntry struct {
 	*File
 	fs.DirEntry
 	Bounds image.Rectangle
+	Drawer textdraw.Drawer
+	TextPoint image.Point
 }
 
 type historyEntry struct {
@@ -135,6 +138,11 @@ func (element *DirectoryView) Update () error {
 		})
 		element.children[index].File = file
 		element.children[index].DirEntry = entry
+		element.children[index].Drawer.SetFace (element.theme.FontFace(
+			theme.FontStyleRegular,
+			theme.FontSizeNormal))
+		element.children[index].Drawer.SetText([]rune(entry.Name()))
+		element.children[index].Drawer.SetAlign(textdraw.AlignCenter)
 	}
 	
 	if element.core.HasImage() {
@@ -203,6 +211,12 @@ func (element *DirectoryView) redoAll () {
 	}
 	if element.onScrollBoundsChange != nil {
 		element.onScrollBoundsChange()
+	}
+
+	// draw labels
+	foreground := element.theme.Color(theme.ColorForeground, theme.State { })
+	for _, entry := range element.children {
+		entry.Drawer.Draw(element.core, foreground, entry.TextPoint)
 	}
 }
 
@@ -302,12 +316,13 @@ func (element *DirectoryView) doLayout () {
 
 	beginningOfRow := true
 	dot := bounds.Min.Sub(element.scroll)
+	rowHeight := 0
 	for index, entry := range element.children {
 		width, height := entry.MinimumSize()
 		
 		if dot.X + width > bounds.Max.X {
 			dot.X = bounds.Min.Sub(element.scroll).X
-			dot.Y += height
+			dot.Y += rowHeight
 			if index > 1 {
 				dot.Y += margin.Y
 			}
@@ -320,10 +335,22 @@ func (element *DirectoryView) doLayout () {
 			dot.X += margin.X
 		}
 	
-		entry.Bounds.Min = dot
-		entry.Bounds.Max = image.Pt(dot.X + width, dot.Y + height)
+		entry.Drawer.SetMaxWidth(width)
+		bounds := image.Rect(dot.X, dot.Y, dot.X + width, dot.Y + height)
+		entry.Bounds = bounds
+		
+		drawerHeight := entry.Drawer.ReccomendedHeightFor(width)
+		entry.TextPoint =
+			image.Pt(bounds.Min.X, bounds.Max.Y + margin.Y).
+			Sub(entry.Drawer.LayoutBounds().Min)
+		bounds.Max.Y += margin.Y + drawerHeight
+		height += margin.Y + drawerHeight
+		if rowHeight < height {
+			rowHeight = height
+		}
+		
+		element.contentBounds = element.contentBounds.Union(bounds)
 		element.children[index] = entry
-		element.contentBounds = element.contentBounds.Union(entry.Bounds)
 		dot.X += width
 	}
 	
