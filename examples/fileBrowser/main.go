@@ -53,6 +53,15 @@ func run () {
 		choose(locationInput.Value())
 	})
 	choose(homeDir)
+	backButton.OnClick (func () {
+		directoryView.Backward()
+	})
+	forwardButton.OnClick (func () {
+		directoryView.Forward()
+	})
+	refreshButton.OnClick (func () {
+		directoryView.Update()
+	})
 	
 	controlBar.Adopt(backButton,    false)
 	controlBar.Adopt(forwardButton, false)

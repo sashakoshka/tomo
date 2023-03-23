@@ -17,6 +17,11 @@ type fileLayoutEntry struct {
 	Bounds image.Rectangle
 }
 
+type historyEntry struct {
+	location string
+	filesystem ReadDirStatFS
+}
+
 // DirectoryView displays a list of files within a particular directory and
 // file system.
 type DirectoryView struct {
@@ -33,8 +38,8 @@ type DirectoryView struct {
 
 	onScrollBoundsChange func ()
 
-	filesystem ReadDirStatFS
-	location string
+	history      []historyEntry
+	historyIndex int
 	onChoose func (file string)
 }
 
@@ -56,8 +61,10 @@ func NewDirectoryView (
 }
 
 // Location returns the directory's location and filesystem.
-func (element *DirectoryView) Location () (string, fs.ReadDirFS) {
-	return element.location, element.filesystem
+func (element *DirectoryView) Location () (string, ReadDirStatFS) {
+	if len(element.history) < 1 { return "", nil }
+	current := element.history[element.historyIndex]
+	return current.location, current.filesystem
 }
 
 // SetLocation sets the directory's location and filesystem. If within is nil,
@@ -70,14 +77,40 @@ func (element *DirectoryView) SetLocation (
 		within = defaultFS { }
 	}
 	element.scroll = image.Point { }
-	element.location   = location
-	element.filesystem = within
+
+	if element.history != nil {
+		element.historyIndex ++
+	}
+	element.history = append (
+		element.history[:element.historyIndex],
+		historyEntry { location, within })
 	return element.Update()
+}
+
+// Backward goes back a directory in history
+func (element *DirectoryView) Backward () (bool, error) {
+	if element.historyIndex > 1 {
+		element.historyIndex --
+		return true, element.Update()
+	} else {
+		return false, nil
+	}
+}
+
+// Forward goes forward a directory in history
+func (element *DirectoryView) Forward () (bool, error) {
+	if element.historyIndex < len(element.history) - 1 {
+		element.historyIndex ++
+		return true, element.Update()
+	} else {
+		return false, nil
+	}
 }
 
 // Update refreshes the directory's contents.
 func (element *DirectoryView) Update () error {
-	entries, err := element.filesystem.ReadDir(element.location)
+	location, filesystem := element.Location()
+	entries, err := filesystem.ReadDir(location)
 
 	// disown all entries
 	for _, file := range element.children {
@@ -91,10 +124,8 @@ func (element *DirectoryView) Update () error {
 
 	element.children = make([]fileLayoutEntry, len(entries))
 	for index, entry := range entries {
-		filePath := filepath.Join(element.location, entry.Name())
-		file, err := NewFile (
-			filePath,
-			element.filesystem)
+		filePath := filepath.Join(location, entry.Name())
+		file, err := NewFile(filePath, filesystem)
 		if err != nil { continue }
 		file.SetParent(element)
 		file.OnChoose (func () {
