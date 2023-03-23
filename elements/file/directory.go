@@ -25,9 +25,9 @@ type historyEntry struct {
 	filesystem ReadDirStatFS
 }
 
-// DirectoryView displays a list of files within a particular directory and
+// Directory displays a list of files within a particular directory and
 // file system.
-type DirectoryView struct {
+type Directory struct {
 	*core.Core
 	*core.Propagator
 	core core.CoreControl
@@ -46,17 +46,17 @@ type DirectoryView struct {
 	onChoose func (file string)
 }
 
-// NewDirectoryView creates a new directory view. If within is nil, it will use
+// NewDirectory creates a new directory view. If within is nil, it will use
 // the OS file system.
-func NewDirectoryView (
+func NewDirectory (
 	location string,
 	within ReadDirStatFS,
 ) (
-	element *DirectoryView,
+	element *Directory,
 	err error,
 ) {
-	element = &DirectoryView { }
-	element.theme.Case = theme.C("files", "directoryView")
+	element = &Directory { }
+	element.theme.Case = theme.C("files", "Directory")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 	err = element.SetLocation(location, within)
@@ -64,7 +64,7 @@ func NewDirectoryView (
 }
 
 // Location returns the directory's location and filesystem.
-func (element *DirectoryView) Location () (string, ReadDirStatFS) {
+func (element *Directory) Location () (string, ReadDirStatFS) {
 	if len(element.history) < 1 { return "", nil }
 	current := element.history[element.historyIndex]
 	return current.location, current.filesystem
@@ -72,7 +72,7 @@ func (element *DirectoryView) Location () (string, ReadDirStatFS) {
 
 // SetLocation sets the directory's location and filesystem. If within is nil,
 // it will use the OS file system.
-func (element *DirectoryView) SetLocation (
+func (element *Directory) SetLocation (
 	location string,
 	within ReadDirStatFS,
 ) error {
@@ -91,7 +91,7 @@ func (element *DirectoryView) SetLocation (
 }
 
 // Backward goes back a directory in history
-func (element *DirectoryView) Backward () (bool, error) {
+func (element *Directory) Backward () (bool, error) {
 	if element.historyIndex > 1 {
 		element.historyIndex --
 		return true, element.Update()
@@ -101,7 +101,7 @@ func (element *DirectoryView) Backward () (bool, error) {
 }
 
 // Forward goes forward a directory in history
-func (element *DirectoryView) Forward () (bool, error) {
+func (element *Directory) Forward () (bool, error) {
 	if element.historyIndex < len(element.history) - 1 {
 		element.historyIndex ++
 		return true, element.Update()
@@ -111,7 +111,7 @@ func (element *DirectoryView) Forward () (bool, error) {
 }
 
 // Update refreshes the directory's contents.
-func (element *DirectoryView) Update () error {
+func (element *Directory) Update () error {
 	location, filesystem := element.Location()
 	entries, err := filesystem.ReadDir(location)
 
@@ -154,23 +154,23 @@ func (element *DirectoryView) Update () error {
 
 // OnChoose sets a function to be called when the user double-clicks a file or
 // sub-directory within the directory view.
-func (element *DirectoryView) OnChoose (callback func (file string)) {
+func (element *Directory) OnChoose (callback func (file string)) {
 	element.onChoose = callback
 }
 
 // CountChildren returns the amount of children contained within this element.
-func (element *DirectoryView) CountChildren () (count int) {
+func (element *Directory) CountChildren () (count int) {
 	return len(element.children)
 }
 
 // Child returns the child at the specified index. If the index is out of
 // bounds, this method will return nil.
-func (element *DirectoryView) Child (index int) (child elements.Element) {
+func (element *Directory) Child (index int) (child elements.Element) {
 	if index < 0 || index > len(element.children) { return }
 	return element.children[index].File
 }
 
-func (element *DirectoryView) HandleMouseDown (x, y int, button input.Button) {
+func (element *Directory) HandleMouseDown (x, y int, button input.Button) {
 	if button == input.ButtonLeft {
 		var file *File
 		for _, entry := range element.children {
@@ -185,7 +185,7 @@ func (element *DirectoryView) HandleMouseDown (x, y int, button input.Button) {
 	element.Propagator.HandleMouseDown(x, y, button)
 }
 
-func (element *DirectoryView) redoAll () {
+func (element *Directory) redoAll () {
 	if !element.core.HasImage() { return }
 	
 	// do a layout
@@ -222,7 +222,7 @@ func (element *DirectoryView) redoAll () {
 	}
 }
 
-func (element *DirectoryView) partition () {
+func (element *Directory) partition () {
 	for _, entry := range element.children {
 		entry.DrawTo(nil, entry.Bounds, nil)
 	}
@@ -241,13 +241,13 @@ func (element *DirectoryView) partition () {
 
 // NotifyMinimumSizeChange notifies the container that the minimum size of a
 // child element has changed.
-func (element *DirectoryView) NotifyMinimumSizeChange (child elements.Element) {
+func (element *Directory) NotifyMinimumSizeChange (child elements.Element) {
 	element.redoAll()
 	element.core.DamageAll()
 }
 
 // SetTheme sets the element's theme.
-func (element *DirectoryView) SetTheme (new theme.Theme) {
+func (element *Directory) SetTheme (new theme.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.Propagator.SetTheme(new)
@@ -255,19 +255,19 @@ func (element *DirectoryView) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *DirectoryView) SetConfig (new config.Config) {
+func (element *Directory) SetConfig (new config.Config) {
 	if new == element.config.Config { return }
 	element.Propagator.SetConfig(new)
 	element.redoAll()
 }
 // ScrollContentBounds returns the full content size of the element.
-func (element *DirectoryView) ScrollContentBounds () image.Rectangle {
+func (element *Directory) ScrollContentBounds () image.Rectangle {
 	return element.contentBounds
 }
 
 // ScrollViewportBounds returns the size and position of the element's
 // viewport relative to ScrollBounds.
-func (element *DirectoryView) ScrollViewportBounds () image.Rectangle {
+func (element *Directory) ScrollViewportBounds () image.Rectangle {
 	padding := element.theme.Padding(theme.PatternPinboard)
 	bounds  := padding.Apply(element.Bounds())
 	bounds   = bounds.Sub(bounds.Min).Add(element.scroll)
@@ -276,7 +276,7 @@ func (element *DirectoryView) ScrollViewportBounds () image.Rectangle {
 
 // ScrollTo scrolls the viewport to the specified point relative to
 // ScrollBounds.
-func (element *DirectoryView) ScrollTo (position image.Point) {
+func (element *Directory) ScrollTo (position image.Point) {
 	if position.Y < 0 {
 		position.Y = 0
 	}
@@ -293,16 +293,16 @@ func (element *DirectoryView) ScrollTo (position image.Point) {
 
 // OnScrollBoundsChange sets a function to be called when the element's viewport
 // bounds, content bounds, or scroll axes change.
-func (element *DirectoryView) OnScrollBoundsChange (callback func ()) {
+func (element *Directory) OnScrollBoundsChange (callback func ()) {
 	element.onScrollBoundsChange = callback
 }
 
 // ScrollAxes returns the supported axes for scrolling.
-func (element *DirectoryView) ScrollAxes () (horizontal, vertical bool) {
+func (element *Directory) ScrollAxes () (horizontal, vertical bool) {
 	return false, true
 }
 
-func (element *DirectoryView) maxScrollHeight () (height int) {
+func (element *Directory) maxScrollHeight () (height int) {
 	padding := element.theme.Padding(theme.PatternSunken)
 	viewportHeight := element.Bounds().Dy() - padding.Vertical()
 	height = element.contentBounds.Dy() - viewportHeight
@@ -310,7 +310,7 @@ func (element *DirectoryView) maxScrollHeight () (height int) {
 	return
 }
 
-func (element *DirectoryView) doLayout () {
+func (element *Directory) doLayout () {
 	margin := element.theme.Margin(theme.PatternPinboard)
 	padding := element.theme.Padding(theme.PatternPinboard)
 	bounds := padding.Apply(element.Bounds())
@@ -360,7 +360,7 @@ func (element *DirectoryView) doLayout () {
 		element.contentBounds.Sub(element.contentBounds.Min)
 }
 
-func (element *DirectoryView) updateMinimumSize () {
+func (element *Directory) updateMinimumSize () {
 	padding := element.theme.Padding(theme.PatternPinboard)
 	minimumWidth := 0
 	for _, entry := range element.children {

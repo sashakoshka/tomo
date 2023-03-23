@@ -41,7 +41,7 @@ func run () {
 	baseName := basicElements.NewLabel(filepath.Base(homeDir), false)
 	
 	scrollContainer  := containers.NewScrollContainer(false, true)
-	directoryView, _ := fileElements.NewDirectoryView(homeDir, nil)
+	directoryView, _ := fileElements.NewDirectory(homeDir, nil)
 	updateStatus := func () {
 		filePath, _ := directoryView.Location()
 		directory.SetLocation(filePath, nil)
