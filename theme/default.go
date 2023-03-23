@@ -210,26 +210,30 @@ func (Default) Pattern (id Pattern, state State, c Case) artist.Pattern {
 	case PatternBackground: return patterns.Uhex(0xaaaaaaFF)
 	case PatternDead:       return defaultTextures[0][offset]
 	case PatternRaised:
-		if c == C("basic", "listEntry") {
+		if c.Match("basic", "listEntry", "") {
 			return defaultTextures[10][offset]
 		} else {
 			return defaultTextures[1][offset]
 		}
-	case PatternSunken:     return defaultTextures[2][offset]
-	case PatternPinboard:   return defaultTextures[3][offset]
+	case PatternSunken:   return defaultTextures[2][offset]
+	case PatternPinboard: return defaultTextures[3][offset]
 	case PatternButton:
-		switch c {
-		case C("basic", "checkbox"): return defaultTextures[9][offset]
-		case C("fun", "flatKey"):    return defaultTextures[11][offset]
-		case C("fun", "sharpKey"):   return defaultTextures[12][offset]
-		default:                     return defaultTextures[4][offset]
+		switch {
+		case c.Match("basic", "checkbox", ""):  
+			return defaultTextures[9][offset]
+		case c.Match("fun", "piano", "flatKey"):
+			return defaultTextures[11][offset]
+		case c.Match("fun", "piano", "sharpKey"):
+			return defaultTextures[12][offset]
+		default:
+			return defaultTextures[4][offset]
 		}
-	case PatternInput:      return defaultTextures[5][offset]
-	case PatternGutter:     return defaultTextures[6][offset]
-	case PatternHandle:     return defaultTextures[7][offset]
-	case PatternLine:       return defaultTextures[8][offset]
-	case PatternMercury:    return defaultTextures[13][offset]
-	default:                return patterns.Uhex(0xFF00FFFF)
+	case PatternInput:   return defaultTextures[5][offset]
+	case PatternGutter:  return defaultTextures[6][offset]
+	case PatternHandle:  return defaultTextures[7][offset]
+	case PatternLine:    return defaultTextures[8][offset]
+	case PatternMercury: return defaultTextures[13][offset]
+	default:             return patterns.Uhex(0xFF00FFFF)
 	}
 }
 
@@ -249,21 +253,21 @@ func (Default) Color (id Color, state State, c Case) color.RGBA {
 func (Default) Padding (id Pattern, c Case) artist.Inset {
 	switch id {
 	case PatternRaised:
-		if c == C("basic", "listEntry") {
+		if c.Match("basic", "listEntry", "") {
 			return artist.Inset { 4, 8, 4, 8 }
 		} else {
 			return artist.Inset { 8, 8, 8, 8 }
 		}
 	case PatternSunken:
-		if c == C("basic", "list") {
+		if c.Match("basic", "list", "") {
 			return artist.Inset { 4, 0, 3, 0 }
-		} else if c == C("basic", "progressBar") {
+		} else if c.Match("basic", "progressBar", "") {
 			return artist.Inset { 2, 1, 1, 2 }
 		} else {
 			return artist.Inset { 8, 8, 8, 8 }
 		}
 	case PatternPinboard:
-		if c == C("fun", "piano") {
+		if c.Match("fun", "piano", "") {
 			return artist.Inset { 2, 2, 2, 2 }
 		} else {
 			return artist.Inset { 8, 8, 8, 8 }
