@@ -4,6 +4,7 @@ import "io/fs"
 import "image"
 import "path/filepath"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/config"
@@ -76,7 +77,6 @@ func (element *DirectoryView) SetLocation (
 
 // Update refreshes the directory's contents.
 func (element *DirectoryView) Update () error {
-	defer element.redoAll()
 	entries, err := element.filesystem.ReadDir(element.location)
 
 	// disown all entries
@@ -95,17 +95,18 @@ func (element *DirectoryView) Update () error {
 		file, err := NewFile (
 			filePath,
 			element.filesystem)
-		if err != nil { return err }
+		if err != nil { continue }
 		file.SetParent(element)
-		element.children[index].File = file
-		element.children[index].DirEntry = entry
-		element.OnChoose (func (filepath string) {
+		file.OnChoose (func () {
 			if element.onChoose != nil {
 				element.onChoose(filePath)
 			}
 		})
+		element.children[index].File = file
+		element.children[index].DirEntry = entry
 	}
 	
+	element.redoAll()
 	return err
 }
 
@@ -125,6 +126,19 @@ func (element *DirectoryView) CountChildren () (count int) {
 func (element *DirectoryView) Child (index int) (child elements.Element) {
 	if index < 0 || index > len(element.children) { return }
 	return element.children[index].File
+}
+
+func (element *DirectoryView) HandleMouseDown (x, y int, button input.Button) {
+	var file *File
+	for _, entry := range element.children {
+		if image.Pt(x, y).In(entry.Bounds) {
+			file = entry.File
+		}
+	}
+	if file != nil {
+		file.SetSelected(!file.Selected())
+	}
+	element.Propagator.HandleMouseDown(x, y, button)
 }
 
 func (element *DirectoryView) redoAll () {

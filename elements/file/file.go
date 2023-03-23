@@ -1,7 +1,9 @@
 package fileElements
 
+import "time"
 import "io/fs"
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/config"
@@ -17,10 +19,14 @@ type File struct {
 	
 	config config.Wrapped
 	theme  theme.Wrapped
-	
+
+	lastClick  time.Time
+	pressed    bool
 	iconID     theme.Icon
 	filesystem fs.StatFS
 	location   string
+	selected   bool
+	
 	onChoose   func ()
 }
 
@@ -79,15 +85,68 @@ func (element *File) Update () error {
 	return err
 }
 
+func (element *File) Selected () bool {
+	return element.selected
+}
+
+func (element *File) SetSelected (selected bool) {
+	if element.selected == selected { return }
+	element.selected = selected
+	element.drawAndPush()
+}
+
+func (element *File) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+	if !element.Enabled() { return }
+	if key == input.KeyEnter {
+		element.pressed = true
+		element.drawAndPush()
+	}
+}
+
+func (element *File) HandleKeyUp(key input.Key, modifiers input.Modifiers) {
+	if key == input.KeyEnter && element.pressed {
+		element.pressed = false
+		element.drawAndPush()
+		if !element.Enabled() { return }
+		if element.onChoose != nil {
+			element.onChoose()
+		}
+	}
+}
+
 func (element *File) OnChoose (callback func ()) {
 	element.onChoose = callback
+}
+
+func (element *File) HandleMouseDown (x, y int, button input.Button) {
+	if !element.Enabled() { return }
+	if !element.Focused() { element.Focus() }
+	if button != input.ButtonLeft { return }
+	element.pressed = true
+	element.drawAndPush()
+}
+
+func (element *File) HandleMouseUp (x, y int, button input.Button) {
+	if button != input.ButtonLeft { return }
+	element.pressed = false
+	within := image.Point { x, y }.
+		In(element.Bounds())
+	if time.Since(element.lastClick) < time.Second / 2 {
+		if element.Enabled() && within && element.onChoose != nil {
+			element.onChoose()
+		}
+	} else {
+		element.lastClick = time.Now()
+	}
+	element.drawAndPush()
 }
 
 func (element *File) state () theme.State {
 	return theme.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
-		// Pressed:  element.pressed,
+		Pressed:  element.pressed,
+		On:       element.selected,
 	}
 }
 
@@ -119,6 +178,7 @@ func (element *File) drawAll () {
 	// background
 	state  := element.state()
 	bounds := element.Bounds()
+	sink   := element.theme.Sink(theme.PatternButton)
 	element.theme.
 		Pattern(theme.PatternButton, state).
 		Draw(element.core, bounds)
@@ -130,6 +190,9 @@ func (element *File) drawAll () {
 		offset := image.Pt (
 			(bounds.Dx() - iconBounds.Dx()) / 2,
 			(bounds.Dy() - iconBounds.Dy()) / 2)
+		if element.pressed {
+			offset = offset.Add(sink)
+		}
 		icon.Draw (
 			element.core,
 			element.theme.Color (
