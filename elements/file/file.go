@@ -141,6 +141,20 @@ func (element *File) HandleMouseUp (x, y int, button input.Button) {
 	element.drawAndPush()
 }
 
+// SetTheme sets the element's theme.
+func (element *File) SetTheme (new theme.Theme) {
+	if new == element.theme.Theme { return }
+	element.theme.Theme = new
+	element.drawAndPush()
+}
+
+// SetConfig sets the element's configuration.
+func (element *File) SetConfig (new config.Config) {
+	if new == element.config.Config { return }
+	element.config.Config = new
+	element.drawAndPush()
+}
+
 func (element *File) state () theme.State {
 	return theme.State {
 		Disabled: !element.Enabled(),

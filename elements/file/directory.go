@@ -171,14 +171,16 @@ func (element *DirectoryView) Child (index int) (child elements.Element) {
 }
 
 func (element *DirectoryView) HandleMouseDown (x, y int, button input.Button) {
-	var file *File
-	for _, entry := range element.children {
-		if image.Pt(x, y).In(entry.Bounds) {
-			file = entry.File
+	if button == input.ButtonLeft {
+		var file *File
+		for _, entry := range element.children {
+			if image.Pt(x, y).In(entry.Bounds) {
+				file = entry.File
+			}
 		}
-	}
-	if file != nil {
-		file.SetSelected(!file.Selected())
+		if file != nil {
+			file.SetSelected(!file.Selected())
+		}
 	}
 	element.Propagator.HandleMouseDown(x, y, button)
 }
