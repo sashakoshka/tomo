@@ -254,28 +254,28 @@ func (Default) Padding (id Pattern, c Case) artist.Inset {
 	switch id {
 	case PatternRaised:
 		if c.Match("basic", "listEntry", "") {
-			return artist.Inset { 4, 8, 4, 8 }
+			return artist.I(4, 8)
 		} else {
-			return artist.Inset { 8, 8, 8, 8 }
+			return artist.I(8)
 		}
 	case PatternSunken:
 		if c.Match("basic", "list", "") {
-			return artist.Inset { 4, 0, 3, 0 }
+			return artist.I(4, 0, 3)
 		} else if c.Match("basic", "progressBar", "") {
-			return artist.Inset { 2, 1, 1, 2 }
+			return artist.I(2, 1, 1, 2)
 		} else {
-			return artist.Inset { 8, 8, 8, 8 }
+			return artist.I(8)
 		}
 	case PatternPinboard:
 		if c.Match("fun", "piano", "") {
-			return artist.Inset { 2, 2, 2, 2 }
+			return artist.I(2)
 		} else {
-			return artist.Inset { 8, 8, 8, 8 }
+			return artist.I(8)
 		}
-	case PatternGutter:     return artist.Inset { }
-	case PatternLine:       return artist.Inset { 1, 1, 1, 1 }
-	case PatternMercury:    return artist.Inset { 5, 5, 5, 5 }
-	default:                return artist.Inset { 8, 8, 8, 8 }
+	case PatternGutter:     return artist.I(0)
+	case PatternLine:       return artist.I(1)
+	case PatternMercury:    return artist.I(5)
+	default:                return artist.I(8)
 	}
 }
 

@@ -56,7 +56,7 @@ func NewDirectory (
 	err error,
 ) {
 	element = &Directory { }
-	element.theme.Case = theme.C("files", "Directory")
+	element.theme.Case = theme.C("files", "directory")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 	err = element.SetLocation(location, within)
