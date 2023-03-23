@@ -219,7 +219,6 @@ func (element *DocumentContainer) NotifyFlexibleHeightChange (child elements.Fle
 	element.core.DamageAll()
 }
 
-
 // SetTheme sets the element's theme.
 func (element *DocumentContainer) SetTheme (new theme.Theme) {
 	if new == element.theme.Theme { return }

@@ -152,6 +152,9 @@ func (element *ScrollContainer) HandleScroll (
 	x, y int,
 	deltaX, deltaY float64,
 ) {
+	horizontal, vertical := element.child.ScrollAxes()
+	if !horizontal { deltaX = 0 }
+	if !vertical   { deltaY = 0 }
 	element.scrollChildBy(int(deltaX), int(deltaY))
 }
 
