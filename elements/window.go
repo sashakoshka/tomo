@@ -25,6 +25,9 @@ type Window interface {
 	// for some backends.
 	SetIcon (sizes []image.Image)
 
+	// NewModal creates a new modal dialog window.
+	NewModal (width, height int) (window Window, err error)
+
 	// Show shows the window. The window starts off hidden, so this must be
 	// called after initial setup to make sure it is visible.
 	Show ()
@@ -37,4 +40,14 @@ type Window interface {
 
 	// OnClose specifies a function to be called when the window is closed.
 	OnClose (func ())
+}
+
+// MainWindow is a window capable of owning multiple sub-windows.
+type MainWindow interface {
+	Window
+
+	// NewPanel creates a panel window that is semantically tied to this
+	// window. This is intended to be used for utility windows, tool bars,
+	// torn-off menus, etc.
+	NewPanel (width, height int) (window Window, err error)
 }

@@ -21,9 +21,9 @@ type Backend interface {
 	Do (callback func ())
 
 	// NewWindow creates a new window with the specified width and height,
-	// and returns a struct representing it that fulfills the Window
+	// and returns a struct representing it that fulfills the MainWindow
 	// interface.
-	NewWindow (width, height int) (window elements.Window, err error)
+	NewWindow (width, height int) (window elements.MainWindow, err error)
 
 	// Copy puts data into the clipboard.
 	Copy (data.Data)

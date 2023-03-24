@@ -14,6 +14,7 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 // import "runtime/debug"
 
+type mainWindow struct { *window }
 type window struct {
 	backend *Backend
 	xWindow *xwindow.Window
@@ -35,11 +36,21 @@ type window struct {
 func (backend *Backend) NewWindow (
 	width, height int,
 ) (
-	output elements.Window,
+	output elements.MainWindow,
 	err error,
 ) {
 	if backend == nil { panic("nil backend") }
+	window, err := backend.newWindow(width, height)
+	output = mainWindow { window }
+	return output, err
+}
 
+func (backend *Backend) newWindow (
+	width, height int,
+) (
+	output *window,
+	err error,
+) {
 	window := &window { backend: backend }
 
 	window.xWindow, err = xwindow.Generate(backend.connection)
@@ -86,6 +97,7 @@ func (backend *Backend) NewWindow (
 	window.reallocateCanvas()
 
 	backend.windows[window.xWindow.Id] = window
+
 	output = window
 	return
 }
@@ -193,6 +205,30 @@ func (window *window) SetIcon (sizes []image.Image) {
 		window.backend.connection,
 		window.xWindow.Id,
 		wmIcons)
+}
+
+func (window *window) NewModal (width, height int) (elements.Window, error) {
+	modal, err := window.backend.newWindow(width, height)
+	icccm.WmTransientForSet (
+		window.backend.connection,
+		modal.xWindow.Id,
+		window.xWindow.Id)
+	ewmh.WmStateSet (
+		window.backend.connection,
+		modal.xWindow.Id,
+		[]string { "_NET_WM_STATE_MODAL" })
+	return modal, err
+}
+
+func (window mainWindow) NewPanel (width, height int) (elements.Window, error) {
+	panel, err := window.backend.newWindow(width, height)
+	hints, _ := icccm.WmHintsGet(window.backend.connection, panel.xWindow.Id)
+	hints.WindowGroup = window.xWindow.Id
+	icccm.WmHintsSet (
+		window.backend.connection,
+		panel.xWindow.Id,
+		hints)
+	return panel, err
 }
 
 func (window *window) Show () {
