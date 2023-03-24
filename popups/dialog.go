@@ -27,15 +27,21 @@ type Button struct {
 	OnPress func ()
 }
 
-// NewDialog creates a new dialog window and returns it.
+// NewDialog creates a new modal dialog window and returns it. If parent is nil,
+// the dialog will just be a normal window
 func NewDialog (
 	kind DialogKind,
+	parent elements.Window,
 	title, message string,
 	buttons ...Button,
 ) (
 	window elements.Window,
 ) {
-	window, _ = tomo.NewWindow(2, 2)
+	if parent == nil {
+		window, _ = tomo.NewWindow(2, 2)
+	} else {
+		window, _ = parent.NewModal(2, 2)
+	}
 	window.SetTitle(title)
 
 	container := containers.NewContainer(basicLayouts.Dialog { true, true })

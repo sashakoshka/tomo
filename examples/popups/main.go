@@ -24,6 +24,7 @@ func run () {
 	infoButton.OnClick (func () {
 		popups.NewDialog (
 			popups.DialogKindInfo,
+			window,
 			"Information",
 			"You are wacky")
 	})
@@ -34,6 +35,7 @@ func run () {
 	questionButton.OnClick (func () {
 		popups.NewDialog (
 			popups.DialogKindQuestion,
+			window,
 			"The Big Question",
 			"Are you real?",
 			popups.Button { "Yes",      func () { } },
@@ -46,6 +48,7 @@ func run () {
 	warningButton.OnClick (func () {
 		popups.NewDialog (
 			popups.DialogKindWarning,
+			window,
 			"Warning",
 			"They are fast approaching.")
 	})
@@ -55,6 +58,7 @@ func run () {
 	errorButton.OnClick (func () {
 		popups.NewDialog (
 			popups.DialogKindError,
+			window,
 			"Error",
 			"There is nowhere left to go.")
 	})
