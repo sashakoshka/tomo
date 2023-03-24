@@ -40,10 +40,9 @@ func Do (callback func ()) {
 }
 
 // NewWindow creates a new window using the current backend, and returns it as a
-// Window. If the window could not be created, an error is returned explaining
-// why. If this function is called without a running backend, an error is
-// returned as well.
-func NewWindow (width, height int) (window elements.Window, err error) {
+// MainWindow. If the window could not be created, an error is returned
+// explaining why.
+func NewWindow (width, height int) (window elements.MainWindow, err error) {
 	assertBackend()
 	return backend.NewWindow(width, height)
 }

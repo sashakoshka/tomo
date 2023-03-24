@@ -227,13 +227,31 @@ func (window *window) NewModal (width, height int) (elements.Window, error) {
 
 func (window mainWindow) NewPanel (width, height int) (elements.Window, error) {
 	panel, err := window.backend.newWindow(width, height)
-	hints, _ := icccm.WmHintsGet(window.backend.connection, panel.xWindow.Id)
-	hints.WindowGroup = window.xWindow.Id
-	icccm.WmHintsSet (
-		window.backend.connection,
-		panel.xWindow.Id,
-		hints)
+	if err != nil { return nil, err }
+	panel.setClientLeader(window.window)
+	panel.setType("UTILITY")
 	return panel, err
+}
+
+func (window *window) setType (ty string) error {
+	return ewmh.WmWindowTypeSet (
+		window.backend.connection,
+		window.xWindow.Id,
+		[]string { "_NET_WM_WINDOW_TYPE_" + ty })
+}
+
+func (window *window) setClientLeader (leader *window) error {
+	// FIXME: doe not fucking work
+	hints, _ := icccm.WmHintsGet(window.backend.connection, window.xWindow.Id)
+	if hints == nil {
+		hints = &icccm.Hints { }
+	}
+	hints.Flags |= icccm.HintWindowGroup
+	hints.WindowGroup = leader.xWindow.Id
+	return icccm.WmHintsSet (
+		window.backend.connection,
+		window.xWindow.Id,
+		hints)
 }
 
 func (window *window) Show () {
