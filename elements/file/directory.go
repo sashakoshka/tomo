@@ -128,8 +128,7 @@ func (element *Directory) Update () error {
 	element.children = make([]fileLayoutEntry, len(entries))
 	for index, entry := range entries {
 		filePath := filepath.Join(location, entry.Name())
-		file, err := NewFile(filePath, filesystem)
-		if err != nil { continue }
+		file, _ := NewFile(filePath, filesystem)
 		file.SetParent(element)
 		file.OnChoose (func () {
 			if element.onChoose != nil {

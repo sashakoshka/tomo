@@ -69,14 +69,14 @@ func (element *File) SetLocation (
 
 // Update refreshes the element to match the file it represents.
 func (element *File) Update () error {
-	element.iconID = theme.IconError
 	info, err := element.filesystem.Stat(element.location)
-	if err != nil { return err }
 
-	// TODO: choose icon based on file mime type
-	if info.IsDir() {
+	if err != nil {
+		element.iconID = theme.IconError
+	} else if info.IsDir() {
 		element.iconID = theme.IconDirectory
 	} else {
+		// TODO: choose icon based on file mime type
 		element.iconID = theme.IconFile
 	}
 
