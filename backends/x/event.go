@@ -119,6 +119,7 @@ func (window *window) handleKeyPress (
 	event xevent.KeyPressEvent,
 ) {
 	if window.child == nil { return }
+	if window.hasModal     { return }
 	
 	keyEvent := *event.KeyPressEvent
 	key, numberPad := window.backend.keycodeToKey(keyEvent.Detail, keyEvent.State)
@@ -180,6 +181,7 @@ func (window *window) handleButtonPress (
 	event xevent.ButtonPressEvent,
 ) {
 	if window.child == nil { return }
+	if window.hasModal     { return }
 	
 	buttonEvent := *event.ButtonPressEvent
 	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {

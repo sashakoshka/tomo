@@ -24,6 +24,9 @@ type window struct {
 	onClose func ()
 	skipChildDrawCallback bool
 
+	modalParent *window
+	hasModal    bool
+
 	theme  theme.Theme
 	config config.Config
 
@@ -217,6 +220,8 @@ func (window *window) NewModal (width, height int) (elements.Window, error) {
 		window.backend.connection,
 		modal.xWindow.Id,
 		[]string { "_NET_WM_STATE_MODAL" })
+	modal.modalParent = window
+	window.hasModal   = true
 	return modal, err
 }
 
@@ -249,6 +254,10 @@ func (window *window) Hide () {
 
 func (window *window) Close () {
 	if window.onClose != nil { window.onClose() }
+	if window.modalParent != nil {
+		// we are a modal dialog, so unlock the parent
+		window.modalParent.hasModal = false
+	}
 	window.Hide()
 	window.Adopt(nil)
 	delete(window.backend.windows, window.xWindow.Id)
