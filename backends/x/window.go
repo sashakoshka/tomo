@@ -229,6 +229,11 @@ func (window mainWindow) NewPanel (width, height int) (elements.Window, error) {
 	panel, err := window.backend.newWindow(width, height)
 	if err != nil { return nil, err }
 	panel.setClientLeader(window.window)
+	window.setClientLeader(window.window)
+	icccm.WmTransientForSet (
+		window.backend.connection,
+		panel.xWindow.Id,
+		window.xWindow.Id)
 	panel.setType("UTILITY")
 	return panel, err
 }
