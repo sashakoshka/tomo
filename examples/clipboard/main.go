@@ -26,16 +26,24 @@ func run () {
 	pasteButton := basicElements.NewButton("Paste")
 	pasteButton.SetIcon(theme.IconPaste)
 
-	clipboardCallback := func (clipboard io.Reader, err error) {		
+	clipboardCallback := func (clipboard io.Reader, err error) {
 		if err != nil {
 			popups.NewDialog (
 				popups.DialogKindError,
 				window,
 				"Error",
-				"No text data in clipboard:\n" + err.Error())
+				"Cannot get clipboard:\n" + err.Error())
 			return 
 		}
-
+		
+		if clipboard == nil {
+			popups.NewDialog (
+				popups.DialogKindError,
+				window,
+				"Clipboard Empty",
+				"No text data in clipboard")
+			return 
+		}
 
 		text, _ := io.ReadAll(clipboard)
 		tomo.Do (func () {

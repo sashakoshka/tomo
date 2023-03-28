@@ -245,7 +245,17 @@ func (window *window) handleSelectionNotify (
 	// Follow:
 	// https://tronche.com/gui/x/icccm/sec-2.html#s-2.4
 	if window.selectionRequest == nil { return }
-	die := func (err error) { window.selectionRequest(nil, err) }
+	die := func (err error) {
+		window.selectionRequest(nil, err)
+		window.selectionRequest = nil
+	}
+
+	// If the property argument is None, the conversion has been refused.
+	// This can mean either that there is no owner for the selection, that
+	// the owner does not support the conversion implied by the target, or
+	// that the server did not have sufficient space to accommodate the
+	// data.
+	if event.Property == 0 { die(nil); return }
 
 	// When using GetProperty to retrieve the value of a selection, the
 	// property argument should be set to the corresponding value in the

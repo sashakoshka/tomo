@@ -16,6 +16,16 @@ type Mime struct {
 	Type, Subtype string
 }
 
+// M is shorthand for creating a MIME type.
+func M (ty, subtype string) Mime {
+	return Mime { ty, subtype }
+}
+
+// String returns the string representation of the MIME type.
+func (mime Mime) String () string {
+	return mime.Type + "/" + mime.Subtype
+}
+
 var MimePlain = Mime { "text", "plain" }
 
 var MimeFile = Mime { "text", "uri-list" }

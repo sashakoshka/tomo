@@ -290,7 +290,10 @@ func (window *window) Paste (accept data.Mime, callback func (io.Reader, error))
 	// Follow:
 	// https://tronche.com/gui/x/icccm/sec-2.html#s-2.4
 
-	die := func (err error) { callback(nil, err) }
+	die := func (err error) {
+		window.selectionRequest = nil
+		callback(nil, err)
+	}
 	if window.selectionRequest != nil {
 		// TODO: add the request to a queue and take care of it when the
 		// current selection has completed
@@ -299,8 +302,10 @@ func (window *window) Paste (accept data.Mime, callback func (io.Reader, error))
 
 	selectionName := "CLIPBOARD"
 	propertyName  := "TOMO_SELECTION"
-	// TODO: change based on mime type
-	targetName    := "TEXT"
+	targetName    := accept.String()
+	if accept == data.M("text", "plain") {
+		targetName = "UTF8_STRING"
+	}
 
 	// get atoms
 	selectionAtom, err := xprop.Atm(window.backend.connection, selectionName)
