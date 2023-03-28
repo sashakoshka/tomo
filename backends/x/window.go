@@ -1,12 +1,16 @@
 package x
 
+import "io"
 import "image"
+import "errors"
 import "github.com/jezek/xgb/xproto"
 import "github.com/jezek/xgbutil/ewmh"
 import "github.com/jezek/xgbutil/icccm"
+import "github.com/jezek/xgbutil/xprop"
 import "github.com/jezek/xgbutil/xevent"
 import "github.com/jezek/xgbutil/xwindow"
 import "github.com/jezek/xgbutil/xgraphics"
+import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
@@ -29,6 +33,8 @@ type window struct {
 
 	theme  theme.Theme
 	config config.Config
+
+	selectionRequest func (io.Reader, error)
 
 	metrics struct {
 		width  int
@@ -88,6 +94,8 @@ func (backend *Backend) newWindow (
 	xevent.ButtonReleaseFun(window.handleButtonRelease).
 		Connect(backend.connection, window.xWindow.Id)
 	xevent.MotionNotifyFun(window.handleMotionNotify).
+		Connect(backend.connection, window.xWindow.Id)
+	xevent.SelectionNotifyFun(window.handleSelectionNotify).
 		Connect(backend.connection, window.xWindow.Id)
 
 	window.SetTheme(backend.theme)
@@ -246,7 +254,6 @@ func (window *window) setType (ty string) error {
 }
 
 func (window *window) setClientLeader (leader *window) error {
-	// FIXME: doe not fucking work
 	hints, _ := icccm.WmHintsGet(window.backend.connection, window.xWindow.Id)
 	if hints == nil {
 		hints = &icccm.Hints { }
@@ -273,6 +280,77 @@ func (window *window) Show () {
 
 func (window *window) Hide () {
 	window.xWindow.Unmap()
+}
+
+func (window *window) Copy (data data.Data) {
+	// TODO
+}
+
+func (window *window) Paste (accept data.Mime, callback func (io.Reader, error)) {
+	// Follow:
+	// https://tronche.com/gui/x/icccm/sec-2.html#s-2.4
+
+	die := func (err error) { callback(nil, err) }
+	if window.selectionRequest != nil {
+		// TODO: add the request to a queue and take care of it when the
+		// current selection has completed
+		die(errors.New("there is already a selection request"))
+	}
+
+	selectionName := "CLIPBOARD"
+	propertyName  := "TOMO_SELECTION"
+	// TODO: change based on mime type
+	targetName    := "TEXT"
+
+	// get atoms
+	selectionAtom, err := xprop.Atm(window.backend.connection, selectionName)
+	if err != nil { die(err); return }
+	targetAtom, err := xprop.Atm(window.backend.connection, targetName)
+	if err != nil { die(err); return }
+	propertyAtom, err := xprop.Atm(window.backend.connection, propertyName)
+	if err != nil { die(err); return }
+
+	// The requestor should set the property argument to the name of a
+	// property that the owner can use to report the value of the selection.
+	// Requestors should ensure that the named property does not exist on
+	// the window before issuing the ConvertSelection. The exception to this
+	// rule is when the requestor intends to pass parameters with the
+	// request. Some targets may be defined such that requestors can pass
+	// parameters along with the request. If the requestor wishes to provide
+	// parameters to a request, they should be placed in the specified
+	// property on the requestor window before the requestor issues the
+	// ConvertSelection request, and this property should be named in the
+	// request.
+	err = xproto.DeletePropertyChecked (
+		window.backend.connection.Conn(),
+		window.xWindow.Id,
+		propertyAtom).Check()
+	if err != nil { die(err); return }
+
+	// The selection argument specifies the particular selection involved,
+	// and the target argument specifies the required form of the
+	// information. For information about the choice of suitable atoms to
+	// use, see section 2.6. The requestor should set the requestor argument
+	// to a window that it created; the owner will place the reply property
+	// there. The requestor should set the time argument to the timestamp on
+	// the event that triggered the request for the selection value. Note
+	// that clients should not specify CurrentTime*.
+	err = xproto.ConvertSelectionChecked (
+		window.backend.connection.Conn(),
+		window.xWindow.Id,
+		selectionAtom,
+		targetAtom,
+		propertyAtom,
+		// TODO: *possibly replace this zero with an actual timestamp
+		// received from the server. this is non-trivial as we cannot
+		// rely on the timestamp of the last received event, because
+		// there is a possibility that this method is invoked
+		// asynchronously from within tomo.Do().
+		0).Check()
+	if err != nil { die(err); return }
+
+	window.selectionRequest = callback
+	return
 }
 
 func (window *window) Close () {

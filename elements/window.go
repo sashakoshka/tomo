@@ -32,10 +32,10 @@ type Window interface {
 	Copy (data.Data)
 
 	// Paste requests the data currently in the clipboard. When the data is
-	// available, it is sent on the returned channel. If there is no data on
-	// the clipboard matching the requested mime type, the channel will be
-	// sent nil.
-	Paste (accept data.Mime) <- chan io.Reader
+	// available, the callback is called with the clipboard data. If there
+	// was no data matching the requested mime type found, nil is passed to
+	// the callback instead.
+	Paste (accept data.Mime, callback func (io.Reader, error))
 
 	// Show shows the window. The window starts off hidden, so this must be
 	// called after initial setup to make sure it is visible.

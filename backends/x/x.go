@@ -1,7 +1,6 @@
 package x
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 
@@ -39,7 +38,7 @@ type Backend struct {
 func NewBackend () (output tomo.Backend, err error) {
 	backend := &Backend {
 		windows: map[xproto.Window] *window { },
-		doChannel: make(chan func (), 0),
+		doChannel: make(chan func (), 32),
 		theme:  theme.Default  { },
 		config: config.Default { },
 		open:   true,
@@ -96,22 +95,6 @@ func (backend *Backend) Do (callback func ()) {
 	backend.assert()
 	backend.doChannel <- callback
 }
-
-// Copy puts data into the clipboard. This method is not yet implemented and
-// will do nothing!
-func (backend *Backend) Copy (data data.Data) {
-	backend.assert()
-	// TODO
-}
-
-// Paste returns the data currently in the clipboard. This method may
-// return nil. This method is not yet implemented and will do nothing!
-func (backend *Backend) Paste (accept []data.Mime) (data data.Data) {
-	backend.assert()
-	// TODO
-	return
-}
-
 
 // SetTheme sets the theme of all open windows.
 func (backend *Backend) SetTheme (theme theme.Theme) {

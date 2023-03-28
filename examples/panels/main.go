@@ -13,7 +13,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(2, 2)
+	window, _ := tomo.NewWindow(256, 256)
 	window.SetTitle("Main")
 
 	container := containers.NewContainer(basicLayouts.Vertical { true, true })
@@ -24,9 +24,9 @@ func run () {
 	window.Show()
 
 	createPanel(window, 0)
-	// createPanel(window, 1)
-	// createPanel(window, 2)
-	// createPanel(window, 3)
+	createPanel(window, 1)
+	createPanel(window, 2)
+	createPanel(window, 3)
 }
 
 func createPanel (parent elements.MainWindow, id int) {
