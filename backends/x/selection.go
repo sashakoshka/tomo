@@ -13,6 +13,7 @@ type selReqState int; const (
 	selReqStateClosed selReqState = iota
 	selReqStateAwaitTargets
 	selReqStateAwaitValue
+	selReqStateAwaitFirstChunk
 	selReqStateAwaitChunk
 )
 
@@ -22,6 +23,8 @@ type selectionRequest struct {
 	source      xproto.Atom
 	destination xproto.Atom
 	accept      []data.Mime
+	incrBuffer  []byte
+	incrMime    data.Mime
 	callback func (data.Data, error)
 }
 
@@ -138,9 +141,11 @@ func (request *selectionRequest) handleSelectionNotify (
 	event xevent.SelectionNotifyEvent,
 ) {
 	// the only valid states that we can process a SelectionNotify event in
-	if request.state != selReqStateAwaitValue && request.state != selReqStateAwaitTargets {
-		return
-	}
+	invalidState :=
+		request.state != selReqStateAwaitFirstChunk &&
+		request.state != selReqStateAwaitValue      &&
+		request.state != selReqStateAwaitTargets
+	if invalidState { return }
 	
 	// Follow:
 	// https://tronche.com/gui/x/icccm/sec-2.html#s-2.4
@@ -151,6 +156,13 @@ func (request *selectionRequest) handleSelectionNotify (
 	// that the server did not have sufficient space to accommodate the
 	// data.
 	if event.Property == 0 { request.die(nil); return }
+
+	// if we are waiting for the first INCR chunk, do the special stuff for
+	// that and not the other stuff.
+	if request.state == selReqStateAwaitFirstChunk {
+		request.handleINCRProperty(event.Property)
+		return
+	}
 
 	// When using GetProperty to retrieve the value of a selection, the
 	// property argument should be set to the corresponding value in the
@@ -172,7 +184,30 @@ func (request *selectionRequest) handleSelectionNotify (
 		return
 	}
 
-	// TODO: handle INCR. do it here.
+	// https://tronche.com/gui/x/icccm/sec-2.html#s-2.7.2
+	// Requestors may receive a property of type INCR9 in response to any
+	// target that results in selection data. This indicates that the owner
+	// will send the actual data incrementally. The contents of the INCR
+	// property will be an integer, which represents a lower bound on the
+	// number of bytes of data in the selection. The requestor and the
+	// selection owner transfer the data in the selection in the following
+	// manner. The selection requestor starts the transfer process by
+	// deleting the (type==INCR) property forming the reply to the
+	// selection. 
+	incr, err := xprop.Atm(request.window.backend.connection, "INCR")
+	if err != nil { request.die(err); return }
+	if reply.Type == incr {
+		// reply to the INCR selection
+		err = xproto.DeletePropertyChecked (
+			request.window.backend.connection.Conn(),
+			request.window.xWindow.Id,
+			request.destination).Check()
+		if err != nil { request.die(err); return }
+
+		// await the first chunk
+		request.state = selReqStateAwaitFirstChunk
+		return
+	}
 
 	// Once all the data in the selection has been retrieved (which may
 	// require getting the values of several properties &emdash; see section
@@ -188,6 +223,8 @@ func (request *selectionRequest) handleSelectionNotify (
 		request.destination).Check()
 	if err != nil { request.die(err); return }
 
+	// depending on which state the selection request is in, do something
+	// different with the property's value
 	switch request.state {
 	case selReqStateAwaitValue:
 		// get the type from the property and convert that to the mime
@@ -262,5 +299,42 @@ func (request *selectionRequest) handleSelectionNotify (
 
 		// await the selection value
 		request.convertSelection(chosenTarget, selReqStateAwaitValue)
+	}
+}
+
+func (request *selectionRequest) handlePropertyNotify (
+	connection *xgbutil.XUtil,
+	event xevent.PropertyNotifyEvent,
+) {
+	// the only valid state that we can process a PropertyNotify event in
+	if request.state != selReqStateAwaitChunk { return }
+	if event.State != xproto.PropertyNewValue { return }
+
+	request.handleINCRProperty(event.Atom)
+}
+
+func (request *selectionRequest) handleINCRProperty (property xproto.Atom) {
+	// Retrieving data using GetProperty with the delete argument True.
+	reply, err := xproto.GetProperty (
+		request.window.backend.connection.Conn(), true,
+		request.window.xWindow.Id, property, xproto.GetPropertyTypeAny,
+		0, (1 << 32) - 1).Reply()
+	if err != nil { request.die(err); return }
+
+	if len(reply.Value) == 0 {
+		// a zero length property means the transfer has finished. we
+		// finalize the request with the data we have, and don't wait
+		// for more.
+		request.finalize(data.Bytes(request.incrMime, request.incrBuffer))
+	} else {
+		// a property with content means the transfer is still ongoing.
+		// we append the data we got and wait for more.
+		request.state = selReqStateAwaitChunk
+		request.incrBuffer = append(request.incrBuffer, reply.Value...)
+		
+		targetName, err := xprop.AtomName (
+			request.window.backend.connection, reply.Type)
+		if err != nil { request.die(err); return }
+		request.incrMime, _ = targetToMime(targetName)
 	}
 }
