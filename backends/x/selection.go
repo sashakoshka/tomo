@@ -115,11 +115,22 @@ type confidence int; const (
 )
 
 func targetToMime (name string) (data.Mime, confidence) {
-	// TODO: add stuff like PDFs, etc. reference this table:
+	// TODO: add other stuff. reference this table:
 	// https://tronche.com/gui/x/icccm/sec-2.html#s-2.6.2
 	// perhaps we should also have parameters for mime types so we can
 	// return an encoding here for things like STRING?
 	switch name {
+	case "ADOBE_PORTABLE_DOCUMENT_FORMAT":
+		return data.M("application", "pdf"), confidenceFull
+	case "APPLE_PICT":
+		return data.M("image", "pict"), confidenceFull
+	case
+		"POSTSCRIPT",
+		"ENCAPSULATED_POSTSCRIPT",
+		"ENCAPSULATED_POSTSCRIPT_INTERCHANGE":
+		return data.M("application", "postscript"), confidenceFull
+	case "FILE_NAME":
+		return data.MimeFile, confidenceFull
 	case "UTF8_STRING":
 		return data.MimePlain, confidenceFull
 	case "TEXT":
