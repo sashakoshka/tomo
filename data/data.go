@@ -35,7 +35,22 @@ func (byteReadCloser) Close () error { return nil }
 
 // Text returns plain text Data given a string.
 func Text (text string) Data {
+	return Bytes(MimePlain, []byte(text))
+}
+
+// Bytes constructs a Data given a buffer and a mime type.
+func Bytes (mime Mime, buffer []byte) Data {
 	return Data {
-		MimePlain: byteReadCloser { bytes.NewReader([]byte(text)) },
+		mime: byteReadCloser { bytes.NewReader(buffer) },
 	}
+}
+
+// Merge combines several Datas together. If multiple Datas provide a reader for
+// the same mime type, the ones further on in the list will take precedence.
+func Merge (individual ...Data) (combined Data) {
+	for _, data := range individual {
+	for mime, reader := range data {
+		combined[mime] = reader
+	}}
+	return
 }

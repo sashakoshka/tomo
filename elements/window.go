@@ -1,6 +1,5 @@
 package elements
 
-import "io"
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 
@@ -35,7 +34,7 @@ type Window interface {
 	// available, the callback is called with the clipboard data. If there
 	// was no data matching the requested mime type found, nil is passed to
 	// the callback instead.
-	Paste (accept data.Mime, callback func (io.Reader, error))
+	Paste (callback func (data.Data, error), accept ...data.Mime)
 
 	// Show shows the window. The window starts off hidden, so this must be
 	// called after initial setup to make sure it is visible.

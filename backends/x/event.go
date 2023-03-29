@@ -1,14 +1,11 @@
 package x
 
-import "bytes"
 import "image"
-import "errors"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
-import "github.com/jezek/xgbutil/xprop"
 import "github.com/jezek/xgbutil/xevent"
 
 type scrollSum struct {
@@ -242,58 +239,9 @@ func (window *window) handleSelectionNotify (
 	connection *xgbutil.XUtil,
 	event xevent.SelectionNotifyEvent,
 ) {
-	// Follow:
-	// https://tronche.com/gui/x/icccm/sec-2.html#s-2.4
 	if window.selectionRequest == nil { return }
-	die := func (err error) {
-		window.selectionRequest(nil, err)
-		window.selectionRequest = nil
-	}
-
-	// If the property argument is None, the conversion has been refused.
-	// This can mean either that there is no owner for the selection, that
-	// the owner does not support the conversion implied by the target, or
-	// that the server did not have sufficient space to accommodate the
-	// data.
-	if event.Property == 0 { die(nil); return }
-
-	// When using GetProperty to retrieve the value of a selection, the
-	// property argument should be set to the corresponding value in the
-	// SelectionNotify event. Because the requestor has no way of knowing
-	// beforehand what type the selection owner will use, the type argument
-	// should be set to AnyPropertyType. Several GetProperty requests may be
-	// needed to retrieve all the data in the selection; each should set the
-	// long-offset argument to the amount of data received so far, and the
-	// size argument to some reasonable buffer size (see section 2.5). If
-	// the returned value of bytes-after is zero, the whole property has
-	// been transferred. 
-	reply, err := xproto.GetProperty (
-		connection.Conn(), false, window.xWindow.Id, event.Property,
-		xproto.GetPropertyTypeAny, 0, (1 << 32) - 1).Reply()
-	if err != nil { die(err); return }
-	if reply.Format == 0 {
-		die(errors.New("x: missing selection property"))
-		return
-	}
-
-	// Once all the data in the selection has been retrieved (which may
-	// require getting the values of several properties &emdash; see section
-	// 2.7), the requestor should delete the property in the SelectionNotify
-	// request by using a GetProperty request with the delete argument set
-	// to True. As previously discussed, the owner has no way of knowing
-	// when the data has been transferred to the requestor unless the
-	// property is removed.
-	propertyAtom, err := xprop.Atm(window.backend.connection, "TOMO_SELECTION")
-	if err != nil { die(err); return }
-	err = xproto.DeletePropertyChecked (
-		window.backend.connection.Conn(),
-		window.xWindow.Id,
-		propertyAtom).Check()
-	if err != nil { die(err); return }
-
-	// TODO: possibly do some conversion here?
-	window.selectionRequest(bytes.NewReader(reply.Value), nil)
-	window.selectionRequest = nil
+	window.selectionRequest.handleSelectionNotify(connection, event)
+	if !window.selectionRequest.open() { window.selectionRequest = nil }
 }
 
 func (window *window) compressExpose (
