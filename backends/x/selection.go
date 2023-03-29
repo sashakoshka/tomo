@@ -22,7 +22,6 @@ type selectionRequest struct {
 	source      xproto.Atom
 	destination xproto.Atom
 	accept      []data.Mime
-	mime        data.Mime
 	callback func (data.Data, error)
 }
 
@@ -153,8 +152,6 @@ func (request *selectionRequest) handleSelectionNotify (
 	// data.
 	if event.Property == 0 { request.die(nil); return }
 
-	// TODO: handle INCR
-
 	// When using GetProperty to retrieve the value of a selection, the
 	// property argument should be set to the corresponding value in the
 	// SelectionNotify event. Because the requestor has no way of knowing
@@ -175,6 +172,8 @@ func (request *selectionRequest) handleSelectionNotify (
 		return
 	}
 
+	// TODO: handle INCR. do it here.
+
 	// Once all the data in the selection has been retrieved (which may
 	// require getting the values of several properties &emdash; see section
 	// 2.7), the requestor should delete the property in the SelectionNotify
@@ -191,11 +190,16 @@ func (request *selectionRequest) handleSelectionNotify (
 
 	switch request.state {
 	case selReqStateAwaitValue:
+		// get the type from the property and convert that to the mime
+		// value to pass to the application.
+		targetName, err := xprop.AtomName (
+			request.window.backend.connection, reply.Type)
+		if err != nil { request.die(err); return }
+		mime, _ := targetToMime(targetName)
+		
 		// we now have the full selection data in the property, so we
 		// finalize the request and are done.
-		// FIXME: get the type from the property and convert that to the
-		// mime value to pass to the application.
-		request.finalize(data.Bytes(request.mime, reply.Value))
+		request.finalize(data.Bytes(mime, reply.Value))
 		
 	case selReqStateAwaitTargets:
 		// make a list of the atoms we got
@@ -209,7 +213,6 @@ func (request *selectionRequest) handleSelectionNotify (
 		// system
 		confidentMatchFound := false
 		var chosenTarget xproto.Atom
-		var chosenMime   data.Mime
 		for _, atom := range atoms {
 			targetName, err := xprop.AtomName (
 				request.window.backend.connection, atom)
@@ -226,7 +229,6 @@ func (request *selectionRequest) handleSelectionNotify (
 			// accurate as possible.
 			if request.accept == nil {
 				chosenTarget = atom
-				chosenMime   = mime
 				if confidence == confidenceFull {
 					confidentMatchFound = true
 				}
@@ -241,7 +243,6 @@ func (request *selectionRequest) handleSelectionNotify (
 			for _, accept := range request.accept {
 			if accept == mime {
 				chosenTarget = atom
-				chosenMime   = mime
 				if confidence == confidenceFull {
 					confidentMatchFound = true
 				}
@@ -260,7 +261,6 @@ func (request *selectionRequest) handleSelectionNotify (
 		}
 
 		// await the selection value
-		request.mime = chosenMime
 		request.convertSelection(chosenTarget, selReqStateAwaitValue)
 	}
 }
