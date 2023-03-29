@@ -305,6 +305,7 @@ func (window *window) Paste (callback func (data.Data, error), accept ...data.Mi
 
 	window.selectionRequest = window.newSelectionRequest (
 		selectionAtom, propertyAtom, callback, accept...)
+	if !window.selectionRequest.open() { window.selectionRequest = nil }
 	return
 }
 

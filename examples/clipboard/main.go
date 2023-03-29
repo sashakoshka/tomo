@@ -2,6 +2,9 @@ package main
 
 import "io"
 import "image"
+import _ "image/png"
+import _ "image/gif"
+import _ "image/jpeg"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
@@ -13,6 +16,12 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
+}
+
+var validImageTypes = []data.Mime {
+	data.M("image", "png"),
+	data.M("image", "gif"),
+	data.M("image", "jpeg"),
 }
 
 func run () {
@@ -39,7 +48,15 @@ func run () {
 			return 
 		}
 
-		imageData, ok := clipboard[data.M("image", "png")]
+		var imageData io.Reader
+		var ok bool
+		for mime, reader := range clipboard {
+		for _, mimeCheck := range validImageTypes {
+		if mime == mimeCheck {
+			imageData = reader
+			ok = true
+		}}}
+		
 		if !ok {
 			popups.NewDialog (
 				popups.DialogKindError,
@@ -90,7 +107,7 @@ func run () {
 		window.Paste(clipboardCallback, data.MimePlain)
 	})
 	pasteImageButton.OnClick (func () {
-		window.Paste(imageClipboardCallback, data.M("image", "png"))
+		window.Paste(imageClipboardCallback, validImageTypes...)
 	})
 	
 	container.Adopt(textInput, true)
