@@ -153,6 +153,7 @@ func (claim *selectionClaim) handleSelectionRequest (
 		if confidence == confidenceNone { die(); return }
 		reader, ok := claim.data[mime]
 		if !ok { die(); return }
+		reader.Seek(0, io.SeekStart)
 		data, err := io.ReadAll(reader)
 		if err != nil { die() }
 		claim.window.fulfillSelectionRequest(data, 32, event)

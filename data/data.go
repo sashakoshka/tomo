@@ -5,7 +5,7 @@ import "bytes"
 
 // Data represents arbitrary polymorphic data that can be used for data transfer
 // between applications.
-type Data map[Mime] io.ReadCloser
+type Data map[Mime] io.ReadSeekCloser
 
 // Mime represents a MIME type.
 type Mime struct {
