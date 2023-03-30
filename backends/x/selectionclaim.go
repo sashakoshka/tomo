@@ -76,7 +76,7 @@ func (window *window) fulfillSelectionRequest (
 	// specified target.
 	err := xproto.ChangePropertyChecked (
 		window.backend.connection.Conn(),
-		xproto.PropModeReplace, window.xWindow.Id,
+		xproto.PropModeReplace, request.Requestor,
 		request.Property,
 		request.Target, format,
 		uint32(len(data) / (int(format) / 8)), data).Check()
@@ -146,7 +146,7 @@ func (claim *selectionClaim) handleSelectionRequest (
 			if err != nil { die(); return }
 			xgb.Put32(data[(index) * 4:], uint32(atom))
 		}
-		claim.window.fulfillSelectionRequest(data, 8, event)
+		claim.window.fulfillSelectionRequest(data, 32, event)
 
 	default:
 		mime, confidence := targetToMime(targetName)
@@ -156,6 +156,6 @@ func (claim *selectionClaim) handleSelectionRequest (
 		reader.Seek(0, io.SeekStart)
 		data, err := io.ReadAll(reader)
 		if err != nil { die() }
-		claim.window.fulfillSelectionRequest(data, 32, event)
+		claim.window.fulfillSelectionRequest(data, 8, event)
 	}
 }
