@@ -146,6 +146,23 @@ func targetToMime (name string) (data.Mime, confidence) {
 	}
 }
 
+func mimeToTargets (mime data.Mime) (names []string) {
+	names = append(names, mime.String())
+	switch mime {
+	case data.M("application", "pdf"):
+		names = append(names, "ADOBE_PORTABLE_DOCUMENT_FORMAT")
+	case data.M("image", "pict"):
+		names = append(names, "APPLE_PICT")
+	case data.M("application", "postscript"):
+		names = append(names, "POSTSCRIPT")
+	case data.MimeFile:
+		names = append(names, "FILE_NAME")
+	case data.MimePlain:
+		names = append(names, "UTF8_STRING", "TEXT", "STRING")
+	}
+	return
+}
+
 func (request *selectionRequest) handleSelectionNotify (
 	connection *xgbutil.XUtil,
 	event xevent.SelectionNotifyEvent,
@@ -195,7 +212,7 @@ func (request *selectionRequest) handleSelectionNotify (
 	// selection owner transfer the data in the selection in the following
 	// manner. The selection requestor starts the transfer process by
 	// deleting the (type==INCR) property forming the reply to the
-	// selection. 
+	// selection.
 	incr, err := xprop.Atm(request.window.backend.connection, "INCR")
 	if err != nil { request.die(err); return }
 	if reply.Type == incr {

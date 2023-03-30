@@ -102,6 +102,8 @@ func (backend *Backend) newWindow (
 		Connect(backend.connection, window.xWindow.Id)
 	xevent.SelectionClearFun(window.handleSelectionClear).
 		Connect(backend.connection, window.xWindow.Id)
+	xevent.SelectionRequestFun(window.handleSelectionRequest).
+		Connect(backend.connection, window.xWindow.Id)
 
 	window.SetTheme(backend.theme)
 	window.SetConfig(backend.config)
@@ -288,7 +290,10 @@ func (window *window) Hide () {
 }
 
 func (window *window) Copy (data data.Data) {
-	// TODO
+	selectionName := "CLIPBOARD"
+	selectionAtom, err := xprop.Atm(window.backend.connection, selectionName)
+	if err != nil { return }
+	window.selectionClaim = window.claimSelection(selectionAtom, data)
 }
 
 func (window *window) Paste (callback func (data.Data, error), accept ...data.Mime) {
