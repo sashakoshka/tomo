@@ -144,7 +144,7 @@ func (claim *selectionClaim) handleSelectionRequest (
 		for index, name := range targetNames {
 			atom, err := xprop.Atm(claim.window.backend.connection, name)
 			if err != nil { die(); return }
-			xgb.Put32(data[:(index + 1) * 4], uint32(atom))
+			xgb.Put32(data[(index) * 4:], uint32(atom))
 		}
 		claim.window.fulfillSelectionRequest(data, 8, event)
 
