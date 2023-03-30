@@ -13,7 +13,6 @@ type selReqState int; const (
 	selReqStateClosed selReqState = iota
 	selReqStateAwaitTargets
 	selReqStateAwaitValue
-	selReqStateAwaitFirstChunk
 	selReqStateAwaitChunk
 )
 
@@ -153,8 +152,7 @@ func (request *selectionRequest) handleSelectionNotify (
 ) {
 	// the only valid states that we can process a SelectionNotify event in
 	invalidState :=
-		request.state != selReqStateAwaitFirstChunk &&
-		request.state != selReqStateAwaitValue      &&
+		request.state != selReqStateAwaitValue &&
 		request.state != selReqStateAwaitTargets
 	if invalidState { return }
 	
@@ -167,13 +165,6 @@ func (request *selectionRequest) handleSelectionNotify (
 	// that the server did not have sufficient space to accommodate the
 	// data.
 	if event.Property == 0 { request.die(nil); return }
-
-	// if we are waiting for the first INCR chunk, do the special stuff for
-	// that and not the other stuff.
-	if request.state == selReqStateAwaitFirstChunk {
-		request.handleINCRProperty(event.Property)
-		return
-	}
 
 	// When using GetProperty to retrieve the value of a selection, the
 	// property argument should be set to the corresponding value in the
@@ -216,7 +207,7 @@ func (request *selectionRequest) handleSelectionNotify (
 		if err != nil { request.die(err); return }
 
 		// await the first chunk
-		request.state = selReqStateAwaitFirstChunk
+		request.state = selReqStateAwaitChunk
 		return
 	}
 
@@ -337,6 +328,9 @@ func (request *selectionRequest) handleINCRProperty (property xproto.Atom) {
 		// finalize the request with the data we have, and don't wait
 		// for more.
 		request.finalize(data.Bytes(request.incrMime, request.incrBuffer))
+
+		// we want to be extra sure we aren't holding onto this memory
+		request.incrBuffer = nil
 	} else {
 		// a property with content means the transfer is still ongoing.
 		// we append the data we got and wait for more.

@@ -244,6 +244,27 @@ func (window *window) handleSelectionNotify (
 	if !window.selectionRequest.open() { window.selectionRequest = nil }
 }
 
+func (window *window) handlePropertyNotify (
+	connection *xgbutil.XUtil,
+	event xevent.PropertyNotifyEvent,
+) {
+	if window.selectionRequest == nil { return }
+	window.selectionRequest.handlePropertyNotify(connection, event)
+	if !window.selectionRequest.open() { window.selectionRequest = nil }
+}
+
+func (window *window) handleSelectionClear (
+	connection *xgbutil.XUtil,
+	event xevent.SelectionClearEvent,
+) {
+	// TODO: schedule the claim to be deleted. when the event loop fires we
+	// will check to see if the claim is scheduled to be deleted and if it
+	// is, delete it.
+	if window.selectionClaim != nil {
+		window.selectionClaim.scheduledDelete = true
+	}
+}
+
 func (window *window) compressExpose (
 	firstEvent xproto.ExposeEvent,
 ) (

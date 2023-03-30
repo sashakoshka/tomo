@@ -34,6 +34,7 @@ type window struct {
 	config config.Config
 
 	selectionRequest *selectionRequest
+	selectionClaim   *selectionClaim
 
 	metrics struct {
 		width  int
@@ -69,6 +70,7 @@ func (backend *Backend) newWindow (
 	err = window.xWindow.Listen (
 		xproto.EventMaskExposure,
 		xproto.EventMaskStructureNotify,
+		xproto.EventMaskPropertyChange,
 		xproto.EventMaskPointerMotion,
 		xproto.EventMaskKeyPress,
 		xproto.EventMaskKeyRelease,
@@ -95,6 +97,10 @@ func (backend *Backend) newWindow (
 	xevent.MotionNotifyFun(window.handleMotionNotify).
 		Connect(backend.connection, window.xWindow.Id)
 	xevent.SelectionNotifyFun(window.handleSelectionNotify).
+		Connect(backend.connection, window.xWindow.Id)
+	xevent.PropertyNotifyFun(window.handlePropertyNotify).
+		Connect(backend.connection, window.xWindow.Id)
+	xevent.SelectionClearFun(window.handleSelectionClear).
 		Connect(backend.connection, window.xWindow.Id)
 
 	window.SetTheme(backend.theme)
