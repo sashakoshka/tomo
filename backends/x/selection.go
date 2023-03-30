@@ -9,6 +9,8 @@ import "github.com/jezek/xgbutil/xprop"
 import "github.com/jezek/xgbutil/xevent"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 
+const clipboardName = "CLIPBOARD"
+
 type selReqState int; const (
 	selReqStateClosed selReqState = iota
 	selReqStateAwaitTargets

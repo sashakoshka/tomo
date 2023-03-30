@@ -290,8 +290,7 @@ func (window *window) Hide () {
 }
 
 func (window *window) Copy (data data.Data) {
-	selectionName := "CLIPBOARD"
-	selectionAtom, err := xprop.Atm(window.backend.connection, selectionName)
+	selectionAtom, err := xprop.Atm(window.backend.connection, clipboardName)
 	if err != nil { return }
 	window.selectionClaim = window.claimSelection(selectionAtom, data)
 }
@@ -307,9 +306,8 @@ func (window *window) Paste (callback func (data.Data, error), accept ...data.Mi
 		return
 	}
 
-	selectionName := "CLIPBOARD"
-	propertyName  := "TOMO_SELECTION"
-	selectionAtom, err := xprop.Atm(window.backend.connection, selectionName)
+	propertyName := "TOMO_SELECTION"
+	selectionAtom, err := xprop.Atm(window.backend.connection, clipboardName)
 	if err != nil { die(err); return }
 	propertyAtom, err := xprop.Atm(window.backend.connection, propertyName)
 	if err != nil { die(err); return }

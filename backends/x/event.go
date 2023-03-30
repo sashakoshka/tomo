@@ -264,6 +264,7 @@ func (window *window) handleSelectionRequest (
 	connection *xgbutil.XUtil,
 	event xevent.SelectionRequestEvent,
 ) {
+	println("got sel req")
 	if window.selectionClaim == nil { return }
 	window.selectionClaim.handleSelectionRequest(connection, event)
 }

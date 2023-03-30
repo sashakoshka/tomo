@@ -17,7 +17,7 @@ type selectionClaim struct {
 func (window *window) claimSelection (name xproto.Atom, data data.Data) *selectionClaim {
 	// Follow:
 	// https://tronche.com/gui/x/icccm/sec-2.html#s-2.1
-
+	
 	// A client wishing to acquire ownership of a particular selection
 	// should call SetSelectionOwner. The client should set the specified
 	// selection to the atom that represents the selection, set the
@@ -34,6 +34,11 @@ func (window *window) claimSelection (name xproto.Atom, data data.Data) *selecti
 		window.backend.connection.Conn(),
 		window.xWindow.Id, name, 0).Check() // FIXME: should not be zero
 	if err != nil { return nil }
+
+	ownerReply, err := xproto.GetSelectionOwner (
+		window.backend.connection.Conn(), name).Reply()
+	if err != nil { return nil }
+	if ownerReply.Owner != window.xWindow.Id { return nil}
 
 	return &selectionClaim {
 		window: window,
@@ -139,7 +144,7 @@ func (claim *selectionClaim) handleSelectionRequest (
 		for index, name := range targetNames {
 			atom, err := xprop.Atm(claim.window.backend.connection, name)
 			if err != nil { die(); return }
-			xgb.Put32(data[:index * 4], uint32(atom))
+			xgb.Put32(data[:(index + 1) * 4], uint32(atom))
 		}
 		claim.window.fulfillSelectionRequest(data, 8, event)
 
