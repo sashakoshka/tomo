@@ -6,9 +6,9 @@ import "errors"
 import "github.com/faiface/beep"
 import "github.com/faiface/beep/speaker"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
-import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
-import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
@@ -34,27 +34,27 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("Piano")
-	container := containers.NewContainer(basicLayouts.Vertical { true, true })
-	controlBar := containers.NewContainer(basicLayouts.Horizontal { true, false })
+	container := containers.NewContainer(layouts.Vertical { true, true })
+	controlBar := containers.NewContainer(layouts.Horizontal { true, false })
 
-	waveformColumn := containers.NewContainer(basicLayouts.Vertical { true, false })
-	waveformList := basicElements.NewList (
-		basicElements.NewListEntry("Sine",     func(){ waveform = 0 }),
-		basicElements.NewListEntry("Triangle", func(){ waveform = 3 }),
-		basicElements.NewListEntry("Square",   func(){ waveform = 1 }),
-		basicElements.NewListEntry("Saw",      func(){ waveform = 2 }),
-		basicElements.NewListEntry("Supersaw", func(){ waveform = 4 }),
+	waveformColumn := containers.NewContainer(layouts.Vertical { true, false })
+	waveformList := elements.NewList (
+		elements.NewListEntry("Sine",     func(){ waveform = 0 }),
+		elements.NewListEntry("Triangle", func(){ waveform = 3 }),
+		elements.NewListEntry("Square",   func(){ waveform = 1 }),
+		elements.NewListEntry("Saw",      func(){ waveform = 2 }),
+		elements.NewListEntry("Supersaw", func(){ waveform = 4 }),
 	)
 	waveformList.OnNoEntrySelected (func(){waveformList.Select(0)})
 	waveformList.Select(0)
 
-	adsrColumn := containers.NewContainer(basicLayouts.Vertical { true, false })
-	adsrGroup := containers.NewContainer(basicLayouts.Horizontal { true, false })
-	attackSlider  := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Attack, true)
-	decaySlider   := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Decay, true)
-	sustainSlider := basicElements.NewSlider(adsr.Sustain, true)
-	releaseSlider := basicElements.NewLerpSlider(0, 3 * time.Second, adsr.Release, true)
-	gainSlider    := basicElements.NewSlider(math.Sqrt(gain), false)
+	adsrColumn := containers.NewContainer(layouts.Vertical { true, false })
+	adsrGroup := containers.NewContainer(layouts.Horizontal { true, false })
+	attackSlider  := elements.NewLerpSlider(0, 3 * time.Second, adsr.Attack, true)
+	decaySlider   := elements.NewLerpSlider(0, 3 * time.Second, adsr.Decay, true)
+	sustainSlider := elements.NewSlider(adsr.Sustain, true)
+	releaseSlider := elements.NewLerpSlider(0, 3 * time.Second, adsr.Release, true)
+	gainSlider    := elements.NewSlider(math.Sqrt(gain), false)
 
 	attackSlider.OnRelease (func () {
 		adsr.Attack = attackSlider.Value()
@@ -72,7 +72,7 @@ func run () {
 		gain = math.Pow(gainSlider.Value(), 2)
 	})
 
-	patchColumn := containers.NewContainer(basicLayouts.Vertical { true, false })
+	patchColumn := containers.NewContainer(layouts.Vertical { true, false })
 	patch := func (w int, a, d time.Duration, s float64, r time.Duration) func () {
 		return func () {
 			waveform = w
@@ -89,22 +89,22 @@ func run () {
 			releaseSlider.SetValue(adsr.Release)
 		}
 	}
-	patchList := basicElements.NewList (
-		basicElements.NewListEntry ("Bones", patch (
+	patchList := elements.NewList (
+		elements.NewListEntry ("Bones", patch (
 			0, 0, 100, 0.0, 0)),
-		basicElements.NewListEntry ("Staccato", patch (
+		elements.NewListEntry ("Staccato", patch (
 			4, 70, 500, 0, 0)),
-		basicElements.NewListEntry ("Sustain", patch (
+		elements.NewListEntry ("Sustain", patch (
 			4, 70, 200, 0.8, 500)),
-		basicElements.NewListEntry ("Upright", patch (
+		elements.NewListEntry ("Upright", patch (
 			1, 0, 500, 0.4, 70)),
-		basicElements.NewListEntry ("Space Pad", patch (
+		elements.NewListEntry ("Space Pad", patch (
 			4, 1500, 0, 1.0, 3000)),
-		basicElements.NewListEntry ("Popcorn", patch (
+		elements.NewListEntry ("Popcorn", patch (
 			2, 0, 40, 0.0, 0)),
-		basicElements.NewListEntry ("Racer", patch (
+		elements.NewListEntry ("Racer", patch (
 			3, 70, 0, 0.7, 400)),
-		basicElements.NewListEntry ("Reverse", patch (
+		elements.NewListEntry ("Reverse", patch (
 			2, 3000, 60, 0, 0)),
 	)
 	patchList.Collapse(0, 32)
@@ -121,19 +121,19 @@ func run () {
 	window.Adopt(container)
 	
 	controlBar.Adopt(patchColumn, true)
-	patchColumn.Adopt(basicElements.NewLabel("Presets", false), false)
+	patchColumn.Adopt(elements.NewLabel("Presets", false), false)
 	patchColumn.Adopt(patchScrollBox, true)
 	patchScrollBox.Adopt(patchList)
 
-	controlBar.Adopt(basicElements.NewSpacer(true), false)
+	controlBar.Adopt(elements.NewSpacer(true), false)
 	
 	controlBar.Adopt(waveformColumn, false)
-	waveformColumn.Adopt(basicElements.NewLabel("Waveform", false), false)
+	waveformColumn.Adopt(elements.NewLabel("Waveform", false), false)
 	waveformColumn.Adopt(waveformList, true)
 	
-	controlBar.Adopt(basicElements.NewSpacer(true), false)
+	controlBar.Adopt(elements.NewSpacer(true), false)
 	
-	adsrColumn.Adopt(basicElements.NewLabel("ADSR", false), false)
+	adsrColumn.Adopt(elements.NewLabel("ADSR", false), false)
 	adsrGroup.Adopt(attackSlider, false)
 	adsrGroup.Adopt(decaySlider, false)
 	adsrGroup.Adopt(sustainSlider, false)

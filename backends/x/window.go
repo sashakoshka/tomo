@@ -9,12 +9,12 @@ import "github.com/jezek/xgbutil/xprop"
 import "github.com/jezek/xgbutil/xevent"
 import "github.com/jezek/xgbutil/xwindow"
 import "github.com/jezek/xgbutil/xgraphics"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 // import "runtime/debug"
 
 type mainWindow struct { *window }
@@ -23,7 +23,7 @@ type window struct {
 	xWindow *xwindow.Window
 	xCanvas *xgraphics.Image
 	canvas  canvas.BasicCanvas
-	child   elements.Element
+	child   tomo.Element
 	onClose func ()
 	skipChildDrawCallback bool
 
@@ -45,7 +45,7 @@ type window struct {
 func (backend *Backend) NewWindow (
 	width, height int,
 ) (
-	output elements.MainWindow,
+	output tomo.MainWindow,
 	err error,
 ) {
 	if backend == nil { panic("nil backend") }
@@ -120,35 +120,35 @@ func (backend *Backend) newWindow (
 	return
 }
 
-func (window *window) NotifyMinimumSizeChange (child elements.Element) {
+func (window *window) NotifyMinimumSizeChange (child tomo.Element) {
 	window.childMinimumSizeChangeCallback(child.MinimumSize())
 }
 
 func (window *window) RequestFocus (
-	child elements.Focusable,
+	child tomo.Focusable,
 ) (
 	granted bool,
 ) {
 	return true
 }
 
-func (window *window) RequestFocusNext (child elements.Focusable) {
-	if child, ok := window.child.(elements.Focusable); ok {
+func (window *window) RequestFocusNext (child tomo.Focusable) {
+	if child, ok := window.child.(tomo.Focusable); ok {
 		if !child.HandleFocus(input.KeynavDirectionForward) {
 			child.HandleUnfocus()
 		}
 	}
 }
 
-func (window *window) RequestFocusPrevious (child elements.Focusable) {
-	if child, ok := window.child.(elements.Focusable); ok {
+func (window *window) RequestFocusPrevious (child tomo.Focusable) {
+	if child, ok := window.child.(tomo.Focusable); ok {
 		if !child.HandleFocus(input.KeynavDirectionBackward) {
 			child.HandleUnfocus()
 		}
 	}
 }
 
-func (window *window) Adopt (child elements.Element) {
+func (window *window) Adopt (child tomo.Element) {
 	// disown previous child
 	if window.child != nil {
 		window.child.SetParent(nil)
@@ -159,10 +159,10 @@ func (window *window) Adopt (child elements.Element) {
 		// adopt new child
 		window.child = child
 		child.SetParent(window)
-		if newChild, ok := child.(elements.Themeable); ok {
+		if newChild, ok := child.(tomo.Themeable); ok {
 			newChild.SetTheme(window.theme)
 		}
-		if newChild, ok := child.(elements.Configurable); ok {
+		if newChild, ok := child.(tomo.Configurable); ok {
 			newChild.SetConfig(window.config)
 		}
 		if child != nil {
@@ -174,7 +174,7 @@ func (window *window) Adopt (child elements.Element) {
 	}
 }
 
-func (window *window) Child () (child elements.Element) {
+func (window *window) Child () (child tomo.Element) {
 	child = window.child
 	return
 }
@@ -225,7 +225,7 @@ func (window *window) SetIcon (sizes []image.Image) {
 		wmIcons)
 }
 
-func (window *window) NewModal (width, height int) (elements.Window, error) {
+func (window *window) NewModal (width, height int) (tomo.Window, error) {
 	modal, err := window.backend.newWindow(width, height)
 	icccm.WmTransientForSet (
 		window.backend.connection,
@@ -240,7 +240,7 @@ func (window *window) NewModal (width, height int) (elements.Window, error) {
 	return modal, err
 }
 
-func (window mainWindow) NewPanel (width, height int) (elements.Window, error) {
+func (window mainWindow) NewPanel (width, height int) (tomo.Window, error) {
 	panel, err := window.backend.newWindow(width, height)
 	if err != nil { return nil, err }
 	panel.setClientLeader(window.window)
@@ -336,14 +336,14 @@ func (window *window) OnClose (callback func ()) {
 
 func (window *window) SetTheme (theme theme.Theme) {
 	window.theme = theme
-	if child, ok := window.child.(elements.Themeable); ok {
+	if child, ok := window.child.(tomo.Themeable); ok {
 		child.SetTheme(theme)
 	}
 }
 
 func (window *window) SetConfig (config config.Config) {
 	window.config = config
-	if child, ok := window.child.(elements.Configurable); ok {
+	if child, ok := window.child.(tomo.Configurable); ok {
 		child.SetConfig(config)
 	}
 }

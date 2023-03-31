@@ -1,13 +1,13 @@
 package containers
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
-import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 
 // ScrollContainer is a container that is capable of holding a scrollable
 // element.
@@ -16,9 +16,9 @@ type ScrollContainer struct {
 	*core.Propagator
 	core core.CoreControl
 	
-	child      elements.Scrollable
-	horizontal *basicElements.ScrollBar
-	vertical   *basicElements.ScrollBar
+	child      tomo.Scrollable
+	horizontal *elements.ScrollBar
+	vertical   *elements.ScrollBar
 	
 	config config.Wrapped
 	theme  theme.Wrapped
@@ -31,12 +31,12 @@ type ScrollContainer struct {
 // bars.
 func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 	element = &ScrollContainer { }
-	element.theme.Case = theme.C("containers", "scrollContainer")
+	element.theme.Case = theme.C("tomo", "scrollContainer")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 
 	if horizontal {
-		element.horizontal = basicElements.NewScrollBar(false)
+		element.horizontal = elements.NewScrollBar(false)
 		element.setUpChild(element.horizontal)
 		element.horizontal.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
@@ -50,7 +50,7 @@ func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 		})
 	}
 	if vertical {
-		element.vertical = basicElements.NewScrollBar(true)
+		element.vertical = elements.NewScrollBar(true)
 		element.setUpChild(element.vertical)
 		element.vertical.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
@@ -70,7 +70,7 @@ func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 // Adopt adds a scrollable element to the scroll container. The container can
 // only contain one scrollable element at a time, and when a new one is adopted
 // it replaces the last one.
-func (element *ScrollContainer) Adopt (child elements.Scrollable) {
+func (element *ScrollContainer) Adopt (child tomo.Scrollable) {
 	// disown previous child if it exists
 	if element.child != nil {
 		element.disownChild(child)
@@ -90,20 +90,20 @@ func (element *ScrollContainer) Adopt (child elements.Scrollable) {
 	}
 }
 
-func (element *ScrollContainer) setUpChild (child elements.Element) {
+func (element *ScrollContainer) setUpChild (child tomo.Element) {
 	child.SetParent(element)
-	if child, ok := child.(elements.Themeable); ok {
+	if child, ok := child.(tomo.Themeable); ok {
 		child.SetTheme(element.theme.Theme)
 	}
-	if child, ok := child.(elements.Configurable); ok {
+	if child, ok := child.(tomo.Configurable); ok {
 		child.SetConfig(element.config.Config)
 	}
 }
 
-func (element *ScrollContainer) disownChild (child elements.Scrollable) {
+func (element *ScrollContainer) disownChild (child tomo.Scrollable) {
 	child.DrawTo(nil, image.Rectangle { }, nil)
 	child.SetParent(nil)
-	if child, ok := child.(elements.Focusable); ok {
+	if child, ok := child.(tomo.Focusable); ok {
 		if child.Focused() {
 			child.HandleUnfocus()
 		}
@@ -112,14 +112,14 @@ func (element *ScrollContainer) disownChild (child elements.Scrollable) {
 
 // NotifyMinimumSizeChange notifies the container that the minimum size of a
 // child element has changed.
-func (element *ScrollContainer) NotifyMinimumSizeChange (child elements.Element) {
+func (element *ScrollContainer) NotifyMinimumSizeChange (child tomo.Element) {
 	element.redoAll()
 	element.core.DamageAll()
 }
 
 // NotifyScrollBoundsChange notifies the container that the scroll bounds or
 // axes of a child have changed.
-func (element *ScrollContainer) NotifyScrollBoundsChange (child elements.Scrollable) {
+func (element *ScrollContainer) NotifyScrollBoundsChange (child tomo.Scrollable) {
 	element.updateEnabled()
 	viewportBounds := element.child.ScrollViewportBounds()
 	contentBounds  := element.child.ScrollContentBounds()
@@ -165,7 +165,7 @@ func (element *ScrollContainer) CountChildren () (count int) {
 
 // Child returns the child at the specified index. If the index is out of
 // bounds, this method will return nil.
-func (element *ScrollContainer) Child (index int) (child elements.Element) {
+func (element *ScrollContainer) Child (index int) (child tomo.Element) {
 	switch index {
 	case 0: return element.child
 	case 1:

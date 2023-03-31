@@ -1,4 +1,4 @@
-package elements
+package tomo
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"

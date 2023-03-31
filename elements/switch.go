@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
@@ -32,7 +32,7 @@ func NewSwitch (text string, on bool) (element *Switch) {
 		checked: on,
 		text: text,
 	}
-	element.theme.Case = theme.C("basic", "switch")
+	element.theme.Case = theme.C("tomo", "switch")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.core, element.redo)

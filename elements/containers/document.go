@@ -1,12 +1,11 @@
 package containers
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 type DocumentContainer struct {
@@ -14,7 +13,7 @@ type DocumentContainer struct {
 	*core.Propagator
 	core core.CoreControl
 
-	children []layouts.LayoutEntry
+	children []tomo.LayoutEntry
 	scroll   image.Point
 	warping  bool
 	contentBounds image.Rectangle
@@ -28,24 +27,24 @@ type DocumentContainer struct {
 // NewDocumentContainer creates a new document container.
 func NewDocumentContainer () (element *DocumentContainer) {
 	element = &DocumentContainer { }
-	element.theme.Case = theme.C("containers", "documentContainer")
+	element.theme.Case = theme.C("tomo", "documentContainer")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 	return
 }
 
 // Adopt adds a new child element to the container.
-func (element *DocumentContainer) Adopt (child elements.Element) {
+func (element *DocumentContainer) Adopt (child tomo.Element) {
 	// set event handlers
-	if child0, ok := child.(elements.Themeable); ok {
+	if child0, ok := child.(tomo.Themeable); ok {
 		child0.SetTheme(element.theme.Theme)
 	}
-	if child0, ok := child.(elements.Configurable); ok {
+	if child0, ok := child.(tomo.Configurable); ok {
 		child0.SetConfig(element.config.Config)
 	}
 
 	// add child
-	element.children = append (element.children, layouts.LayoutEntry {
+	element.children = append (element.children, tomo.LayoutEntry {
 		Element: child,
 	})
 
@@ -80,7 +79,7 @@ func (element *DocumentContainer) Warp (callback func ()) {
 
 // Disown removes the given child from the container if it is contained within
 // it.
-func (element *DocumentContainer) Disown (child elements.Element) {
+func (element *DocumentContainer) Disown (child tomo.Element) {
 	for index, entry := range element.children {
 		if entry.Element == child {
 			element.clearChildEventHandlers(entry.Element)
@@ -98,11 +97,11 @@ func (element *DocumentContainer) Disown (child elements.Element) {
 	}
 }
 
-func (element *DocumentContainer) clearChildEventHandlers (child elements.Element) {
+func (element *DocumentContainer) clearChildEventHandlers (child tomo.Element) {
 	child.DrawTo(nil, image.Rectangle { }, nil)
 	child.SetParent(nil)
 	
-	if child, ok := child.(elements.Focusable); ok {
+	if child, ok := child.(tomo.Focusable); ok {
 		if child.Focused() {
 			child.HandleUnfocus()
 		}
@@ -124,8 +123,8 @@ func (element *DocumentContainer) DisownAll () {
 }
 
 // Children returns a slice containing this element's children.
-func (element *DocumentContainer) Children () (children []elements.Element) {
-	children = make([]elements.Element, len(element.children))
+func (element *DocumentContainer) Children () (children []tomo.Element) {
+	children = make([]tomo.Element, len(element.children))
 	for index, entry := range element.children {
 		children[index] = entry.Element
 	}
@@ -139,14 +138,14 @@ func (element *DocumentContainer) CountChildren () (count int) {
 
 // Child returns the child at the specified index. If the index is out of
 // bounds, this method will return nil.
-func (element *DocumentContainer) Child (index int) (child elements.Element) {
+func (element *DocumentContainer) Child (index int) (child tomo.Element) {
 	if index < 0 || index > len(element.children) { return }
 	return element.children[index].Element
 }
 
 // ChildAt returns the child that contains the specified x and y coordinates. If
 // there are no children at the coordinates, this method will return nil.
-func (element *DocumentContainer) ChildAt (point image.Point) (child elements.Element) {
+func (element *DocumentContainer) ChildAt (point image.Point) (child tomo.Element) {
 	for _, entry := range element.children {
 		if point.In(entry.Bounds) {
 			child = entry.Element
@@ -178,7 +177,7 @@ func (element *DocumentContainer) redoAll () {
 	artist.DrawShatter(element.core, pattern, element.Bounds(), rocks...)
 
 	element.partition()
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+	if parent, ok := element.core.Parent().(tomo.ScrollableParent); ok {
 		parent.NotifyScrollBoundsChange(element)
 	}
 	if element.onScrollBoundsChange != nil {
@@ -205,7 +204,7 @@ func (element *DocumentContainer) partition () {
 
 // NotifyMinimumSizeChange notifies the container that the minimum size of a
 // child element has changed.
-func (element *DocumentContainer) NotifyMinimumSizeChange (child elements.Element) {
+func (element *DocumentContainer) NotifyMinimumSizeChange (child tomo.Element) {
 	element.redoAll()
 	element.core.DamageAll()
 }
@@ -214,7 +213,7 @@ func (element *DocumentContainer) NotifyMinimumSizeChange (child elements.Elemen
 // affecting a child's flexible height have changed. This method is
 // expected to be called by flexible child element when their content
 // changes.
-func (element *DocumentContainer) NotifyFlexibleHeightChange (child elements.Flexible) {
+func (element *DocumentContainer) NotifyFlexibleHeightChange (child tomo.Flexible) {
 	element.redoAll()
 	element.core.DamageAll()
 }
@@ -300,7 +299,7 @@ func (element *DocumentContainer) doLayout () {
 		if width < bounds.Dx() {
 			width = bounds.Dx()
 		}
-		if typedChild, ok := entry.Element.(elements.Flexible); ok {
+		if typedChild, ok := entry.Element.(tomo.Flexible); ok {
 			height = typedChild.FlexibleHeightFor(width)
 		}
 		

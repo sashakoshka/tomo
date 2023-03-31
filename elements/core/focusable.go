@@ -1,8 +1,8 @@
 package core
 
 // import "runtime/debug"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // FocusableCore is a struct that can be embedded into objects to make them
 // focusable, giving them the default keynav behavior.
@@ -42,9 +42,9 @@ func (core *FocusableCore) Focused () (focused bool) {
 func (core *FocusableCore) Focus () {
 	if !core.enabled || core.focused { return }
 	parent := core.core.Parent()
-	if parent, ok := parent.(elements.FocusableParent); ok {
+	if parent, ok := parent.(tomo.FocusableParent); ok {
 		core.focused = parent.RequestFocus (
-			core.core.Outer().(elements.Focusable))
+			core.core.Outer().(tomo.Focusable))
 	}
 }
 

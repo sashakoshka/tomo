@@ -52,7 +52,7 @@ func NewPiano (low, high music.Octave) (element *Piano) {
 		keynavPressed: make(map[music.Note] bool),
 	}
 	
-	element.theme.Case = theme.C("fun", "piano")
+	element.theme.Case = theme.C("tomo", "piano")
 	element.Core, element.core = core.NewCore (element, func () {
 		element.recalculate()
 		element.draw()

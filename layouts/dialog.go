@@ -1,8 +1,8 @@
-package basicLayouts
+package layouts
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 
 // Dialog arranges elements in the form of a dialog box. The first element is
 // positioned above as the main focus of the dialog, and is set to expand
@@ -20,7 +20,7 @@ type Dialog struct {
 
 // Arrange arranges a list of entries into a dialog.
 func (layout Dialog) Arrange (
-	entries []layouts.LayoutEntry,
+	entries []tomo.LayoutEntry,
 	margin  image.Point,
 	padding artist.Inset,
 	bounds image.Rectangle,
@@ -101,7 +101,7 @@ func (layout Dialog) Arrange (
 // MinimumSize returns the minimum width and height that will be needed to
 // arrange the given list of entries.
 func (layout Dialog) MinimumSize (
-	entries []layouts.LayoutEntry,
+	entries []tomo.LayoutEntry,
 	margin  image.Point,
 	padding artist.Inset,
 ) (
@@ -132,7 +132,7 @@ func (layout Dialog) MinimumSize (
 }
 
 func (layout Dialog) minimumSizeOfControlRow (
-	entries []layouts.LayoutEntry,
+	entries []tomo.LayoutEntry,
 	margin  image.Point,
 	padding artist.Inset,
 ) (

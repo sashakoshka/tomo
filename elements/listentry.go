@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
@@ -26,7 +26,7 @@ func NewListEntry (text string, onSelect func ()) (entry ListEntry) {
 		text:     text,
 		onSelect: onSelect,
 	}
-	entry.theme.Case = theme.C("basic", "listEntry")
+	entry.theme.Case = theme.C("tomo", "listEntry")
 	entry.drawer.SetText([]rune(text))
 	entry.updateBounds()
 	return

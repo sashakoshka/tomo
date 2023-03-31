@@ -2,8 +2,8 @@ package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/flow"
-import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
-import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
@@ -14,21 +14,21 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(192, 192)
 	window.SetTitle("adventure")
-	container := containers.NewContainer(basicLayouts.Vertical { true, true })
+	container := containers.NewContainer(layouts.Vertical { true, true })
 	window.Adopt(container)
 
 	var world flow.Flow
 	world.Transition = container.DisownAll
 	world.Stages = map [string] func () {
 		"start": func () {
-			label := basicElements.NewLabel (
+			label := elements.NewLabel (
 				"you are standing next to a river.", true)
 			
-			button0 := basicElements.NewButton("go in the river")
+			button0 := elements.NewButton("go in the river")
 			button0.OnClick(world.SwitchFunc("wet"))
-			button1 := basicElements.NewButton("walk along the river")
+			button1 := elements.NewButton("walk along the river")
 			button1.OnClick(world.SwitchFunc("house"))
-			button2 := basicElements.NewButton("turn around")
+			button2 := elements.NewButton("turn around")
 			button2.OnClick(world.SwitchFunc("bear"))
 
 			container.Warp ( func () {
@@ -40,13 +40,13 @@ func run () {
 			})
 		},
 		"wet": func () {
-			label := basicElements.NewLabel (
+			label := elements.NewLabel (
 				"you get completely soaked.\n" +
 				"you die of hypothermia.", true)
 			
-			button0 := basicElements.NewButton("try again")
+			button0 := elements.NewButton("try again")
 			button0.OnClick(world.SwitchFunc("start"))
-			button1 := basicElements.NewButton("exit")
+			button1 := elements.NewButton("exit")
 			button1.OnClick(tomo.Stop)
 
 			container.Warp (func () {
@@ -57,13 +57,13 @@ func run () {
 			})
 		},
 		"house": func () {
-			label := basicElements.NewLabel (
+			label := elements.NewLabel (
 				"you are standing in front of a delapidated " +
 				"house.", true)
 			
-			button1 := basicElements.NewButton("go inside")
+			button1 := elements.NewButton("go inside")
 			button1.OnClick(world.SwitchFunc("inside"))
-			button0 := basicElements.NewButton("turn back")
+			button0 := elements.NewButton("turn back")
 			button0.OnClick(world.SwitchFunc("start"))
 			
 			container.Warp (func () {	
@@ -74,14 +74,14 @@ func run () {
 			})
 		},
 		"inside": func () {
-			label := basicElements.NewLabel (
+			label := elements.NewLabel (
 				"you are standing inside of the house.\n" +
 				"it is dark, but rays of light stream " +
 				"through the window.\n" +
 				"there is nothing particularly interesting " +
 				"here.", true)
 			
-			button0 := basicElements.NewButton("go back outside")
+			button0 := elements.NewButton("go back outside")
 			button0.OnClick(world.SwitchFunc("house"))
 			
 			container.Warp (func () {	
@@ -91,13 +91,13 @@ func run () {
 			})
 		},
 		"bear": func () {
-			label := basicElements.NewLabel (
+			label := elements.NewLabel (
 				"you come face to face with a bear.\n" +
 				"it eats you (it was hungry).", true)
 			
-			button0 := basicElements.NewButton("try again")
+			button0 := elements.NewButton("try again")
 			button0.OnClick(world.SwitchFunc("start"))
-			button1 := basicElements.NewButton("exit")
+			button1 := elements.NewButton("exit")
 			button1.OnClick(tomo.Stop)
 			
 			container.Warp (func () {	

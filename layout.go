@@ -1,18 +1,12 @@
-// Package layouts defines a layout interface which a container element can
-// accept to have its child elements automatically arranged by any layout that
-// satisfies it.
-//
-// Sub-packages of layouts contain several pre-made ones.
-package layouts
+package tomo
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // LayoutEntry associates an element with layout and positioning information so
 // it can be arranged by a Layout.
 type LayoutEntry struct {
-	elements.Element
+	Element
 	Bounds image.Rectangle
 	Expand bool
 }

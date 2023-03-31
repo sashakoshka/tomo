@@ -1,12 +1,12 @@
-package basicElements
+package elements
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
@@ -43,7 +43,7 @@ type TextBox struct {
 // text.
 func NewTextBox (placeholder, value string) (element *TextBox) {
 	element = &TextBox { }
-	element.theme.Case = theme.C("basic", "textBox")
+	element.theme.Case = theme.C("tomo", "textBox")
 	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (element.core, func () {
@@ -62,7 +62,7 @@ func NewTextBox (placeholder, value string) (element *TextBox) {
 func (element *TextBox) handleResize () {
 	element.scrollToCursor()
 	element.draw()
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+	if parent, ok := element.core.Parent().(tomo.ScrollableParent); ok {
 		parent.NotifyScrollBoundsChange(element)
 	}
 }
@@ -197,7 +197,7 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 	}
 
 	if (textChanged || scrollMemory != element.scroll) {
-		if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+		if parent, ok := element.core.Parent().(tomo.ScrollableParent); ok {
 			parent.NotifyScrollBoundsChange(element)
 		}
 	}
@@ -294,7 +294,7 @@ func (element *TextBox) ScrollTo (position image.Point) {
 	if element.scroll > maxPosition { element.scroll = maxPosition }
 
 	element.redo()
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+	if parent, ok := element.core.Parent().(tomo.ScrollableParent); ok {
 		parent.NotifyScrollBoundsChange(element)
 	}
 }

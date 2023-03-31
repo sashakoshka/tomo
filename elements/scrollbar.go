@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
@@ -45,9 +45,9 @@ func NewScrollBar (vertical bool) (element *ScrollBar) {
 		enabled:  true,
 	}
 	if vertical {
-		element.theme.Case = theme.C("basic", "scrollBarHorizontal")
+		element.theme.Case = theme.C("tomo", "scrollBarHorizontal")
 	} else {
-		element.theme.Case = theme.C("basic", "scrollBarVertical")
+		element.theme.Case = theme.C("tomo", "scrollBarVertical")
 	}
 	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.updateMinimumSize()

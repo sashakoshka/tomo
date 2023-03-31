@@ -1,12 +1,7 @@
 package tomo
 
-import "os"
-import "io"
-import "path/filepath"
-import "git.tebibyte.media/sashakoshka/tomo/dirs"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 var backend Backend
 
@@ -16,9 +11,6 @@ var backend Backend
 func Run (callback func ()) (err error) {
 	backend, err = instantiateBackend()
 	if err != nil { return }
-	config := parseConfig()
-	backend.SetConfig(config)
-	backend.SetTheme(parseTheme(config.ThemePath()))
 	if callback != nil { callback() }
 	err = backend.Run()
 	backend = nil
@@ -41,7 +33,7 @@ func Do (callback func ()) {
 // NewWindow creates a new window using the current backend, and returns it as a
 // MainWindow. If the window could not be created, an error is returned
 // explaining why.
-func NewWindow (width, height int) (window elements.MainWindow, err error) {
+func NewWindow (width, height int) (window MainWindow, err error) {
 	assertBackend()
 	return backend.NewWindow(width, height)
 }
@@ -54,60 +46,6 @@ func SetTheme (theme theme.Theme) {
 // SetConfig sets the configuration of all open windows.
 func SetConfig (config config.Config) {
 	backend.SetConfig(config)
-}
-
-func parseConfig () (config.Config) {
-	return parseMany [config.Config] (
-		dirs.ConfigDirs("tomo/tomo.conf"),
-		config.Parse,
-		config.Default { })
-}
-
-func parseTheme (path string) (theme.Theme) {
-	if path == "" { return theme.Default { } }
-	path = filepath.Join(path, "tomo")
-	
-	// find all tomo pattern graph files in the directory
-	directory, err := os.Open(path)
-	if err != nil { return theme.Default { } }
-	names, _ := directory.Readdirnames(0)
-	paths := []string { }
-	for _, name := range names {
-		if filepath.Ext(name) == ".tpg" {
-			paths = append(paths, filepath.Join(path, name))
-		}
-	}
-
-	// parse them
-	return parseMany [theme.Theme] (
-		paths,
-		theme.Parse,
-		theme.Default { })
-}
-
-func parseMany [OBJECT any] (
-	paths []string,
-	parser func (...io.Reader) OBJECT,
-	fallback OBJECT,
-) (
-	object OBJECT,
-) {
-	// convert all paths into readers
-	sources := []io.Reader { }
-	for _, path := range paths {
-		file, err := os.Open(path)
-		if err != nil { continue }
-		sources = append(sources, file)
-		defer file.Close()
-	}
-	
-	if sources == nil {
-		// if there are no readers, return the fallback object
-		return fallback
-	} else {
-		// if there are readers, parse them
-		return parser(sources...)
-	}
 }
 
 func assertBackend () {

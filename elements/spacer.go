@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
@@ -19,7 +19,7 @@ type Spacer struct {
 // will appear as a line.
 func NewSpacer (line bool) (element *Spacer) {
 	element = &Spacer { line: line }
-	element.theme.Case = theme.C("basic", "spacer")
+	element.theme.Case = theme.C("tomo", "spacer")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.updateMinimumSize()
 	return

@@ -1,8 +1,8 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
-import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/testing"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
@@ -15,15 +15,15 @@ func run () {
 	window, _ := tomo.NewWindow(128, 128)
 	window.SetTitle("vertical stack")
 
-	container := containers.NewContainer(basicLayouts.Vertical { true, true })
+	container := containers.NewContainer(layouts.Vertical { true, true })
 	window.Adopt(container)
 
-	label    := basicElements.NewLabel("it is a label hehe", true)
-	button   := basicElements.NewButton("drawing pad")
-	okButton := basicElements.NewButton("OK")
+	label    := elements.NewLabel("it is a label hehe", true)
+	button   := elements.NewButton("drawing pad")
+	okButton := elements.NewButton("OK")
 	button.OnClick (func () {
 		container.DisownAll()
-		container.Adopt(basicElements.NewLabel("Draw here:", false), false)
+		container.Adopt(elements.NewLabel("Draw here:", false), false)
 		container.Adopt(testing.NewMouse(), true)
 		container.Adopt(okButton, false)
 		okButton.Focus()

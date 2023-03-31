@@ -1,15 +1,15 @@
 package core
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Container represents an object that can provide access to a list of child
 // elements.
 type Container interface {
-	Child         (index int) elements.Element
+	Child         (index int) tomo.Element
 	CountChildren () int
 }
 
@@ -20,7 +20,7 @@ type Container interface {
 type Propagator struct {
 	core      CoreControl
 	container Container
-	drags     [10]elements.MouseTarget
+	drags     [10]tomo.MouseTarget
 	focused   bool
 }
 
@@ -49,9 +49,9 @@ func (propagator *Propagator) Focused () (focused bool) {
 func (propagator *Propagator) Focus () {
 	if propagator.focused == true { return }
 	parent := propagator.core.Parent()
-	if parent, ok := parent.(elements.FocusableParent); ok && parent != nil {
+	if parent, ok := parent.(tomo.FocusableParent); ok && parent != nil {
 		propagator.focused = parent.RequestFocus (
-			propagator.core.Outer().(elements.Focusable))
+			propagator.core.Outer().(tomo.Focusable))
 	}
 }
 
@@ -90,7 +90,7 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 		// focus in the specified direction
 		firstFocusedChild :=
 			propagator.container.Child(firstFocused).
-			(elements.Focusable)
+			(tomo.Focusable)
 
 		// before we move the focus, the currently focused child
 		// may also be able to move its focus. if the child is able
@@ -107,7 +107,7 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 
 			child, focusable :=
 				propagator.container.Child(index).
-				(elements.Focusable)
+				(tomo.Focusable)
 			if focusable && child.HandleFocus(direction) {
 				// we have found one, so we now actually move
 				// the focus.
@@ -126,12 +126,12 @@ func (propagator *Propagator) HandleFocus (direction input.KeynavDirection) (acc
 // return true and the child element should behave as if a HandleFocus
 // call was made.
 func (propagator *Propagator) RequestFocus (
-	child elements.Focusable,
+	child tomo.Focusable,
 ) (
 	granted bool,
 ) {
-	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
-		if parent.RequestFocus(propagator.core.Outer().(elements.Focusable)) {
+	if parent, ok := propagator.core.Parent().(tomo.FocusableParent); ok {
+		if parent.RequestFocus(propagator.core.Outer().(tomo.Focusable)) {
 			propagator.HandleUnfocus()
 			propagator.focused = true
 			granted = true
@@ -142,26 +142,26 @@ func (propagator *Propagator) RequestFocus (
 
 // RequestFocusMotion notifies the parent that a child element wants the
 // focus to be moved to the next focusable element.
-func (propagator *Propagator) RequestFocusNext (child elements.Focusable) {
+func (propagator *Propagator) RequestFocusNext (child tomo.Focusable) {
 	if !propagator.focused { return }
-	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
-		parent.RequestFocusNext(propagator.core.Outer().(elements.Focusable))
+	if parent, ok := propagator.core.Parent().(tomo.FocusableParent); ok {
+		parent.RequestFocusNext(propagator.core.Outer().(tomo.Focusable))
 	}
 }
 
 // RequestFocusMotion notifies the parent that a child element wants the
 // focus to be moved to the previous focusable element.
-func (propagator *Propagator) RequestFocusPrevious (child elements.Focusable) {
+func (propagator *Propagator) RequestFocusPrevious (child tomo.Focusable) {
 	if !propagator.focused { return }
-	if parent, ok := propagator.core.Parent().(elements.FocusableParent); ok {
-		parent.RequestFocusPrevious(propagator.core.Outer().(elements.Focusable))
+	if parent, ok := propagator.core.Parent().(tomo.FocusableParent); ok {
+		parent.RequestFocusPrevious(propagator.core.Outer().(tomo.Focusable))
 	}
 }
 
 // HandleDeselection causes this element to mark itself and all of its children
 // as unfocused.
 func (propagator *Propagator) HandleUnfocus () {
-	propagator.forFocusable (func (child elements.Focusable) bool {
+	propagator.forFocusable (func (child tomo.Focusable) bool {
 		child.HandleUnfocus()
 		return true
 	})
@@ -170,8 +170,8 @@ func (propagator *Propagator) HandleUnfocus () {
 
 // HandleKeyDown propogates the keyboard event to the currently selected child.
 func (propagator *Propagator) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
-	propagator.forFocused (func (child elements.Focusable) bool {
-		typedChild, handlesKeyboard := child.(elements.KeyboardTarget)
+	propagator.forFocused (func (child tomo.Focusable) bool {
+		typedChild, handlesKeyboard := child.(tomo.KeyboardTarget)
 		if handlesKeyboard {
 			typedChild.HandleKeyDown(key, modifiers)
 		}
@@ -181,8 +181,8 @@ func (propagator *Propagator) HandleKeyDown (key input.Key, modifiers input.Modi
 
 // HandleKeyUp propogates the keyboard event to the currently selected child.
 func (propagator *Propagator) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
-	propagator.forFocused (func (child elements.Focusable) bool {
-		typedChild, handlesKeyboard := child.(elements.KeyboardTarget)
+	propagator.forFocused (func (child tomo.Focusable) bool {
+		typedChild, handlesKeyboard := child.(tomo.KeyboardTarget)
 		if handlesKeyboard {
 			typedChild.HandleKeyUp(key, modifiers)
 		}
@@ -195,7 +195,7 @@ func (propagator *Propagator) HandleKeyUp (key input.Key, modifiers input.Modifi
 func (propagator *Propagator) HandleMouseDown (x, y int, button input.Button) {
 	child, handlesMouse :=
 		propagator.childAt(image.Pt(x, y)).
-		(elements.MouseTarget)
+		(tomo.MouseTarget)
 	if handlesMouse {
 		propagator.drags[button] = child
 		child.HandleMouseDown(x, y, button)
@@ -218,7 +218,7 @@ func (propagator *Propagator) HandleMouseUp (x, y int, button input.Button) {
 func (propagator *Propagator) HandleMotion (x, y int) {
 	handled := false
 	for _, child := range propagator.drags {
-		if child, ok := child.(elements.MotionTarget); ok {
+		if child, ok := child.(tomo.MotionTarget); ok {
 			child.HandleMotion(x, y)
 			handled = true
 		}
@@ -226,7 +226,7 @@ func (propagator *Propagator) HandleMotion (x, y int) {
 
 	if !handled {
 		child := propagator.childAt(image.Pt(x, y))
-		if child, ok := child.(elements.MotionTarget); ok {
+		if child, ok := child.(tomo.MotionTarget); ok {
 			child.HandleMotion(x, y)
 		}
 	}
@@ -236,15 +236,15 @@ func (propagator *Propagator) HandleMotion (x, y int) {
 // pointer.
 func (propagator *Propagator) HandleScroll (x, y int, deltaX, deltaY float64) {
 	child := propagator.childAt(image.Pt(x, y))
-	if child, ok := child.(elements.ScrollTarget); ok {
+	if child, ok := child.(tomo.ScrollTarget); ok {
 		child.HandleScroll(x, y, deltaX, deltaY)
 	}
 }
 
 // SetTheme sets the theme of all children to the specified theme.
 func (propagator *Propagator) SetTheme (theme theme.Theme) {
-	propagator.forChildren (func (child elements.Element) bool {
-		typedChild, themeable := child.(elements.Themeable)
+	propagator.forChildren (func (child tomo.Element) bool {
+		typedChild, themeable := child.(tomo.Themeable)
 		if themeable {
 			typedChild.SetTheme(theme)
 		}
@@ -254,8 +254,8 @@ func (propagator *Propagator) SetTheme (theme theme.Theme) {
 
 // SetConfig sets the theme of all children to the specified config.
 func (propagator *Propagator) SetConfig (config config.Config) {
-	propagator.forChildren (func (child elements.Element) bool {
-		typedChild, configurable := child.(elements.Configurable)
+	propagator.forChildren (func (child tomo.Element) bool {
+		typedChild, configurable := child.(tomo.Configurable)
 		if configurable {
 			typedChild.SetConfig(config)
 		}
@@ -270,7 +270,7 @@ func (propagator *Propagator) focusFirstFocusableElement (
 ) (
 	ok bool,
 ) {
-	propagator.forFocusable (func (child elements.Focusable) bool {
+	propagator.forFocusable (func (child tomo.Focusable) bool {
 		if child.HandleFocus(direction) {
 			propagator.focused = true
 			ok = true
@@ -286,8 +286,8 @@ func (propagator *Propagator) focusLastFocusableElement (
 ) (
 	ok bool,
 ) {
-	propagator.forChildrenReverse (func (child elements.Element) bool {
-		typedChild, focusable := child.(elements.Focusable)
+	propagator.forChildrenReverse (func (child tomo.Element) bool {
+		typedChild, focusable := child.(tomo.Focusable)
 		if focusable && typedChild.HandleFocus(direction) {
 			propagator.focused = true
 			ok = true
@@ -300,7 +300,7 @@ func (propagator *Propagator) focusLastFocusableElement (
 
 // ----------- Iterator utilities ----------- //
 
-func (propagator *Propagator) forChildren (callback func (child elements.Element) bool) {
+func (propagator *Propagator) forChildren (callback func (child tomo.Element) bool) {
 	for index := 0; index < propagator.container.CountChildren(); index ++ {
 		child := propagator.container.Child(index)
 		if child == nil     { continue }
@@ -308,7 +308,7 @@ func (propagator *Propagator) forChildren (callback func (child elements.Element
 	}
 }
 
-func (propagator *Propagator) forChildrenReverse (callback func (child elements.Element) bool) {
+func (propagator *Propagator) forChildrenReverse (callback func (child tomo.Element) bool) {
 	for index := propagator.container.CountChildren() - 1; index > 0; index -- {
 		child := propagator.container.Child(index)
 		if child == nil     { continue }
@@ -316,8 +316,8 @@ func (propagator *Propagator) forChildrenReverse (callback func (child elements.
 	}
 }
 
-func (propagator *Propagator) childAt (position image.Point) (child elements.Element) {
-	propagator.forChildren (func (current elements.Element) bool {
+func (propagator *Propagator) childAt (position image.Point) (child tomo.Element) {
+	propagator.forChildren (func (current tomo.Element) bool {
 		if position.In(current.Bounds()) {
 			child = current
 		}
@@ -326,9 +326,9 @@ func (propagator *Propagator) childAt (position image.Point) (child elements.Ele
 	return
 }
 
-func (propagator *Propagator) forFocused (callback func (child elements.Focusable) bool) {
-	propagator.forChildren (func (child elements.Element) bool {
-		typedChild, focusable := child.(elements.Focusable)
+func (propagator *Propagator) forFocused (callback func (child tomo.Focusable) bool) {
+	propagator.forChildren (func (child tomo.Element) bool {
+		typedChild, focusable := child.(tomo.Focusable)
 		if focusable && typedChild.Focused() {
 			if !callback(typedChild) { return false }
 		}
@@ -336,9 +336,9 @@ func (propagator *Propagator) forFocused (callback func (child elements.Focusabl
 	})
 }
 
-func (propagator *Propagator) forFocusable (callback func (child elements.Focusable) bool) {
-	propagator.forChildren (func (child elements.Element) bool {
-		typedChild, focusable := child.(elements.Focusable)
+func (propagator *Propagator) forFocusable (callback func (child tomo.Focusable) bool) {
+	propagator.forChildren (func (child tomo.Element) bool {
+		typedChild, focusable := child.(tomo.Focusable)
 		if focusable {
 			if !callback(typedChild) { return false }
 		}
@@ -348,7 +348,7 @@ func (propagator *Propagator) forFocusable (callback func (child elements.Focusa
 
 func (propagator *Propagator) firstFocused () int {
 	for index := 0; index < propagator.container.CountChildren(); index ++ {
-		child, focusable := propagator.container.Child(index).(elements.Focusable)
+		child, focusable := propagator.container.Child(index).(tomo.Focusable)
 		if focusable && child.Focused() {
 			return index
 		}

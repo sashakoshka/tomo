@@ -1,7 +1,7 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/ezprof/ez"
 
@@ -12,7 +12,7 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("example button")
-	button := basicElements.NewButton("hello tomo!")
+	button := elements.NewButton("hello tomo!")
 	button.OnClick (func () {
 		// when we set the button's text to something longer, the window
 		// will automatically resize to accomodate it.

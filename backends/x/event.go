@@ -1,8 +1,8 @@
 package x
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
@@ -127,7 +127,7 @@ func (window *window) handleKeyPress (
 	modifiers.NumberPad = numberPad
 
 	if key == input.KeyTab && modifiers.Alt {
-		if child, ok := window.child.(elements.Focusable); ok {
+		if child, ok := window.child.(tomo.Focusable); ok {
 			direction := input.KeynavDirectionForward
 			if modifiers.Shift {
 				direction = input.KeynavDirectionBackward
@@ -137,7 +137,7 @@ func (window *window) handleKeyPress (
 				child.HandleUnfocus()
 			}
 		}
-	} else if child, ok := window.child.(elements.KeyboardTarget); ok {
+	} else if child, ok := window.child.(tomo.KeyboardTarget); ok {
 		child.HandleKeyDown(key, modifiers)
 	}
 }
@@ -171,7 +171,7 @@ func (window *window) handleKeyRelease (
 	modifiers := window.modifiersFromState(keyEvent.State)
 	modifiers.NumberPad = numberPad
 	
-	if child, ok := window.child.(elements.KeyboardTarget); ok {
+	if child, ok := window.child.(tomo.KeyboardTarget); ok {
 		child.HandleKeyUp(key, modifiers)
 	}
 }
@@ -185,7 +185,7 @@ func (window *window) handleButtonPress (
 	
 	buttonEvent := *event.ButtonPressEvent
 	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
-		if child, ok := window.child.(elements.ScrollTarget); ok {
+		if child, ok := window.child.(tomo.ScrollTarget); ok {
 			sum := scrollSum { }
 			sum.add(buttonEvent.Detail, window, buttonEvent.State)
 			window.compressScrollSum(buttonEvent, &sum)
@@ -195,7 +195,7 @@ func (window *window) handleButtonPress (
 				float64(sum.x), float64(sum.y))
 		}
 	} else {
-		if child, ok := window.child.(elements.MouseTarget); ok {
+		if child, ok := window.child.(tomo.MouseTarget); ok {
 			child.HandleMouseDown (
 				int(buttonEvent.EventX),
 				int(buttonEvent.EventY),
@@ -211,7 +211,7 @@ func (window *window) handleButtonRelease (
 ) {
 	if window.child == nil { return }
 	
-	if child, ok := window.child.(elements.MouseTarget); ok {
+	if child, ok := window.child.(tomo.MouseTarget); ok {
 		buttonEvent := *event.ButtonReleaseEvent
 		if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
 		child.HandleMouseUp (
@@ -227,7 +227,7 @@ func (window *window) handleMotionNotify (
 ) {
 	if window.child == nil { return }
 	
-	if child, ok := window.child.(elements.MotionTarget); ok {
+	if child, ok := window.child.(tomo.MotionTarget); ok {
 		motionEvent := window.compressMotionNotify(*event.MotionNotifyEvent)
 		child.HandleMotion (
 			int(motionEvent.EventX),

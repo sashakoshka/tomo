@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
@@ -28,7 +28,7 @@ type Checkbox struct {
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked }
-	element.theme.Case = theme.C("basic", "checkbox")
+	element.theme.Case = theme.C("tomo", "checkbox")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.core, element.redo)

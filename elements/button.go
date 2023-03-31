@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "image"
 // import "runtime/debug"
@@ -34,7 +34,7 @@ type Button struct {
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
 	element = &Button { showText: true }
-	element.theme.Case = theme.C("basic", "button")
+	element.theme.Case = theme.C("tomo", "button")
 	element.Core, element.core = core.NewCore(element, element.drawAll)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.core, element.drawAndPush)

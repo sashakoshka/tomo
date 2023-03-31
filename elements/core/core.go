@@ -2,16 +2,16 @@ package core
 
 import "image"
 import "image/color"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Core is a struct that implements some core functionality common to most
 // widgets. It is meant to be embedded directly into a struct.
 type Core struct {
 	canvas canvas.Canvas
 	bounds image.Rectangle
-	parent elements.Parent
-	outer  elements.Element
+	parent tomo.Parent
+	outer  tomo.Element
 
 	metrics struct {
 		minimumWidth  int
@@ -26,7 +26,7 @@ type Core struct {
 // element that it will be a part of. If outer is nil, this function will return
 // nil.
 func NewCore (
-	outer elements.Element,
+	outer tomo.Element,
 	drawSizeChange func (),
 ) (
 	core *Core,
@@ -57,7 +57,7 @@ func (core *Core) MinimumSize () (width, height int) {
 // MinimumSize fulfils the tomo.Element interface. This should not need to be
 // overridden, unless you want to detect when the element is parented or
 // unparented.
-func (core *Core) SetParent (parent elements.Parent) {
+func (core *Core) SetParent (parent tomo.Parent) {
 	if parent != nil && core.parent != nil {
 		panic("core.SetParent: element already has a parent")
 	}
@@ -118,12 +118,12 @@ func (control CoreControl) Buffer () (data []color.RGBA, stride int) {
 }
 
 // Parent returns the element's parent.
-func (control CoreControl) Parent () elements.Parent {
+func (control CoreControl) Parent () tomo.Parent {
 	return control.core.parent
 }
 
 // Outer returns the outer element given when the control was constructed.
-func (control CoreControl) Outer () elements.Element {
+func (control CoreControl) Outer () tomo.Element {
 	return control.core.outer
 }
 

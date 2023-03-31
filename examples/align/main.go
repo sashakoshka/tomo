@@ -2,7 +2,7 @@ package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
@@ -19,10 +19,10 @@ func run () {
 	scrollContainer.Adopt(container)
 	window.Adopt(scrollContainer)
 
-	left    := basicElements.NewLabel(text, true)
-	center  := basicElements.NewLabel(text, true)
-	right   := basicElements.NewLabel(text, true)
-	justify := basicElements.NewLabel(text, true)
+	left    := elements.NewLabel(text, true)
+	center  := elements.NewLabel(text, true)
+	right   := elements.NewLabel(text, true)
+	justify := elements.NewLabel(text, true)
 
 	left.SetAlign(textdraw.AlignLeft)
 	center.SetAlign(textdraw.AlignCenter)

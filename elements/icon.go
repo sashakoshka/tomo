@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
@@ -18,7 +18,7 @@ func NewIcon (id theme.Icon, size theme.IconSize) (element *Icon) {
 		id:   id,
 		size: size,
 	}
-	element.theme.Case = theme.C("basic", "icon")
+	element.theme.Case = theme.C("tomo", "icon")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.updateMinimumSize()
 	return

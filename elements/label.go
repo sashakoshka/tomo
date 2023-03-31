@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
@@ -29,7 +29,7 @@ type Label struct {
 // wrapped.
 func NewLabel (text string, wrap bool) (element *Label) {
 	element = &Label { }
-	element.theme.Case = theme.C("basic", "label")
+	element.theme.Case = theme.C("tomo", "label")
 	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.SetWrap(wrap)
 	element.SetText(text)

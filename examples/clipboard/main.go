@@ -9,8 +9,8 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
-import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
+import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
@@ -28,14 +28,14 @@ func run () {
 	window, _ := tomo.NewWindow(256, 2)
 	window.SetTitle("Clipboard")
 
-	container := containers.NewContainer(basicLayouts.Vertical { true, true })
-	textInput := basicElements.NewTextBox("", "")
-	controlRow := containers.NewContainer(basicLayouts.Horizontal { true, false })
-	copyButton := basicElements.NewButton("Copy")
+	container := containers.NewContainer(layouts.Vertical { true, true })
+	textInput := elements.NewTextBox("", "")
+	controlRow := containers.NewContainer(layouts.Horizontal { true, false })
+	copyButton := elements.NewButton("Copy")
 	copyButton.SetIcon(theme.IconCopy)
-	pasteButton := basicElements.NewButton("Paste")
+	pasteButton := elements.NewButton("Paste")
 	pasteButton.SetIcon(theme.IconPaste)
-	pasteImageButton := basicElements.NewButton("Image")
+	pasteImageButton := elements.NewButton("Image")
 	pasteImageButton.SetIcon(theme.IconPictures)
 
 	imageClipboardCallback := func (clipboard data.Data, err error) {
@@ -124,12 +124,12 @@ func run () {
 func imageWindow (image image.Image) {
 	window, _ := tomo.NewWindow(2, 2)
 	window.SetTitle("Clipboard Image")
-	container := containers.NewContainer(basicLayouts.Vertical { true, true })
-	closeButton := basicElements.NewButton("Ok")
+	container := containers.NewContainer(layouts.Vertical { true, true })
+	closeButton := elements.NewButton("Ok")
 	closeButton.SetIcon(theme.IconYes)
 	closeButton.OnClick(window.Close)
 	
-	container.Adopt(basicElements.NewImage(image), true)
+	container.Adopt(elements.NewImage(image), true)
 	container.Adopt(closeButton, false)
 	window.Adopt(container)
 	window.Show()

@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
@@ -35,9 +35,9 @@ func NewSlider (value float64, vertical bool) (element *Slider) {
 		vertical: vertical,
 	}
 	if vertical {
-		element.theme.Case = theme.C("basic", "sliderVertical")
+		element.theme.Case = theme.C("tomo", "sliderVertical")
 	} else {
-		element.theme.Case = theme.C("basic", "sliderHorizontal")
+		element.theme.Case = theme.C("tomo", "sliderHorizontal")
 	}
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,

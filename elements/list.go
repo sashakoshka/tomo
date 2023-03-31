@@ -1,13 +1,13 @@
-package basicElements
+package elements
 
 import "fmt"
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 // List is an element that contains several objects that a user can select.
@@ -37,7 +37,7 @@ type List struct {
 // NewList creates a new list element with the specified entries.
 func NewList (entries ...ListEntry) (element *List) {
 	element = &List { selectedEntry: -1 }
-	element.theme.Case = theme.C("basic", "list")
+	element.theme.Case = theme.C("tomo", "list")
 	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (element.core, func () {
@@ -435,7 +435,7 @@ func (element *List) updateMinimumSize () {
 }
 
 func (element *List) scrollBoundsChange () {
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+	if parent, ok := element.core.Parent().(tomo.ScrollableParent); ok {
 		parent.NotifyScrollBoundsChange(element)
 	}
 	if element.onScrollBoundsChange != nil {

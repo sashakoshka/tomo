@@ -3,7 +3,6 @@ package tomo
 import "errors"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 // Backend represents a connection to a display server, or something similar.
 // It is capable of managing an event loop, and creating windows.
@@ -22,7 +21,7 @@ type Backend interface {
 	// NewWindow creates a new window with the specified width and height,
 	// and returns a struct representing it that fulfills the MainWindow
 	// interface.
-	NewWindow (width, height int) (window elements.MainWindow, err error)
+	NewWindow (width, height int) (window MainWindow, err error)
 	
 	// SetTheme sets the theme of all open windows.
 	SetTheme (theme.Theme)

@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 // Numeric is a type constraint representing a number.
 type Numeric interface {

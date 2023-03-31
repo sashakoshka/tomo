@@ -2,9 +2,8 @@ package main
 
 import "fmt"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import "git.tebibyte.media/sashakoshka/tomo/layouts/basic"
-import "git.tebibyte.media/sashakoshka/tomo/elements/basic"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
@@ -16,8 +15,8 @@ func run () {
 	window, _ := tomo.NewWindow(256, 256)
 	window.SetTitle("Main")
 
-	container := containers.NewContainer(basicLayouts.Vertical { true, true })
-	container.Adopt(basicElements.NewLabel("Main window", false), true)
+	container := containers.NewContainer(layouts.Vertical { true, true })
+	container.Adopt(elements.NewLabel("Main window", false), true)
 	window.Adopt(container)
 		
 	window.OnClose(tomo.Stop)
@@ -29,12 +28,12 @@ func run () {
 	createPanel(window, 3)
 }
 
-func createPanel (parent elements.MainWindow, id int) {
+func createPanel (parent tomo.MainWindow, id int) {
 	window, _ := parent.NewPanel(2, 2)
 	title := fmt.Sprint("Panel #", id)
 	window.SetTitle(title)
-	container := containers.NewContainer(basicLayouts.Vertical { true, true })
-	container.Adopt(basicElements.NewLabel(title, false), true)
+	container := containers.NewContainer(layouts.Vertical { true, true })
+	container.Adopt(elements.NewLabel(title, false), true)
 	window.Adopt(container)
 	window.Show()
 }

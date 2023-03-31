@@ -1,4 +1,4 @@
-package elements
+package tomo
 
 // Parent represents a type capable of containing child elements.
 type Parent interface {

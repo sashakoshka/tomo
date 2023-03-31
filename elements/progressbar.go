@@ -1,4 +1,4 @@
-package basicElements
+package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
@@ -19,7 +19,7 @@ type ProgressBar struct {
 // level.
 func NewProgressBar (progress float64) (element *ProgressBar) {
 	element = &ProgressBar { progress: progress }
-	element.theme.Case = theme.C("basic", "progressBar")
+	element.theme.Case = theme.C("tomo", "progressBar")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	return
 }

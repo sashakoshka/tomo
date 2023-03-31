@@ -22,7 +22,7 @@ type AnalogClock struct {
 // NewAnalogClock creates a new analog clock that displays the specified time.
 func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 	element = &AnalogClock { }
-	element.theme.Case = theme.C("fun", "clock")
+	element.theme.Case = theme.C("tomo", "clock")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.core.SetMinimumSize(64, 64)
 	return

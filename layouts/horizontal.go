@@ -1,9 +1,9 @@
-package basicLayouts
+package layouts
 
 import "image"
 import "golang.org/x/image/math/fixed"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
 
 // Horizontal arranges elements horizontally. Elements at the start of the entry
@@ -20,7 +20,7 @@ type Horizontal struct {
 
 // Arrange arranges a list of entries horizontally.
 func (layout Horizontal) Arrange (
-	entries []layouts.LayoutEntry,
+	entries []tomo.LayoutEntry,
 	margin  image.Point,
 	padding artist.Inset,
 	bounds image.Rectangle,
@@ -55,7 +55,7 @@ func (layout Horizontal) Arrange (
 // MinimumSize returns the minimum width and height that will be needed to
 // arrange the given list of entries.
 func (layout Horizontal) MinimumSize (
-	entries []layouts.LayoutEntry,
+	entries []tomo.LayoutEntry,
 	margin  image.Point,
 	padding artist.Inset,
 ) (
@@ -80,7 +80,7 @@ func (layout Horizontal) MinimumSize (
 }
 
 func (layout Horizontal) expandingElementWidth (
-	entries []layouts.LayoutEntry,
+	entries []tomo.LayoutEntry,
 	margin  image.Point,
 	padding artist.Inset,
 	freeSpace int,

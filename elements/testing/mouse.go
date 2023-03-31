@@ -23,7 +23,7 @@ type Mouse struct {
 
 // NewMouse creates a new mouse test element.
 func NewMouse () (element *Mouse) {
-	element = &Mouse { c: theme.C("testing", "mouse") }
+	element = &Mouse { c: theme.C("tomo", "mouse") }
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.core.SetMinimumSize(32, 32)
 	return
