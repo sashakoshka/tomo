@@ -1,3 +1,4 @@
+// Package data provides operations to deal with arbitrary data and MIME types.
 package data
 
 import "io"

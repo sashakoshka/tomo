@@ -1,3 +1,4 @@
+// Package font provides a default font. Its data is entirely self contained.
 package font
 
 import "golang.org/x/image/font/basicfont"
