@@ -24,8 +24,10 @@ type Piano struct {
 	focusableControl core.FocusableCoreControl
 	low, high music.Octave
 	
-	config config.Wrapped
-	theme  theme.Wrapped
+	config     config.Wrapped
+	theme      theme.Wrapped
+	flatTheme  theme.Wrapped
+	sharpTheme theme.Wrapped
 
 	flatKeys  []pianoKey
 	sharpKeys []pianoKey
@@ -53,7 +55,9 @@ func NewPiano (low, high music.Octave) (element *Piano) {
 		keynavPressed: make(map[music.Note] bool),
 	}
 	
-	element.theme.Case = tomo.C("tomo", "piano")
+	element.theme.Case      = tomo.C("tomo", "piano")
+	element.flatTheme.Case  = tomo.C("tomo", "piano", "flatKey")
+	element.sharpTheme.Case = tomo.C("tomo", "piano", "sharpKey")
 	element.Core, element.core = core.NewCore (element, func () {
 		element.recalculate()
 		element.draw()
@@ -202,6 +206,8 @@ func (element *Piano) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
 func (element *Piano) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
+	element.flatTheme.Theme = new
+	element.sharpTheme.Theme = new
 	element.updateMinimumSize()
 	element.recalculate()
 	element.redo()
@@ -313,8 +319,7 @@ func (element *Piano) drawFlat (
 	state tomo.State,
 ) {
 	state.Pressed = pressed
-	pattern := element.theme.Theme.Pattern (
-		tomo.PatternButton, state, tomo.C("fun", "piano", "flatKey"))
+	pattern := element.flatTheme.Pattern(tomo.PatternButton, state)
 	pattern.Draw(element.core, bounds)
 }
 
@@ -324,7 +329,6 @@ func (element *Piano) drawSharp (
 	state tomo.State,
 ) {
 	state.Pressed = pressed
-	pattern := element.theme.Theme.Pattern (
-		tomo.PatternButton, state, tomo.C("fun", "piano", "sharpKey"))
+	pattern := element.sharpTheme.Pattern(tomo.PatternButton, state)
 	pattern.Draw(element.core, bounds)
 }
