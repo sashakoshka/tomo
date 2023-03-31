@@ -10,7 +10,7 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
+import defaultfont "git.tebibyte.media/sashakoshka/tomo/default/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 
 //go:embed assets/wintergreen.png

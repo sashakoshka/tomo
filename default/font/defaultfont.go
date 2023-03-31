@@ -1,10 +1,10 @@
-package defaultfont
+package font
 
 import "golang.org/x/image/font/basicfont"
 
 var FaceRegular = basicfont.Face7x13
 
-// FIXME: make bold, italic, and bold italic masks by processing the Face7x13
+// TODO: make bold, italic, and bold italic masks by processing the Face7x13
 // mask.
 
 var FaceBold = &basicfont.Face {
