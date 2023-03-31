@@ -290,15 +290,16 @@ func (element *ScrollBar) recalculateHorizontal () {
 }
 
 func (element *ScrollBar) updateMinimumSize () {
-	padding := element.theme.Padding(tomo.PatternGutter)
+	gutterPadding := element.theme.Padding(tomo.PatternGutter)
+	handlePadding := element.theme.Padding(tomo.PatternHandle)
 	if element.vertical {
 		element.core.SetMinimumSize (
-			padding.Horizontal() + element.config.HandleWidth(),
-			padding.Vertical()   + element.config.HandleWidth() * 2)
+			gutterPadding.Horizontal() + handlePadding.Horizontal(),
+			gutterPadding.Vertical()   + handlePadding.Vertical() * 2)
 	} else {
 		element.core.SetMinimumSize (
-			padding.Horizontal() + element.config.HandleWidth() * 2,
-			padding.Vertical()   + element.config.HandleWidth())
+			gutterPadding.Horizontal() + handlePadding.Horizontal() * 2,
+			gutterPadding.Vertical()   + handlePadding.Vertical())
 	}
 }
 

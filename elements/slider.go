@@ -187,14 +187,16 @@ func (element *Slider) valueFor (x, y int) (value float64) {
 }
 
 func (element *Slider) updateMinimumSize () {
+	gutterPadding := element.theme.Padding(tomo.PatternGutter)
+	handlePadding := element.theme.Padding(tomo.PatternHandle)
 	if element.vertical {
 		element.core.SetMinimumSize (
-			element.config.HandleWidth(),
-			element.config.HandleWidth() * 2)
+			gutterPadding.Horizontal() + handlePadding.Horizontal(),
+			gutterPadding.Vertical()   + handlePadding.Vertical() * 2)
 	} else {
 		element.core.SetMinimumSize (
-			element.config.HandleWidth() * 2,
-			element.config.HandleWidth())
+			gutterPadding.Horizontal() + handlePadding.Horizontal() * 2,
+			gutterPadding.Vertical()   + handlePadding.Vertical())
 	}
 }
 
