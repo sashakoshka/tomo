@@ -3,7 +3,6 @@ package main
 import "os"
 import "path/filepath"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/file"
@@ -17,28 +16,28 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(384, 384)
 	window.SetTitle("File browser")
-	container := containers.NewContainer(basicLayouts.Vertical { true, true })
+	container := containers.NewContainer(layouts.Vertical { true, true })
 	window.Adopt(container)
 	homeDir, _ := os.UserHomeDir()
 
-	controlBar := containers.NewContainer(basicLayouts.Horizontal { })
-	backButton := basicElements.NewButton("Back")
-	backButton.SetIcon(theme.IconBackward)
+	controlBar := containers.NewContainer(layouts.Horizontal { })
+	backButton := elements.NewButton("Back")
+	backButton.SetIcon(tomo.IconBackward)
 	backButton.ShowText(false)
-	forwardButton := basicElements.NewButton("Forward")
-	forwardButton.SetIcon(theme.IconForward)
+	forwardButton := elements.NewButton("Forward")
+	forwardButton.SetIcon(tomo.IconForward)
 	forwardButton.ShowText(false)
-	refreshButton := basicElements.NewButton("Refresh")
-	refreshButton.SetIcon(theme.IconRefresh)
+	refreshButton := elements.NewButton("Refresh")
+	refreshButton.SetIcon(tomo.IconRefresh)
 	refreshButton.ShowText(false)
-	upwardButton := basicElements.NewButton("Go Up")
-	upwardButton.SetIcon(theme.IconUpward)
+	upwardButton := elements.NewButton("Go Up")
+	upwardButton.SetIcon(tomo.IconUpward)
 	upwardButton.ShowText(false)
-	locationInput := basicElements.NewTextBox("Location", "")
+	locationInput := elements.NewTextBox("Location", "")
 	
-	statusBar := containers.NewContainer(basicLayouts.Horizontal { true, false })
+	statusBar := containers.NewContainer(layouts.Horizontal { true, false })
 	directory, _ := fileElements.NewFile(homeDir, nil)
-	baseName := basicElements.NewLabel(filepath.Base(homeDir), false)
+	baseName := elements.NewLabel(filepath.Base(homeDir), false)
 	
 	scrollContainer  := containers.NewScrollContainer(false, true)
 	directoryView, _ := fileElements.NewDirectory(homeDir, nil)

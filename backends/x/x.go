@@ -1,8 +1,6 @@
 package x
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
@@ -26,8 +24,8 @@ type Backend struct {
 		hyper uint16
 	}
 
-	theme  theme.Theme
-	config config.Config
+	theme  tomo.Theme
+	config tomo.Config
 
 	windows map[xproto.Window] *window
 
@@ -37,11 +35,9 @@ type Backend struct {
 // NewBackend instantiates an X backend.
 func NewBackend () (output tomo.Backend, err error) {
 	backend := &Backend {
-		windows: map[xproto.Window] *window { },
+		windows:   map[xproto.Window] *window { },
 		doChannel: make(chan func (), 32),
-		theme:  theme.Default  { },
-		config: config.Default { },
-		open:   true,
+		open:      true,
 	}
 	
 	// connect to X
@@ -97,7 +93,7 @@ func (backend *Backend) Do (callback func ()) {
 }
 
 // SetTheme sets the theme of all open windows.
-func (backend *Backend) SetTheme (theme theme.Theme) {
+func (backend *Backend) SetTheme (theme tomo.Theme) {
 	backend.assert()
 	backend.theme = theme
 	for _, window := range backend.windows {
@@ -106,7 +102,7 @@ func (backend *Backend) SetTheme (theme theme.Theme) {
 }
 
 // SetConfig sets the configuration of all open windows.
-func (backend *Backend) SetConfig (config config.Config) {
+func (backend *Backend) SetConfig (config tomo.Config) {
 	backend.assert()
 	backend.config = config
 	for _, window := range backend.windows {

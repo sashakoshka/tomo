@@ -2,9 +2,7 @@ package tomo
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 
 // Element represents a basic on-screen object.
 type Element interface {
@@ -164,7 +162,7 @@ type Themeable interface {
 	
 	// SetTheme sets the element's theme to something fulfilling the
 	// theme.Theme interface.
-	SetTheme (theme.Theme)
+	SetTheme (Theme)
 }
 
 // Configurable represents an element that can modify its behavior to fit within
@@ -174,5 +172,5 @@ type Configurable interface {
 	
 	// SetConfig sets the element's configuration to something fulfilling
 	// the config.Config interface.
-	SetConfig (config.Config)
+	SetConfig (Config)
 }

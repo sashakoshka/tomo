@@ -4,11 +4,11 @@ import "fmt"
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // List is an element that contains several objects that a user can select.
 type List struct {
@@ -37,7 +37,7 @@ type List struct {
 // NewList creates a new list element with the specified entries.
 func NewList (entries ...ListEntry) (element *List) {
 	element = &List { selectedEntry: -1 }
-	element.theme.Case = theme.C("tomo", "list")
+	element.theme.Case = tomo.C("tomo", "list")
 	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (element.core, func () {
@@ -69,7 +69,7 @@ func (element *List) handleResize () {
 }
 
 // SetTheme sets the element's theme.
-func (element *List) SetTheme (new theme.Theme) {
+func (element *List) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	for index, entry := range element.entries {
@@ -81,7 +81,7 @@ func (element *List) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *List) SetConfig (new config.Config) {
+func (element *List) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	for index, entry := range element.entries {
@@ -214,7 +214,7 @@ func (element *List) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *List) scrollViewportHeight () (height int) {
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(tomo.PatternSunken)
 	return element.Bounds().Dy() - padding[0] - padding[2]
 }
 
@@ -358,7 +358,7 @@ func (element *List) Select (index int) {
 }
 
 func (element *List) selectUnderMouse (x, y int) (updated bool) {
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(tomo.PatternSunken)
 	bounds := padding.Apply(element.Bounds())
 	mousePoint := image.Pt(x, y)
 	dot := image.Pt (
@@ -401,7 +401,7 @@ func (element *List) changeSelectionBy (delta int) (updated bool) {
 
 func (element *List) resizeEntryToFit (entry ListEntry) (resized ListEntry) {
 	bounds := element.Bounds()
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(tomo.PatternSunken)
 	entry.Resize(padding.Apply(bounds).Dx())
 	return entry
 }
@@ -428,7 +428,7 @@ func (element *List) updateMinimumSize () {
 		minimumHeight = element.contentHeight
 	}
 
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(tomo.PatternSunken)
 	minimumHeight += padding[0] + padding[2]
 
 	element.core.SetMinimumSize(minimumWidth, minimumHeight)
@@ -445,9 +445,9 @@ func (element *List) scrollBoundsChange () {
 
 func (element *List) draw () {
 	bounds      := element.Bounds()
-	padding     := element.theme.Padding(theme.PatternSunken)
+	padding     := element.theme.Padding(tomo.PatternSunken)
 	innerBounds := padding.Apply(bounds)
-	state := theme.State {
+	state := tomo.State {
 		Disabled: !element.Enabled(),
 		Focused: element.Focused(),
 	}
@@ -471,7 +471,7 @@ func (element *List) draw () {
 		0, 0,
 		innerBounds.Dx(), element.contentHeight,
 	).Add(innerBounds.Min).Intersect(innerBounds)
-	pattern := element.theme.Pattern(theme.PatternSunken, state)
+	pattern := element.theme.Pattern(tomo.PatternSunken, state)
 	artist.DrawShatter (
 		element.core, pattern, bounds, covered)
 }

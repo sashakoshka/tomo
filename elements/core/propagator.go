@@ -3,8 +3,6 @@ package core
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 
 // Container represents an object that can provide access to a list of child
 // elements.
@@ -242,7 +240,7 @@ func (propagator *Propagator) HandleScroll (x, y int, deltaX, deltaY float64) {
 }
 
 // SetTheme sets the theme of all children to the specified theme.
-func (propagator *Propagator) SetTheme (theme theme.Theme) {
+func (propagator *Propagator) SetTheme (theme tomo.Theme) {
 	propagator.forChildren (func (child tomo.Element) bool {
 		typedChild, themeable := child.(tomo.Themeable)
 		if themeable {
@@ -253,7 +251,7 @@ func (propagator *Propagator) SetTheme (theme theme.Theme) {
 }
 
 // SetConfig sets the theme of all children to the specified config.
-func (propagator *Propagator) SetConfig (config config.Config) {
+func (propagator *Propagator) SetConfig (config tomo.Config) {
 	propagator.forChildren (func (child tomo.Element) bool {
 		typedChild, configurable := child.(tomo.Configurable)
 		if configurable {

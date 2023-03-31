@@ -1,11 +1,12 @@
 package elements
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Checkbox is a toggle-able checkbox with a label.
 type Checkbox struct {
@@ -28,10 +29,13 @@ type Checkbox struct {
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked }
-	element.theme.Case = theme.C("tomo", "checkbox")
+	element.theme.Case = tomo.C("tomo", "checkbox")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.core, element.redo)
+	element.drawer.SetFace (element.theme.FontFace (
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	element.SetText(text)
 	return
 }
@@ -119,18 +123,18 @@ func (element *Checkbox) SetText (text string) {
 }
 
 // SetTheme sets the element's theme.
-func (element *Checkbox) SetTheme (new theme.Theme) {
+func (element *Checkbox) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.drawer.SetFace (element.theme.FontFace (
-		theme.FontStyleRegular,
-		theme.FontSizeNormal))
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	element.updateMinimumSize()
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
-func (element *Checkbox) SetConfig (new config.Config) {
+func (element *Checkbox) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
@@ -142,7 +146,7 @@ func (element *Checkbox) updateMinimumSize () {
 	if element.text == "" {
 		element.core.SetMinimumSize(textBounds.Dy(), textBounds.Dy())
 	} else {
-		margin := element.theme.Margin(theme.PatternBackground)
+		margin := element.theme.Margin(tomo.PatternBackground)
 		element.core.SetMinimumSize (
 			textBounds.Dy() + margin.X + textBounds.Dx(),
 			textBounds.Dy())
@@ -160,7 +164,7 @@ func (element *Checkbox) draw () {
 	bounds := element.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 
-	state := theme.State {
+	state := tomo.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
@@ -168,14 +172,14 @@ func (element *Checkbox) draw () {
 	}
 
 	backgroundPattern := element.theme.Pattern (
-		theme.PatternBackground, state)
+		tomo.PatternBackground, state)
 	backgroundPattern.Draw(element.core, bounds)
 
-	pattern := element.theme.Pattern(theme.PatternButton, state)
+	pattern := element.theme.Pattern(tomo.PatternButton, state)
 	pattern.Draw(element.core, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
-	margin := element.theme.Margin(theme.PatternBackground)
+	margin := element.theme.Margin(tomo.PatternBackground)
 	offset := bounds.Min.Add(image.Point {
 		X: bounds.Dy() + margin.X,
 	})
@@ -183,6 +187,6 @@ func (element *Checkbox) draw () {
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := element.theme.Color(theme.ColorForeground, state)
+	foreground := element.theme.Color(tomo.ColorForeground, state)
 	element.drawer.Draw(element.core, foreground, offset)
 }

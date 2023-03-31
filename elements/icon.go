@@ -1,30 +1,31 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 
 type Icon struct {
 	*core.Core
 	core  core.CoreControl
 	theme theme.Wrapped
-	id    theme.Icon
-	size  theme.IconSize
+	id    tomo.Icon
+	size  tomo.IconSize
 }
 
-func NewIcon (id theme.Icon, size theme.IconSize) (element *Icon) {
+func NewIcon (id tomo.Icon, size tomo.IconSize) (element *Icon) {
 	element = &Icon {
 		id:   id,
 		size: size,
 	}
-	element.theme.Case = theme.C("tomo", "icon")
+	element.theme.Case = tomo.C("tomo", "icon")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.updateMinimumSize()
 	return
 }
 
-func (element *Icon) SetIcon (id theme.Icon, size theme.IconSize) {
+func (element *Icon) SetIcon (id tomo.Icon, size tomo.IconSize) {
 	element.id   = id
 	element.size = size
 	element.updateMinimumSize()
@@ -35,7 +36,7 @@ func (element *Icon) SetIcon (id theme.Icon, size theme.IconSize) {
 }
 
 // SetTheme sets the element's theme.
-func (element *Icon) SetTheme (new theme.Theme) {
+func (element *Icon) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.updateMinimumSize()
@@ -61,9 +62,9 @@ func (element *Icon) updateMinimumSize () {
 
 func (element *Icon) draw () {
 	bounds := element.Bounds()
-	state  := theme.State { }
+	state  := tomo.State { }
 	element.theme.
-		Pattern(theme.PatternBackground, state).
+		Pattern(tomo.PatternBackground, state).
 		Draw(element.core, bounds)
 	icon := element.icon()
 	if icon != nil {
@@ -73,8 +74,7 @@ func (element *Icon) draw () {
 			(bounds.Dy() - iconBounds.Dy()) / 2)
 		icon.Draw (
 			element.core,
-			element.theme.Color (
-				theme.ColorForeground, state),
+			element.theme.Color(tomo.ColorForeground, state),
 			bounds.Min.Add(offset))
 	}
 }

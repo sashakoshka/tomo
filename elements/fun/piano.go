@@ -1,11 +1,12 @@
 package fun
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
 
 const pianoKeyWidth = 18
@@ -52,7 +53,7 @@ func NewPiano (low, high music.Octave) (element *Piano) {
 		keynavPressed: make(map[music.Note] bool),
 	}
 	
-	element.theme.Case = theme.C("tomo", "piano")
+	element.theme.Case = tomo.C("tomo", "piano")
 	element.Core, element.core = core.NewCore (element, func () {
 		element.recalculate()
 		element.draw()
@@ -198,7 +199,7 @@ func (element *Piano) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
 }
 
 // SetTheme sets the element's theme.
-func (element *Piano) SetTheme (new theme.Theme) {
+func (element *Piano) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.updateMinimumSize()
@@ -207,7 +208,7 @@ func (element *Piano) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *Piano) SetConfig (new config.Config) {
+func (element *Piano) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
@@ -216,7 +217,7 @@ func (element *Piano) SetConfig (new config.Config) {
 }
 
 func (element *Piano) updateMinimumSize () {
-	padding := element.theme.Padding(theme.PatternPinboard)
+	padding := element.theme.Padding(tomo.PatternPinboard)
 	element.core.SetMinimumSize (
 		pianoKeyWidth * 7 * element.countOctaves() +
 		padding.Horizontal(),
@@ -246,7 +247,7 @@ func (element *Piano) recalculate () {
 	element.flatKeys  = make([]pianoKey, element.countFlats())
 	element.sharpKeys = make([]pianoKey, element.countSharps())
 
-	padding  := element.theme.Padding(theme.PatternPinboard)
+	padding  := element.theme.Padding(tomo.PatternPinboard)
 	bounds := padding.Apply(element.Bounds())
 
 	dot := bounds.Min
@@ -279,7 +280,7 @@ func (element *Piano) recalculate () {
 }
 
 func (element *Piano) draw () {
-	state := theme.State {
+	state := tomo.State {
 		Focused: element.Focused(),
 		Disabled: !element.Enabled(),
 	}
@@ -301,7 +302,7 @@ func (element *Piano) draw () {
 			state)
 	}
 	
-	pattern := element.theme.Pattern(theme.PatternPinboard, state)
+	pattern := element.theme.Pattern(tomo.PatternPinboard, state)
 	artist.DrawShatter (
 		element.core, pattern, element.Bounds(), element.contentBounds)
 }
@@ -309,21 +310,21 @@ func (element *Piano) draw () {
 func (element *Piano) drawFlat (
 	bounds image.Rectangle,
 	pressed bool,
-	state theme.State,
+	state tomo.State,
 ) {
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
-		theme.PatternButton, state, theme.C("fun", "piano", "flatKey"))
+		tomo.PatternButton, state, tomo.C("fun", "piano", "flatKey"))
 	pattern.Draw(element.core, bounds)
 }
 
 func (element *Piano) drawSharp (
 	bounds image.Rectangle,
 	pressed bool,
-	state theme.State,
+	state tomo.State,
 ) {
 	state.Pressed = pressed
 	pattern := element.theme.Theme.Pattern (
-		theme.PatternButton, state, theme.C("fun", "piano", "sharpKey"))
+		tomo.PatternButton, state, tomo.C("fun", "piano", "sharpKey"))
 	pattern.Draw(element.core, bounds)
 }

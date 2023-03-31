@@ -1,10 +1,11 @@
 package elements
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Slider is a slider control with a floating point value between zero and one.
 type Slider struct {
@@ -35,9 +36,9 @@ func NewSlider (value float64, vertical bool) (element *Slider) {
 		vertical: vertical,
 	}
 	if vertical {
-		element.theme.Case = theme.C("tomo", "sliderVertical")
+		element.theme.Case = tomo.C("tomo", "sliderVertical")
 	} else {
-		element.theme.Case = theme.C("tomo", "sliderHorizontal")
+		element.theme.Case = tomo.C("tomo", "sliderHorizontal")
 	}
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,
@@ -140,14 +141,14 @@ func (element *Slider) OnRelease (callback func ()) {
 }
 
 // SetTheme sets the element's theme.
-func (element *Slider) SetTheme (new theme.Theme) {
+func (element *Slider) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
-func (element *Slider) SetConfig (new config.Config) {
+func (element *Slider) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
@@ -206,7 +207,7 @@ func (element *Slider) redo () {
 
 func (element *Slider) draw () {
 	bounds := element.Bounds()
-	element.track = element.theme.Padding(theme.PatternGutter).Apply(bounds)
+	element.track = element.theme.Padding(tomo.PatternGutter).Apply(bounds)
 	if element.vertical {
 		barSize := element.track.Dx()
 		element.bar = image.Rect(0, 0, barSize, barSize).Add(bounds.Min)
@@ -223,15 +224,15 @@ func (element *Slider) draw () {
 		element.bar = element.bar.Add(image.Pt(int(barOffset), 0))
 	}
 
-	state := theme.State {
+	state := tomo.State {
 		Focused:  element.Focused(),
 		Disabled: !element.Enabled(),
 		Pressed:  element.dragging,
 	}
-	element.theme.Pattern(theme.PatternGutter, state).Draw (
+	element.theme.Pattern(tomo.PatternGutter, state).Draw (
 		element.core,
 		bounds)
-	element.theme.Pattern(theme.PatternHandle, state).Draw (
+	element.theme.Pattern(tomo.PatternHandle, state).Draw (
 		element.core,
 		element.bar)
 }

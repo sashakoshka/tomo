@@ -1,10 +1,11 @@
 package elements
 
 import "golang.org/x/image/math/fixed"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Label is a simple text box.
 type Label struct {
@@ -29,8 +30,11 @@ type Label struct {
 // wrapped.
 func NewLabel (text string, wrap bool) (element *Label) {
 	element = &Label { }
-	element.theme.Case = theme.C("tomo", "label")
+	element.theme.Case = tomo.C("tomo", "label")
 	element.Core, element.core = core.NewCore(element, element.handleResize)
+	element.drawer.SetFace (element.theme.FontFace (
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	element.SetWrap(wrap)
 	element.SetText(text)
 	return
@@ -38,8 +42,8 @@ func NewLabel (text string, wrap bool) (element *Label) {
 
 func (element *Label) redo () {
 	face := element.theme.FontFace (
-		theme.FontStyleRegular,
-		theme.FontSizeNormal)
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal)
 	element.drawer.SetFace(face)
 	element.updateMinimumSize()
 	bounds := element.Bounds()
@@ -137,12 +141,12 @@ func (element *Label) SetAlign (align textdraw.Align) {
 }
 
 // SetTheme sets the element's theme.
-func (element *Label) SetTheme (new theme.Theme) {
+func (element *Label) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.drawer.SetFace (element.theme.FontFace (
-		theme.FontStyleRegular,
-		theme.FontSizeNormal))
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	element.updateMinimumSize()
 	
 	if element.core.HasImage () {
@@ -152,7 +156,7 @@ func (element *Label) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *Label) SetConfig (new config.Config) {
+func (element *Label) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
@@ -169,7 +173,7 @@ func (element *Label) updateMinimumSize () {
 	if element.wrap {
 		em := element.drawer.Em().Round()
 		if em < 1 {
-			em = element.theme.Padding(theme.PatternBackground)[0]
+			em = element.theme.Padding(tomo.PatternBackground)[0]
 		}
 		width, height = em, element.drawer.LineHeight().Round()
 		if element.onFlexibleHeightChange != nil {
@@ -199,14 +203,14 @@ func (element *Label) draw () {
 	bounds := element.Bounds()
 
 	pattern := element.theme.Pattern (
-		theme.PatternBackground,
-		theme.State { })
+		tomo.PatternBackground,
+		tomo.State { })
 	pattern.Draw(element.core, bounds)
 
 	textBounds := element.drawer.LayoutBounds()
 
 	foreground := element.theme.Color (
-		theme.ColorForeground,
-		theme.State { })
+		tomo.ColorForeground,
+		tomo.State { })
 	element.drawer.Draw(element.core, foreground, bounds.Min.Sub(textBounds.Min))
 }

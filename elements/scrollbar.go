@@ -1,10 +1,11 @@
 package elements
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // ScrollBar is an element similar to Slider, but it has special behavior that
 // makes it well suited for controlling the viewport position on one axis of a
@@ -45,9 +46,9 @@ func NewScrollBar (vertical bool) (element *ScrollBar) {
 		enabled:  true,
 	}
 	if vertical {
-		element.theme.Case = theme.C("tomo", "scrollBarHorizontal")
+		element.theme.Case = tomo.C("tomo", "scrollBarHorizontal")
 	} else {
-		element.theme.Case = theme.C("tomo", "scrollBarVertical")
+		element.theme.Case = tomo.C("tomo", "scrollBarVertical")
 	}
 	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.updateMinimumSize()
@@ -159,14 +160,14 @@ func (element *ScrollBar) OnScroll (callback func (viewport image.Point)) {
 }
 
 // SetTheme sets the element's theme.
-func (element *ScrollBar) SetTheme (new theme.Theme) {
+func (element *ScrollBar) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.drawAndPush()
 }
 
 // SetConfig sets the element's configuration.
-func (element *ScrollBar) SetConfig (new config.Config) {
+func (element *ScrollBar) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
@@ -236,7 +237,7 @@ func (element *ScrollBar) recalculate () {
 
 func (element *ScrollBar) recalculateVertical () {
 	bounds := element.Bounds()
-	padding := element.theme.Padding(theme.PatternGutter)
+	padding := element.theme.Padding(tomo.PatternGutter)
 	element.track = padding.Apply(bounds)
 
 	contentBounds  := element.contentBounds
@@ -263,7 +264,7 @@ func (element *ScrollBar) recalculateVertical () {
 
 func (element *ScrollBar) recalculateHorizontal () {
 	bounds := element.Bounds()
-	padding := element.theme.Padding(theme.PatternGutter)
+	padding := element.theme.Padding(tomo.PatternGutter)
 	element.track = padding.Apply(bounds)
 
 	contentBounds  := element.contentBounds
@@ -289,7 +290,7 @@ func (element *ScrollBar) recalculateHorizontal () {
 }
 
 func (element *ScrollBar) updateMinimumSize () {
-	padding := element.theme.Padding(theme.PatternGutter)
+	padding := element.theme.Padding(tomo.PatternGutter)
 	if element.vertical {
 		element.core.SetMinimumSize (
 			padding.Horizontal() + element.config.HandleWidth(),
@@ -310,14 +311,14 @@ func (element *ScrollBar) drawAndPush () {
 
 func (element *ScrollBar) draw () {
 	bounds := element.Bounds()
-	state := theme.State {
+	state := tomo.State {
 		Disabled: !element.Enabled(),
 		Pressed:  element.dragging,
 	}
-	element.theme.Pattern(theme.PatternGutter, state).Draw (
+	element.theme.Pattern(tomo.PatternGutter, state).Draw (
 		element.core,
 		bounds)
-	element.theme.Pattern(theme.PatternHandle, state).Draw (
+	element.theme.Pattern(tomo.PatternHandle, state).Draw (
 		element.core,
 		element.bar)
 }

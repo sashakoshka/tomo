@@ -3,11 +3,12 @@ package fileElements
 import "time"
 import "io/fs"
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // File displays an interactive visual representation of a file within any
 // file system.
@@ -22,7 +23,7 @@ type File struct {
 
 	lastClick  time.Time
 	pressed    bool
-	iconID     theme.Icon
+	iconID     tomo.Icon
 	filesystem fs.StatFS
 	location   string
 	selected   bool
@@ -40,7 +41,7 @@ func NewFile (
 	err error,
 ) {
 	element = &File { }
-	element.theme.Case = theme.C("files", "file")
+	element.theme.Case = tomo.C("files", "file")
 	element.Core, element.core = core.NewCore(element, element.drawAll)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.core, element.drawAndPush)
@@ -72,12 +73,12 @@ func (element *File) Update () error {
 	info, err := element.filesystem.Stat(element.location)
 
 	if err != nil {
-		element.iconID = theme.IconError
+		element.iconID = tomo.IconError
 	} else if info.IsDir() {
-		element.iconID = theme.IconDirectory
+		element.iconID = tomo.IconDirectory
 	} else {
 		// TODO: choose icon based on file mime type
-		element.iconID = theme.IconFile
+		element.iconID = tomo.IconFile
 	}
 
 	element.updateMinimumSize()
@@ -142,21 +143,21 @@ func (element *File) HandleMouseUp (x, y int, button input.Button) {
 }
 
 // SetTheme sets the element's theme.
-func (element *File) SetTheme (new theme.Theme) {
+func (element *File) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.drawAndPush()
 }
 
 // SetConfig sets the element's configuration.
-func (element *File) SetConfig (new config.Config) {
+func (element *File) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.drawAndPush()
 }
 
-func (element *File) state () theme.State {
-	return theme.State {
+func (element *File) state () tomo.State {
+	return tomo.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
@@ -165,11 +166,11 @@ func (element *File) state () theme.State {
 }
 
 func (element *File) icon () artist.Icon {
-	return element.theme.Icon(element.iconID, theme.IconSizeLarge)
+	return element.theme.Icon(element.iconID, tomo.IconSizeLarge)
 }
 
 func (element *File) updateMinimumSize () {
-	padding := element.theme.Padding(theme.PatternButton)
+	padding := element.theme.Padding(tomo.PatternButton)
 	icon := element.icon()
 	if icon == nil {
 		element.core.SetMinimumSize (
@@ -192,9 +193,9 @@ func (element *File) drawAll () {
 	// background
 	state  := element.state()
 	bounds := element.Bounds()
-	sink   := element.theme.Sink(theme.PatternButton)
+	sink   := element.theme.Sink(tomo.PatternButton)
 	element.theme.
-		Pattern(theme.PatternButton, state).
+		Pattern(tomo.PatternButton, state).
 		Draw(element.core, bounds)
 
 	// icon
@@ -209,8 +210,7 @@ func (element *File) drawAll () {
 		}
 		icon.Draw (
 			element.core,
-			element.theme.Color (
-				theme.ColorForeground, state),
+			element.theme.Color(tomo.ColorForeground, state),
 			bounds.Min.Add(offset))
 	}
 }

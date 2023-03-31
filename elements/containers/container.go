@@ -3,11 +3,11 @@ package containers
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Container is an element capable of containg other elements, and arranging
 // them in a layout.
@@ -30,7 +30,7 @@ type Container struct {
 // NewContainer creates a new container.
 func NewContainer (layout tomo.Layout) (element *Container) {
 	element = &Container { }
-	element.theme.Case = theme.C("tomo", "container")
+	element.theme.Case = tomo.C("tomo", "container")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 	element.SetLayout(layout)
@@ -190,8 +190,8 @@ func (element *Container) redoAll () {
 		rocks[index] = entry.Bounds
 	}
 	pattern := element.theme.Pattern (
-		theme.PatternBackground,
-		theme.State { })
+		tomo.PatternBackground,
+		tomo.State { })
 	artist.DrawShatter(element.core, pattern, element.Bounds(), rocks...)
 
 	// cut our canvas up and give peices to child elements
@@ -213,7 +213,7 @@ func (element *Container) NotifyMinimumSizeChange (child tomo.Element) {
 }
 
 // SetTheme sets the element's theme.
-func (element *Container) SetTheme (new theme.Theme) {
+func (element *Container) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.Propagator.SetTheme(new)
@@ -222,7 +222,7 @@ func (element *Container) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *Container) SetConfig (new config.Config) {
+func (element *Container) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.Propagator.SetConfig(new)
 	element.updateMinimumSize()
@@ -230,16 +230,16 @@ func (element *Container) SetConfig (new config.Config) {
 }
 
 func (element *Container) updateMinimumSize () {
-	margin  := element.theme.Margin(theme.PatternBackground)
-	padding := element.theme.Padding(theme.PatternBackground)
+	margin  := element.theme.Margin(tomo.PatternBackground)
+	padding := element.theme.Padding(tomo.PatternBackground)
 	width, height := element.layout.MinimumSize (
 		element.children, margin, padding)
 	element.core.SetMinimumSize(width, height)
 }
 
 func (element *Container) doLayout () {
-	margin := element.theme.Margin(theme.PatternBackground)
-	padding := element.theme.Padding(theme.PatternBackground)
+	margin := element.theme.Margin(tomo.PatternBackground)
+	padding := element.theme.Padding(tomo.PatternBackground)
 	element.layout.Arrange (
 		element.children, margin,
 		padding, element.Bounds())

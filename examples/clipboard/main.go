@@ -7,7 +7,6 @@ import _ "image/gif"
 import _ "image/jpeg"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
@@ -32,11 +31,11 @@ func run () {
 	textInput := elements.NewTextBox("", "")
 	controlRow := containers.NewContainer(layouts.Horizontal { true, false })
 	copyButton := elements.NewButton("Copy")
-	copyButton.SetIcon(theme.IconCopy)
+	copyButton.SetIcon(tomo.IconCopy)
 	pasteButton := elements.NewButton("Paste")
-	pasteButton.SetIcon(theme.IconPaste)
+	pasteButton.SetIcon(tomo.IconPaste)
 	pasteImageButton := elements.NewButton("Image")
-	pasteImageButton.SetIcon(theme.IconPictures)
+	pasteImageButton.SetIcon(tomo.IconPictures)
 
 	imageClipboardCallback := func (clipboard data.Data, err error) {
 		if err != nil {
@@ -126,7 +125,7 @@ func imageWindow (image image.Image) {
 	window.SetTitle("Clipboard Image")
 	container := containers.NewContainer(layouts.Vertical { true, true })
 	closeButton := elements.NewButton("Ok")
-	closeButton.SetIcon(theme.IconYes)
+	closeButton.SetIcon(tomo.IconYes)
 	closeButton.OnClick(window.Close)
 	
 	container.Adopt(elements.NewImage(image), true)

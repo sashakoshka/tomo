@@ -1,9 +1,10 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // ProgressBar displays a visual indication of how far along a task is.
 type ProgressBar struct {
@@ -19,7 +20,7 @@ type ProgressBar struct {
 // level.
 func NewProgressBar (progress float64) (element *ProgressBar) {
 	element = &ProgressBar { progress: progress }
-	element.theme.Case = theme.C("tomo", "progressBar")
+	element.theme.Case = tomo.C("tomo", "progressBar")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	return
 }
@@ -35,7 +36,7 @@ func (element *ProgressBar) SetProgress (progress float64) {
 }
 
 // SetTheme sets the element's theme.
-func (element *ProgressBar) SetTheme (new theme.Theme) {
+func (element *ProgressBar) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.updateMinimumSize()
@@ -43,7 +44,7 @@ func (element *ProgressBar) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *ProgressBar) SetConfig (new config.Config) {
+func (element *ProgressBar) SetConfig (new tomo.Config) {
 	if new == nil || new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
@@ -51,8 +52,8 @@ func (element *ProgressBar) SetConfig (new config.Config) {
 }
 
 func (element (ProgressBar)) updateMinimumSize() {
-	padding      := element.theme.Padding(theme.PatternSunken)
-	innerPadding := element.theme.Padding(theme.PatternMercury)
+	padding      := element.theme.Padding(tomo.PatternSunken)
+	innerPadding := element.theme.Padding(tomo.PatternMercury)
 	element.core.SetMinimumSize (
 		padding.Horizontal() + innerPadding.Horizontal(),
 		padding.Vertical()   + innerPadding.Vertical())
@@ -68,14 +69,14 @@ func (element *ProgressBar) redo () {
 func (element *ProgressBar) draw () {
 	bounds := element.Bounds()
 
-	pattern := element.theme.Pattern(theme.PatternSunken, theme.State { })
-	padding := element.theme.Padding(theme.PatternSunken)
+	pattern := element.theme.Pattern(tomo.PatternSunken, tomo.State { })
+	padding := element.theme.Padding(tomo.PatternSunken)
 	pattern.Draw(element.core, bounds)
 	bounds = padding.Apply(bounds)
 	meterBounds := image.Rect (
 		bounds.Min.X, bounds.Min.Y,
 		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
 		bounds.Max.Y)
-	mercury := element.theme.Pattern(theme.PatternMercury, theme.State { })
+	mercury := element.theme.Pattern(tomo.PatternMercury, tomo.State { })
 	mercury.Draw(element.core, meterBounds)
 }

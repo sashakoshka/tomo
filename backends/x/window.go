@@ -12,8 +12,6 @@ import "github.com/jezek/xgbutil/xgraphics"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 // import "runtime/debug"
 
@@ -30,8 +28,8 @@ type window struct {
 	modalParent *window
 	hasModal    bool
 
-	theme  theme.Theme
-	config config.Config
+	theme  tomo.Theme
+	config tomo.Config
 
 	selectionRequest *selectionRequest
 	selectionClaim   *selectionClaim
@@ -334,14 +332,14 @@ func (window *window) OnClose (callback func ()) {
 	window.onClose = callback
 }
 
-func (window *window) SetTheme (theme theme.Theme) {
+func (window *window) SetTheme (theme tomo.Theme) {
 	window.theme = theme
 	if child, ok := window.child.(tomo.Themeable); ok {
 		child.SetTheme(theme)
 	}
 }
 
-func (window *window) SetConfig (config config.Config) {
+func (window *window) SetConfig (config tomo.Config) {
 	window.config = config
 	if child, ok := window.child.(tomo.Configurable); ok {
 		child.SetConfig(config)

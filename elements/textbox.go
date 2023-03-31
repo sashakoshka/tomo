@@ -3,8 +3,6 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
@@ -12,6 +10,8 @@ import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // TextBox is a single-line text input.
 type TextBox struct {
@@ -43,7 +43,7 @@ type TextBox struct {
 // text.
 func NewTextBox (placeholder, value string) (element *TextBox) {
 	element = &TextBox { }
-	element.theme.Case = theme.C("tomo", "textBox")
+	element.theme.Case = tomo.C("tomo", "textBox")
 	element.Core, element.core = core.NewCore(element, element.handleResize)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore (element.core, func () {
@@ -53,6 +53,12 @@ func NewTextBox (placeholder, value string) (element *TextBox) {
 		}
 	})
 	element.placeholder = placeholder
+	element.placeholderDrawer.SetFace (element.theme.FontFace (
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
+	element.valueDrawer.SetFace (element.theme.FontFace (
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	element.placeholderDrawer.SetText([]rune(placeholder))
 	element.updateMinimumSize()
 	element.SetValue(value)
@@ -94,7 +100,7 @@ func (element *TextBox) HandleMotion (x, y int) {
 }
 
 func (element *TextBox) textOffset () image.Point {
-	padding     := element.theme.Padding(theme.PatternInput)
+	padding     := element.theme.Padding(tomo.PatternInput)
 	bounds      := element.Bounds()
 	innerBounds := padding.Apply(bounds)
 	textHeight  := element.valueDrawer.LineHeight().Round()
@@ -277,7 +283,7 @@ func (element *TextBox) ScrollViewportBounds () (bounds image.Rectangle) {
 }
 
 func (element *TextBox) scrollViewportWidth () (width int) {
-	padding := element.theme.Padding(theme.PatternInput)
+	padding := element.theme.Padding(tomo.PatternInput)
 	return padding.Apply(element.Bounds()).Dx()
 }
 
@@ -313,7 +319,7 @@ func (element *TextBox) runOnChange () {
 func (element *TextBox) scrollToCursor () {
 	if !element.core.HasImage() { return }
 
-	padding := element.theme.Padding(theme.PatternInput)
+	padding := element.theme.Padding(tomo.PatternInput)
 	bounds  := padding.Apply(element.Bounds())
 	bounds = bounds.Sub(bounds.Min)
 	bounds.Max.X -= element.valueDrawer.Em().Round()
@@ -331,12 +337,12 @@ func (element *TextBox) scrollToCursor () {
 }
 
 // SetTheme sets the element's theme.
-func (element *TextBox) SetTheme (new theme.Theme) {
+func (element *TextBox) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	face := element.theme.FontFace (
-		theme.FontStyleRegular,
-		theme.FontSizeNormal)
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal)
 	element.placeholderDrawer.SetFace(face)
 	element.valueDrawer.SetFace(face)
 	element.updateMinimumSize()
@@ -344,7 +350,7 @@ func (element *TextBox) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *TextBox) SetConfig (new config.Config) {
+func (element *TextBox) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
@@ -353,7 +359,7 @@ func (element *TextBox) SetConfig (new config.Config) {
 
 func (element *TextBox) updateMinimumSize () {
 	textBounds := element.placeholderDrawer.LayoutBounds()
-	padding := element.theme.Padding(theme.PatternInput)
+	padding := element.theme.Padding(tomo.PatternInput)
 	element.core.SetMinimumSize (
 		padding.Horizontal() + textBounds.Dx(),
 		padding.Vertical()   +
@@ -370,19 +376,19 @@ func (element *TextBox) redo () {
 func (element *TextBox) draw () {
 	bounds := element.Bounds()
 
-	state := theme.State {
+	state := tomo.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 	}
-	pattern := element.theme.Pattern(theme.PatternInput, state)
-	padding := element.theme.Padding(theme.PatternInput)
+	pattern := element.theme.Pattern(tomo.PatternInput, state)
+	padding := element.theme.Padding(tomo.PatternInput)
 	innerCanvas := canvas.Cut(element.core, padding.Apply(bounds))
 	pattern.Draw(element.core, bounds)
 	offset := element.textOffset()
 
 	if element.Focused() && !element.dot.Empty() {
 		// draw selection bounds
-		accent := element.theme.Color(theme.ColorAccent,  state)
+		accent := element.theme.Color(tomo.ColorAccent,  state)
 		canon := element.dot.Canon()
 		foff  := fixedutil.Pt(offset)
 		start := element.valueDrawer.PositionAt(canon.Start).Add(foff)
@@ -401,8 +407,8 @@ func (element *TextBox) draw () {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
 		foreground := element.theme.Color (
-			theme.ColorForeground,
-			theme.State { Disabled: true })
+			tomo.ColorForeground,
+			tomo.State { Disabled: true })
 		element.placeholderDrawer.Draw (
 			innerCanvas,
 			foreground,
@@ -410,7 +416,7 @@ func (element *TextBox) draw () {
 	} else {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
-		foreground := element.theme.Color(theme.ColorForeground, state)
+		foreground := element.theme.Color(tomo.ColorForeground, state)
 		element.valueDrawer.Draw (
 			innerCanvas,
 			foreground,
@@ -419,7 +425,7 @@ func (element *TextBox) draw () {
 	
 	if element.Focused() && element.dot.Empty() {
 		// draw cursor
-		foreground := element.theme.Color(theme.ColorForeground, state)
+		foreground := element.theme.Color(tomo.ColorForeground, state)
 		cursorPosition := fixedutil.RoundPt (
 			element.valueDrawer.PositionAt(element.dot.End))
 		shapes.ColorLine (

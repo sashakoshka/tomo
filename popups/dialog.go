@@ -1,7 +1,6 @@
 package popups
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
@@ -47,21 +46,21 @@ func NewDialog (
 	window.Adopt(container)
 
 	messageContainer := containers.NewContainer(layouts.Horizontal { true, false })
-	iconId := theme.IconInformation
+	iconId := tomo.IconInformation
 	switch kind {
-	case DialogKindInfo:     iconId = theme.IconInformation
-	case DialogKindQuestion: iconId = theme.IconQuestion
-	case DialogKindWarning:  iconId = theme.IconWarning
-	case DialogKindError:    iconId = theme.IconError
+	case DialogKindInfo:     iconId = tomo.IconInformation
+	case DialogKindQuestion: iconId = tomo.IconQuestion
+	case DialogKindWarning:  iconId = tomo.IconWarning
+	case DialogKindError:    iconId = tomo.IconError
 	}
 	
-	messageContainer.Adopt(elements.NewIcon(iconId, theme.IconSizeLarge), false)
+	messageContainer.Adopt(elements.NewIcon(iconId, tomo.IconSizeLarge), false)
 	messageContainer.Adopt(elements.NewLabel(message, false), true)
 	container.Adopt(messageContainer, true)
 	
 	if len(buttons) == 0 {
 		button := elements.NewButton("OK")
-		button.SetIcon(theme.IconYes)
+		button.SetIcon(tomo.IconYes)
 		button.OnClick(window.Close)
 		container.Adopt(button, false)
 		button.Focus()

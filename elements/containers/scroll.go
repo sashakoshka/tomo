@@ -3,11 +3,11 @@ package containers
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // ScrollContainer is a container that is capable of holding a scrollable
 // element.
@@ -31,7 +31,7 @@ type ScrollContainer struct {
 // bars.
 func NewScrollContainer (horizontal, vertical bool) (element *ScrollContainer) {
 	element = &ScrollContainer { }
-	element.theme.Case = theme.C("tomo", "scrollContainer")
+	element.theme.Case = tomo.C("tomo", "scrollContainer")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 
@@ -132,7 +132,7 @@ func (element *ScrollContainer) NotifyScrollBoundsChange (child tomo.Scrollable)
 }
 
 // SetTheme sets the element's theme.
-func (element *ScrollContainer) SetTheme (new theme.Theme) {
+func (element *ScrollContainer) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.Propagator.SetTheme(new)
@@ -141,7 +141,7 @@ func (element *ScrollContainer) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *ScrollContainer) SetConfig (new config.Config) {
+func (element *ScrollContainer) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.Propagator.SetConfig(new)
 	element.updateMinimumSize()
@@ -258,8 +258,8 @@ func (element *ScrollContainer) draw () {
 		bounds.Min = image.Pt (
 			bounds.Max.X - element.vertical.Bounds().Dx(),
 			bounds.Max.Y - element.horizontal.Bounds().Dy())
-		state := theme.State { }
-		deadArea := element.theme.Pattern(theme.PatternDead, state)
+		state := tomo.State { }
+		deadArea := element.theme.Pattern(tomo.PatternDead, state)
 		deadArea.Draw(canvas.Cut(element.core, bounds), bounds)
 	}
 }

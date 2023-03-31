@@ -1,8 +1,6 @@
 package tomo
 
 import "errors"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 
 // Backend represents a connection to a display server, or something similar.
 // It is capable of managing an event loop, and creating windows.
@@ -24,10 +22,10 @@ type Backend interface {
 	NewWindow (width, height int) (window MainWindow, err error)
 	
 	// SetTheme sets the theme of all open windows.
-	SetTheme (theme.Theme)
+	SetTheme (Theme)
 	
 	// SetConfig sets the configuration of all open windows.
-	SetConfig (config.Config)
+	SetConfig (Config)
 }
 
 // BackendFactory represents a function capable of constructing a backend

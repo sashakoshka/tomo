@@ -2,9 +2,10 @@ package elements
 
 import "image"
 // import "runtime/debug"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 // import "git.tebibyte.media/sashakoshka/tomo/artist"
 // import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
@@ -26,7 +27,7 @@ type Button struct {
 
 	showText bool
 	hasIcon  bool
-	iconId   theme.Icon
+	iconId   tomo.Icon
 	
 	onClick func ()
 }
@@ -34,10 +35,13 @@ type Button struct {
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
 	element = &Button { showText: true }
-	element.theme.Case = theme.C("tomo", "button")
+	element.theme.Case = tomo.C("tomo", "button")
 	element.Core, element.core = core.NewCore(element, element.drawAll)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.core, element.drawAndPush)
+	element.drawer.SetFace (element.theme.FontFace (
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	element.SetText(text)
 	return
 }
@@ -102,8 +106,8 @@ func (element *Button) SetText (text string) {
 
 // SetIcon sets the icon of the button. Passing theme.IconNone removes the
 // current icon if it exists.
-func (element *Button) SetIcon (id theme.Icon) {
-	if id == theme.IconNone {
+func (element *Button) SetIcon (id tomo.Icon) {
+	if id == tomo.IconNone {
 		element.hasIcon = false
 		element.updateMinimumSize()
 		element.drawAndPush()
@@ -125,18 +129,18 @@ func (element *Button) ShowText (showText bool) {
 }
 
 // SetTheme sets the element's theme.
-func (element *Button) SetTheme (new theme.Theme) {
+func (element *Button) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.drawer.SetFace (element.theme.FontFace (
-		theme.FontStyleRegular,
-		theme.FontSizeNormal))
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	element.updateMinimumSize()
 	element.drawAndPush()
 }
 
 // SetConfig sets the element's configuration.
-func (element *Button) SetConfig (new config.Config) {
+func (element *Button) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
@@ -144,14 +148,14 @@ func (element *Button) SetConfig (new config.Config) {
 }
 
 func (element *Button) updateMinimumSize () {
-	padding := element.theme.Padding(theme.PatternButton)
-	margin  := element.theme.Margin(theme.PatternButton)
+	padding := element.theme.Padding(tomo.PatternButton)
+	margin  := element.theme.Margin(tomo.PatternButton)
 
 	textBounds  := element.drawer.LayoutBounds()
 	minimumSize := textBounds.Sub(textBounds.Min)
 	
 	if element.hasIcon {
-		icon := element.theme.Icon(element.iconId, theme.IconSizeSmall) 
+		icon := element.theme.Icon(element.iconId, tomo.IconSizeSmall) 
 		if icon != nil {
 			bounds := icon.Bounds()
 			if element.showText {
@@ -167,8 +171,8 @@ func (element *Button) updateMinimumSize () {
 	element.core.SetMinimumSize(minimumSize.Dx(), minimumSize.Dy())
 }
 
-func (element *Button) state () theme.State {
-	return theme.State {
+func (element *Button) state () tomo.State {
+	return tomo.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
@@ -190,7 +194,7 @@ func (element *Button) drawAll () {
 func (element *Button) drawBackground () []image.Rectangle {
 	state   := element.state()
 	bounds  := element.Bounds()
-	pattern := element.theme.Pattern(theme.PatternButton, state)
+	pattern := element.theme.Pattern(tomo.PatternButton, state)
 
 	pattern.Draw(element.core, bounds)
 	return []image.Rectangle { bounds }
@@ -199,9 +203,9 @@ func (element *Button) drawBackground () []image.Rectangle {
 func (element *Button) drawText () {
 	state      := element.state()
 	bounds     := element.Bounds()
-	foreground := element.theme.Color(theme.ColorForeground, state)
-	sink       := element.theme.Sink(theme.PatternButton)
-	margin     := element.theme.Margin(theme.PatternButton)
+	foreground := element.theme.Color(tomo.ColorForeground, state)
+	sink       := element.theme.Sink(tomo.PatternButton)
+	margin     := element.theme.Margin(tomo.PatternButton)
 	
 	offset := image.Pt (
 		bounds.Dx() / 2,
@@ -216,7 +220,7 @@ func (element *Button) drawText () {
 	}
 
 	if element.hasIcon {
-		icon := element.theme.Icon(element.iconId, theme.IconSizeSmall) 
+		icon := element.theme.Icon(element.iconId, tomo.IconSizeSmall) 
 		if icon != nil {
 			iconBounds := icon.Bounds()
 			addedWidth := iconBounds.Dx()

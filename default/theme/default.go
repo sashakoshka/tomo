@@ -6,6 +6,7 @@ import _ "embed"
 import _ "image/png"
 import "image/color"
 import "golang.org/x/image/font"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
@@ -155,13 +156,13 @@ func init () {
 type Default struct { }
 
 // FontFace returns the default font face.
-func (Default) FontFace (style FontStyle, size FontSize, c Case) font.Face {
+func (Default) FontFace (style tomo.FontStyle, size tomo.FontSize, c tomo.Case) font.Face {
 	switch style {
-	case FontStyleBold:
+	case tomo.FontStyleBold:
 		return defaultfont.FaceBold
-	case FontStyleItalic:
+	case tomo.FontStyleItalic:
 		return defaultfont.FaceItalic
-	case FontStyleBoldItalic:
+	case tomo.FontStyleBoldItalic:
 		return defaultfont.FaceBoldItalic
 	default:
 		return defaultfont.FaceRegular
@@ -169,8 +170,8 @@ func (Default) FontFace (style FontStyle, size FontSize, c Case) font.Face {
 }
 
 // Icon returns an icon from the default set corresponding to the given name.
-func (Default) Icon (id Icon, size IconSize, c Case) artist.Icon {
-	if size == IconSizeLarge {
+func (Default) Icon (id tomo.Icon, size tomo.IconSize, c tomo.Case) artist.Icon {
+	if size == tomo.IconSizeLarge {
 		if id < 0 || int(id) >= len(defaultIconsLarge) {
 			return nil
 		} else {
@@ -187,14 +188,14 @@ func (Default) Icon (id Icon, size IconSize, c Case) artist.Icon {
 
 // MimeIcon returns an icon from the default set corresponding to the given mime.
 // type.
-func (Default) MimeIcon (data.Mime, IconSize, Case) artist.Icon {
+func (Default) MimeIcon (data.Mime, tomo.IconSize, tomo.Case) artist.Icon {
 	// TODO
 	return nil
 }
 
 // Pattern returns a pattern from the default theme corresponding to the given
 // pattern ID.
-func (Default) Pattern (id Pattern, state State, c Case) artist.Pattern {
+func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.Pattern {
 	offset := 0; switch {
 	case state.Disabled:                 offset = 1
 	case state.Pressed && state.On:      offset = 4
@@ -207,17 +208,17 @@ func (Default) Pattern (id Pattern, state State, c Case) artist.Pattern {
 	}
 
 	switch id {
-	case PatternBackground: return patterns.Uhex(0xaaaaaaFF)
-	case PatternDead:       return defaultTextures[0][offset]
-	case PatternRaised:
+	case tomo.PatternBackground: return patterns.Uhex(0xaaaaaaFF)
+	case tomo.PatternDead:       return defaultTextures[0][offset]
+	case tomo.PatternRaised:
 		if c.Match("tomo", "listEntry", "") {
 			return defaultTextures[10][offset]
 		} else {
 			return defaultTextures[1][offset]
 		}
-	case PatternSunken:   return defaultTextures[2][offset]
-	case PatternPinboard: return defaultTextures[3][offset]
-	case PatternButton:
+	case tomo.PatternSunken:   return defaultTextures[2][offset]
+	case tomo.PatternPinboard: return defaultTextures[3][offset]
+	case tomo.PatternButton:
 		switch {
 		case c.Match("tomo", "checkbox", ""):  
 			return defaultTextures[9][offset]
@@ -228,37 +229,37 @@ func (Default) Pattern (id Pattern, state State, c Case) artist.Pattern {
 		default:
 			return defaultTextures[4][offset]
 		}
-	case PatternInput:   return defaultTextures[5][offset]
-	case PatternGutter:  return defaultTextures[6][offset]
-	case PatternHandle:  return defaultTextures[7][offset]
-	case PatternLine:    return defaultTextures[8][offset]
-	case PatternMercury: return defaultTextures[13][offset]
+	case tomo.PatternInput:   return defaultTextures[5][offset]
+	case tomo.PatternGutter:  return defaultTextures[6][offset]
+	case tomo.PatternHandle:  return defaultTextures[7][offset]
+	case tomo.PatternLine:    return defaultTextures[8][offset]
+	case tomo.PatternMercury: return defaultTextures[13][offset]
 	default:             return patterns.Uhex(0xFF00FFFF)
 	}
 }
 
-func (Default) Color (id Color, state State, c Case) color.RGBA {
+func (Default) Color (id tomo.Color, state tomo.State, c tomo.Case) color.RGBA {
 	if state.Disabled {
 		return artist.Hex(0x444444FF)
 	} else {
 		switch id {
-		case ColorAccent:     return artist.Hex(0x408090FF)
-		case ColorForeground: return artist.Hex(0x000000FF)
+		case tomo.ColorAccent:     return artist.Hex(0x408090FF)
+		case tomo.ColorForeground: return artist.Hex(0x000000FF)
 		default:              return artist.Hex(0x888888FF)
 		}
 	}
 }
 
 // Padding returns the default padding value for the given pattern.
-func (Default) Padding (id Pattern, c Case) artist.Inset {
+func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
 	switch id {
-	case PatternRaised:
+	case tomo.PatternRaised:
 		if c.Match("tomo", "listEntry", "") {
 			return artist.I(4, 8)
 		} else {
 			return artist.I(8)
 		}
-	case PatternSunken:
+	case tomo.PatternSunken:
 		if c.Match("tomo", "list", "") {
 			return artist.I(4, 0, 3)
 		} else if c.Match("basic", "progressBar", "") {
@@ -266,32 +267,32 @@ func (Default) Padding (id Pattern, c Case) artist.Inset {
 		} else {
 			return artist.I(8)
 		}
-	case PatternPinboard:
+	case tomo.PatternPinboard:
 		if c.Match("tomo", "piano", "") {
 			return artist.I(2)
 		} else {
 			return artist.I(8)
 		}
-	case PatternGutter:     return artist.I(0)
-	case PatternLine:       return artist.I(1)
-	case PatternMercury:    return artist.I(5)
+	case tomo.PatternGutter:     return artist.I(0)
+	case tomo.PatternLine:       return artist.I(1)
+	case tomo.PatternMercury:    return artist.I(5)
 	default:                return artist.I(8)
 	}
 }
 
 // Margin returns the default margin value for the given pattern.
-func (Default) Margin (id Pattern, c Case) image.Point {
+func (Default) Margin (id tomo.Pattern, c tomo.Case) image.Point {
 	return image.Pt(8, 8)
 }
 
 // Hints returns rendering optimization hints for a particular pattern.
 // These are optional, but following them may result in improved
 // performance.
-func (Default) Hints (pattern Pattern, c Case) (hints Hints) {
+func (Default) Hints (pattern tomo.Pattern, c tomo.Case) (hints tomo.Hints) {
 	return
 }
 
 // Sink returns the default sink vector for the given pattern.
-func (Default) Sink (pattern Pattern, c Case) image.Point {
+func (Default) Sink (pattern tomo.Pattern, c tomo.Case) image.Point {
 	return image.Point { 1, 1 }
 }

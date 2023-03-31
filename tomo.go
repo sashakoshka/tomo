@@ -1,8 +1,5 @@
 package tomo
 
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
-
 var backend Backend
 
 // Run initializes a backend, calls the callback function, and begins the event
@@ -39,12 +36,12 @@ func NewWindow (width, height int) (window MainWindow, err error) {
 }
 
 // SetTheme sets the theme of all open windows.
-func SetTheme (theme theme.Theme) {
+func SetTheme (theme Theme) {
 	backend.SetTheme(theme)
 }
 
 // SetConfig sets the configuration of all open windows.
-func SetConfig (config config.Config) {
+func SetConfig (config Config) {
 	backend.SetConfig(config)
 }
 

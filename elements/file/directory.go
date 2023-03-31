@@ -3,14 +3,14 @@ package fileElements
 import "io/fs"
 import "image"
 import "path/filepath"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 type fileLayoutEntry struct {
 	*File
@@ -56,7 +56,7 @@ func NewDirectory (
 	err error,
 ) {
 	element = &Directory { }
-	element.theme.Case = theme.C("files", "directory")
+	element.theme.Case = tomo.C("files", "directory")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 	err = element.SetLocation(location, within)
@@ -138,8 +138,8 @@ func (element *Directory) Update () error {
 		element.children[index].File = file
 		element.children[index].DirEntry = entry
 		element.children[index].Drawer.SetFace (element.theme.FontFace(
-			theme.FontStyleRegular,
-			theme.FontSizeNormal))
+			tomo.FontStyleRegular,
+			tomo.FontSizeNormal))
 		element.children[index].Drawer.SetText([]rune(entry.Name()))
 		element.children[index].Drawer.SetAlign(textdraw.AlignCenter)
 	}
@@ -164,7 +164,7 @@ func (element *Directory) CountChildren () (count int) {
 
 // Child returns the child at the specified index. If the index is out of
 // bounds, this method will return nil.
-func (element *Directory) Child (index int) (child elements.Element) {
+func (element *Directory) Child (index int) (child tomo.Element) {
 	if index < 0 || index > len(element.children) { return }
 	return element.children[index].File
 }
@@ -202,12 +202,12 @@ func (element *Directory) redoAll () {
 		rocks[index] = entry.Bounds
 	}
 	pattern := element.theme.Pattern (
-		theme.PatternPinboard,
-		theme.State { })
+		tomo.PatternPinboard,
+		tomo.State { })
 	artist.DrawShatter(element.core, pattern, element.Bounds(), rocks...)
 
 	element.partition()
-	if parent, ok := element.core.Parent().(elements.ScrollableParent); ok {
+	if parent, ok := element.core.Parent().(tomo.ScrollableParent); ok {
 		parent.NotifyScrollBoundsChange(element)
 	}
 	if element.onScrollBoundsChange != nil {
@@ -215,7 +215,7 @@ func (element *Directory) redoAll () {
 	}
 
 	// draw labels
-	foreground := element.theme.Color(theme.ColorForeground, theme.State { })
+	foreground := element.theme.Color(tomo.ColorForeground, tomo.State { })
 	for _, entry := range element.children {
 		entry.Drawer.Draw(element.core, foreground, entry.TextPoint)
 	}
@@ -240,13 +240,13 @@ func (element *Directory) partition () {
 
 // NotifyMinimumSizeChange notifies the container that the minimum size of a
 // child element has changed.
-func (element *Directory) NotifyMinimumSizeChange (child elements.Element) {
+func (element *Directory) NotifyMinimumSizeChange (child tomo.Element) {
 	element.redoAll()
 	element.core.DamageAll()
 }
 
 // SetTheme sets the element's theme.
-func (element *Directory) SetTheme (new theme.Theme) {
+func (element *Directory) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.Propagator.SetTheme(new)
@@ -254,7 +254,7 @@ func (element *Directory) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *Directory) SetConfig (new config.Config) {
+func (element *Directory) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.Propagator.SetConfig(new)
 	element.redoAll()
@@ -267,7 +267,7 @@ func (element *Directory) ScrollContentBounds () image.Rectangle {
 // ScrollViewportBounds returns the size and position of the element's
 // viewport relative to ScrollBounds.
 func (element *Directory) ScrollViewportBounds () image.Rectangle {
-	padding := element.theme.Padding(theme.PatternPinboard)
+	padding := element.theme.Padding(tomo.PatternPinboard)
 	bounds  := padding.Apply(element.Bounds())
 	bounds   = bounds.Sub(bounds.Min).Add(element.scroll)
 	return bounds
@@ -302,7 +302,7 @@ func (element *Directory) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *Directory) maxScrollHeight () (height int) {
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(tomo.PatternSunken)
 	viewportHeight := element.Bounds().Dy() - padding.Vertical()
 	height = element.contentBounds.Dy() - viewportHeight
 	if height < 0 { height = 0 }
@@ -310,8 +310,8 @@ func (element *Directory) maxScrollHeight () (height int) {
 }
 
 func (element *Directory) doLayout () {
-	margin := element.theme.Margin(theme.PatternPinboard)
-	padding := element.theme.Padding(theme.PatternPinboard)
+	margin := element.theme.Margin(tomo.PatternPinboard)
+	padding := element.theme.Padding(tomo.PatternPinboard)
 	bounds := padding.Apply(element.Bounds())
 	element.contentBounds = image.Rectangle { }
 
@@ -360,7 +360,7 @@ func (element *Directory) doLayout () {
 }
 
 func (element *Directory) updateMinimumSize () {
-	padding := element.theme.Padding(theme.PatternPinboard)
+	padding := element.theme.Padding(tomo.PatternPinboard)
 	minimumWidth := 0
 	for _, entry := range element.children {
 		width, _ := entry.MinimumSize()

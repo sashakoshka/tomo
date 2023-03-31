@@ -2,11 +2,11 @@ package containers
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 type DocumentContainer struct {
 	*core.Core
@@ -27,7 +27,7 @@ type DocumentContainer struct {
 // NewDocumentContainer creates a new document container.
 func NewDocumentContainer () (element *DocumentContainer) {
 	element = &DocumentContainer { }
-	element.theme.Case = theme.C("tomo", "documentContainer")
+	element.theme.Case = tomo.C("tomo", "documentContainer")
 	element.Core, element.core = core.NewCore(element, element.redoAll)
 	element.Propagator = core.NewPropagator(element, element.core)
 	return
@@ -172,8 +172,8 @@ func (element *DocumentContainer) redoAll () {
 		rocks[index] = entry.Bounds
 	}
 	pattern := element.theme.Pattern (
-		theme.PatternBackground,
-		theme.State { })
+		tomo.PatternBackground,
+		tomo.State { })
 	artist.DrawShatter(element.core, pattern, element.Bounds(), rocks...)
 
 	element.partition()
@@ -219,7 +219,7 @@ func (element *DocumentContainer) NotifyFlexibleHeightChange (child tomo.Flexibl
 }
 
 // SetTheme sets the element's theme.
-func (element *DocumentContainer) SetTheme (new theme.Theme) {
+func (element *DocumentContainer) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.Propagator.SetTheme(new)
@@ -227,7 +227,7 @@ func (element *DocumentContainer) SetTheme (new theme.Theme) {
 }
 
 // SetConfig sets the element's configuration.
-func (element *DocumentContainer) SetConfig (new config.Config) {
+func (element *DocumentContainer) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.Propagator.SetConfig(new)
 	element.redoAll()
@@ -241,7 +241,7 @@ func (element *DocumentContainer) ScrollContentBounds () image.Rectangle {
 // ScrollViewportBounds returns the size and position of the element's
 // viewport relative to ScrollBounds.
 func (element *DocumentContainer) ScrollViewportBounds () image.Rectangle {
-	padding := element.theme.Padding(theme.PatternBackground)
+	padding := element.theme.Padding(tomo.PatternBackground)
 	bounds  := padding.Apply(element.Bounds())
 	bounds   = bounds.Sub(bounds.Min).Add(element.scroll)
 	return bounds
@@ -271,7 +271,7 @@ func (element *DocumentContainer) OnScrollBoundsChange (callback func ()) {
 }
 
 func (element *DocumentContainer) maxScrollHeight () (height int) {
-	padding := element.theme.Padding(theme.PatternSunken)
+	padding := element.theme.Padding(tomo.PatternSunken)
 	viewportHeight := element.Bounds().Dy() - padding.Vertical()
 	height = element.contentBounds.Dy() - viewportHeight
 	if height < 0 { height = 0 }
@@ -284,8 +284,8 @@ func (element *DocumentContainer) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *DocumentContainer) doLayout () {
-	margin := element.theme.Margin(theme.PatternBackground)
-	padding := element.theme.Padding(theme.PatternBackground)
+	margin := element.theme.Margin(tomo.PatternBackground)
+	padding := element.theme.Padding(tomo.PatternBackground)
 	bounds := padding.Apply(element.Bounds())
 	element.contentBounds = image.Rectangle { }
 
@@ -315,7 +315,7 @@ func (element *DocumentContainer) doLayout () {
 }
 
 func (element *DocumentContainer) updateMinimumSize () {
-	padding := element.theme.Padding(theme.PatternBackground)
+	padding := element.theme.Padding(tomo.PatternBackground)
 	minimumWidth := 0
 	for _, entry := range element.children {
 		width, _ := entry.MinimumSize()

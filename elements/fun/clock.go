@@ -4,10 +4,11 @@ import "time"
 import "math"
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // AnalogClock can display the time of day in an analog format.
 type AnalogClock struct {
@@ -22,7 +23,7 @@ type AnalogClock struct {
 // NewAnalogClock creates a new analog clock that displays the specified time.
 func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 	element = &AnalogClock { }
-	element.theme.Case = theme.C("tomo", "clock")
+	element.theme.Case = tomo.C("tomo", "clock")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.core.SetMinimumSize(64, 64)
 	return
@@ -36,14 +37,14 @@ func (element *AnalogClock) SetTime (newTime time.Time) {
 }
 
 // SetTheme sets the element's theme.
-func (element *AnalogClock) SetTheme (new theme.Theme) {
+func (element *AnalogClock) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
-func (element *AnalogClock) SetConfig (new config.Config) {
+func (element *AnalogClock) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.redo()
@@ -59,15 +60,15 @@ func (element *AnalogClock) redo () {
 func (element *AnalogClock) draw () {
 	bounds := element.Bounds()
 
-	state   := theme.State { }
-	pattern := element.theme.Pattern(theme.PatternSunken, state)
-	padding := element.theme.Padding(theme.PatternSunken)
+	state   := tomo.State { }
+	pattern := element.theme.Pattern(tomo.PatternSunken, state)
+	padding := element.theme.Padding(tomo.PatternSunken)
 	pattern.Draw(element.core, bounds)
 
 	bounds = padding.Apply(bounds)
 
-	foreground := element.theme.Color(theme.ColorForeground, state)
-	accent     := element.theme.Color(theme.ColorAccent, state)
+	foreground := element.theme.Color(tomo.ColorForeground, state)
+	accent     := element.theme.Color(tomo.ColorAccent, state)
 
 	for hour := 0; hour < 12; hour ++ {
 		element.radialLine (

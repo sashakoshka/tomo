@@ -1,11 +1,12 @@
 package elements
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Switch is a toggle-able on/off switch with an optional label. It is
 // functionally identical to Checkbox, but plays a different semantic role.
@@ -32,10 +33,13 @@ func NewSwitch (text string, on bool) (element *Switch) {
 		checked: on,
 		text: text,
 	}
-	element.theme.Case = theme.C("tomo", "switch")
+	element.theme.Case = tomo.C("tomo", "switch")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.FocusableCore,
 	element.focusableControl = core.NewFocusableCore(element.core, element.redo)
+	element.drawer.SetFace (element.theme.FontFace (
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	element.drawer.SetText([]rune(text))
 	element.updateMinimumSize()
 	return
@@ -111,18 +115,18 @@ func (element *Switch) SetText (text string) {
 }
 
 // SetTheme sets the element's theme.
-func (element *Switch) SetTheme (new theme.Theme) {
+func (element *Switch) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.drawer.SetFace (element.theme.FontFace (
-		theme.FontStyleRegular,
-		theme.FontSizeNormal))
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	element.updateMinimumSize()
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
-func (element *Switch) SetConfig (new config.Config) {
+func (element *Switch) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
@@ -145,7 +149,7 @@ func (element *Switch) updateMinimumSize () {
 	} else {
 		element.core.SetMinimumSize (
 			lineHeight * 2 +
-			element.theme.Margin(theme.PatternBackground).X +
+			element.theme.Margin(tomo.PatternBackground).X +
 			textBounds.Dx(),
 			lineHeight)
 	}
@@ -156,13 +160,13 @@ func (element *Switch) draw () {
 	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy()).Add(bounds.Min)
 
-	state := theme.State {
+	state := tomo.State {
 		Disabled: !element.Enabled(),
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	}
 	backgroundPattern := element.theme.Pattern (
-		theme.PatternBackground, state)
+		tomo.PatternBackground, state)
 	backgroundPattern.Draw(element.core, bounds)
 
 	if element.checked {
@@ -180,23 +184,22 @@ func (element *Switch) draw () {
 	}
 
 	gutterPattern := element.theme.Pattern (
-		theme.PatternGutter, state)
+		tomo.PatternGutter, state)
 	gutterPattern.Draw(element.core, gutterBounds)
 	
 	handlePattern := element.theme.Pattern (
-		theme.PatternHandle, state)
+		tomo.PatternHandle, state)
 	handlePattern.Draw(element.core, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := bounds.Min.Add(image.Point {
 		X: bounds.Dy() * 2 +
-			element.theme.Margin(theme.PatternBackground).X,
+			element.theme.Margin(tomo.PatternBackground).X,
 	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := element.theme.Color (
-		theme.ColorForeground, state)
+	foreground := element.theme.Color(tomo.ColorForeground, state)
 	element.drawer.Draw(element.core, foreground, offset)
 }

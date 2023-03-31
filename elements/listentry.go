@@ -1,11 +1,12 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // ListEntry is an item that can be added to a list.
 type ListEntry struct {
@@ -26,28 +27,31 @@ func NewListEntry (text string, onSelect func ()) (entry ListEntry) {
 		text:     text,
 		onSelect: onSelect,
 	}
-	entry.theme.Case = theme.C("tomo", "listEntry")
+	entry.theme.Case = tomo.C("tomo", "listEntry")
+	entry.drawer.SetFace (entry.theme.FontFace (
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	entry.drawer.SetText([]rune(text))
 	entry.updateBounds()
 	return
 }
 
-func (entry *ListEntry) SetTheme (new theme.Theme) {
+func (entry *ListEntry) SetTheme (new tomo.Theme) {
 	if new == entry.theme.Theme { return }
 	entry.theme.Theme = new
 	entry.drawer.SetFace (entry.theme.FontFace (
-		theme.FontStyleRegular,
-		theme.FontSizeNormal))
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal))
 	entry.updateBounds()
 }
 
-func (entry *ListEntry) SetConfig (new config.Config) {
+func (entry *ListEntry) SetConfig (new tomo.Config) {
 	if new == entry.config.Config { return }
 	entry.config.Config = new
 }
 
 func (entry *ListEntry) updateBounds () {
-	padding := entry.theme.Padding(theme.PatternRaised)
+	padding := entry.theme.Padding(tomo.PatternRaised)
 	entry.bounds = padding.Inverse().Apply(entry.drawer.LayoutBounds())
 	entry.bounds = entry.bounds.Sub(entry.bounds.Min)
 	entry.minimumWidth = entry.bounds.Dx()
@@ -62,17 +66,17 @@ func (entry *ListEntry) Draw (
 ) (
 	updatedRegion image.Rectangle,
 ) {
-	state := theme.State {
+	state := tomo.State {
 		Focused: focused,
 		On: on,
 	}
 
-	pattern := entry.theme.Pattern(theme.PatternRaised, state)
-	padding := entry.theme.Padding(theme.PatternRaised)
+	pattern := entry.theme.Pattern(tomo.PatternRaised, state)
+	padding := entry.theme.Padding(tomo.PatternRaised)
 	bounds  := entry.Bounds().Add(offset)
 	pattern.Draw(destination, bounds)
 		
-	foreground := entry.theme.Color (theme.ColorForeground, state)
+	foreground := entry.theme.Color (tomo.ColorForeground, state)
 	return entry.drawer.Draw (
 		destination,
 		foreground,

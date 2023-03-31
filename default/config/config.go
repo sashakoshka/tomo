@@ -1,18 +1,6 @@
 package config
 
-// Config can return global configuration parameters.
-type Config interface {
-	// HandleWidth returns how large grab handles should typically be. This
-	// is important for accessibility reasons.
-	HandleWidth () int
-
-	// ScrollVelocity returns how many pixels should be scrolled every time
-	// a scroll button is pressed.
-	ScrollVelocity () int
-
-	// ThemePath returns the directory path to the theme.
-	ThemePath () string
-}
+import "git.tebibyte.media/sashakoshka/tomo"
 
 // Default specifies default configuration values.
 type Default struct { }
@@ -35,7 +23,7 @@ func (Default) ThemePath () (string) {
 
 // Wrapped wraps a configuration and uses Default if it is nil.
 type Wrapped struct {
-	Config
+	tomo.Config
 }
 
 // HandleWidth returns how large grab handles should typically be. This
@@ -55,7 +43,7 @@ func (wrapped Wrapped) ThemePath () string {
 	return wrapped.ensure().ThemePath()
 }
 
-func (wrapped Wrapped) ensure () (real Config) {
+func (wrapped Wrapped) ensure () (real tomo.Config) {
 	real = wrapped.Config
 	if real == nil { real = Default { } }
 	return

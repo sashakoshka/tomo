@@ -1,12 +1,13 @@
 package testing
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Mouse is an element capable of testing mouse input. When the mouse is clicked
 // and dragged on it, it draws a trail.
@@ -16,28 +17,28 @@ type Mouse struct {
 	drawing      bool
 	lastMousePos image.Point
 	
-	config config.Config
-	theme  theme.Theme
-	c      theme.Case
+	config config.Wrapped
+	theme  theme.Wrapped
 }
 
 // NewMouse creates a new mouse test element.
 func NewMouse () (element *Mouse) {
-	element = &Mouse { c: theme.C("tomo", "mouse") }
+	element = &Mouse { }
+	element.theme.Case = tomo.C("tomo", "piano")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.core.SetMinimumSize(32, 32)
 	return
 }
 
 // SetTheme sets the element's theme.
-func (element *Mouse) SetTheme (new theme.Theme) {
-	element.theme = new
+func (element *Mouse) SetTheme (new tomo.Theme) {
+	element.theme.Theme = new
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
-func (element *Mouse) SetConfig (new config.Config) {
-	element.config = new
+func (element *Mouse) SetConfig (new tomo.Config) {
+	element.config.Config = new
 	element.redo()
 }
 
@@ -50,9 +51,8 @@ func (element *Mouse) redo () {
 func (element *Mouse) draw () {
 	bounds := element.Bounds()
 	accent := element.theme.Color (
-		theme.ColorAccent,
-		theme.State { },
-		element.c)
+		tomo.ColorAccent,
+		tomo.State { })
 	shapes.FillColorRectangle(element.core, accent, bounds)
 	shapes.StrokeColorRectangle (
 		element.core,

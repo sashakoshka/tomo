@@ -1,8 +1,9 @@
 package elements
 
-import "git.tebibyte.media/sashakoshka/tomo/theme"
-import "git.tebibyte.media/sashakoshka/tomo/config"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Spacer can be used to put space between two elements..
 type Spacer struct {
@@ -19,7 +20,7 @@ type Spacer struct {
 // will appear as a line.
 func NewSpacer (line bool) (element *Spacer) {
 	element = &Spacer { line: line }
-	element.theme.Case = theme.C("tomo", "spacer")
+	element.theme.Case = tomo.C("tomo", "spacer")
 	element.Core, element.core = core.NewCore(element, element.draw)
 	element.updateMinimumSize()
 	return
@@ -37,14 +38,14 @@ func (element *Spacer) SetLine (line bool) {
 }
 
 // SetTheme sets the element's theme.
-func (element *Spacer) SetTheme (new theme.Theme) {
+func (element *Spacer) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.redo()
 }
 
 // SetConfig sets the element's configuration.
-func (element *Spacer) SetConfig (new config.Config) {
+func (element *Spacer) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.redo()
@@ -52,7 +53,7 @@ func (element *Spacer) SetConfig (new config.Config) {
 
 func (element *Spacer) updateMinimumSize () {
 	if element.line {
-		padding := element.theme.Padding(theme.PatternLine)
+		padding := element.theme.Padding(tomo.PatternLine)
 		element.core.SetMinimumSize (
 			padding.Horizontal(),
 			padding.Vertical())
@@ -73,13 +74,13 @@ func (element *Spacer) draw () {
 
 	if element.line {
 		pattern := element.theme.Pattern (
-			theme.PatternLine,
-			theme.State { })
+			tomo.PatternLine,
+			tomo.State { })
 		pattern.Draw(element.core, bounds)
 	} else {
 		pattern := element.theme.Pattern (
-			theme.PatternBackground,
-			theme.State { })
+			tomo.PatternBackground,
+			tomo.State { })
 		pattern.Draw(element.core, bounds)
 	}
 }
