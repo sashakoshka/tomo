@@ -237,7 +237,6 @@ func (request *selectionRequest) handleSelectionNotify (
 	// to True. As previously discussed, the owner has no way of knowing
 	// when the data has been transferred to the requestor unless the
 	// property is removed.
-	if err != nil { request.die(err); return }
 	err = xproto.DeletePropertyChecked (
 		request.window.backend.connection.Conn(),
 		request.window.xWindow.Id,

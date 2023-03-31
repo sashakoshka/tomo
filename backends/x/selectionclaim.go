@@ -38,7 +38,7 @@ func (window *window) claimSelection (name xproto.Atom, data data.Data) *selecti
 	ownerReply, err := xproto.GetSelectionOwner (
 		window.backend.connection.Conn(), name).Reply()
 	if err != nil { return nil }
-	if ownerReply.Owner != window.xWindow.Id { return nil}
+	if ownerReply.Owner != window.xWindow.Id { return nil }
 
 	return &selectionClaim {
 		window: window,
@@ -63,8 +63,9 @@ func (window *window) refuseSelectionRequest (request xevent.SelectionRequestEve
 }
 
 func (window *window) fulfillSelectionRequest (
-	data []byte,
-	format byte,
+	data    []byte,
+	format  byte,
+	ty      xproto.Atom,
 	request xevent.SelectionRequestEvent,
 ) {
 	die := func () { window.refuseSelectionRequest(request) }
@@ -78,7 +79,7 @@ func (window *window) fulfillSelectionRequest (
 		window.backend.connection.Conn(),
 		xproto.PropModeReplace, request.Requestor,
 		request.Property,
-		request.Target, format,
+		ty, format,
 		uint32(len(data) / (int(format) / 8)), data).Check()
 	if err != nil { die() }
 
@@ -136,7 +137,7 @@ func (claim *selectionClaim) handleSelectionRequest (
 	
 	switch targetName {
 	case "TARGETS":
-		targetNames := []string { }
+		targetNames := []string { "TARGETS", }
 		for mime := range claim.data {
 			targetNames = append(targetNames, mimeToTargets(mime)...)
 		}
@@ -146,7 +147,9 @@ func (claim *selectionClaim) handleSelectionRequest (
 			if err != nil { die(); return }
 			xgb.Put32(data[(index) * 4:], uint32(atom))
 		}
-		claim.window.fulfillSelectionRequest(data, 32, event)
+		atomAtom, err := xprop.Atm(claim.window.backend.connection, "ATOM")
+		if err != nil { die(); return }
+		claim.window.fulfillSelectionRequest(data, 32, atomAtom, event)
 
 	default:
 		mime, confidence := targetToMime(targetName)
@@ -156,6 +159,6 @@ func (claim *selectionClaim) handleSelectionRequest (
 		reader.Seek(0, io.SeekStart)
 		data, err := io.ReadAll(reader)
 		if err != nil { die() }
-		claim.window.fulfillSelectionRequest(data, 8, event)
+		claim.window.fulfillSelectionRequest(data, 8, event.Target, event)
 	}
 }
