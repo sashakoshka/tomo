@@ -22,3 +22,5 @@ require (
 	github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966 // indirect
 	github.com/jezek/xgb v1.1.0
 )
+
+replace github.com/jezek/xgbutil => github.com/sashakoshka/xgbutil v0.0.0-20230330215824-bebecf813e8b

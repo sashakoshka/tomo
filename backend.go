@@ -1,7 +1,6 @@
 package tomo
 
 import "errors"
-import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
@@ -24,12 +23,6 @@ type Backend interface {
 	// and returns a struct representing it that fulfills the MainWindow
 	// interface.
 	NewWindow (width, height int) (window elements.MainWindow, err error)
-
-	// Copy puts data into the clipboard.
-	Copy (data.Data)
-
-	// Paste returns the data currently in the clipboard.
-	Paste (accept []data.Mime) (data.Data)
 	
 	// SetTheme sets the theme of all open windows.
 	SetTheme (theme.Theme)

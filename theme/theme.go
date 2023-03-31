@@ -63,10 +63,12 @@ type Color int; const (
 )
 
 // Icon lists a number of cannonical icons, each with its own ID.
-type Icon int; const (
-	// IconNone specifies no icon.
-	IconNone = -1
+type Icon int
 
+// IconNone specifies no icon.
+const IconNone = -1
+
+const (
 	// Place icons
 	IconHome Icon = iota
 	Icon3DObjects

@@ -1,9 +1,3 @@
-git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309011813-4cd4374e3830 h1:McIAkTzD4y0tS7YprTOwRu8a8NTsMKtomQnvxnCdOmg=
-git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309011813-4cd4374e3830/go.mod h1:cpXX8SAUDEvZX5m7scoyruavUhEqQ1SByfWzPFHkTbg=
-git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309013013-f7ee80c8f908 h1:kFdch6JQ/gWESn/vLeKzImzf3Xx1it2MkZqBwrSnR1Q=
-git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309013013-f7ee80c8f908/go.mod h1:cpXX8SAUDEvZX5m7scoyruavUhEqQ1SByfWzPFHkTbg=
-git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309013201-fc0de8121523 h1:1KaoiGetWYIDQKts6yas1hW+4ObkuTm6+TkFpl6jZxg=
-git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309013201-fc0de8121523/go.mod h1:cpXX8SAUDEvZX5m7scoyruavUhEqQ1SByfWzPFHkTbg=
 git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309044548-401cba83602b h1:vPFKR7vjN1VrMdMtpATMrKQobz/cqbPiRrA1EbtG6PM=
 git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309044548-401cba83602b/go.mod h1:cpXX8SAUDEvZX5m7scoyruavUhEqQ1SByfWzPFHkTbg=
 github.com/BurntSushi/freetype-go v0.0.0-20160129220410-b763ddbfe298 h1:1qlsVAQJXZHsaM8b6OLVo6muQUQd4CwkH/D3fnnbHXA=
@@ -27,8 +21,6 @@ github.com/icza/bitio v1.0.0/go.mod h1:0jGnlLAx8MKMr9VGnn/4YrvZiprkvBelsVIbA9Jjr
 github.com/icza/mighty v0.0.0-20180919140131-cfd07d671de6/go.mod h1:xQig96I1VNBDIWGCdTt54nHt6EeI639SmHycLYL7FkA=
 github.com/jezek/xgb v1.1.0 h1:wnpxJzP1+rkbGclEkmwpVFQWpuE2PUGNUzP8SbfFobk=
 github.com/jezek/xgb v1.1.0/go.mod h1:nrhwO0FX/enq75I7Y7G8iN1ubpSGZEiA3v9e9GyRFlk=
-github.com/jezek/xgbutil v0.0.0-20210302171758-530099784e66 h1:+wPhoJD8EH0/bXipIq8Lc2z477jfox9zkXPCJdhvHj8=
-github.com/jezek/xgbutil v0.0.0-20210302171758-530099784e66/go.mod h1:KACeV+k6b+aoLTVrrurywEbu3UpqoQcQywj4qX8aQKM=
 github.com/jfreymuth/oggvorbis v1.0.1/go.mod h1:NqS+K+UXKje0FUYUPosyQ+XTVvjmVjps1aEZH1sumIk=
 github.com/jfreymuth/vorbis v1.0.0/go.mod h1:8zy3lUAm9K/rJJk223RKy6vjCZTWC61NA2QD06bfOE0=
 github.com/lucasb-eyer/go-colorful v1.0.2/go.mod h1:0MS4r+7BZKSJ5mw4/S5MPN+qHFF1fYclkSPilDOKW0s=
@@ -38,6 +30,8 @@ github.com/mewkiz/pkg v0.0.0-20190919212034-518ade7978e2/go.mod h1:3E2FUC/qYUfM8
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/sashakoshka/xgbutil v0.0.0-20230330215824-bebecf813e8b h1:jkUYWTFGCavJ5I4/lkireJ9KxOxEWKLHB9SPoieIHro=
+github.com/sashakoshka/xgbutil v0.0.0-20230330215824-bebecf813e8b/go.mod h1:AHecLyFNy6AN9f/+0AH/h1MI7X1+JL5bmCz4XlVZk7Y=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=

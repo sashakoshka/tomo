@@ -4,7 +4,6 @@ import "os"
 import "io"
 import "path/filepath"
 import "git.tebibyte.media/sashakoshka/tomo/dirs"
-import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
@@ -45,19 +44,6 @@ func Do (callback func ()) {
 func NewWindow (width, height int) (window elements.MainWindow, err error) {
 	assertBackend()
 	return backend.NewWindow(width, height)
-}
-
-// Copy puts data into the clipboard.
-func Copy (data data.Data) {
-	assertBackend()
-	backend.Copy(data)
-}
-
-// Paste returns the data currently in the clipboard. This method may
-// return nil.
-func Paste (accept []data.Mime) (data.Data) {
-	assertBackend()
-	return backend.Paste(accept)
 }
 
 // SetTheme sets the theme of all open windows.

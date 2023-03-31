@@ -1,12 +1,15 @@
 package x
 
 import "image"
+import "errors"
 import "github.com/jezek/xgb/xproto"
 import "github.com/jezek/xgbutil/ewmh"
 import "github.com/jezek/xgbutil/icccm"
+import "github.com/jezek/xgbutil/xprop"
 import "github.com/jezek/xgbutil/xevent"
 import "github.com/jezek/xgbutil/xwindow"
 import "github.com/jezek/xgbutil/xgraphics"
+import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/config"
@@ -29,6 +32,9 @@ type window struct {
 
 	theme  theme.Theme
 	config config.Config
+
+	selectionRequest *selectionRequest
+	selectionClaim   *selectionClaim
 
 	metrics struct {
 		width  int
@@ -64,6 +70,7 @@ func (backend *Backend) newWindow (
 	err = window.xWindow.Listen (
 		xproto.EventMaskExposure,
 		xproto.EventMaskStructureNotify,
+		xproto.EventMaskPropertyChange,
 		xproto.EventMaskPointerMotion,
 		xproto.EventMaskKeyPress,
 		xproto.EventMaskKeyRelease,
@@ -88,6 +95,14 @@ func (backend *Backend) newWindow (
 	xevent.ButtonReleaseFun(window.handleButtonRelease).
 		Connect(backend.connection, window.xWindow.Id)
 	xevent.MotionNotifyFun(window.handleMotionNotify).
+		Connect(backend.connection, window.xWindow.Id)
+	xevent.SelectionNotifyFun(window.handleSelectionNotify).
+		Connect(backend.connection, window.xWindow.Id)
+	xevent.PropertyNotifyFun(window.handlePropertyNotify).
+		Connect(backend.connection, window.xWindow.Id)
+	xevent.SelectionClearFun(window.handleSelectionClear).
+		Connect(backend.connection, window.xWindow.Id)
+	xevent.SelectionRequestFun(window.handleSelectionRequest).
 		Connect(backend.connection, window.xWindow.Id)
 
 	window.SetTheme(backend.theme)
@@ -246,7 +261,6 @@ func (window *window) setType (ty string) error {
 }
 
 func (window *window) setClientLeader (leader *window) error {
-	// FIXME: doe not fucking work
 	hints, _ := icccm.WmHintsGet(window.backend.connection, window.xWindow.Id)
 	if hints == nil {
 		hints = &icccm.Hints { }
@@ -273,6 +287,35 @@ func (window *window) Show () {
 
 func (window *window) Hide () {
 	window.xWindow.Unmap()
+}
+
+func (window *window) Copy (data data.Data) {
+	selectionAtom, err := xprop.Atm(window.backend.connection, clipboardName)
+	if err != nil { return }
+	window.selectionClaim = window.claimSelection(selectionAtom, data)
+}
+
+func (window *window) Paste (callback func (data.Data, error), accept ...data.Mime) {
+	// Follow:
+	// https://tronche.com/gui/x/icccm/sec-2.html#s-2.4
+	die := func (err error) { callback(nil, err) }
+	if window.selectionRequest != nil {
+		// TODO: add the request to a queue and take care of it when the
+		// current selection has completed
+		die(errors.New("there is already a selection request"))
+		return
+	}
+
+	propertyName := "TOMO_SELECTION"
+	selectionAtom, err := xprop.Atm(window.backend.connection, clipboardName)
+	if err != nil { die(err); return }
+	propertyAtom, err := xprop.Atm(window.backend.connection, propertyName)
+	if err != nil { die(err); return }
+
+	window.selectionRequest = window.newSelectionRequest (
+		selectionAtom, propertyAtom, callback, accept...)
+	if !window.selectionRequest.open() { window.selectionRequest = nil }
+	return
 }
 
 func (window *window) Close () {

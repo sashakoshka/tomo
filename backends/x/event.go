@@ -235,6 +235,39 @@ func (window *window) handleMotionNotify (
 	}
 }
 
+func (window *window) handleSelectionNotify (
+	connection *xgbutil.XUtil,
+	event xevent.SelectionNotifyEvent,
+) {
+	if window.selectionRequest == nil { return }
+	window.selectionRequest.handleSelectionNotify(connection, event)
+	if !window.selectionRequest.open() { window.selectionRequest = nil }
+}
+
+func (window *window) handlePropertyNotify (
+	connection *xgbutil.XUtil,
+	event xevent.PropertyNotifyEvent,
+) {
+	if window.selectionRequest == nil { return }
+	window.selectionRequest.handlePropertyNotify(connection, event)
+	if !window.selectionRequest.open() { window.selectionRequest = nil }
+}
+
+func (window *window) handleSelectionClear (
+	connection *xgbutil.XUtil,
+	event xevent.SelectionClearEvent,
+) {
+	window.selectionClaim = nil
+}
+
+func (window *window) handleSelectionRequest (
+	connection *xgbutil.XUtil,
+	event xevent.SelectionRequestEvent,
+) {
+	if window.selectionClaim == nil { return }
+	window.selectionClaim.handleSelectionRequest(connection, event)
+}
+
 func (window *window) compressExpose (
 	firstEvent xproto.ExposeEvent,
 ) (
