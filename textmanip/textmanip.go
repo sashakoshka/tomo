@@ -42,6 +42,15 @@ func (dot Dot) Constrain (length int) Dot {
 	return dot
 }
 
+func (dot Dot) Width () int {
+	dot = dot.Canon()
+	return dot.End - dot.Start
+}
+
+func (dot Dot) Slice (text []rune) []rune {
+	return text[dot.Start:dot.End]
+}
+
 func WordToLeft (text []rune, position int) (length int) {
 	if position < 1 { return }
 	if position > len(text) { position = len(text) }
@@ -119,6 +128,22 @@ func Delete (text []rune, dot Dot, word bool) (result []rune, moved Dot) {
 		moved = EmptyDot(dot.Start)
 		return
 	}
+}
+
+func Lift (text []rune, dot Dot) (result []rune, moved Dot, lifted []rune) {
+	dot = dot.Constrain(len(text))
+	if dot.Empty() {
+		moved = dot
+		return
+	}
+
+	dot = dot.Canon()
+	lifted = make([]rune, dot.Width())
+	copy(lifted, dot.Slice(text))
+	result = append(result, text[:dot.Start]...)
+	result = append(result, text[dot.End:]...)
+	moved = EmptyDot(dot.Start)
+	return
 }
 
 func Type (text []rune, dot Dot, character rune) (result []rune, moved Dot) {
