@@ -204,6 +204,10 @@ func (element *Container) redoAll () {
 	}
 }
 
+func (element *Container) Window () tomo.Window {
+	return element.core.Window()
+}
+
 // NotifyMinimumSizeChange notifies the container that the minimum size of a
 // child element has changed.
 func (element *Container) NotifyMinimumSizeChange (child tomo.Element) {

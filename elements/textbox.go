@@ -1,7 +1,9 @@
 package elements
 
+import "io"
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
@@ -181,6 +183,34 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 	case key == 'a' && modifiers.Control:
 		element.dot.Start = 0
 		element.dot.End   = len(element.text)
+
+	case key == 'x' && modifiers.Control:
+		var lifted []rune
+		element.text, element.dot, lifted = textmanip.Lift (
+			element.text,
+			element.dot)
+		if lifted != nil {
+			element.clipboardPut(lifted)
+			textChanged = true
+		}
+
+	case key == 'c' && modifiers.Control:
+		element.clipboardPut(element.dot.Slice(element.text))
+
+	case key == 'v' && modifiers.Control:
+		window := element.core.Window()
+		if window == nil { break }
+		window.Paste (func (d data.Data, err error) {
+			if err != nil { return }
+			reader, ok := d[data.MimePlain]
+			if !ok { return }
+			bytes, _ := io.ReadAll(reader)
+			element.text, element.dot = textmanip.Type (
+				element.text,
+				element.dot,
+				[]rune(string(bytes))...)
+			element.notifyAsyncTextChange()
+		})
 		
 	case key.Printable():
 		element.text, element.dot = textmanip.Type (
@@ -210,6 +240,13 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 	
 	if altered {
 		element.redo()
+	}
+}
+
+func (element *TextBox) clipboardPut (text []rune) {
+	window := element.core.Window()
+	if window != nil {
+		window.Copy(data.Bytes(data.MimePlain, []byte(string(text))))
 	}
 }
 
@@ -364,6 +401,16 @@ func (element *TextBox) updateMinimumSize () {
 		padding.Horizontal() + textBounds.Dx(),
 		padding.Vertical()   +
 		element.placeholderDrawer.LineHeight().Round())
+}
+
+func (element *TextBox) notifyAsyncTextChange () {
+	element.runOnChange()
+	element.valueDrawer.SetText(element.text)
+	element.scrollToCursor()
+	if parent, ok := element.core.Parent().(tomo.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
+	}
+	element.redo()
 }
 
 func (element *TextBox) redo () {

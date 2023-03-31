@@ -6,6 +6,9 @@ type Parent interface {
 	// minimum size has changed. This method is expected to be called by
 	// child elements when their minimum size changes.
 	NotifyMinimumSizeChange (child Element)
+
+	// Window returns the window containing the parent.
+	Window () Window
 }
 
 // FocusableParent represents a parent with keyboard navigation support.

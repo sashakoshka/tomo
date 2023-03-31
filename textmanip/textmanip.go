@@ -48,6 +48,7 @@ func (dot Dot) Width () int {
 }
 
 func (dot Dot) Slice (text []rune) []rune {
+	dot = dot.Canon().Constrain(len(text))
 	return text[dot.Start:dot.End]
 }
 
@@ -146,22 +147,22 @@ func Lift (text []rune, dot Dot) (result []rune, moved Dot, lifted []rune) {
 	return
 }
 
-func Type (text []rune, dot Dot, character rune) (result []rune, moved Dot) {
+func Type (text []rune, dot Dot, characters ...rune) (result []rune, moved Dot) {
 	dot = dot.Constrain(len(text))
 	if dot.Empty() {
 		result = append(result, text[:dot.End]...)
-		result = append(result, character)
+		result = append(result, characters...)
 		if dot.End < len(text) {
 			result = append(result, text[dot.End:]...)
 		}
-		moved = EmptyDot(dot.Add(1).End)
+		moved = EmptyDot(dot.Add(len(characters)).End)
 		return
 	} else {
 		dot = dot.Canon()
 		result = append(result, text[:dot.Start]...)
-		result = append(result, character)
+		result = append(result, characters...)
 		result = append(result, text[dot.End:]...)
-		moved = EmptyDot(dot.Add(1).Start)
+		moved = EmptyDot(dot.Add(len(characters)).Start)
 		return
 	}
 }

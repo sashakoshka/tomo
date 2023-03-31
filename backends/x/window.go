@@ -122,6 +122,10 @@ func (window *window) NotifyMinimumSizeChange (child tomo.Element) {
 	window.childMinimumSizeChangeCallback(child.MinimumSize())
 }
 
+func (window *window) Window () tomo.Window {
+	return window
+}
+
 func (window *window) RequestFocus (
 	child tomo.Focusable,
 ) (

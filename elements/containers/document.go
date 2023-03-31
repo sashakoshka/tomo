@@ -202,6 +202,10 @@ func (element *DocumentContainer) partition () {
 	}
 }
 
+func (element *DocumentContainer) Window () tomo.Window {
+	return element.core.Window()
+}
+
 // NotifyMinimumSizeChange notifies the container that the minimum size of a
 // child element has changed.
 func (element *DocumentContainer) NotifyMinimumSizeChange (child tomo.Element) {

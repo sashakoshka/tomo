@@ -122,6 +122,16 @@ func (control CoreControl) Parent () tomo.Parent {
 	return control.core.parent
 }
 
+// Window returns the window containing the element.
+func (control CoreControl) Window () tomo.Window {
+	parent := control.Parent()
+	if parent == nil {
+		return nil
+	} else {
+		return parent.Window()
+	}
+}
+
 // Outer returns the outer element given when the control was constructed.
 func (control CoreControl) Outer () tomo.Element {
 	return control.core.outer
