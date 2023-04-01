@@ -8,10 +8,10 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
+import defaultfont "git.tebibyte.media/sashakoshka/tomo/default/font"
 
 // Artist is an element that displays shapes and patterns drawn by the artist
 // package in order to test it.
