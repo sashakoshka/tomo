@@ -130,8 +130,7 @@ func (element *File) HandleMouseDown (x, y int, button input.Button) {
 func (element *File) HandleMouseUp (x, y int, button input.Button) {
 	if button != input.ButtonLeft { return }
 	element.pressed = false
-	within := image.Point { x, y }.
-		In(element.Bounds())
+	within := image.Point { x, y }.In(element.Bounds())
 	if time.Since(element.lastClick) < element.config.DoubleClickDelay() {
 		if element.Enabled() && within && element.onChoose != nil {
 			element.onChoose()

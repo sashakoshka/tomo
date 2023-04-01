@@ -1,6 +1,7 @@
 package elements
 
 import "io"
+import "time"
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
@@ -22,9 +23,10 @@ type TextBox struct {
 	core core.CoreControl
 	focusableControl core.FocusableCoreControl
 
-	dragging bool
-	dot    textmanip.Dot
-	scroll int
+	lastClick   time.Time
+	dragging    int
+	dot         textmanip.Dot
+	scroll      int
 	placeholder string
 	text        []rune
 	
@@ -81,21 +83,48 @@ func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 
 	if button == input.ButtonLeft {
 		runeIndex := element.atPosition(image.Pt(x, y))
-		element.dragging = true
-		if runeIndex > -1 {
+		if runeIndex == -1 { return }
+		
+		if time.Since(element.lastClick) < element.config.DoubleClickDelay() {
+			element.dragging = 2
+			element.dot = textmanip.WordAround(element.text, runeIndex)
+		} else {
+			element.dragging = 1
 			element.dot = textmanip.EmptyDot(runeIndex)
-			element.redo()
+			element.lastClick = time.Now()
 		}
+		
+		element.redo()
 	}
 }
 
 func (element *TextBox) HandleMotion (x, y int) {
 	if !element.Enabled() { return }
 
-	if element.dragging {
+	switch element.dragging {
+	case 1:
 		runeIndex := element.atPosition(image.Pt(x, y))
 		if runeIndex > -1 {
 			element.dot.End = runeIndex
+			element.redo()
+		}
+		
+	case 2:
+		runeIndex := element.atPosition(image.Pt(x, y))
+		if runeIndex > -1 {
+			if runeIndex < element.dot.Start {
+				element.dot.End =
+					runeIndex -
+					textmanip.WordToLeft (
+						element.text,
+						runeIndex)
+			} else {
+				element.dot.End =
+					runeIndex +
+					textmanip.WordToRight (
+						element.text,
+						runeIndex)
+			}
 			element.redo()
 		}
 	}
@@ -120,7 +149,7 @@ func (element *TextBox) atPosition (position image.Point) int {
 
 func (element *TextBox) HandleMouseUp (x, y int, button input.Button) {
 	if button == input.ButtonLeft {
-		element.dragging = false
+		element.dragging = 0
 	}
 }
 

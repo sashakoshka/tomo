@@ -13,7 +13,7 @@ func EmptyDot (position int) Dot {
 
 // Canon places the lesser value at the start, and the greater value at the end.
 // Note that a canonized dot does not in all cases correspond directly to the
-// original.
+// original, because there is a semantic value to the start and end positions.
 func (dot Dot) Canon () Dot {
 	if dot.Start > dot.End {
 		return Dot { dot.End, dot.Start }
@@ -35,7 +35,7 @@ func (dot Dot) Add (delta int) Dot {
 	}
 }
 
-// Add shifts the dot to the left by the specified amount.
+// Sub shifts the dot to the left by the specified amount.
 func (dot Dot) Sub (delta int) Dot {
 	return Dot {
 		dot.Start - delta,
@@ -103,8 +103,8 @@ func WordToRight (text []rune, position int) (length int) {
 // WordAround returns a dot that surrounds the word at the specified position.
 func WordAround (text []rune, position int) (around Dot) {
 	return Dot {
-		WordToLeft(text, position),
-		WordToRight(text, position),
+		position - WordToLeft(text, position),
+		position + WordToRight(text, position),
 	}
 }
 
