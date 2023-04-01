@@ -4,7 +4,7 @@ import "image"
 import "testing"
 import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
-import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
+import defaultfont "git.tebibyte.media/sashakoshka/tomo/default/font"
 
 func TestSetterLength (test *testing.T) {
 	// case 1

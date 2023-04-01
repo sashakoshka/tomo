@@ -2,7 +2,7 @@ package textdraw
 
 import "testing"
 import "golang.org/x/image/math/fixed"
-import "git.tebibyte.media/sashakoshka/tomo/defaultfont"
+import defaultfont "git.tebibyte.media/sashakoshka/tomo/default/font"
 
 func TestDoWord (test *testing.T) {
 	text := []rune("The quick brown fox")
