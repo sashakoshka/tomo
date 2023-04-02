@@ -371,12 +371,6 @@ type State struct {
 	// pattern is locked and cannot be interacted with. Disabled variations
 	// of patterns are typically flattened and greyed-out.
 	Disabled bool
-
-	// Invalid should be set to true if th element that is using this
-	// pattern wants to warn the user of an invalid interaction or data
-	// entry. Invalid variations typically have some sort of reddish tint
-	// or outline.
-	Invalid bool
 }
 
 // FontStyle specifies stylistic alterations to a font face.

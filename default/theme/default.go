@@ -199,12 +199,10 @@ func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.P
 	offset := 0; switch {
 	case state.Disabled:                 offset = 1
 	case state.Pressed && state.On:      offset = 4
-	case state.Focused && state.On:      offset = 7
-	case state.Invalid && state.On:      offset = 8
+	case state.Focused && state.On:      offset = 6
 	case state.On:                       offset = 2
 	case state.Pressed:                  offset = 3
 	case state.Focused:                  offset = 5
-	case state.Invalid:                  offset = 6
 	}
 
 	switch id {
