@@ -6,12 +6,34 @@ import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
-// IconSize is a type representing valid icon sizes.
-type IconSize int
+// Color lits a number of cannonical colors, each with its own ID.
+type Color int; const (
+	// The sixteen ANSI terminal colors:
+	ColorBlack Color = iota
+	ColorRed
+	ColorGreen
+	ColorYellow
+	ColorBlue
+	ColorPurple
+	ColorCyan
+	ColorWhite
+	ColorBrightBlack
+	ColorBrightRed
+	ColorBrightGreen
+	ColorBrightYellow
+	ColorBrightBlue
+	ColorBrightPurple
+	ColorBrightCyan
+	ColorBrightWhite
 
-const (
-	IconSizeSmall IconSize = 16
-	IconSizeLarge IconSize = 48
+	// ColorForeground is the text/icon color of the theme.
+	ColorForeground
+
+	// ColorBackground is the background color of the theme.
+	ColorBackground
+
+	// ColorAccent is the accent color of the theme.
+	ColorAccent
 )
 
 // Pattern lists a number of cannonical pattern types, each with its own ID.
@@ -53,34 +75,12 @@ type Pattern int; const (
 	PatternMercury
 )
 
-// Color lits a number of cannonical colors, each with its own ID.
-type Color int; const (
-	// The sixteen ANSI terminal colors:
-	ColorBlack Color = iota
-	ColorRed
-	ColorGreen
-	ColorYellow
-	ColorBlue
-	ColorPurple
-	ColorCyan
-	ColorWhite
-	ColorBrightBlack
-	ColorBrightRed
-	ColorBrightGreen
-	ColorBrightYellow
-	ColorBrightBlue
-	ColorBrightPurple
-	ColorBrightCyan
-	ColorBrightWhite
+// IconSize is a type representing valid icon sizes.
+type IconSize int
 
-	// ColorForeground is the text/icon color of the theme.
-	ColorForeground
-
-	// ColorBackground is the background color of the theme.
-	ColorBackground
-
-	// ColorAccent is the accent color of the theme.
-	ColorAccent
+const (
+	IconSizeSmall IconSize = 16
+	IconSizeLarge IconSize = 48
 )
 
 // Icon lists a number of cannonical icons, each with its own ID.
@@ -248,6 +248,36 @@ const (
 	IconEraser
 	IconFill
 	IconText)
+	
+// FontSize specifies the general size of a font face in a semantic way.
+type FontSize int; const (
+	// FontSizeNormal is the default font size that should be used for most
+	// things.
+	FontSizeNormal FontSize = iota
+
+	// FontSizeLarge is a larger font size suitable for things like section
+	// headings.
+	FontSizeLarge
+
+	// FontSizeHuge is a very large font size suitable for things like
+	// titles, wizard step names, digital clocks, etc.
+	FontSizeHuge
+
+	// FontSizeSmall is a smaller font size. Try not to use this unless it
+	// makes a lot of sense to do so, because it can negatively impact
+	// accessibility. It is useful for things like copyright notices at the
+	// bottom of some window that the average user doesn't actually care
+	// about.
+	FontSizeSmall
+)
+	
+// FontStyle specifies stylistic alterations to a font face.
+type FontStyle int; const (
+	FontStyleRegular    FontStyle = 0
+	FontStyleBold       FontStyle = 1
+	FontStyleItalic     FontStyle = 2
+	FontStyleBoldItalic FontStyle = 1 | 2
+)
 
 // Hints specifies rendering hints for a particular pattern. Elements can take
 // these into account in order to gain extra performance.
@@ -372,33 +402,3 @@ type State struct {
 	// of patterns are typically flattened and greyed-out.
 	Disabled bool
 }
-
-// FontStyle specifies stylistic alterations to a font face.
-type FontStyle int; const (
-	FontStyleRegular    FontStyle = 0
-	FontStyleBold       FontStyle = 1
-	FontStyleItalic     FontStyle = 2
-	FontStyleBoldItalic FontStyle = 1 | 2
-)
-
-// FontSize specifies the general size of a font face in a semantic way.
-type FontSize int; const (
-	// FontSizeNormal is the default font size that should be used for most
-	// things.
-	FontSizeNormal FontSize = iota
-
-	// FontSizeLarge is a larger font size suitable for things like section
-	// headings.
-	FontSizeLarge
-
-	// FontSizeHuge is a very large font size suitable for things like
-	// titles, wizard step names, digital clocks, etc.
-	FontSizeHuge
-
-	// FontSizeSmall is a smaller font size. Try not to use this unless it
-	// makes a lot of sense to do so, because it can negatively impact
-	// accessibility. It is useful for things like copyright notices at the
-	// bottom of some window that the average user doesn't actually care
-	// about.
-	FontSizeSmall
-)
