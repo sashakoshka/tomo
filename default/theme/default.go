@@ -239,15 +239,30 @@ func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.P
 }
 
 func (Default) Color (id tomo.Color, state tomo.State, c tomo.Case) color.RGBA {
-	if state.Disabled {
-		return artist.Hex(0x444444FF)
-	} else {
-		switch id {
-		case tomo.ColorAccent:     return artist.Hex(0x408090FF)
-		case tomo.ColorForeground: return artist.Hex(0x000000FF)
-		default:              return artist.Hex(0x888888FF)
-		}
-	}
+	if state.Disabled { return artist.Hex(0x444444FF) }
+	
+	return artist.Hex (map[tomo.Color] uint32 {
+		tomo.ColorBlack:        0x000000FF,
+		tomo.ColorRed:          0x880000FF,
+		tomo.ColorGreen:        0x008800FF,
+		tomo.ColorYellow:       0x888800FF,
+		tomo.ColorBlue:         0x000088FF,
+		tomo.ColorPurple:       0x880088FF,
+		tomo.ColorCyan:         0x008888FF,
+		tomo.ColorWhite:        0x888888FF,
+		tomo.ColorBrightBlack:  0x888888FF,
+		tomo.ColorBrightRed:    0xFF0000FF,
+		tomo.ColorBrightGreen:  0x00FF00FF,
+		tomo.ColorBrightYellow: 0xFFFF00FF,
+		tomo.ColorBrightBlue:   0x0000FFFF,
+		tomo.ColorBrightPurple: 0xFF00FFFF,
+		tomo.ColorBrightCyan:   0x00FFFFFF,
+		tomo.ColorBrightWhite:  0xFFFFFFFF,
+	
+		tomo.ColorForeground: 0x000000FF,
+		tomo.ColorBackground: 0xAAAAAAFF,
+		tomo.ColorAccent:     0x408090FF,
+	} [id])
 }
 
 // Padding returns the default padding value for the given pattern.

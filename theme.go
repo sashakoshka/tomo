@@ -55,11 +55,32 @@ type Pattern int; const (
 
 // Color lits a number of cannonical colors, each with its own ID.
 type Color int; const (
-	// ColorAccent is the accent color of the theme.
-	ColorAccent Color = iota
+	// The sixteen ANSI terminal colors:
+	ColorBlack Color = iota
+	ColorRed
+	ColorGreen
+	ColorYellow
+	ColorBlue
+	ColorPurple
+	ColorCyan
+	ColorWhite
+	ColorBrightBlack
+	ColorBrightRed
+	ColorBrightGreen
+	ColorBrightYellow
+	ColorBrightBlue
+	ColorBrightPurple
+	ColorBrightCyan
+	ColorBrightWhite
 
 	// ColorForeground is the text/icon color of the theme.
 	ColorForeground
+
+	// ColorBackground is the background color of the theme.
+	ColorBackground
+
+	// ColorAccent is the accent color of the theme.
+	ColorAccent
 )
 
 // Icon lists a number of cannonical icons, each with its own ID.
