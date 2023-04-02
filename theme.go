@@ -104,7 +104,8 @@ const (
 	IconLibraries
 	IconDownloads
 	IconRepositories
-	IconSettings)
+	IconSettings
+	IconHistory)
 
 const (
 	// Object icons
@@ -191,12 +192,29 @@ const (
 	IconBackward
 	IconForward
 	IconRefresh
-	IconHistory
+	IconUpward
 
 	IconYes
 	IconNo
 
-	IconUpward)
+	IconUndo
+	IconRedo
+
+	IconRun
+	IconSearch
+
+	IconClose
+	IconQuit
+	IconIconify
+	IconShade
+	IconMaximize
+	IconRestore
+
+	IconReplace
+	IconUnite
+	IconDiffer
+	IconInvert
+	IconIntersect)
 
 const (
 	// Status icons
@@ -207,7 +225,29 @@ const (
 
 const (
 	// Tool icons
-	)
+	IconCursor Icon = iota + 0x200
+	IconMeasure
+	
+	IconSelect
+	IconSelectRectangle
+	IconSelectEllipse
+	IconSelectGeometric
+	IconSelectFreeform
+	IconSelectLasso
+	IconSelectFuzzy
+	
+	IconTransform
+	IconTranslate
+	IconRotate
+	IconScale
+	IconWarp
+	IconDistort
+	
+	IconPencil
+	IconBrush
+	IconEraser
+	IconFill
+	IconText)
 
 // Hints specifies rendering hints for a particular pattern. Elements can take
 // these into account in order to gain extra performance.

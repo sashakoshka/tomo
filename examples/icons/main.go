@@ -1,7 +1,6 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/theme"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
@@ -20,12 +19,13 @@ func run () {
 
 	container.Adopt(elements.NewLabel("Just some of the wonderful icons we have:", false), false)
 	container.Adopt(elements.NewSpacer(true), false)
-	container.Adopt(icons(theme.IconHome, theme.IconRepositories), true)
-	container.Adopt(icons(theme.IconFile, theme.IconCD), true)
-	container.Adopt(icons(theme.IconOpen, theme.IconRemoveBookmark), true)
+	container.Adopt(icons(tomo.IconHome, tomo.IconHistory), true)
+	container.Adopt(icons(tomo.IconFile, tomo.IconNetwork), true)
+	container.Adopt(icons(tomo.IconOpen, tomo.IconRemoveFavorite), true)
+	container.Adopt(icons(tomo.IconCursor, tomo.IconDistort), true)
 
 	closeButton := elements.NewButton("Ok")
-	closeButton.SetIcon(theme.IconYes)
+	closeButton.SetIcon(tomo.IconYes)
 	closeButton.ShowText(false)
 	closeButton.OnClick(tomo.Stop)
 	container.Adopt(closeButton, false)
@@ -34,10 +34,10 @@ func run () {
 	window.Show()
 }
 
-func icons (min, max theme.Icon) (container *containers.Container) {
+func icons (min, max tomo.Icon) (container *containers.Container) {
 	container = containers.NewContainer(layouts.Horizontal { true, false })
 	for index := min; index <= max; index ++ {
-		container.Adopt(elements.NewIcon(index, theme.IconSizeSmall), true)
+		container.Adopt(elements.NewIcon(index, tomo.IconSizeSmall), true)
 	}
 	return
 }
