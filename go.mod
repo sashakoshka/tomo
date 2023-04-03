@@ -5,7 +5,7 @@ go 1.19
 require (
 	git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309044548-401cba83602b
 	github.com/faiface/beep v1.1.0
-	github.com/jezek/xgbutil v0.0.0-20210302171758-530099784e66
+	github.com/jezek/xgbutil v0.0.0-20230403164920-e2f86723ca07
 	golang.org/x/image v0.3.0
 )
 
@@ -22,5 +22,3 @@ require (
 	github.com/BurntSushi/graphics-go v0.0.0-20160129215708-b43f31a4a966 // indirect
 	github.com/jezek/xgb v1.1.0
 )
-
-replace github.com/jezek/xgbutil => github.com/sashakoshka/xgbutil v0.0.0-20230330215824-bebecf813e8b
