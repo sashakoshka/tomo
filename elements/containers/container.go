@@ -4,7 +4,6 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
@@ -189,10 +188,11 @@ func (element *Container) redoAll () {
 	for index, entry := range element.children {
 		rocks[index] = entry.Bounds
 	}
-	pattern := element.theme.Pattern (
-		tomo.PatternBackground,
-		tomo.State { })
-	artist.DrawShatter(element.core, pattern, element.Bounds(), rocks...)
+	
+	element.core.DrawBackgroundBoundsShatter (
+		element.theme.Pattern(tomo.PatternBackground, tomo.State { }),
+		element.Bounds(),
+		rocks...)
 
 	// cut our canvas up and give peices to child elements
 	for _, entry := range element.children {

@@ -5,6 +5,7 @@ import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/shatter"
 
 // Core is a struct that implements some core functionality common to most
 // widgets. It is meant to be embedded directly into a struct.
@@ -141,6 +142,19 @@ func (control CoreControl) DrawBackgroundBounds (
 		parent.DrawBackground(bounds)
 	} else if fallback != nil {
 		fallback.Draw(canvas.Cut(control, bounds), control.Bounds())
+	}
+}
+
+// DrawBackgroundBoundsShatter is like DrawBackgroundBounds, but uses the
+// shattering algorithm to avoid drawing in areas specified by rocks.
+func (control CoreControl) DrawBackgroundBoundsShatter (
+	fallback artist.Pattern,
+	bounds image.Rectangle,
+	rocks ...image.Rectangle,
+) {
+	tiles := shatter.Shatter(bounds, rocks...)
+	for _, tile := range tiles {
+		control.DrawBackgroundBounds(fallback, tile)
 	}
 }
 
