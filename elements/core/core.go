@@ -4,6 +4,7 @@ import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // Core is a struct that implements some core functionality common to most
 // widgets. It is meant to be embedded directly into a struct.
@@ -120,6 +121,27 @@ func (control CoreControl) Buffer () (data []color.RGBA, stride int) {
 // Parent returns the element's parent.
 func (control CoreControl) Parent () tomo.Parent {
 	return control.core.parent
+}
+
+// DrawBackground fills the element's canvas with the parent's background
+// pattern, if the parent supports it. If it is not supported, the fallback
+// pattern will be used instead.
+func (control CoreControl) DrawBackground (fallback artist.Pattern) {
+	control.DrawBackgroundBounds(fallback, control.Bounds())
+}
+
+// DrawBackgroundBounds is like DrawBackground, but it takes in a bounding
+// rectangle instead of using the element's bounds.
+func (control CoreControl) DrawBackgroundBounds (
+	fallback artist.Pattern,
+	bounds image.Rectangle,
+) {
+	parent, ok := control.Parent().(tomo.BackgroundParent)
+	if ok {
+		parent.DrawBackground(bounds)
+	} else if fallback != nil {
+		fallback.Draw(control, bounds)
+	}
 }
 
 // Window returns the window containing the element.

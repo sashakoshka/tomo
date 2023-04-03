@@ -238,7 +238,7 @@ func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.P
 	case tomo.PatternMercury:   return defaultTextures[13][offset]
 	case tomo.PatternTableHead: return defaultTextures[14][offset]
 	case tomo.PatternTableCell: return defaultTextures[15][offset]
-	default:             return patterns.Uhex(0xFF00FFFF)
+	default:                    return patterns.Uhex(0xFF00FFFF)
 	}
 }
 

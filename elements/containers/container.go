@@ -216,6 +216,14 @@ func (element *Container) NotifyMinimumSizeChange (child tomo.Element) {
 	element.core.DamageAll()
 }
 
+// DrawBackground draws a portion of the container's background pattern within
+// the specified bounds. The container will not push these changes.
+func (element *Container) DrawBackground (bounds image.Rectangle) {
+	element.core.DrawBackgroundBounds (
+		element.theme.Pattern(tomo.PatternBackground, tomo.State { }),
+		bounds)
+}
+
 // SetTheme sets the element's theme.
 func (element *Container) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }

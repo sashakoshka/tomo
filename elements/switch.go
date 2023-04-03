@@ -165,9 +165,9 @@ func (element *Switch) draw () {
 		Focused:  element.Focused(),
 		Pressed:  element.pressed,
 	}
-	backgroundPattern := element.theme.Pattern (
-		tomo.PatternBackground, state)
-	backgroundPattern.Draw(element.core, bounds)
+
+	element.core.DrawBackground (
+		element.theme.Pattern(tomo.PatternBackground, state))
 
 	if element.checked {
 		handleBounds.Min.X += bounds.Dy()

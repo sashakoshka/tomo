@@ -200,13 +200,10 @@ func (element *Label) updateMinimumSize () {
 }
 
 func (element *Label) draw () {
+	element.core.DrawBackground (
+		element.theme.Pattern(tomo.PatternBackground, tomo.State { }))
+
 	bounds := element.Bounds()
-
-	pattern := element.theme.Pattern (
-		tomo.PatternBackground,
-		tomo.State { })
-	pattern.Draw(element.core, bounds)
-
 	textBounds := element.drawer.LayoutBounds()
 
 	foreground := element.theme.Color (

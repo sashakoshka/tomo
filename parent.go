@@ -1,5 +1,7 @@
 package tomo
 
+import "image"
+
 // Parent represents a type capable of containing child elements.
 type Parent interface {
 	// NotifyMinimumSizeChange notifies the container that a child element's
@@ -53,4 +55,17 @@ type ScrollableParent interface {
 	// axes, their scroll position (either autonomously or as a result of a
 	// call to ScrollTo()), or their content size.
 	NotifyScrollBoundsChange (child Scrollable)
+}
+
+// BackgroundParent represents a parent that is able to re-draw a portion of its
+// background upon request. This is intended to be used by transparent elements
+// that want to adopt their parent's background pattern. If a parent implements
+// this interface, it should call a child's DrawTo method when its area of the
+// background is affected.
+type BackgroundParent interface {
+	Parent
+
+	// DrawBackground draws a portion of the parent's background pattern
+	// within the specified bounds. The parent will not push these changes.
+	DrawBackground (bounds image.Rectangle)
 }

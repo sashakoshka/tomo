@@ -171,10 +171,9 @@ func (element *Checkbox) draw () {
 		On:       element.checked,
 	}
 
-	backgroundPattern := element.theme.Pattern (
-		tomo.PatternBackground, state)
-	backgroundPattern.Draw(element.core, bounds)
-
+	element.core.DrawBackground (
+		element.theme.Pattern(tomo.PatternBackground, state))
+		
 	pattern := element.theme.Pattern(tomo.PatternButton, state)
 	pattern.Draw(element.core, boxBounds)
 

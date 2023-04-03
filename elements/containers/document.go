@@ -213,6 +213,14 @@ func (element *DocumentContainer) NotifyMinimumSizeChange (child tomo.Element) {
 	element.core.DamageAll()
 }
 
+// DrawBackground draws a portion of the container's background pattern within
+// the specified bounds. The container will not push these changes.
+func (element *DocumentContainer) DrawBackground (bounds image.Rectangle) {
+	element.core.DrawBackgroundBounds (
+		element.theme.Pattern(tomo.PatternBackground, tomo.State { }),
+		bounds)
+}
+
 // NotifyFlexibleHeightChange notifies the parent that the parameters
 // affecting a child's flexible height have changed. This method is
 // expected to be called by flexible child element when their content
