@@ -140,7 +140,7 @@ func (control CoreControl) DrawBackgroundBounds (
 	if ok {
 		parent.DrawBackground(bounds)
 	} else if fallback != nil {
-		fallback.Draw(control, bounds)
+		fallback.Draw(canvas.Cut(control, bounds), control.Bounds())
 	}
 }
 

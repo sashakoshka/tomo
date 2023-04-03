@@ -123,6 +123,17 @@ func (element *Artist) draw () {
 		Inset:  artist.Inset { 8, 8, 8, 8 },
 	}.Draw(c13, c13.Bounds().Inset(10))
 	
+	// 2, 3
+	c23 := element.cellAt(2, 3)
+	patterns.Border {
+		Canvas: element.thingy(c42),
+		Inset:  artist.Inset { 8, 8, 8, 8 },
+	}.Draw(c23, c23.Bounds())
+	patterns.Border {
+		Canvas: element.thingy(c42),
+		Inset:  artist.Inset { 8, 8, 8, 8 },
+	}.Draw(canvas.Cut(c23, c23.Bounds().Inset(16)), c23.Bounds())
+	
 	// how long did that take to render?
 	drawTime := time.Since(drawStart)
 	textDrawer := textdraw.Drawer { }
