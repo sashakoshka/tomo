@@ -22,6 +22,7 @@ func NewProgressBar (progress float64) (element *ProgressBar) {
 	element = &ProgressBar { progress: progress }
 	element.theme.Case = tomo.C("tomo", "progressBar")
 	element.Core, element.core = core.NewCore(element, element.draw)
+	element.updateMinimumSize()
 	return
 }
 
@@ -51,7 +52,7 @@ func (element *ProgressBar) SetConfig (new tomo.Config) {
 	element.redo()
 }
 
-func (element (ProgressBar)) updateMinimumSize() {
+func (element *ProgressBar) updateMinimumSize() {
 	padding      := element.theme.Padding(tomo.PatternSunken)
 	innerPadding := element.theme.Padding(tomo.PatternMercury)
 	element.core.SetMinimumSize (
