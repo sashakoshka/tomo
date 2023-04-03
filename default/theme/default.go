@@ -16,7 +16,7 @@ import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 //go:embed assets/wintergreen.png
 var defaultAtlasBytes []byte
 var defaultAtlas      canvas.Canvas
-var defaultTextures   [14][9]artist.Pattern
+var defaultTextures   [16][9]artist.Pattern
 //go:embed assets/wintergreen-icons-small.png
 var defaultIconsSmallAtlasBytes []byte
 var defaultIconsSmall [640]binaryIcon
@@ -107,6 +107,10 @@ func init () {
 	atlasCol(8, artist.Inset { 1, 1, 1, 1 })
 	// PatternMercury
 	atlasCol(13, artist.Inset { 2, 2, 2, 2 })
+	// PatternTableHead:
+	atlasCol(14, artist.Inset { 4, 4, 4, 4 })
+	// PatternTableCell:
+	atlasCol(15, artist.Inset { 4, 4, 4, 4 })
 
 	// PatternButton: basic.checkbox
 	atlasCol(9, artist.Inset { 3, 3, 3, 3 })
@@ -227,11 +231,13 @@ func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.P
 		default:
 			return defaultTextures[4][offset]
 		}
-	case tomo.PatternInput:   return defaultTextures[5][offset]
-	case tomo.PatternGutter:  return defaultTextures[6][offset]
-	case tomo.PatternHandle:  return defaultTextures[7][offset]
-	case tomo.PatternLine:    return defaultTextures[8][offset]
-	case tomo.PatternMercury: return defaultTextures[13][offset]
+	case tomo.PatternInput:     return defaultTextures[5][offset]
+	case tomo.PatternGutter:    return defaultTextures[6][offset]
+	case tomo.PatternHandle:    return defaultTextures[7][offset]
+	case tomo.PatternLine:      return defaultTextures[8][offset]
+	case tomo.PatternMercury:   return defaultTextures[13][offset]
+	case tomo.PatternTableHead: return defaultTextures[14][offset]
+	case tomo.PatternTableCell: return defaultTextures[15][offset]
 	default:             return patterns.Uhex(0xFF00FFFF)
 	}
 }

@@ -73,6 +73,12 @@ type Pattern int; const (
 
 	// PatternMercury is a fill pattern for progress bars, meters, etc.
 	PatternMercury
+
+	// PatternTableHead is a table row or column heading background.
+	PatternTableHead
+
+	// PatternTableCell is a table cell background.
+	PatternTableCell
 )
 
 // IconSize is a type representing valid icon sizes.
