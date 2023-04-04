@@ -1,7 +1,6 @@
 package containers
 
 import "image"
-import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
@@ -254,9 +253,9 @@ func (element *TableContainer) redoAll () {
 
 	// calculate the minimum size of each column and row
 	bounds := element.Bounds()
-	var minWidth, minHeight fixed.Int26_6
-	columnWidths := make([]fixed.Int26_6, element.columns)
-	rowHeights   := make([]fixed.Int26_6, element.rows)
+	var minWidth, minHeight float64
+	columnWidths := make([]float64, element.columns)
+	rowHeights   := make([]float64, element.rows)
 	padding := element.theme.Padding(tomo.PatternTableCell)
 
 	for rowIndex,    row   := range element.grid {
@@ -267,8 +266,8 @@ func (element *TableContainer) redoAll () {
 			minWidth, minHeight := child.MinimumSize()
 			width  += minWidth
 			height += minHeight
-			fwidth  := fixed.I(width)
-			fheight := fixed.I(height)
+			fwidth  := float64(width)
+			fheight := float64(height)
 			if fwidth > columnWidths[columnIndex] {
 				columnWidths[columnIndex] = fwidth
 			}
@@ -282,22 +281,25 @@ func (element *TableContainer) redoAll () {
 	// FIXME: replace this with a more accurate algorithm
 	for _, width  := range columnWidths { minWidth  += width  }
 	for _, height := range rowHeights   { minHeight += height }
-	widthRatio  := fixed.I(bounds.Dx()) / (minWidth  >> 6)
-	heightRatio := fixed.I(bounds.Dy()) / (minHeight >> 6)
-	for index, width := range columnWidths {
-		columnWidths[index] = width.Mul(widthRatio)
+	widthRatio  := float64(bounds.Dx()) / minWidth
+	heightRatio := float64(bounds.Dy()) / minHeight
+	for index := range columnWidths {
+		columnWidths[index] *= widthRatio
 	}
-	for index, height := range rowHeights {
-		rowHeights[index] = height.Mul(heightRatio)
+	for index := range rowHeights {
+		rowHeights[index] *= heightRatio
 	}
 
 	// cut up canvas
-	dot := bounds.Min
+	x := float64(bounds.Min.X)
+	y := float64(bounds.Min.Y)
 	for rowIndex, row := range element.grid {
 		for columnIndex, child := range row {
-			width  := columnWidths[columnIndex].Round()
-			height := rowHeights[rowIndex].Round()
-			cellBounds := image.Rect(0, 0, width, height).Add(dot)
+			width  := columnWidths[columnIndex]
+			height := rowHeights[rowIndex]
+			cellBounds := image.Rect (
+				int(x), int(y),
+				int(x + width), int(y + height))
 			
 			var id tomo.Pattern
 			isHeading :=
@@ -328,17 +330,17 @@ func (element *TableContainer) redoAll () {
 				// draw cell pattern in empty cells
 				pattern.Draw(element.core, cellBounds)
 			}
-			dot.X += width
+			x += float64(width)
 		}
 		
-		dot.X = bounds.Min.X
-		dot.Y += rowHeights[rowIndex].Round()
+		x = float64(bounds.Min.X)
+		y += rowHeights[rowIndex]
 	}
 
 	element.core.DamageAll()
 	
 	// update the minimum size of the element
-	element.core.SetMinimumSize(minWidth.Round(), minHeight.Round())
+	element.core.SetMinimumSize(int(minWidth), int(minHeight))
 }
 
 func (element *TableContainer) updateMinimumSize () {
