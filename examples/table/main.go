@@ -34,6 +34,7 @@ func run () {
 
 	container.Adopt(table, true)
 	window.Adopt(container)
+	
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

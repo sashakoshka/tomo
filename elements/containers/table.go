@@ -217,7 +217,7 @@ func (element *TableContainer) DrawBackground (bounds image.Rectangle) {
 	for _, child := range row {
 	if bounds.Overlaps(child.Rectangle) {
 		child.Draw(canvas.Cut(element.core, bounds), child.Rectangle)
-		break
+		return
 	}}}
 }
 
