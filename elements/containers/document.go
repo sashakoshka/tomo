@@ -33,8 +33,11 @@ func NewDocumentContainer () (element *DocumentContainer) {
 	return
 }
 
-// Adopt adds a new child element to the container.
-func (element *DocumentContainer) Adopt (child tomo.Element) {
+// Adopt adds a new child element to the container. If expand is true, then the
+// element will stretch to either side of the container (much like a css block
+// element). If expand is false, the element will share a line with other inline
+// elements.
+func (element *DocumentContainer) Adopt (child tomo.Element, expand bool) {
 	// set event handlers
 	if child0, ok := child.(tomo.Themeable); ok {
 		child0.SetTheme(element.theme.Theme)
@@ -46,6 +49,7 @@ func (element *DocumentContainer) Adopt (child tomo.Element) {
 	// add child
 	element.children = append (element.children, tomo.LayoutEntry {
 		Element: child,
+		Expand:  expand,
 	})
 
 	child.SetParent(element)
@@ -302,24 +306,45 @@ func (element *DocumentContainer) doLayout () {
 	element.contentBounds = image.Rectangle { }
 
 	dot := bounds.Min.Sub(element.scroll)
+	xStart := dot.X
+	rowHeight := 0
+
+	nextLine := func () {
+		dot.X = xStart
+		dot.Y += margin.Y
+		dot.Y += rowHeight
+		rowHeight = 0
+	}
+	
 	for index, entry := range element.children {
-		if index > 0 {
-			dot.Y += margin.Y
+		if dot.X > xStart && entry.Expand {
+			nextLine()
 		}
 	
 		width, height := entry.MinimumSize()
-		if width < bounds.Dx() {
+		if width + dot.X > bounds.Dx() && !entry.Expand {
+			nextLine()
+		}
+		if width < bounds.Dx() && entry.Expand {
 			width = bounds.Dx()
 		}
 		if typedChild, ok := entry.Element.(tomo.Flexible); ok {
 			height = typedChild.FlexibleHeightFor(width)
+		}
+		if rowHeight < height {
+			rowHeight = height
 		}
 		
 		entry.Bounds.Min = dot
 		entry.Bounds.Max = image.Pt(dot.X + width, dot.Y + height)
 		element.children[index] = entry
 		element.contentBounds = element.contentBounds.Union(entry.Bounds)
-		dot.Y += height
+		
+		if entry.Expand {
+			nextLine()
+		} else {
+			dot.X += width + margin.X
+		}
 	}
 	
 	element.contentBounds =

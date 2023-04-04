@@ -4,7 +4,6 @@ import "os"
 import "image"
 import _ "image/png"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
@@ -30,32 +29,36 @@ func run () {
 		"A document container is a vertically stacked container " +
 		"capable of properly laying out flexible elements such as " +
 		"text-wrapped labels. You can also include normal elements " +
-		"like:", true))
+		"like:", true), true)
 	document.Adopt (elements.NewButton (
-		"Buttons,"))
+		"Buttons,"), true)
 	document.Adopt (elements.NewCheckbox (
-		"Checkboxes,", true))
-	document.Adopt(elements.NewTextBox("", "And text boxes."))
-	document.Adopt (elements.NewSpacer(true))
+		"Checkboxes,", true), true)
+	document.Adopt(elements.NewTextBox("", "And text boxes."), true)
+	document.Adopt (elements.NewSpacer(true), true)
 	document.Adopt (elements.NewLabel (
 		"Document containers are meant to be placed inside of a " +
-		"ScrollContainer, like this one.", true))
+		"ScrollContainer, like this one.", true), true)
 	document.Adopt (elements.NewLabel (
 		"You could use document containers to do things like display various " +
 		"forms of hypertext (like HTML, gemtext, markdown, etc.), " +
 		"lay out a settings menu with descriptive label text between " +
-		"control groups like in iOS, or list comment or chat histories.", true))
-	document.Adopt(elements.NewImage(logo))
+		"control groups like in iOS, or list comment or chat histories.",
+		true), true)
+	document.Adopt(elements.NewImage(logo), true)
 	document.Adopt (elements.NewLabel (
-		"Oh, you're a switch? Then name all of these switches:", true))
-	for i := 0; i < 3; i ++ {
-		switchContainer := containers.NewContainer (layouts.Horizontal {
-			Gap: true,
-		})
-		for i := 0; i < 10; i ++ {
-			switchContainer.Adopt(elements.NewSwitch("", false), true)
-		}
-		document.Adopt(switchContainer)
+		"You can also choose whether each element is on its own line " +
+		"(sort of like an HTML/CSS block element) or on a line with " +
+		"other adjacent elements (like an HTML/CSS inline element).",
+		true), true)
+	document.Adopt(elements.NewButton("Just"), false)
+	document.Adopt(elements.NewButton("like"), false)
+	document.Adopt(elements.NewButton("this."), false)
+	document.Adopt (elements.NewLabel (
+		"Oh, you're a switch? Then name all of these switches:",
+		true), true)
+	for i := 0; i < 30; i ++ {
+		document.Adopt(elements.NewSwitch("", false), false)
 	}
 
 	scrollContainer.Adopt(document)

@@ -11,7 +11,9 @@ import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // TODO: using the event propagator core might not be the best idea here. we
 // should have slightly different behavior to sync the focused element with the
-// selected cell.
+// selected cell. alternatively we could pass a callback to the propagator that
+// fires when the focused child changes. this would also allow things like
+// scrolling to the focused child (for this element and others).
 
 type tableCell struct {
 	tomo.Element
