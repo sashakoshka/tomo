@@ -184,7 +184,7 @@ func (element *ScrollContainer) HandleKeyDown (key input.Key, modifiers input.Mo
 		viewport := element.child.ScrollViewportBounds()
 		element.HandleScroll(0, 0, 0, float64(viewport.Dy()))
 	default:
-		element.HandleKeyDown(key, modifiers)
+		element.Propagator.HandleKeyDown(key, modifiers)
 	}
 }
 
