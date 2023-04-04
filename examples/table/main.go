@@ -29,10 +29,18 @@ func run () {
 		}
 		index ++
 	}}
-
 	table.Set(2, 1, elements.NewButton("Look, I'm a button!"))
 
+	statusLabel := elements.NewLabel("Selected: none", false)
+	table.OnSelect (func () {
+		column, row := table.Selected()
+		statusLabel.SetText (
+			fmt.Sprintf("Selected: %d, %d",
+			column, row))
+	})
+
 	container.Adopt(table, true)
+	container.Adopt(statusLabel, false)
 	window.Adopt(container)
 	
 	window.OnClose(tomo.Stop)

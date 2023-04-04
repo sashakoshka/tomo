@@ -2,6 +2,7 @@ package containers
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/elements/core"
@@ -10,7 +11,7 @@ import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 type tableCell struct {
 	tomo.Element
-	artist.Pattern
+	tomo.Pattern
 	image.Rectangle
 }
 
@@ -34,10 +35,14 @@ type TableContainer struct {
 	contentBounds image.Rectangle
 	forcedMinimumWidth  int
 	forcedMinimumHeight int
+
+	selectedColumn int
+	selectedRow int
 	
 	config config.Wrapped
 	theme  theme.Wrapped
 
+	onSelect func ()
 	onScrollBoundsChange func ()
 }
 
@@ -48,8 +53,10 @@ func NewTableContainer (
 	element *TableContainer,
 ) {
 	element = &TableContainer {
-		topHeading:  topHeading,
-		leftHeading: leftHeading,
+		topHeading:     topHeading,
+		leftHeading:    leftHeading,
+		selectedColumn: -1,
+		selectedRow:    -1,
 	}
 	
 	element.theme.Case = tomo.C("tomo", "tableContainer")
@@ -153,6 +160,17 @@ func (element *TableContainer) Resize (columns, rows int) {
 	element.redoAll()
 }
 
+// Selected returns the column and row of the cell that is currently selected.
+// If no cell is selected, this method will return (-1, -1).
+func (element *TableContainer) Selected () (column, row int) {
+	return element.selectedColumn, element.selectedRow
+}
+
+// OnSelect sets a function to be called when the user selects a table cell.
+func (element *TableContainer) OnSelect (callback func ()) {
+	element.onSelect = callback
+}
+
 // Warp runs the specified callback, deferring all layout and rendering updates
 // until the callback has finished executing. This allows for aplications to
 // perform batch gui updates without flickering and stuff.
@@ -212,12 +230,40 @@ func (element *TableContainer) NotifyMinimumSizeChange (child tomo.Element) {
 func (element *TableContainer) DrawBackground (bounds image.Rectangle) {
 	if !bounds.Overlaps(element.core.Bounds()) { return }
 	
-	for _, row   := range element.grid {
-	for _, child := range row {
+	for rowIndex,    row   := range element.grid {
+	for columnIndex, child := range row {
 	if bounds.Overlaps(child.Rectangle) {
-		child.Draw(canvas.Cut(element.core, bounds), child.Rectangle)
+		element.theme.Pattern (
+			child.Pattern,
+			element.state(columnIndex, rowIndex)).
+			Draw(canvas.Cut(element.core, bounds), child.Rectangle)
 		return
 	}}}
+}
+
+func (element *TableContainer) HandleMouseDown (x, y int, button input.Button) {
+	element.Propagator.HandleMouseDown(x, y, button)
+	if button != input.ButtonLeft { return }
+	
+	for rowIndex,    row   := range element.grid {
+	for columnIndex, child := range row {
+	if image.Pt(x, y).In(child.Rectangle) {
+		selected :=
+			rowIndex == element.selectedRow &&
+			columnIndex == element.selectedColumn
+		if selected { return }
+		oldColumn, oldRow := element.selectedColumn, element.selectedRow
+		element.selectedColumn, element.selectedRow = columnIndex, rowIndex
+		if oldColumn >= 0 && oldRow >= 0 {
+			element.core.DamageRegion(element.redoCell(oldColumn, oldRow))
+		}
+		element.core.DamageRegion(element.redoCell(columnIndex, rowIndex))
+		if element.onSelect != nil {
+			element.onSelect()
+		}
+		return
+	}}}
+	
 }
 
 func (element *TableContainer) hook (child tomo.Element) {
@@ -243,6 +289,36 @@ func (element *TableContainer) rebuildChildList (list []tomo.Element) {
 		list[index] = child.Element
 		index ++
 	}}
+}
+
+func (element *TableContainer) state (column, row int) (state tomo.State) {
+	if column == element.selectedColumn && row == element.selectedRow {
+		state.On = true
+	}
+	return
+}
+
+func (element *TableContainer) redoCell (column, row int) image.Rectangle {
+	padding := element.theme.Padding(tomo.PatternTableCell)
+	cell := element.grid[row][column]
+	pattern := element.theme.Pattern (
+		cell.Pattern, element.state(column, row))
+		
+	if cell.Element != nil {
+		// give child canvas portion
+		innerCellBounds := padding.Apply(cell.Rectangle)
+		artist.DrawShatter (
+			element.core, pattern,
+			cell.Rectangle, innerCellBounds)
+		cell.DrawTo (
+			canvas.Cut(element.core, innerCellBounds),
+			innerCellBounds,
+			element.childDrawCallback)
+	} else {
+		// draw cell pattern in empty cells
+		pattern.Draw(element.core, cell.Rectangle)
+	}
+	return cell.Rectangle
 }
 
 func (element *TableContainer) redoAll () {
@@ -294,7 +370,7 @@ func (element *TableContainer) redoAll () {
 	x := float64(bounds.Min.X)
 	y := float64(bounds.Min.Y)
 	for rowIndex, row := range element.grid {
-		for columnIndex, child := range row {
+		for columnIndex, _ := range row {
 			width  := columnWidths[columnIndex]
 			height := rowHeights[rowIndex]
 			cellBounds := image.Rect (
@@ -310,26 +386,10 @@ func (element *TableContainer) redoAll () {
 			} else {
 				id = tomo.PatternTableCell
 			}
-			pattern := element.theme.Pattern(id, tomo.State { })
 			element.grid[rowIndex][columnIndex].Rectangle = cellBounds
-			element.grid[rowIndex][columnIndex].Pattern = pattern
+			element.grid[rowIndex][columnIndex].Pattern   = id
 			
-			if child.Element != nil {
-				// give child canvas portion
-				innerCellBounds := padding.Apply(cellBounds)
-				artist.DrawShatter (
-					element.core, pattern,
-					cellBounds, innerCellBounds)
-				child.DrawTo (
-					canvas.Cut(element.core, innerCellBounds),
-					innerCellBounds,
-					func (region image.Rectangle) {
-						element.core.DamageRegion(region)
-					})
-			} else {
-				// draw cell pattern in empty cells
-				pattern.Draw(element.core, cellBounds)
-			}
+			element.redoCell(columnIndex, rowIndex)
 			x += float64(width)
 		}
 		
@@ -370,4 +430,8 @@ func (element *TableContainer) updateMinimumSize () {
 	for _, height := range rowHeights   { minHeight += height }
 
 	element.core.SetMinimumSize(minWidth, minHeight)
+}
+
+func (element *TableContainer) childDrawCallback (region image.Rectangle) {
+	element.core.DamageRegion(region)
 }
