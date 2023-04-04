@@ -46,6 +46,9 @@ type TableContainer struct {
 	onScrollBoundsChange func ()
 }
 
+// NewTable creates a new table element with the specified amount of columns and
+// rows. If top or left heading is set to true, the first row or column
+// respectively will display as a table header.
 func NewTableContainer (
 	columns, rows int,
 	topHeading, leftHeading bool,
