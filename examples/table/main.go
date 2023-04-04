@@ -4,6 +4,7 @@ import "fmt"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
+import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
@@ -26,6 +27,7 @@ func run () {
 			label := elements.NewLabel (
 				fmt.Sprintf("%d, %d", row, column),
 				false)
+			label.SetAlign(textdraw.AlignCenter)
 			table.Set(row, column, label)
 		}
 		index ++
