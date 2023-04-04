@@ -170,6 +170,28 @@ func (element *ScrollContainer) HandleScroll (
 	element.scrollChildBy(int(deltaX), int(deltaY))
 }
 
+// HandleKeyDown is called when a key is pressed down or repeated while
+// this element has keyboard focus. It is important to note that not
+// every key down event is guaranteed to be paired with exactly one key
+// up event. This is the reason a list of modifier keys held down at the
+// time of the key press is given.
+func (element *ScrollContainer) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+	switch key {
+	case input.KeyPageUp:
+		viewport := element.child.ScrollViewportBounds()
+		element.HandleScroll(0, 0, 0, float64(-viewport.Dy()))
+	case input.KeyPageDown:
+		viewport := element.child.ScrollViewportBounds()
+		element.HandleScroll(0, 0, 0, float64(viewport.Dy()))
+	default:
+		element.HandleKeyDown(key, modifiers)
+	}
+}
+
+// HandleKeyUp is called when a key is released while this element has
+// keyboard focus.
+func (element *ScrollContainer) HandleKeyUp (key input.Key, modifiers input.Modifiers) { }
+
 // CountChildren returns the amount of children contained within this element.
 func (element *ScrollContainer) CountChildren () (count int) {
 	return 3
