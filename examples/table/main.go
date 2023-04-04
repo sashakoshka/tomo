@@ -17,6 +17,7 @@ func run () {
 
 	container := containers.NewContainer(layouts.Vertical { true, true })
 	table := containers.NewTableContainer(7, 7, true, true)
+	scroller := containers.NewScrollContainer(true, true)
 
 	index := 0
 	for row := 0; row < 7; row ++ {
@@ -29,9 +30,10 @@ func run () {
 		}
 		index ++
 	}}
-	table.Set(2, 1, elements.NewButton("Look, I'm a button!"))
+	table.Set(2, 1, elements.NewButton("Oh hi mars!"))
 
 	statusLabel := elements.NewLabel("Selected: none", false)
+	table.Collapse(128, 128)
 	table.OnSelect (func () {
 		column, row := table.Selected()
 		statusLabel.SetText (
@@ -39,7 +41,8 @@ func run () {
 			column, row))
 	})
 
-	container.Adopt(table, true)
+	scroller.Adopt(table)
+	container.Adopt(scroller, true)
 	container.Adopt(statusLabel, false)
 	window.Adopt(container)
 	

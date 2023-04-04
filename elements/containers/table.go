@@ -263,7 +263,68 @@ func (element *TableContainer) HandleMouseDown (x, y int, button input.Button) {
 		}
 		return
 	}}}
-	
+}
+
+// ScrollContentBounds returns the full content size of the element.
+func (element *TableContainer) ScrollContentBounds () image.Rectangle {
+	return element.contentBounds
+}
+
+// ScrollViewportBounds returns the size and position of the element's
+// viewport relative to ScrollBounds.
+func (element *TableContainer) ScrollViewportBounds () image.Rectangle {
+	bounds := element.Bounds()
+	bounds  = bounds.Sub(bounds.Min).Add(element.scroll)
+	return bounds
+}
+
+// ScrollTo scrolls the viewport to the specified point relative to
+// ScrollBounds.
+func (element *TableContainer) ScrollTo (position image.Point) {
+	if position.Y < 0 {
+		position.Y = 0
+	}
+	maxScrollHeight := element.maxScrollHeight()
+	if position.Y > maxScrollHeight {
+		position.Y = maxScrollHeight
+	}
+	if position.X < 0 {
+		position.X = 0
+	}
+	maxScrollWidth := element.maxScrollWidth()
+	if position.X > maxScrollWidth {
+		position.X = maxScrollWidth
+	}
+	element.scroll = position
+	if element.core.HasImage() && !element.warping {
+		element.redoAll()
+		element.core.DamageAll()
+	}
+}
+
+// OnScrollBoundsChange sets a function to be called when the element's viewport
+// bounds, content bounds, or scroll axes change.
+func (element *TableContainer) OnScrollBoundsChange (callback func ()) {
+	element.onScrollBoundsChange = callback
+}
+
+// ScrollAxes returns the supported axes for scrolling.
+func (element *TableContainer) ScrollAxes () (horizontal, vertical bool) {
+	return true, true
+}
+
+func (element *TableContainer) maxScrollHeight () (height int) {
+	viewportHeight := element.Bounds().Dy()
+	height = element.contentBounds.Dy() - viewportHeight
+	if height < 0 { height = 0 }
+	return
+}
+
+func (element *TableContainer) maxScrollWidth () (width int) {
+	viewportWidth := element.Bounds().Dx()
+	width = element.contentBounds.Dx() - viewportWidth
+	if width < 0 { width = 0 }
+	return
 }
 
 func (element *TableContainer) hook (child tomo.Element) {
@@ -326,9 +387,17 @@ func (element *TableContainer) redoAll () {
 		element.updateMinimumSize()
 		return
 	}
+	
+	maxScrollHeight := element.maxScrollHeight()
+	if element.scroll.Y > maxScrollHeight {
+		element.scroll.Y = maxScrollHeight
+	}
+	maxScrollWidth := element.maxScrollWidth()
+	if element.scroll.X > maxScrollWidth {
+		element.scroll.X = maxScrollWidth
+	}
 
 	// calculate the minimum size of each column and row
-	bounds := element.Bounds()
 	var minWidth, minHeight float64
 	columnWidths := make([]float64, element.columns)
 	rowHeights   := make([]float64, element.rows)
@@ -352,11 +421,23 @@ func (element *TableContainer) redoAll () {
 			}
 		}
 	}}
-
-	// scale up those minimum sizes to an actual size.
-	// FIXME: replace this with a more accurate algorithm
 	for _, width  := range columnWidths { minWidth  += width  }
 	for _, height := range rowHeights   { minHeight += height }
+
+	// ignore given bounds for layout if they are below minimum size. we do
+	// this because we are scrollable in both directions and we might be
+	// collapsed.
+	bounds := element.Bounds().Sub(element.scroll)
+	if bounds.Dx() < int(minWidth) {
+		bounds.Max.X = bounds.Min.X + int(minWidth)
+	}
+	if bounds.Dy() < int(minHeight) {
+		bounds.Max.Y = bounds.Min.Y + int(minHeight)
+	}
+	element.contentBounds = bounds
+	
+	// scale up those minimum sizes to an actual size.
+	// FIXME: replace this with a more accurate algorithm
 	widthRatio  := float64(bounds.Dx()) / minWidth
 	heightRatio := float64(bounds.Dy()) / minHeight
 	for index := range columnWidths {
@@ -400,10 +481,31 @@ func (element *TableContainer) redoAll () {
 	element.core.DamageAll()
 	
 	// update the minimum size of the element
+	if element.forcedMinimumHeight > 0 {
+		minHeight = float64(element.forcedMinimumHeight)
+	}
+	if element.forcedMinimumWidth > 0 {
+		minWidth = float64(element.forcedMinimumWidth)
+	}
 	element.core.SetMinimumSize(int(minWidth), int(minHeight))
+
+	// notify parent of scroll bounds change
+	if parent, ok := element.core.Parent().(tomo.ScrollableParent); ok {
+		parent.NotifyScrollBoundsChange(element)
+	}
+	if element.onScrollBoundsChange != nil {
+		element.onScrollBoundsChange()
+	}
 }
 
 func (element *TableContainer) updateMinimumSize () {
+	if element.forcedMinimumHeight > 0 && element.forcedMinimumWidth > 0 {
+		element.core.SetMinimumSize (
+			element.forcedMinimumWidth,
+			element.forcedMinimumHeight)
+		return
+	}
+
 	columnWidths := make([]int, element.columns)
 	rowHeights   := make([]int, element.rows)
 	padding := element.theme.Padding(tomo.PatternTableCell)
@@ -428,6 +530,13 @@ func (element *TableContainer) updateMinimumSize () {
 	var minWidth, minHeight int
 	for _, width  := range columnWidths { minWidth  += width  }
 	for _, height := range rowHeights   { minHeight += height }
+
+	if element.forcedMinimumHeight > 0 {
+		minHeight = element.forcedMinimumHeight
+	}
+	if element.forcedMinimumWidth > 0 {
+		minWidth  = element.forcedMinimumWidth
+	}
 
 	element.core.SetMinimumSize(minWidth, minHeight)
 }
