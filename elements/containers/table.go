@@ -240,7 +240,9 @@ func (element *TableContainer) rebuildChildList (list []tomo.Element) {
 	index := 0
 	for _, row := range element.grid {
 	for _, child := range row {
+		if child.Element == nil { continue }
 		list[index] = child.Element
+		index ++
 	}}
 }
 
