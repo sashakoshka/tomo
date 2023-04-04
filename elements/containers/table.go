@@ -9,6 +9,10 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
+// TODO: using the event propagator core might not be the best idea here. we
+// should have slightly different behavior to sync the focused element with the
+// selected cell.
+
 type tableCell struct {
 	tomo.Element
 	tomo.Pattern
@@ -245,27 +249,27 @@ func (element *TableContainer) DrawBackground (bounds image.Rectangle) {
 }
 
 func (element *TableContainer) HandleMouseDown (x, y int, button input.Button) {
+	element.Focus()
 	element.Propagator.HandleMouseDown(x, y, button)
 	if button != input.ButtonLeft { return }
 	
 	for rowIndex,    row   := range element.grid {
 	for columnIndex, child := range row {
 	if image.Pt(x, y).In(child.Rectangle) {
-		selected :=
-			rowIndex == element.selectedRow &&
-			columnIndex == element.selectedColumn
-		if selected { return }
-		oldColumn, oldRow := element.selectedColumn, element.selectedRow
-		element.selectedColumn, element.selectedRow = columnIndex, rowIndex
-		if oldColumn >= 0 && oldRow >= 0 {
-			element.core.DamageRegion(element.redoCell(oldColumn, oldRow))
-		}
-		element.core.DamageRegion(element.redoCell(columnIndex, rowIndex))
-		if element.onSelect != nil {
-			element.onSelect()
-		}
+		element.selectCell(columnIndex, rowIndex)
 		return
 	}}}
+}
+
+func (element *TableContainer) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+	switch key {
+	case input.KeyLeft:   element.changeSelectionBy(-1, 0)
+	case input.KeyRight:  element.changeSelectionBy(1, 0)
+	case input.KeyUp:     element.changeSelectionBy(0, -1)
+	case input.KeyDown:   element.changeSelectionBy(0, 1)
+	case input.KeyEscape: element.selectCell(-1, -1)
+	default: element.Propagator.HandleKeyDown(key, modifiers)
+	}
 }
 
 // ScrollContentBounds returns the full content size of the element.
@@ -314,6 +318,38 @@ func (element *TableContainer) OnScrollBoundsChange (callback func ()) {
 // ScrollAxes returns the supported axes for scrolling.
 func (element *TableContainer) ScrollAxes () (horizontal, vertical bool) {
 	return true, true
+}
+
+func (element *TableContainer) changeSelectionBy (column, row int) {
+	column += element.selectedColumn
+	row    += element.selectedRow
+	if column < 0 { column = 0 }
+	if row    < 0 { row    = 0 }
+	element.selectCell(column, row)
+}
+
+func (element *TableContainer) selectCell (column, row int) {
+	if column < -1 { column = -1 }
+	if row    < -1 { row    = -1 }
+	if column >= element.columns { column = element.columns - 1 }
+	if row    >= element.rows    { row    = element.rows    - 1 }
+	
+	if column == element.selectedColumn && row == element.selectedRow {
+		return
+	}
+	
+	oldColumn, oldRow := element.selectedColumn, element.selectedRow
+	element.selectedColumn = column
+	element.selectedRow    = row
+	if oldColumn >= 0 && oldRow >= 0 {
+		element.core.DamageRegion(element.redoCell(oldColumn, oldRow))
+	}
+	if column >= 0 && row >= 0 {
+		element.core.DamageRegion(element.redoCell(column, row))
+	}
+	if element.onSelect != nil {
+		element.onSelect()
+	}
 }
 
 func (element *TableContainer) maxScrollHeight () (height int) {
