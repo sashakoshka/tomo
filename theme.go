@@ -276,12 +276,13 @@ type FontSize int; const (
 	// about.
 	FontSizeSmall
 )
-	
+
 // FontStyle specifies stylistic alterations to a font face.
 type FontStyle int; const (
 	FontStyleRegular    FontStyle = 0
 	FontStyleBold       FontStyle = 1
 	FontStyleItalic     FontStyle = 2
+	FontStyleMonospace  FontStyle = 4
 	FontStyleBoldItalic FontStyle = 1 | 2
 )
 
