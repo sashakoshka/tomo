@@ -17,6 +17,11 @@ type gridCell struct {
 	clean bool
 }
 
+func (cell *gridCell) initColor () {
+	cell.background = tomo.ColorBackground
+	cell.foreground = tomo.ColorForeground
+}
+
 type gridBuffer struct {
 	cells  []gridCell
 	stride int
@@ -35,6 +40,8 @@ type Grid struct {
 	cellWidth  int
 	cellHeight int
 
+	cursor image.Point
+
 	face font.Face
 	config config.Wrapped
 	theme  theme.Wrapped
@@ -51,6 +58,14 @@ func NewGrid () (element *Grid) {
 	return
 }
 
+func (element *Grid) OnResize (callback func ()) {
+	element.onResize = callback
+}
+
+func (element *Grid) Write (data []byte) (wrote int, err error) {
+	// TODO process ansi escape codes etx
+}
+
 func (element *Grid) HandleMouseDown (x, y int, button input.Button) {
 	
 }
@@ -60,12 +75,10 @@ func (element *Grid) HandleMouseUp (x, y int, button input.Button) {
 }
 
 func (element *Grid) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
-	
+	// TODO we need to grab shift ctrl c for copying text
 }
 
-func (element *Grid) HandleKeyUp(key input.Key, modifiers input.Modifiers) {
-	
-}
+func (element *Grid) HandleKeyUp(key input.Key, modifiers input.Modifiers) { }
 
 // SetTheme sets the element's theme.
 func (element *Grid) SetTheme (new tomo.Theme) {
@@ -93,13 +106,33 @@ func (element *Grid) alloc () bool {
 		height == len(element.cells) / element.stride
 	if unchanged { return false }
 
-	// TODO: attempt to wrap text
+	oldCells  := element.cells
+	oldWidth  := element.stride
+	oldHeight := len(element.cells) / element.stride
+	heightLarger := height < oldHeight
+	
 	element.stride = width
 	element.cells  = make([]gridCell, width * height)
-	for index := range element.cells {
-		element.cells[index].background = tomo.ColorBackground
-		element.cells[index].foreground = tomo.ColorForeground
+	
+	// TODO: attempt to wrap text?
+
+	if heightLarger {
+	for index := range element.cells[oldHeight * width:] {
+		element.cells[index].initColor()
+	}}
+
+	commonHeight := height
+	if heightLarger { commonHeight = oldHeight }
+	for index := range element.cells[:commonHeight * width] {
+		x := index % width
+		if x < oldWidth {
+			element.cells[index] = oldCells[x + index / oldWidth]
+		} else {
+			element.cells[index].initColor()
+		}
 	}
+
+	if element.onResize != nil { element.onResize() }
 	return true
 }
 
@@ -130,5 +163,5 @@ func (element *Grid) drawAndPush () {
 }
 
 func (element *Grid) draw (force bool) image.Rectangle {
-
+	
 }
