@@ -1,10 +1,9 @@
 package ansi
 
 // CSI represents a list of CSI sequences that have no parameters.
+// FIXME: some of these do indeed have parameters
 type CSI int; const (
-	CSI_AuxPortOn CSI = iota
-	CSI_AuxPortOff
-	CSI_DeviceStatusReport
+	CSI_DeviceStatusReport CSI = iota
 	CSI_SaveCursorPosition
 	CSI_RestoreCursorPosition
 	CSI_ShowCursor
