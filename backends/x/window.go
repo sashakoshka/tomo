@@ -186,6 +186,14 @@ func (window *window) SetTitle (title string) {
 		window.backend.connection,
 		window.xWindow.Id,
 		title)
+	icccm.WmNameSet (
+		window.backend.connection,
+		window.xWindow.Id,
+		title)
+	icccm.WmIconNameSet (
+		window.backend.connection,
+		window.xWindow.Id,
+		title)
 }
 
 func (window *window) SetIcon (sizes []image.Image) {
