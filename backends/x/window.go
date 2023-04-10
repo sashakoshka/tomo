@@ -323,7 +323,6 @@ func (window *window) grabInput () {
 		window.backend.connection,
 		window.xWindow.Id,
 		window.backend.connection.RootWin(), 0)
-	window.xWindow.Focus()
 }
 
 func (window *window) ungrabInput () {
