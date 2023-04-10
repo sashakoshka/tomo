@@ -18,13 +18,19 @@ type Window interface {
 	// method might have no effect with some backends.
 	SetTitle (string)
 
+	// SetApplicationName sets the name of the application that this window
+	// belongs to. This method might have no effect with some backends.
+	SetApplicationName (string)
+
 	// SetIcon taks in a list different sizes of the same icon and selects
 	// the best one to display on the window title bar, dock, or whatever is
 	// applicable for the given backend. This method might have no effect
 	// for some backends.
 	SetIcon (sizes []image.Image)
 
-	// NewModal creates a new modal dialog window.
+	// NewModal creates a new modal dialog window. The resulting window will
+	// inherit this window's application name and icon, but these can be
+	// manually overridden.
 	NewModal (width, height int) (window Window, err error)
 	
 	// Copy puts data into the clipboard.
@@ -56,6 +62,7 @@ type MainWindow interface {
 
 	// NewPanel creates a panel window that is semantically tied to this
 	// window. This is intended to be used for utility windows, tool bars,
-	// torn-off menus, etc.
+	// torn-off menus, etc. The resulting window will inherit this window's
+	// application name and icon, but these can be manually overridden.
 	NewPanel (width, height int) (window Window, err error)
 }

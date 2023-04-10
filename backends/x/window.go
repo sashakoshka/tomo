@@ -25,6 +25,8 @@ type window struct {
 	onClose func ()
 	skipChildDrawCallback bool
 
+	title, application string
+
 	modalParent *window
 	hasModal    bool
 
@@ -182,6 +184,7 @@ func (window *window) Child () (child tomo.Element) {
 }
 
 func (window *window) SetTitle (title string) {
+	window.title = title
 	ewmh.WmNameSet (
 		window.backend.connection,
 		window.xWindow.Id,
@@ -194,6 +197,17 @@ func (window *window) SetTitle (title string) {
 		window.backend.connection,
 		window.xWindow.Id,
 		title)
+}
+
+func (window *window) SetApplicationName (name string) {
+	window.application = name
+	icccm.WmClassSet (
+		window.backend.connection,
+		window.xWindow.Id,
+		&icccm.WmClass {
+			Instance: name,
+			Class:    name,
+		})
 }
 
 func (window *window) SetIcon (sizes []image.Image) {
@@ -247,6 +261,7 @@ func (window *window) NewModal (width, height int) (tomo.Window, error) {
 		[]string { "_NET_WM_STATE_MODAL" })
 	modal.modalParent = window
 	window.hasModal   = true
+	modal.inheritProperties(window)
 	return modal, err
 }
 
@@ -260,7 +275,12 @@ func (window mainWindow) NewPanel (width, height int) (tomo.Window, error) {
 		panel.xWindow.Id,
 		window.xWindow.Id)
 	panel.setType("UTILITY")
+	panel.inheritProperties(window.window)
 	return panel, err
+}
+
+func (window *window) inheritProperties (parent *window) {
+	window.SetApplicationName(parent.application)
 }
 
 func (window *window) setType (ty string) error {
