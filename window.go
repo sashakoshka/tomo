@@ -38,6 +38,13 @@ type Window interface {
 	// window, but this position may be overridden by the backend or
 	// operating system.
 	NewModal (bounds image.Rectangle) (Window, error)
+
+	// NewMenu creates a new temporary window for things like dropdown or
+	// context menus. It automatically closes when the user presses escape
+	// or clicks outside of it. Like NewModal, the pulldown window will
+	// inherit this window's application name and icon, and will be
+	// positioned relative to it.
+	NewMenu (bounds image.Rectangle) (MenuWindow, error)
 	
 	// Copy puts data into the clipboard.
 	Copy (data.Data)
@@ -72,4 +79,13 @@ type MainWindow interface {
 	// will inherit this window's application name and icon, but these can
 	// be manually overridden.
 	NewPanel (bounds image.Rectangle) (Window, error)
+}
+
+// MenuWindow is a temporary window that automatically closes when the user
+// presses escape or clicks outside of it.
+type MenuWindow interface {
+	Window
+
+	// Pin converts this window into a panel, pinning it to the screen.
+	Pin ()
 }

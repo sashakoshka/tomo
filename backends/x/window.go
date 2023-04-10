@@ -16,6 +16,7 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 // import "runtime/debug"
 
 type mainWindow struct { *window }
+type menuWindow struct { *window }
 type window struct {
 	backend *Backend
 	xWindow *xwindow.Window
@@ -48,13 +49,14 @@ func (backend *Backend) NewWindow (
 	err error,
 ) {
 	if backend == nil { panic("nil backend") }
-	window, err := backend.newWindow(bounds)
+	window, err := backend.newWindow(bounds, false)
 	output = mainWindow { window }
 	return output, err
 }
 
 func (backend *Backend) newWindow (
-	bounds image.Rectangle,
+	bounds   image.Rectangle,
+	override bool,
 ) (
 	output *window,
 	err error,
@@ -66,10 +68,19 @@ func (backend *Backend) newWindow (
 
 	window.xWindow, err = xwindow.Generate(backend.connection)
 	if err != nil { return }
-	err = window.xWindow.CreateChecked (
-		backend.connection.RootWin(),
-		bounds.Min.X, bounds.Min.Y, bounds.Dx(), bounds.Dy(), 0)
+
+	if override {
+		err = window.xWindow.CreateChecked (
+			backend.connection.RootWin(),
+			bounds.Min.X, bounds.Min.Y, bounds.Dx(), bounds.Dy(),
+			xproto.CwOverrideRedirect, 1)
+	} else {
+		err = window.xWindow.CreateChecked (
+			backend.connection.RootWin(),
+			bounds.Min.X, bounds.Min.Y, bounds.Dx(), bounds.Dy(), 0)
+	}
 	if err != nil { return }
+	
 	err = window.xWindow.Listen (
 		xproto.EventMaskExposure,
 		xproto.EventMaskStructureNotify,
@@ -252,7 +263,8 @@ func (window *window) SetIcon (sizes []image.Image) {
 }
 
 func (window *window) NewModal (bounds image.Rectangle) (tomo.Window, error) {
-	modal, err := window.backend.newWindow(bounds.Add(window.metrics.bounds.Min))
+	modal, err := window.backend.newWindow (
+		bounds.Add(window.metrics.bounds.Min), false)
 	icccm.WmTransientForSet (
 		window.backend.connection,
 		modal.xWindow.Id,
@@ -267,8 +279,24 @@ func (window *window) NewModal (bounds image.Rectangle) (tomo.Window, error) {
 	return modal, err
 }
 
+func (window *window) NewMenu (bounds image.Rectangle) (tomo.MenuWindow, error) {
+	menu, err := window.backend.newWindow (
+		bounds.Add(window.metrics.bounds.Min), true)
+	icccm.WmTransientForSet (
+		window.backend.connection,
+		menu.xWindow.Id,
+		window.xWindow.Id)
+	ewmh.WmStateSet (
+		window.backend.connection,
+		menu.xWindow.Id,
+		[]string { "_NET_WM_STATE_SKIP_TASKBAR" })
+	menu.inheritProperties(window)
+	return menuWindow { window: menu }, err
+}
+
 func (window mainWindow) NewPanel (bounds image.Rectangle) (tomo.Window, error) {
-	panel, err := window.backend.newWindow(bounds.Add(window.metrics.bounds.Min))
+	panel, err := window.backend.newWindow (
+		bounds.Add(window.metrics.bounds.Min), false)
 	if err != nil { return nil, err }
 	panel.setClientLeader(window.window)
 	window.setClientLeader(window.window)
@@ -279,6 +307,10 @@ func (window mainWindow) NewPanel (bounds image.Rectangle) (tomo.Window, error) 
 	panel.setType("UTILITY")
 	panel.inheritProperties(window.window)
 	return panel, err
+}
+
+func (window menuWindow) Pin () {
+	// TODO
 }
 
 func (window *window) inheritProperties (parent *window) {
