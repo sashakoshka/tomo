@@ -198,11 +198,13 @@ func (window *window) handleButtonPress (
 	
 	insideWindow := image.Pt (
 		int(buttonEvent.EventX),
-		int(buttonEvent.EventY)).In(window.metrics.bounds)
+		int(buttonEvent.EventY)).In(window.canvas.Bounds())
+
+	scrolling := buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7
 		
-	if !insideWindow && window.shy {
+	if !insideWindow && window.shy && !scrolling {
 		window.Close()
-	} else if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
+	} else if scrolling {
 		if child, ok := window.child.(tomo.ScrollTarget); ok {
 			sum := scrollSum { }
 			sum.add(buttonEvent.Detail, window, buttonEvent.State)

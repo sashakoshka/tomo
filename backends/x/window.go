@@ -8,6 +8,8 @@ import "github.com/jezek/xgbutil/icccm"
 import "github.com/jezek/xgbutil/xprop"
 import "github.com/jezek/xgbutil/xevent"
 import "github.com/jezek/xgbutil/xwindow"
+import "github.com/jezek/xgbutil/keybind"
+import "github.com/jezek/xgbutil/mousebind"
 import "github.com/jezek/xgbutil/xgraphics"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
@@ -283,6 +285,7 @@ func (window *window) NewModal (bounds image.Rectangle) (tomo.Window, error) {
 func (window *window) NewMenu (bounds image.Rectangle) (tomo.MenuWindow, error) {
 	menu, err := window.backend.newWindow (
 		bounds.Add(window.metrics.bounds.Min), true)
+	menu.shy = true
 	icccm.WmTransientForSet (
 		window.backend.connection,
 		menu.xWindow.Id,
@@ -311,6 +314,21 @@ func (window menuWindow) Pin () {
 	// TODO take off override redirect
 	// TODO turn off shy
 	// TODO set window type to MENU
+	// TODO iungrab keyboard and mouse
+}
+
+func (window *window) grabInput () {
+	keybind.GrabKeyboard(window.backend.connection, window.xWindow.Id)
+	mousebind.GrabPointer (
+		window.backend.connection,
+		window.xWindow.Id,
+		window.backend.connection.RootWin(), 0)
+	window.xWindow.Focus()
+}
+
+func (window *window) ungrabInput () {
+	keybind.UngrabKeyboard(window.backend.connection)
+	mousebind.UngrabPointer(window.backend.connection)
 }
 
 func (window *window) inheritProperties (parent *window) {
@@ -347,10 +365,12 @@ func (window *window) Show () {
 	}
 	
 	window.xWindow.Map()
+	if window.shy { window.grabInput() }
 }
 
 func (window *window) Hide () {
 	window.xWindow.Unmap()
+	if window.shy { window.ungrabInput() }
 }
 
 func (window *window) Copy (data data.Data) {

@@ -5,6 +5,8 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
 import "github.com/jezek/xgbutil/xevent"
+import "github.com/jezek/xgbutil/keybind"
+import "github.com/jezek/xgbutil/mousebind"
 
 // Backend is an instance of an X backend.
 type Backend struct {
@@ -44,6 +46,9 @@ func NewBackend () (output tomo.Backend, err error) {
 	backend.connection, err = xgbutil.NewConn()
 	if err != nil { return }
 	backend.initializeKeymapInformation()
+
+	keybind.Initialize(backend.connection)
+	mousebind.Initialize(backend.connection)
 
 	output = backend
 	return
