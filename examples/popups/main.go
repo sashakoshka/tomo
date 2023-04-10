@@ -65,6 +65,17 @@ func run () {
 	})
 	container.Adopt(errorButton, false)
 
+	menuButton := elements.NewButton("menu")
+	menuButton.OnClick (func () {
+		menu, err := window.NewMenu (
+			tomo.Bounds(0, 0, 64, 64).
+			Add(menuButton.Bounds().Min))
+		if err != nil { println(err.Error()) }
+		menu.Adopt(elements.NewLabel("I'm a shy window...", true))
+		menu.Show()
+	})
+	container.Adopt(menuButton, false)
+
 	cancelButton := elements.NewButton("No thank you.")
 	cancelButton.OnClick(tomo.Stop)
 	container.Adopt(cancelButton, false)

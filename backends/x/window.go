@@ -30,6 +30,7 @@ type window struct {
 
 	modalParent *window
 	hasModal    bool
+	shy         bool
 
 	theme  tomo.Theme
 	config tomo.Config
@@ -286,10 +287,7 @@ func (window *window) NewMenu (bounds image.Rectangle) (tomo.MenuWindow, error) 
 		window.backend.connection,
 		menu.xWindow.Id,
 		window.xWindow.Id)
-	ewmh.WmStateSet (
-		window.backend.connection,
-		menu.xWindow.Id,
-		[]string { "_NET_WM_STATE_SKIP_TASKBAR" })
+	menu.setType("POPUP_MENU")
 	menu.inheritProperties(window)
 	return menuWindow { window: menu }, err
 }
@@ -310,7 +308,9 @@ func (window mainWindow) NewPanel (bounds image.Rectangle) (tomo.Window, error) 
 }
 
 func (window menuWindow) Pin () {
-	// TODO
+	// TODO take off override redirect
+	// TODO turn off shy
+	// TODO set window type to MENU
 }
 
 func (window *window) inheritProperties (parent *window) {

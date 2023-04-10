@@ -146,6 +146,8 @@ func (window *window) handleKeyPress (
 				child.HandleUnfocus()
 			}
 		}
+	} else if key == input.KeyEscape && window.shy {
+		window.Close()
 	} else if child, ok := window.child.(tomo.KeyboardTarget); ok {
 		child.HandleKeyDown(key, modifiers)
 	}
@@ -193,7 +195,14 @@ func (window *window) handleButtonPress (
 	if window.hasModal     { return }
 	
 	buttonEvent := *event.ButtonPressEvent
-	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
+	
+	insideWindow := image.Pt (
+		int(buttonEvent.EventX),
+		int(buttonEvent.EventY)).In(window.metrics.bounds)
+		
+	if !insideWindow && window.shy {
+		window.Close()
+	} else if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 {
 		if child, ok := window.child.(tomo.ScrollTarget); ok {
 			sum := scrollSum { }
 			sum.add(buttonEvent.Detail, window, buttonEvent.State)
