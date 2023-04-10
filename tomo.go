@@ -1,5 +1,7 @@
 package tomo
 
+import "image"
+
 var backend Backend
 
 // Run initializes a backend, calls the callback function, and begins the event
@@ -30,9 +32,9 @@ func Do (callback func ()) {
 // NewWindow creates a new window using the current backend, and returns it as a
 // MainWindow. If the window could not be created, an error is returned
 // explaining why.
-func NewWindow (width, height int) (window MainWindow, err error) {
+func NewWindow (bounds image.Rectangle) (window MainWindow, err error) {
 	assertBackend()
-	return backend.NewWindow(width, height)
+	return backend.NewWindow(bounds)
 }
 
 // SetTheme sets the theme of all open windows.

@@ -52,6 +52,12 @@ func (window *window) handleExpose (
 	window.pushRegion(region)
 }
 
+func (window *window) updateBounds (x, y int16, width, height uint16) {
+	window.metrics.bounds =
+		image.Rect(0, 0, int(width), int(height)).
+		Add(image.Pt(int(x), int(y)))
+}
+
 func (window *window) handleConfigureNotify (
 	connection *xgbutil.XUtil,
 	event xevent.ConfigureNotifyEvent,
@@ -63,15 +69,18 @@ func (window *window) handleConfigureNotify (
 	newWidth  := int(configureEvent.Width)
 	newHeight := int(configureEvent.Height)
 	sizeChanged :=
-		window.metrics.width  != newWidth ||
-		window.metrics.height != newHeight
-	window.metrics.width  = newWidth
-	window.metrics.height = newHeight
+		window.metrics.bounds.Dx() != newWidth ||
+		window.metrics.bounds.Dy() != newHeight
+	window.updateBounds (
+		configureEvent.X, configureEvent.Y,
+		configureEvent.Width, configureEvent.Height)
+	
 
 	if sizeChanged {
 		configureEvent = window.compressConfigureNotify(configureEvent)
-		window.metrics.width  = int(configureEvent.Width)
-		window.metrics.height = int(configureEvent.Height)
+		window.updateBounds (
+			configureEvent.X, configureEvent.Y,
+			configureEvent.Width, configureEvent.Height)
 		window.reallocateCanvas()
 		window.resizeChildToFit()
 

@@ -37,36 +37,37 @@ type window struct {
 	selectionClaim   *selectionClaim
 
 	metrics struct {
-		width  int
-		height int
+		bounds image.Rectangle
 	}
 }
 
 func (backend *Backend) NewWindow (
-	width, height int,
+	bounds image.Rectangle,
 ) (
 	output tomo.MainWindow,
 	err error,
 ) {
 	if backend == nil { panic("nil backend") }
-	window, err := backend.newWindow(width, height)
+	window, err := backend.newWindow(bounds)
 	output = mainWindow { window }
 	return output, err
 }
 
 func (backend *Backend) newWindow (
-	width, height int,
+	bounds image.Rectangle,
 ) (
 	output *window,
 	err error,
 ) {
+	// TODO: take position flag into account
+	
 	window := &window { backend: backend }
 
 	window.xWindow, err = xwindow.Generate(backend.connection)
 	if err != nil { return }
 	window.xWindow.Create (
 		backend.connection.RootWin(),
-		0, 0, width, height, 0)
+		bounds.Min.X, bounds.Min.Y, bounds.Dx(), bounds.Dy(), 0)
 	err = window.xWindow.Listen (
 		xproto.EventMaskExposure,
 		xproto.EventMaskStructureNotify,
@@ -108,8 +109,7 @@ func (backend *Backend) newWindow (
 	window.SetTheme(backend.theme)
 	window.SetConfig(backend.config)
 	
-	window.metrics.width  = width
-	window.metrics.height = height
+	window.metrics.bounds = bounds
 	window.childMinimumSizeChangeCallback(8, 8)
 
 	window.reallocateCanvas()
@@ -249,8 +249,8 @@ func (window *window) SetIcon (sizes []image.Image) {
 		wmIcons)
 }
 
-func (window *window) NewModal (width, height int) (tomo.Window, error) {
-	modal, err := window.backend.newWindow(width, height)
+func (window *window) NewModal (bounds image.Rectangle) (tomo.Window, error) {
+	modal, err := window.backend.newWindow(bounds.Add(window.metrics.bounds.Min))
 	icccm.WmTransientForSet (
 		window.backend.connection,
 		modal.xWindow.Id,
@@ -265,8 +265,8 @@ func (window *window) NewModal (width, height int) (tomo.Window, error) {
 	return modal, err
 }
 
-func (window mainWindow) NewPanel (width, height int) (tomo.Window, error) {
-	panel, err := window.backend.newWindow(width, height)
+func (window mainWindow) NewPanel (bounds image.Rectangle) (tomo.Window, error) {
+	panel, err := window.backend.newWindow(bounds.Add(window.metrics.bounds.Min))
 	if err != nil { return nil, err }
 	panel.setClientLeader(window.window)
 	window.setClientLeader(window.window)
@@ -379,7 +379,9 @@ func (window *window) SetConfig (config tomo.Config) {
 }
 
 func (window *window) reallocateCanvas () {
-	window.canvas.Reallocate(window.metrics.width, window.metrics.height)
+	window.canvas.Reallocate (
+		window.metrics.bounds.Dx(),
+		window.metrics.bounds.Dy())
 
 	previousWidth, previousHeight := 0, 0
 	if window.xCanvas != nil {
@@ -387,8 +389,8 @@ func (window *window) reallocateCanvas () {
 		previousHeight = window.xCanvas.Bounds().Dy()
 	}
 	
-	newWidth  := window.metrics.width
-	newHeight := window.metrics.height
+	newWidth  := window.metrics.bounds.Dx()
+	newHeight := window.metrics.bounds.Dy()
 	larger    := newWidth > previousWidth || newHeight > previousHeight
 	smaller   := newWidth < previousWidth / 2 || newHeight < previousHeight / 2
 
@@ -461,12 +463,12 @@ func (window *window) childMinimumSizeChangeCallback (width, height int) (resize
 			MinWidth:  uint(width),
 			MinHeight: uint(height),
 		})
-	newWidth  := window.metrics.width
-	newHeight := window.metrics.height
+	newWidth  := window.metrics.bounds.Dx()
+	newHeight := window.metrics.bounds.Dy()
 	if newWidth  < width  { newWidth  = width  }
 	if newHeight < height { newHeight = height }
-	if newWidth != window.metrics.width ||
-		newHeight != window.metrics.height {
+	if newWidth != window.metrics.bounds.Dx() ||
+		newHeight != window.metrics.bounds.Dy() {
 		window.xWindow.Resize(newWidth, newHeight)
 		return true
 	}

@@ -1,5 +1,6 @@
 package tomo
 
+import "image"
 import "errors"
 
 // Backend represents a connection to a display server, or something similar.
@@ -7,7 +8,7 @@ import "errors"
 type Backend interface {
 	// Run runs the backend's event loop. It must block until the backend
 	// experiences a fatal error, or Stop() is called.
-	Run () (err error)
+	Run () error
 
 	// Stop stops the backend's event loop.
 	Stop ()
@@ -16,10 +17,10 @@ type Backend interface {
 	// possible. This method must be safe to call from other threads.
 	Do (callback func ())
 
-	// NewWindow creates a new window with the specified width and height,
-	// and returns a struct representing it that fulfills the MainWindow
-	// interface.
-	NewWindow (width, height int) (window MainWindow, err error)
+	// NewWindow creates a new window within the specified bounding
+	// rectangle. The position on screen may be overridden by the backend or
+	// operating system.
+	NewWindow (bounds image.Rectangle) (MainWindow, error)
 	
 	// SetTheme sets the theme of all open windows.
 	SetTheme (Theme)
