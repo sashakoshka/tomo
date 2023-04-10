@@ -9,7 +9,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(128, 128)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 128, 128))
 	window.SetTitle("hellorld!")
 	window.Adopt(testing.NewMouse())
 	window.OnClose(tomo.Stop)

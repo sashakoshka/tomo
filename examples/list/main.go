@@ -13,7 +13,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(300, 2)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 300, 0))
 	window.SetTitle("List Sidebar")
 
 	container := containers.NewContainer(layouts.Horizontal { true, true })

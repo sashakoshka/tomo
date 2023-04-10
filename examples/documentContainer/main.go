@@ -13,8 +13,8 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(383, 360)
-	window.SetTitle("Scroll")
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 383, 360))
+	window.SetTitle("Document Container")
 	
 	file, err := os.Open("assets/banner.png")
 	if err != nil { panic(err.Error()); return  }

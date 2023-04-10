@@ -59,15 +59,17 @@ func (backend *Backend) newWindow (
 	output *window,
 	err error,
 ) {
-	// TODO: take position flag into account
+	if bounds.Dx() == 0 { bounds.Max.X = bounds.Min.X + 8 }
+	if bounds.Dy() == 0 { bounds.Max.Y = bounds.Min.Y + 8 }
 	
 	window := &window { backend: backend }
 
 	window.xWindow, err = xwindow.Generate(backend.connection)
 	if err != nil { return }
-	window.xWindow.Create (
+	err = window.xWindow.CreateChecked (
 		backend.connection.RootWin(),
 		bounds.Min.X, bounds.Min.Y, bounds.Dx(), bounds.Dy(), 0)
+	if err != nil { return }
 	err = window.xWindow.Listen (
 		xproto.EventMaskExposure,
 		xproto.EventMaskStructureNotify,

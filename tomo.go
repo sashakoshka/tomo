@@ -47,6 +47,11 @@ func SetConfig (config Config) {
 	backend.SetConfig(config)
 }
 
+// Bounds creates a rectangle from an x, y, width, and height.
+func Bounds (x, y, width, height int) image.Rectangle {
+	return image.Rect(x, y, x + width, y + height)
+}
+
 func assertBackend () {
 	if backend == nil { panic("no backend is running") }
 }

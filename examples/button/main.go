@@ -10,7 +10,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(2, 2)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("example button")
 	button := elements.NewButton("hello tomo!")
 	button.OnClick (func () {

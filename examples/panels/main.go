@@ -1,6 +1,7 @@
 package main
 
 import "fmt"
+import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
@@ -12,7 +13,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(256, 256)
+	window, _ := tomo.NewWindow(tomo.Bounds(200, 200, 256, 256))
 	window.SetTitle("Main")
 
 	container := containers.NewContainer(layouts.Vertical { true, true })
@@ -22,14 +23,14 @@ func run () {
 	window.OnClose(tomo.Stop)
 	window.Show()
 
-	createPanel(window, 0)
-	createPanel(window, 1)
-	createPanel(window, 2)
-	createPanel(window, 3)
+	createPanel(window, 0, tomo.Bounds(-64, 20,  0, 0))
+	createPanel(window, 1, tomo.Bounds(200, 20,  0, 0))
+	createPanel(window, 2, tomo.Bounds(-64, 180, 0, 0))
+	createPanel(window, 3, tomo.Bounds(200, 180, 0, 0))
 }
 
-func createPanel (parent tomo.MainWindow, id int) {
-	window, _ := parent.NewPanel(2, 2)
+func createPanel (parent tomo.MainWindow, id int, bounds image.Rectangle) {
+	window, _ := parent.NewPanel(bounds)
 	title := fmt.Sprint("Panel #", id)
 	window.SetTitle(title)
 	container := containers.NewContainer(layouts.Vertical { true, true })

@@ -18,7 +18,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(640, 480)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 640, 480))
 	window.SetTitle("Raycaster")
 
 	container := containers.NewContainer(layouts.Vertical { false, false })

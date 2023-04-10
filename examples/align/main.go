@@ -11,7 +11,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(360, 360)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Text alignment")
 
 	container := containers.NewDocumentContainer()
@@ -29,10 +29,10 @@ func run () {
 	right.SetAlign(textdraw.AlignRight)
 	justify.SetAlign(textdraw.AlignJustify)
 
-	container.Adopt(left)
-	container.Adopt(center)
-	container.Adopt(right)
-	container.Adopt(justify)
+	container.Adopt(left, true)
+	container.Adopt(center, true)
+	container.Adopt(right, true)
+	container.Adopt(justify, true)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

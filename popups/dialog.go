@@ -1,5 +1,6 @@
 package popups
 
+import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
@@ -36,9 +37,9 @@ func NewDialog (
 	window tomo.Window,
 ) {
 	if parent == nil {
-		window, _ = tomo.NewWindow(2, 2)
+		window, _ = tomo.NewWindow(image.Rectangle { })
 	} else {
-		window, _ = parent.NewModal(2, 2)
+		window, _ = parent.NewModal(image.Rectangle { })
 	}
 	window.SetTitle(title)
 

@@ -10,7 +10,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(480, 360)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 480, 360))
 	window.Adopt(testing.NewArtist())
 	window.OnClose(tomo.Stop)
 	window.Show()

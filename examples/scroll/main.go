@@ -12,7 +12,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(360, 240)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 360, 240))
 	window.SetTitle("Scroll")
 	container := containers.NewContainer(layouts.Vertical { true, true })
 	window.Adopt(container)

@@ -12,7 +12,8 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(2, 2)
+	window, err := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
+	if err != nil { panic(err.Error()) }
 	window.SetTitle("Dialog Boxes")
 
 	container := containers.NewContainer(layouts.Vertical { true, true })

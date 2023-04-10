@@ -24,7 +24,7 @@ var validImageTypes = []data.Mime {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(256, 2)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 256, 0))
 	window.SetTitle("Clipboard")
 
 	container := containers.NewContainer(layouts.Vertical { true, true })
@@ -74,7 +74,7 @@ func run () {
 				"Cannot decode image:\n" + err.Error())
 			return 
 		}
-		imageWindow(img)
+		imageWindow(window, img)
 	}
 	clipboardCallback := func (clipboard data.Data, err error) {
 		if err != nil {
@@ -120,8 +120,8 @@ func run () {
 	window.Show()
 }
 
-func imageWindow (image image.Image) {
-	window, _ := tomo.NewWindow(2, 2)
+func imageWindow (parent tomo.Window, image image.Image) {
+	window, _ := parent.NewModal(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Clipboard Image")
 	container := containers.NewContainer(layouts.Vertical { true, true })
 	closeButton := elements.NewButton("Ok")

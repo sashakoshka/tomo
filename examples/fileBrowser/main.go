@@ -14,7 +14,7 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(384, 384)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 384, 384))
 	window.SetTitle("File browser")
 	container := containers.NewContainer(layouts.Vertical { true, true })
 	window.Adopt(container)
