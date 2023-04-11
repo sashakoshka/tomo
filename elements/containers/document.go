@@ -8,6 +8,8 @@ import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
+// DocumentContainer is a scrollable container capable of containing flexible
+// elements.
 type DocumentContainer struct {
 	*core.Core
 	*core.Propagator
