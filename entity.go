@@ -1,6 +1,7 @@
 package tomo
 
 import "image"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // Entity is a handle given to elements by the backend. Different types of
 // entities may be assigned to elements that support different capabilities.
@@ -25,12 +26,17 @@ type Entity interface {
 	// DrawBackground asks the parent element to draw its background pattern
 	// within the specified rectangle. This should be used for transparent
 	// elements like text labels.
-	DrawBackground (bounds image.Rectangle)
+	DrawBackground (destination canvas.Canvas, bounds image.Rectangle)
 }
 
 // ContainerEntity is given to elements that support the Container interface.
 type ContainerEntity interface {
 	Entity
+
+	// InvalidateLayout marks the element's layout as invalid. At the end of
+	// every event, the backend will ask all invalid containers to
+	// recalculate their layouts.
+	InvalidateLayout ()
 
 	// Adopt adds an element as a child.
 	Adopt (child Element)

@@ -25,6 +25,10 @@ type Container interface {
 	// DrawBackground draws this element's background pattern at the
 	// specified bounds to any canvas.
 	DrawBackground (destination canvas.Canvas, bounds image.Rectangle)
+
+	// HandleChildMinimumSizeChange is called when a child's minimum size is
+	// changed.
+	HandleChildMinimumSizeChange ()
 }
 
 // Focusable represents an element that has keyboard navigation support.
@@ -104,6 +108,16 @@ type Flexible interface {
 	FlexibleHeightFor (width int) int
 }
 
+// FlexibleContainer represents an element that is capable of containing
+// flexible children.
+type FlexibleContainer interface {
+	Container
+
+	// HandleChildFlexibleHeightChange is called when the parameters
+	// affecting a child's flexible height are changed.
+	HandleChildFlexibleHeightChange ()
+}
+
 // Scrollable represents an element that can be scrolled. It acts as a viewport
 // through which its contents can be observed.
 type Scrollable interface {
@@ -122,6 +136,16 @@ type Scrollable interface {
 
 	// ScrollAxes returns the supported axes for scrolling.
 	ScrollAxes () (horizontal, vertical bool)
+}
+
+// ScrollableContainer represents an element that is capable of containing
+// scrollable children.
+type ScrollableContainer interface {
+	Container
+
+	// HandleChildScrollBoundsChange is called when the content bounds,
+	// viewport bounds, or scroll axes of a child are changed.
+	HandleChildScrollBoundsChange()
 }
 
 // Collapsible represents an element who's minimum width and height can be

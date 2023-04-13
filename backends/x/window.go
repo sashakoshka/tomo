@@ -24,9 +24,9 @@ type window struct {
 	xWindow *xwindow.Window
 	xCanvas *xgraphics.Image
 	canvas  canvas.BasicCanvas
-	child   tomo.Element
+	child   *entity
+	focused *entity
 	onClose func ()
-	skipChildDrawCallback bool
 
 	title, application string
 
