@@ -6,54 +6,33 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // Element represents a basic on-screen object.
 type Element interface {
-	// Bounds reports the element's bounding box. This must reflect the
-	// bounding last given to the element by DrawTo.
-	Bounds () image.Rectangle
+	// Bind assigns an Entity to this element.
+	Bind (Entity)
 	
-	// MinimumSize specifies the minimum amount of pixels this element's
-	// width and height may be set to. If the element is given a resize
-	// event with dimensions smaller than this, it will use its minimum
-	// instead of the offending dimension(s).
-	MinimumSize () (width, height int)
-
-	// SetParent sets the parent container of the element. This should only
-	// be called by the parent when the element is adopted. If parent is set
-	// to nil, it will mark itself as not having a parent. If this method is
-	// passed a non-nil value and the element already has a parent, it will
-	// panic.
-	SetParent (Parent)
-
-	// DrawTo gives the element a canvas to draw on, along with a bounding
-	// box to be used for laying out the element. This should only be called
-	// by the parent element. This is typically a region of the parent
-	// element's canvas.
-	DrawTo (canvas canvas.Canvas, bounds image.Rectangle, onDamage func (region image.Rectangle))
+	// Draw causes the element to draw to the specified canvas. The bounds
+	// of this canvas specify the area that is actually drawn to, while the
+	// Entity bounds specify the actual area of the element.
+	Draw (canvas.Canvas)
 }
 
-// Focusable represents an element that has keyboard navigation support. This
-// includes inputs, buttons, sliders, etc. as well as any elements that have
-// children (so keyboard navigation events can be propagated downward).
+// Container is an element capable of containing child elements.
+type Container interface {
+	Element
+
+	// Layout causes this element to arrange its children.
+	Layout ()
+
+	// DrawBackground draws this element's background pattern at the
+	// specified bounds to any canvas.
+	DrawBackground (destination canvas.Canvas, bounds image.Rectangle)
+}
+
+// Focusable represents an element that has keyboard navigation support.
 type Focusable interface {
 	Element
 
-	// Focused returns whether or not this element or any of its children
-	// are currently focused.
-	Focused () bool
-
-	// Focus focuses this element, if its parent element grants the
-	// request.
-	Focus ()
-
-	// HandleFocus causes this element to mark itself as focused. If the
-	// element does not have children, it is disabled, or there are no more
-	// selectable children in the given direction, it should return false
-	// and do nothing. Otherwise, it should select itself and any children
-	// (if applicable) and return true.
-	HandleFocus (direction input.KeynavDirection) (accepted bool)
-
-	// HandleDeselection causes this element to mark itself and all of its
-	// children as unfocused.
-	HandleUnfocus ()
+	// HandleFocusChange is called when the element is focused or unfocused.
+	HandleFocusChange ()
 }
 
 // KeyboardTarget represents an element that can receive keyboard input.
