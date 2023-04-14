@@ -20,25 +20,17 @@ func (sum *scrollSum) add (button xproto.Button, window *window, state uint16) {
 		(state & window.backend.modifierMasks.shiftLock) > 0
 	if shift {
 		switch button {
-		case 4:
-			sum.x -= scrollDistance
-		case 5:
-			sum.x += scrollDistance
-		case 6:
-			sum.y -= scrollDistance
-		case 7:
-			sum.y += scrollDistance
+		case 4: sum.x -= scrollDistance
+		case 5: sum.x += scrollDistance
+		case 6: sum.y -= scrollDistance
+		case 7: sum.y += scrollDistance
 		}
 	} else {
 		switch button {
-		case 4:
-			sum.y -= scrollDistance
-		case 5:
-			sum.y += scrollDistance
-		case 6:
-			sum.x -= scrollDistance
-		case 7:
-			sum.x += scrollDistance
+		case 4: sum.y -= scrollDistance
+		case 5: sum.y += scrollDistance
+		case 6: sum.x -= scrollDistance
+		case 7: sum.x += scrollDistance
 		}
 	}
 }
@@ -129,8 +121,8 @@ func (window *window) handleKeyPress (
 	connection *xgbutil.XUtil,
 	event xevent.KeyPressEvent,
 ) {
-	if window.child == nil { return }
-	if window.hasModal     { return }
+	if window.system.focused == nil { return }
+	if window.hasModal              { return }
 	
 	keyEvent := *event.KeyPressEvent
 	key, numberPad := window.backend.keycodeToKey(keyEvent.Detail, keyEvent.State)
@@ -138,18 +130,16 @@ func (window *window) handleKeyPress (
 	modifiers.NumberPad = numberPad
 
 	if key == input.KeyTab && modifiers.Alt {
-		// if child, ok := window.child.element.(tomo.Focusable); ok {
-			// direction := input.KeynavDirectionForward
-			// if modifiers.Shift {
-				// direction = input.KeynavDirectionBackward
-			// }
-// 
-			// // TODO
-		// }
+		if modifiers.Shift {
+			window.system.focusPrevious()
+		} else {
+			window.system.focusNext()
+		}
 	} else if key == input.KeyEscape && window.shy {
 		window.Close()
-	} else if child, ok := window.child.element.(tomo.KeyboardTarget); ok {
-		child.HandleKeyDown(key, modifiers)
+	} else if window.focused != nil {
+		focused, ok := window.focused.element.(tomo.KeyboardTarget)
+		if ok { focused.HandleKeyDown(key, modifiers) }
 	}
 	
 	window.system.afterEvent()
@@ -159,8 +149,7 @@ func (window *window) handleKeyRelease (
 	connection *xgbutil.XUtil,
 	event xevent.KeyReleaseEvent,
 ) {
-	if window.child == nil { return }
-	
+	if window.system.focused == nil { return }
 	keyEvent := *event.KeyReleaseEvent
 
 	// do not process this event if it was generated from a key repeat
@@ -184,9 +173,8 @@ func (window *window) handleKeyRelease (
 	modifiers := window.modifiersFromState(keyEvent.State)
 	modifiers.NumberPad = numberPad
 	
-	if child, ok := window.child.element.(tomo.KeyboardTarget); ok {
-		child.HandleKeyUp(key, modifiers)
-	}
+	focused, ok := window.focused.element.(tomo.KeyboardTarget)
+	if ok { focused.HandleKeyUp(key, modifiers) }
 	
 	window.system.afterEvent()
 }
@@ -195,34 +183,31 @@ func (window *window) handleButtonPress (
 	connection *xgbutil.XUtil,
 	event xevent.ButtonPressEvent,
 ) {
-	if window.child == nil { return }
-	if window.hasModal     { return }
+	if window.hasModal { return }
 	
-	buttonEvent := *event.ButtonPressEvent
-	
-	insideWindow := image.Pt (
-		int(buttonEvent.EventX),
-		int(buttonEvent.EventY)).In(window.canvas.Bounds())
+	buttonEvent  := *event.ButtonPressEvent
+	point        := image.Pt(int(buttonEvent.EventX), int(buttonEvent.EventY))
+	insideWindow := point.In(window.canvas.Bounds())
+	scrolling    := buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7
 
-	scrolling := buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7
-		
+	underneath := window.system.childAt(point)
+	
 	if !insideWindow && window.shy && !scrolling {
 		window.Close()
 	} else if scrolling {
-		if child, ok := window.child.element.(tomo.ScrollTarget); ok {
+		if child, ok := underneath.element.(tomo.ScrollTarget); ok {
 			sum := scrollSum { }
 			sum.add(buttonEvent.Detail, window, buttonEvent.State)
 			window.compressScrollSum(buttonEvent, &sum)
 			child.HandleScroll (
-				int(buttonEvent.EventX),
-				int(buttonEvent.EventY),
+				point.X, point.Y,
 				float64(sum.x), float64(sum.y))
 		}
 	} else {
-		if child, ok := window.child.element.(tomo.MouseTarget); ok {
+		if child, ok := underneath.element.(tomo.MouseTarget); ok {
+			window.system.drags[buttonEvent.Detail] = child
 			child.HandleMouseDown (
-				int(buttonEvent.EventX),
-				int(buttonEvent.EventY),
+				point.X, point.Y,
 				input.Button(buttonEvent.Detail))
 		}
 	}
@@ -234,11 +219,10 @@ func (window *window) handleButtonRelease (
 	connection *xgbutil.XUtil,
 	event xevent.ButtonReleaseEvent,
 ) {
-	if window.child == nil { return }
-	
-	if child, ok := window.child.element.(tomo.MouseTarget); ok {
-		buttonEvent := *event.ButtonReleaseEvent
-		if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
+	buttonEvent := *event.ButtonReleaseEvent
+	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
+	child := window.system.drags[buttonEvent.Detail]
+	if child != nil {
 		child.HandleMouseUp (
 			int(buttonEvent.EventX),
 			int(buttonEvent.EventY),
@@ -252,13 +236,23 @@ func (window *window) handleMotionNotify (
 	connection *xgbutil.XUtil,
 	event xevent.MotionNotifyEvent,
 ) {
-	if window.child == nil { return }
-	
-	if child, ok := window.child.element.(tomo.MotionTarget); ok {
-		motionEvent := window.compressMotionNotify(*event.MotionNotifyEvent)
-		child.HandleMotion (
-			int(motionEvent.EventX),
-			int(motionEvent.EventY))
+	motionEvent := window.compressMotionNotify(*event.MotionNotifyEvent)
+	x := int(motionEvent.EventX)
+	y :=int(motionEvent.EventY)
+
+	handled := false
+	for _, child := range window.system.drags {
+		if child, ok := child.(tomo.MotionTarget); ok {
+			child.HandleMotion(x, y)
+			handled = true
+		}
+	}
+
+	if !handled {
+		child := window.system.childAt(image.Pt(x, y))
+		if child, ok := child.element.(tomo.MotionTarget); ok {
+			child.HandleMotion(x, y)
+		}
 	}
 	
 	window.system.afterEvent()

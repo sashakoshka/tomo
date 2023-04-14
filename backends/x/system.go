@@ -30,6 +30,8 @@ type system struct {
 	invalidateIgnore bool
 	drawingInvalid   entitySet
 	anyLayoutInvalid bool
+	
+	drags [10]tomo.MouseTarget
 
 	pushFunc func (image.Rectangle)
 }
@@ -40,18 +42,40 @@ func (system *system) initialize () {
 
 func (system *system) SetTheme (theme tomo.Theme) {
 	system.theme = theme
-	if system.child == nil { return }
-	if child, ok := system.child.element.(tomo.Themeable); ok {
-		child.SetTheme(theme)
-	}
+	system.propagate (func (entity *entity) bool {
+		if child, ok := system.child.element.(tomo.Themeable); ok {
+			child.SetTheme(theme)
+		}
+		return true
+	})
 }
 
 func (system *system) SetConfig (config tomo.Config) {
 	system.config = config
+	system.propagate (func (entity *entity) bool {
+		if child, ok := system.child.element.(tomo.Configurable); ok {
+			child.SetConfig(config)
+		}
+		return true
+	})
+}
+
+func (system *system) focusNext () {
+	// TODO
+}
+
+func (system *system) focusPrevious () {
+	// TODO
+}
+
+func (system *system) propagate (callback func (*entity) bool) {
 	if system.child == nil { return }
-	if child, ok := system.child.element.(tomo.Configurable); ok {
-		child.SetConfig(config)
-	}
+	system.child.propagate(callback)
+}
+
+func (system *system) childAt (point image.Point) *entity {
+	if system.child == nil { return nil }
+	return system.child.childAt(point)
 }
 
 func (system *system) resizeChildToFit () {

@@ -42,6 +42,22 @@ func (entity *entity) unbind () {
 	}
 }
 
+func (entity *entity) propagate (callback func (*entity) bool) {
+	for _, child := range entity.children {
+		if callback(child) { break }
+		child.propagate(callback)
+	}
+}
+
+func (entity *entity) childAt (point image.Point) *entity {
+	for _, child := range entity.children {
+		if point.In(child.bounds) {
+			return child
+		}
+	}
+	return entity
+}
+
 // ----------- Entity ----------- //
 
 func (entity *entity) Invalidate () {
@@ -144,11 +160,11 @@ func (entity *entity) Focus () {
 }
 
 func (entity *entity) FocusNext () {
-	// TODO
+	entity.window.system.focusNext()
 }
 
 func (entity *entity) FocusPrevious () {
-	// TODO
+	entity.window.system.focusPrevious()
 }
 
 // ----------- FlexibleEntity ----------- //
