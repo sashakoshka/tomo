@@ -41,7 +41,6 @@ func (sum *scrollSum) add (button xproto.Button, window *window, state uint16) {
 			sum.x += scrollDistance
 		}
 	}
-
 }
 
 func (window *window) handleExpose (
@@ -49,6 +48,7 @@ func (window *window) handleExpose (
 	event xevent.ExposeEvent,
 ) {
 	_, region := window.compressExpose(*event.ExposeEvent)
+	window.system.afterEvent()
 	window.pushRegion(region)
 }
 
@@ -74,7 +74,6 @@ func (window *window) handleConfigureNotify (
 	window.updateBounds (
 		configureEvent.X, configureEvent.Y,
 		configureEvent.Width, configureEvent.Height)
-	
 
 	if sizeChanged {
 		configureEvent = window.compressConfigureNotify(configureEvent)
@@ -85,8 +84,11 @@ func (window *window) handleConfigureNotify (
 		window.resizeChildToFit()
 
 		if !window.exposeEventFollows(configureEvent) {
-			window.redrawChildEntirely()
+			window.child.Invalidate()
+			window.child.InvalidateLayout()
 		}
+		
+		window.system.afterEvent()
 	}
 }
 
@@ -136,21 +138,21 @@ func (window *window) handleKeyPress (
 	modifiers.NumberPad = numberPad
 
 	if key == input.KeyTab && modifiers.Alt {
-		if child, ok := window.child.(tomo.Focusable); ok {
-			direction := input.KeynavDirectionForward
-			if modifiers.Shift {
-				direction = input.KeynavDirectionBackward
-			}
-
-			if !child.HandleFocus(direction) {
-				child.HandleUnfocus()
-			}
-		}
+		// if child, ok := window.child.element.(tomo.Focusable); ok {
+			// direction := input.KeynavDirectionForward
+			// if modifiers.Shift {
+				// direction = input.KeynavDirectionBackward
+			// }
+// 
+			// // TODO
+		// }
 	} else if key == input.KeyEscape && window.shy {
 		window.Close()
-	} else if child, ok := window.child.(tomo.KeyboardTarget); ok {
+	} else if child, ok := window.child.element.(tomo.KeyboardTarget); ok {
 		child.HandleKeyDown(key, modifiers)
 	}
+	
+	window.system.afterEvent()
 }
 
 func (window *window) handleKeyRelease (
@@ -182,9 +184,11 @@ func (window *window) handleKeyRelease (
 	modifiers := window.modifiersFromState(keyEvent.State)
 	modifiers.NumberPad = numberPad
 	
-	if child, ok := window.child.(tomo.KeyboardTarget); ok {
+	if child, ok := window.child.element.(tomo.KeyboardTarget); ok {
 		child.HandleKeyUp(key, modifiers)
 	}
+	
+	window.system.afterEvent()
 }
 
 func (window *window) handleButtonPress (
@@ -205,7 +209,7 @@ func (window *window) handleButtonPress (
 	if !insideWindow && window.shy && !scrolling {
 		window.Close()
 	} else if scrolling {
-		if child, ok := window.child.(tomo.ScrollTarget); ok {
+		if child, ok := window.child.element.(tomo.ScrollTarget); ok {
 			sum := scrollSum { }
 			sum.add(buttonEvent.Detail, window, buttonEvent.State)
 			window.compressScrollSum(buttonEvent, &sum)
@@ -215,7 +219,7 @@ func (window *window) handleButtonPress (
 				float64(sum.x), float64(sum.y))
 		}
 	} else {
-		if child, ok := window.child.(tomo.MouseTarget); ok {
+		if child, ok := window.child.element.(tomo.MouseTarget); ok {
 			child.HandleMouseDown (
 				int(buttonEvent.EventX),
 				int(buttonEvent.EventY),
@@ -223,6 +227,7 @@ func (window *window) handleButtonPress (
 		}
 	}
 	
+	window.system.afterEvent()
 }
 
 func (window *window) handleButtonRelease (
@@ -231,7 +236,7 @@ func (window *window) handleButtonRelease (
 ) {
 	if window.child == nil { return }
 	
-	if child, ok := window.child.(tomo.MouseTarget); ok {
+	if child, ok := window.child.element.(tomo.MouseTarget); ok {
 		buttonEvent := *event.ButtonReleaseEvent
 		if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
 		child.HandleMouseUp (
@@ -239,6 +244,8 @@ func (window *window) handleButtonRelease (
 			int(buttonEvent.EventY),
 			input.Button(buttonEvent.Detail))
 	}
+	
+	window.system.afterEvent()
 }
 
 func (window *window) handleMotionNotify (
@@ -247,12 +254,14 @@ func (window *window) handleMotionNotify (
 ) {
 	if window.child == nil { return }
 	
-	if child, ok := window.child.(tomo.MotionTarget); ok {
+	if child, ok := window.child.element.(tomo.MotionTarget); ok {
 		motionEvent := window.compressMotionNotify(*event.MotionNotifyEvent)
 		child.HandleMotion (
 			int(motionEvent.EventX),
 			int(motionEvent.EventY))
 	}
+	
+	window.system.afterEvent()
 }
 
 func (window *window) handleSelectionNotify (

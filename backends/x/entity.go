@@ -10,18 +10,25 @@ type entity struct {
 	children    []*entity
 	element     tomo.Element
 	
-	drawDirty   bool
-	layoutDirty bool
-	
-	bounds      image.Rectangle
-	minWidth    int
-	minHeight   int
+	bounds        image.Rectangle
+	clippedBounds image.Rectangle
+	minWidth      int
+	minHeight     int
+
+	layoutInvalid bool
+	isContainer   bool
 }
 
-func bind (element tomo.Element) *entity {
-	entity := &entity { drawDirty: true }
+func bind (parent *entity, window *window, element tomo.Element) *entity {
+	entity := &entity {
+		window:  window,
+		parent:  parent,
+		element: element,
+	}
+	entity.Invalidate()
 	if _, ok := element.(tomo.Container); ok {
-		entity.layoutDirty = true
+		entity.isContainer = true
+		entity.InvalidateLayout()
 	}
 
 	element.Bind(entity)
@@ -38,7 +45,8 @@ func (entity *entity) unbind () {
 // ----------- Entity ----------- //
 
 func (entity *entity) Invalidate () {
-	entity.drawDirty = true
+	if entity.window.system.invalidateIgnore { return }
+	entity.window.drawingInvalid.Add(entity)
 }
 
 func (entity *entity) Bounds () image.Rectangle {
@@ -64,18 +72,20 @@ func (entity *entity) DrawBackground (destination canvas.Canvas, bounds image.Re
 // ----------- ContainerEntity ----------- //
 
 func (entity *entity) InvalidateLayout () {
-	entity.layoutDirty = true
+	if !entity.isContainer { return }
+	entity.layoutInvalid = true
+	entity.window.system.anyLayoutInvalid = true
 }
 
 func (entity *entity) Adopt (child tomo.Element) {
-	entity.children = append(entity.children, bind(child))
+	entity.children = append(entity.children, bind(entity, entity.window, child))
 }
 
 func (entity *entity) Insert (index int, child tomo.Element) {
 	entity.children = append (
 		entity.children[:index + 1],
 		entity.children[index:]...)
-	entity.children[index] = bind(child)
+	entity.children[index] = bind(entity, entity.window, child)
 }
 
 func (entity *entity) Disown (index int) {
@@ -104,7 +114,13 @@ func (entity *entity) CountChildren () int {
 }
 
 func (entity *entity) PlaceChild (index int, bounds image.Rectangle) {
-	entity.children[index].bounds = bounds
+	child := entity.children[index]
+	child.bounds = bounds
+	child.clippedBounds = entity.bounds.Intersect(bounds)
+	child.Invalidate()
+	if child.isContainer {
+		child.InvalidateLayout()
+	}
 }
 
 func (entity *entity) ChildMinimumSize (index int) (width, height int) {

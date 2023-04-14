@@ -26,7 +26,7 @@ func NewArtist () *Artist {
 
 func (element *Artist) Bind (entity tomo.Entity) {
 	element.entity = entity
-	entity.SetMinimumSize(240, 240)
+	if entity != nil { entity.SetMinimumSize(240, 240) }
 }
 
 func (element *Artist) Draw (destination canvas.Canvas) {

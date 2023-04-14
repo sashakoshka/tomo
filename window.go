@@ -15,9 +15,6 @@ type Window interface {
 	// these at one time.
 	Adopt (Element)
 
-	// Child returns the root element of the window.
-	Child () Element
-
 	// SetTitle sets the title that appears on the window's title bar. This
 	// method might have no effect with some backends.
 	SetTitle (string)
