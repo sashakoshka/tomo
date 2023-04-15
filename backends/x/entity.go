@@ -76,8 +76,11 @@ func (entity *entity) Window () tomo.Window {
 func (entity *entity) SetMinimumSize (width, height int) {
 	entity.minWidth  = width
 	entity.minHeight = height
-	if entity.parent == nil { return }
-	entity.parent.element.(tomo.Container).HandleChildMinimumSizeChange()
+	if entity.parent == nil {
+		entity.window.setMinimumSize(width, height)
+	} else {
+		entity.parent.element.(tomo.Container).HandleChildMinimumSizeChange()
+	}
 }
 
 func (entity *entity) DrawBackground (destination canvas.Canvas, bounds image.Rectangle) {
@@ -169,7 +172,7 @@ func (entity *entity) FocusPrevious () {
 
 // ----------- FlexibleEntity ----------- //
 
-func (entity *entity) NotifyFlexibleHeightChange () {
+func (entity *entity) NotifyFlexibleHeightChange (child tomo.Flexible) {
 	if entity.parent == nil { return }
 	if parent, ok := entity.parent.element.(tomo.FlexibleContainer); ok {
 		parent.HandleChildFlexibleHeightChange()

@@ -26,7 +26,7 @@ type Checkbox struct {
 
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
-	element = &Checkbox { checked: checked }
+	element = &Checkbox { checked: checked, enabled: true }
 	element.theme.Case = tomo.C("tomo", "checkbox")
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,

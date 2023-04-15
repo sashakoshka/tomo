@@ -121,8 +121,7 @@ func (window *window) handleKeyPress (
 	connection *xgbutil.XUtil,
 	event xevent.KeyPressEvent,
 ) {
-	if window.system.focused == nil { return }
-	if window.hasModal              { return }
+	if window.hasModal { return }
 	
 	keyEvent := *event.KeyPressEvent
 	key, numberPad := window.backend.keycodeToKey(keyEvent.Detail, keyEvent.State)
@@ -149,7 +148,6 @@ func (window *window) handleKeyRelease (
 	connection *xgbutil.XUtil,
 	event xevent.KeyReleaseEvent,
 ) {
-	if window.system.focused == nil { return }
 	keyEvent := *event.KeyReleaseEvent
 
 	// do not process this event if it was generated from a key repeat
@@ -172,11 +170,13 @@ func (window *window) handleKeyRelease (
 	key, numberPad := window.backend.keycodeToKey(keyEvent.Detail, keyEvent.State)
 	modifiers := window.modifiersFromState(keyEvent.State)
 	modifiers.NumberPad = numberPad
-	
-	focused, ok := window.focused.element.(tomo.KeyboardTarget)
-	if ok { focused.HandleKeyUp(key, modifiers) }
-	
-	window.system.afterEvent()
+
+	if window.focused != nil {
+		focused, ok := window.focused.element.(tomo.KeyboardTarget)
+		if ok { focused.HandleKeyUp(key, modifiers) }
+		
+		window.system.afterEvent()
+	}
 }
 
 func (window *window) handleButtonPress (

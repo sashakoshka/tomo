@@ -48,9 +48,6 @@ func (backend *Backend) NewWindow (
 ) {
 	if backend == nil { panic("nil backend") }
 	window, err := backend.newWindow(bounds, false)
-
-	window.system.initialize()
-	window.system.pushFunc = window.paste
 	
 	output = mainWindow { window }
 	return output, err
@@ -67,6 +64,9 @@ func (backend *Backend) newWindow (
 	if bounds.Dy() == 0 { bounds.Max.Y = bounds.Min.Y + 8 }
 	
 	window := &window { backend: backend }
+
+	window.system.initialize()
+	window.system.pushFunc = window.pasteAndPush
 
 	window.xWindow, err = xwindow.Generate(backend.connection)
 	if err != nil { return }
@@ -125,7 +125,7 @@ func (backend *Backend) newWindow (
 	window.SetConfig(backend.config)
 	
 	window.metrics.bounds = bounds
-	window.childMinimumSizeChangeCallback(8, 8)
+	window.setMinimumSize(8, 8)
 
 	window.reallocateCanvas()
 
@@ -404,6 +404,11 @@ func (window *window) reallocateCanvas () {
 	
 }
 
+func (window *window) pasteAndPush (region image.Rectangle) {
+	window.paste(region)
+	window.pushRegion(region)
+}
+
 func (window *window) paste (region image.Rectangle) {
 	canvas := canvas.Cut(window.canvas, region)
 	data, stride := canvas.Buffer()
@@ -438,7 +443,9 @@ func (window *window) pushRegion (region image.Rectangle) {
 	}
 }
 
-func (window *window) childMinimumSizeChangeCallback (width, height int) (resized bool) {
+func (window *window) setMinimumSize (width, height int) {
+	if width  < 8 { width  = 8 }
+	if height < 8 { height = 8 }
 	icccm.WmNormalHintsSet (
 		window.backend.connection,
 		window.xWindow.Id,
@@ -454,8 +461,5 @@ func (window *window) childMinimumSizeChangeCallback (width, height int) (resize
 	if newWidth != window.metrics.bounds.Dx() ||
 		newHeight != window.metrics.bounds.Dy() {
 		window.xWindow.Resize(newWidth, newHeight)
-		return true
 	}
-
-	return false
 }
