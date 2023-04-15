@@ -29,6 +29,7 @@ type Label struct {
 func NewLabel (text string, wrap bool) (element *Label) {
 	element = &Label { }
 	element.theme.Case = tomo.C("tomo", "label")
+	element.entity = tomo.NewEntity(element).(tomo.FlexibleEntity)
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
 		tomo.FontSizeNormal))
@@ -37,11 +38,9 @@ func NewLabel (text string, wrap bool) (element *Label) {
 	return
 }
 
-// Bind binds this element to an entity.
-func (element *Label) Bind (entity tomo.Entity) {
-	if entity == nil { element.entity = nil; return }
-	element.entity = entity.(tomo.FlexibleEntity)
-	element.updateMinimumSize()
+// Entity returns this element's entity.
+func (element *Label) Entity () tomo.Entity {
+	return element.entity
 }
 
 // EmCollapse forces a minimum width and height upon the label. The width is
@@ -128,14 +127,14 @@ func (element *Label) SetConfig (new tomo.Config) {
 func (element *Label) Draw (destination canvas.Canvas) {
 	if element.entity == nil { return }
 	
-	bounds := element.entity. Bounds()
+	bounds := element.entity.Bounds()
 	
 	if element.wrap {
 		element.drawer.SetMaxWidth(bounds.Dx())
 		element.drawer.SetMaxHeight(bounds.Dy())
 	}
 	
-	element.entity.DrawBackground(destination, bounds)
+	element.entity.DrawBackground(destination)
 
 	textBounds := element.drawer.LayoutBounds()
 	foreground := element.theme.Color (

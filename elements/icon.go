@@ -20,15 +20,15 @@ func NewIcon (id tomo.Icon, size tomo.IconSize) (element *Icon) {
 		id:   id,
 		size: size,
 	}
+	element.entity = tomo.NewEntity(element)
 	element.theme.Case = tomo.C("tomo", "icon")
+	element.updateMinimumSize()
 	return
 }
 
-// Bind binds this element to an entity.
-func (element *Icon) Bind (entity tomo.Entity) {
-	if entity == nil { element.entity = nil; return }
-	element.entity = entity
-	element.updateMinimumSize()
+// Entity returns this element's entity.
+func (element *Icon) Entity () tomo.Entity {
+	return element.entity
 }
 
 // SetIcon sets the element's icon.

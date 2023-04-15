@@ -24,9 +24,11 @@ type Entity interface {
 	SetMinimumSize (width, height int)
 
 	// DrawBackground asks the parent element to draw its background pattern
-	// within the specified rectangle. This should be used for transparent
-	// elements like text labels.
-	DrawBackground (destination canvas.Canvas, bounds image.Rectangle)
+	// to a canvas. This should be used for transparent elements like text
+	// labels. If there is no parent element (that is, the element is
+	// directly inside of the window), the backend will draw a default
+	// background pattern.
+	DrawBackground (canvas.Canvas)
 }
 
 // ContainerEntity is given to elements that support the Container interface.

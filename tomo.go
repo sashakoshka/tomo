@@ -29,6 +29,12 @@ func Do (callback func ()) {
 	backend.Do(callback)
 }
 
+// NewEntity generates an entity for an element using the current backend.
+func NewEntity (owner Element) Entity {
+	assertBackend()
+	return backend.NewEntity(owner)
+}
+
 // NewWindow creates a new window using the current backend, and returns it as a
 // MainWindow. If the window could not be created, an error is returned
 // explaining why.

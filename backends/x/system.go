@@ -3,6 +3,8 @@ package x
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 type entitySet map[*entity] struct { }
 
@@ -24,8 +26,8 @@ type system struct {
 	focused *entity
 	canvas  canvas.BasicCanvas
 
-	theme  tomo.Theme
-	config tomo.Config
+	theme  theme.Wrapped
+	config config.Wrapped
 
 	invalidateIgnore bool
 	drawingInvalid   entitySet
@@ -41,7 +43,7 @@ func (system *system) initialize () {
 }
 
 func (system *system) SetTheme (theme tomo.Theme) {
-	system.theme = theme
+	system.theme.Theme = theme
 	system.propagate (func (entity *entity) bool {
 		if child, ok := system.child.element.(tomo.Themeable); ok {
 			child.SetTheme(theme)
@@ -51,7 +53,7 @@ func (system *system) SetTheme (theme tomo.Theme) {
 }
 
 func (system *system) SetConfig (config tomo.Config) {
-	system.config = config
+	system.config.Config = config
 	system.propagate (func (entity *entity) bool {
 		if child, ok := system.child.element.(tomo.Configurable); ok {
 			child.SetConfig(config)

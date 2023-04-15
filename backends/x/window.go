@@ -67,6 +67,7 @@ func (backend *Backend) newWindow (
 
 	window.system.initialize()
 	window.system.pushFunc = window.pasteAndPush
+	window.theme.Case = tomo.C("tomo", "window")
 
 	window.xWindow, err = xwindow.Generate(backend.connection)
 	if err != nil { return }
@@ -142,14 +143,18 @@ func (window *window) Window () tomo.Window {
 func (window *window) Adopt (child tomo.Element) {
 	// disown previous child
 	if window.child != nil {
-		window.child.unbind()
+		window.child.unlink()
 		window.child = nil
 	}
 
 	// adopt new child
 	if child != nil {
-		window.child = bind(nil, window, child)
-		window.resizeChildToFit()
+		childEntity, ok := child.Entity().(*entity)
+		if ok && childEntity != nil {
+			window.child = childEntity
+			childEntity.setWindow(window)
+			window.resizeChildToFit()
+		}
 	}
 }
 

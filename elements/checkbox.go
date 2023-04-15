@@ -27,6 +27,7 @@ type Checkbox struct {
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked, enabled: true }
+	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
 	element.theme.Case = tomo.C("tomo", "checkbox")
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
@@ -35,11 +36,9 @@ func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	return
 }
 
-// Bind binds this element to an entity.
-func (element *Checkbox) Bind (entity tomo.Entity) {
-	if entity == nil { element.entity = nil; return }
-	element.entity = entity.(tomo.FocusableEntity)
-	element.updateMinimumSize()
+// Entity returns this element's entity.
+func (element *Checkbox) Entity () tomo.Entity {
+	return element.entity
 }
 
 // OnToggle sets the function to be called when the checkbox is toggled.
@@ -54,7 +53,6 @@ func (element *Checkbox) Value () (checked bool) {
 
 // Focus gives this element input focus.
 func (element *Checkbox) Focus () {
-	if element.entity == nil { return }
 	if !element.entity.Focused() { element.entity.Focus() }
 }
 
@@ -76,7 +74,6 @@ func (element *Checkbox) SetText (text string) {
 	if element.text == text { return }
 	element.text = text
 	element.drawer.SetText([]rune(text))
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -88,7 +85,6 @@ func (element *Checkbox) SetTheme (new tomo.Theme) {
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
 		tomo.FontSizeNormal))
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -97,15 +93,12 @@ func (element *Checkbox) SetTheme (new tomo.Theme) {
 func (element *Checkbox) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
 
 // Draw causes the element to draw to the specified destination canvas.
 func (element *Checkbox) Draw (destination canvas.Canvas) {
-	if element.entity == nil { return }
-	
 	bounds := element.entity.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 
@@ -116,7 +109,7 @@ func (element *Checkbox) Draw (destination canvas.Canvas) {
 		On:       element.checked,
 	}
 
-	element.entity.DrawBackground(destination, bounds)
+	element.entity.DrawBackground(destination)
 		
 	pattern := element.theme.Pattern(tomo.PatternButton, state)
 	pattern.Draw(destination, boxBounds)
@@ -135,7 +128,6 @@ func (element *Checkbox) Draw (destination canvas.Canvas) {
 }
 
 func (element *Checkbox) HandleMouseDown (x, y int, button input.Button) {
-	if element.entity == nil { return }
 	if !element.Enabled() { return }
 	element.Focus()
 	element.pressed = true
@@ -143,7 +135,6 @@ func (element *Checkbox) HandleMouseDown (x, y int, button input.Button) {
 }
 
 func (element *Checkbox) HandleMouseUp (x, y int, button input.Button) {
-	if element.entity == nil { return }
 	if button != input.ButtonLeft || !element.pressed { return }
 
 	element.pressed = false
@@ -167,7 +158,6 @@ func (element *Checkbox) HandleKeyDown (key input.Key, modifiers input.Modifiers
 }
 
 func (element *Checkbox) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
-	if element.entity == nil { return }
 	if key == input.KeyEnter && element.pressed {
 		element.pressed = false
 		element.checked = !element.checked

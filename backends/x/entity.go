@@ -19,27 +19,44 @@ type entity struct {
 	isContainer   bool
 }
 
-func bind (parent *entity, window *window, element tomo.Element) *entity {
-	entity := &entity {
-		window:  window,
-		parent:  parent,
-		element: element,
-	}
-	entity.Invalidate()
-	if _, ok := element.(tomo.Container); ok {
+func (backend *Backend) NewEntity (owner tomo.Element) tomo.Entity {
+	entity := &entity { element: owner }
+	if _, ok := owner.(tomo.Container); ok {
 		entity.isContainer = true
 		entity.InvalidateLayout()
 	}
-
-	element.Bind(entity)
 	return entity
 }
 
-func (entity *entity) unbind () {
-	entity.element.Bind(nil)
-	for _, childEntity := range entity.children {
-		childEntity.unbind()
+func (ent *entity) unlink () {
+	ent.propagate (func (child *entity) bool {
+		child.window = nil
+		delete(ent.window.system.drawingInvalid, child)
+		return true
+	})
+	
+	delete(ent.window.system.drawingInvalid, ent)
+	ent.parent = nil
+	ent.window = nil
+}
+
+func (entity *entity) link (parent *entity) {
+	entity.parent = parent
+	if parent.window != nil {
+		entity.setWindow(parent.window)
 	}
+}
+
+func (ent *entity) setWindow (window *window) {
+	ent.window = window
+	ent.Invalidate()
+	ent.InvalidateLayout()
+	ent.propagate (func (child *entity) bool {
+		child.window = window
+		ent.Invalidate()
+		ent.InvalidateLayout()
+		return true
+	})
 }
 
 func (entity *entity) propagate (callback func (*entity) bool) {
@@ -61,6 +78,7 @@ func (entity *entity) childAt (point image.Point) *entity {
 // ----------- Entity ----------- //
 
 func (entity *entity) Invalidate () {
+	if entity.window == nil { return }
 	if entity.window.system.invalidateIgnore { return }
 	entity.window.drawingInvalid.Add(entity)
 }
@@ -77,39 +95,54 @@ func (entity *entity) SetMinimumSize (width, height int) {
 	entity.minWidth  = width
 	entity.minHeight = height
 	if entity.parent == nil {
-		entity.window.setMinimumSize(width, height)
+		if entity.window != nil {
+			entity.window.setMinimumSize(width, height)
+		}
 	} else {
 		entity.parent.element.(tomo.Container).
 			HandleChildMinimumSizeChange(entity.element)
 	}
 }
 
-func (entity *entity) DrawBackground (destination canvas.Canvas, bounds image.Rectangle) {
-	if entity.parent == nil { return }
-	entity.parent.element.(tomo.Container).DrawBackground(destination, bounds)
+func (entity *entity) DrawBackground (destination canvas.Canvas) {
+	if entity.parent != nil {
+		entity.parent.element.(tomo.Container).DrawBackground(destination)
+	} else if entity.window != nil {
+		entity.window.system.theme.Pattern (
+			tomo.PatternBackground,
+			tomo.State { }).Draw (
+				destination,
+				entity.window.canvas.Bounds())
+	}
 }
 
 // ----------- ContainerEntity ----------- //
 
 func (entity *entity) InvalidateLayout () {
+	if entity.window == nil { return }
 	if !entity.isContainer { return }
 	entity.layoutInvalid = true
 	entity.window.system.anyLayoutInvalid = true
 }
 
-func (entity *entity) Adopt (child tomo.Element) {
-	entity.children = append(entity.children, bind(entity, entity.window, child))
+func (ent *entity) Adopt (child tomo.Element) {
+	childEntity, ok := child.Entity().(*entity)
+	if !ok || childEntity == nil { return }
+	childEntity.link(ent)
+	ent.children = append(ent.children, childEntity)
 }
 
-func (entity *entity) Insert (index int, child tomo.Element) {
-	entity.children = append (
-		entity.children[:index + 1],
-		entity.children[index:]...)
-	entity.children[index] = bind(entity, entity.window, child)
+func (ent *entity) Insert (index int, child tomo.Element) {
+	childEntity, ok := child.Entity().(*entity)
+	if !ok || childEntity == nil { return }
+	ent.children = append (
+		ent.children[:index + 1],
+		ent.children[index:]...)
+	ent.children[index] = childEntity
 }
 
 func (entity *entity) Disown (index int) {
-	entity.children[index].unbind()
+	entity.children[index].unlink()
 	entity.children = append (
 		entity.children[:index],
 		entity.children[index + 1:]...)
@@ -138,9 +171,7 @@ func (entity *entity) PlaceChild (index int, bounds image.Rectangle) {
 	child.bounds = bounds
 	child.clippedBounds = entity.bounds.Intersect(bounds)
 	child.Invalidate()
-	if child.isContainer {
-		child.InvalidateLayout()
-	}
+	child.InvalidateLayout()
 }
 
 func (entity *entity) ChildMinimumSize (index int) (width, height int) {
@@ -151,10 +182,12 @@ func (entity *entity) ChildMinimumSize (index int) (width, height int) {
 // ----------- FocusableEntity ----------- //
 
 func (entity *entity) Focused () bool {
+	if entity.window == nil { return false }
 	return entity.window.focused == entity
 }
 
 func (entity *entity) Focus () {
+	if entity.window == nil { return }
 	previous := entity.window.focused
 	entity.window.focused = entity
 	if previous != nil {

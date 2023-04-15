@@ -16,15 +16,15 @@ type Image struct {
 // NewImage creates a new image element.
 func NewImage (image image.Image) (element *Image) {
 	element = &Image { buffer: canvas.FromImage(image) }
+	element.entity = tomo.NewEntity(element)
+	bounds := element.buffer.Bounds()
+	element.entity.SetMinimumSize(bounds.Dx(), bounds.Dy())
 	return
 }
 
-// Bind binds this element to an entity.
-func (element *Image) Bind (entity tomo.Entity) {
-	if entity == nil { element.entity = nil; return }
-	element.entity = entity
-	bounds := element.buffer.Bounds()
-	element.entity.SetMinimumSize(bounds.Dx(), bounds.Dy())
+// Entity returns this element's entity.
+func (element *Image) Entity () tomo.Entity {
+	return element.entity
 }
 
 // Draw causes the element to draw to the specified destination canvas.

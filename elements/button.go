@@ -30,6 +30,7 @@ type Button struct {
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
 	element = &Button { showText: true, enabled: true }
+	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
 	element.theme.Case = tomo.C("tomo", "button")
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
@@ -38,11 +39,9 @@ func NewButton (text string) (element *Button) {
 	return
 }
 
-// Bind binds this element to an entity.
-func (element *Button) Bind (entity tomo.Entity) {
-	if entity == nil { element.entity = nil; return }
-	element.entity = entity.(tomo.FocusableEntity)
-	element.updateMinimumSize()
+// Entity returns this element's entity.
+func (element *Button) Entity () tomo.Entity {
+	return element.entity
 }
 
 // OnClick sets the function to be called when the button is clicked.
@@ -52,7 +51,6 @@ func (element *Button) OnClick (callback func ()) {
 
 // Focus gives this element input focus.
 func (element *Button) Focus () {
-	if element.entity == nil { return }
 	if !element.entity.Focused() { element.entity.Focus() }
 }
 
@@ -65,7 +63,6 @@ func (element *Button) Enabled () bool {
 func (element *Button) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
-	if element.entity == nil { return }
 	element.entity.Invalidate()
 }
 
@@ -74,7 +71,6 @@ func (element *Button) SetText (text string) {
 	if element.text == text { return }
 	element.text = text
 	element.drawer.SetText([]rune(text))
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -97,7 +93,6 @@ func (element *Button) SetIcon (id tomo.Icon) {
 func (element *Button) ShowText (showText bool) {
 	if element.showText == showText { return }
 	element.showText = showText
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -109,7 +104,6 @@ func (element *Button) SetTheme (new tomo.Theme) {
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
 		tomo.FontSizeNormal))
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -118,14 +112,12 @@ func (element *Button) SetTheme (new tomo.Theme) {
 func (element *Button) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
 
 // Draw causes the element to draw to the specified destination canvas.
 func (element *Button) Draw (destination canvas.Canvas) {
-	if element.entity == nil { return }
 	state   := element.state()
 	bounds  := element.entity.Bounds()
 	pattern := element.theme.Pattern(tomo.PatternButton, state)
@@ -182,7 +174,7 @@ func (element *Button) Draw (destination canvas.Canvas) {
 }
 
 func (element *Button) HandleFocusChange () {
-	if element.entity != nil { element.entity.Invalidate() }
+	element.entity.Invalidate()
 }
 
 func (element *Button) HandleMouseDown (x, y int, button input.Button) {
@@ -190,32 +182,31 @@ func (element *Button) HandleMouseDown (x, y int, button input.Button) {
 	element.Focus()
 	if button != input.ButtonLeft { return }
 	element.pressed = true
-	if element.entity != nil { element.entity.Invalidate() }
+	element.entity.Invalidate()
 }
 
 func (element *Button) HandleMouseUp (x, y int, button input.Button) {
-	if element.entity == nil { return }
 	if button != input.ButtonLeft { return }
 	element.pressed = false
 	within := image.Point { x, y }.In(element.entity.Bounds())
 	if element.Enabled() && within && element.onClick != nil {
 		element.onClick()
 	}
-	if element.entity != nil { element.entity.Invalidate() }
+	element.entity.Invalidate()
 }
 
 func (element *Button) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if !element.Enabled() { return }
 	if key == input.KeyEnter {
 		element.pressed = true
-		if element.entity != nil { element.entity.Invalidate() }
+		element.entity.Invalidate()
 	}
 }
 
 func (element *Button) HandleKeyUp(key input.Key, modifiers input.Modifiers) {
 	if key == input.KeyEnter && element.pressed {
 		element.pressed = false
-	if element.entity != nil { element.entity.Invalidate() }
+		element.entity.Invalidate()
 		if !element.Enabled() { return }
 		if element.onClick != nil {
 			element.onClick()

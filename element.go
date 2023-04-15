@@ -6,13 +6,13 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // Element represents a basic on-screen object.
 type Element interface {
-	// Bind assigns an Entity to this element.
-	Bind (Entity)
-	
 	// Draw causes the element to draw to the specified canvas. The bounds
 	// of this canvas specify the area that is actually drawn to, while the
 	// Entity bounds specify the actual area of the element.
 	Draw (canvas.Canvas)
+
+	// Entity returns this element's entity.
+	Entity () Entity
 }
 
 // Container is an element capable of containing child elements.
@@ -22,9 +22,11 @@ type Container interface {
 	// Layout causes this element to arrange its children.
 	Layout ()
 
-	// DrawBackground draws this element's background pattern at the
-	// specified bounds to any canvas.
-	DrawBackground (destination canvas.Canvas, bounds image.Rectangle)
+	// DrawBackground causes the element to draw its background pattern to
+	// the specified canvas. The bounds of this canvas specify the area that
+	// is actually drawn to, while the Entity bounds specify the actual area
+	// of the element.
+	DrawBackground (canvas.Canvas)
 
 	// HandleChildMinimumSizeChange is called when a child's minimum size is
 	// changed.
