@@ -11,27 +11,40 @@ type scratchEntry struct {
 	minimum float64
 }
 
-type VBox struct {
-	entity  tomo.ContainerEntity
-	scratch map[tomo.Element] scratchEntry
-	theme   theme.Wrapped
-	padding bool
-	margin  bool
+// Box is a container that lays out its children horizontally or vertically.
+// Child elements can be set to contract to their minimum size, or expand to
+// fill remaining space. Boxes can be nested and used together to create more
+// complex layouts.
+type Box struct {
+	entity   tomo.ContainerEntity
+	scratch  map[tomo.Element] scratchEntry
+	theme    theme.Wrapped
+	padding  bool
+	margin   bool
+	vertical bool
 }
 
-func NewVBox (padding, margin bool) (element *VBox) {
-	element = &VBox { padding: padding, margin: margin }
+// NewHBox creates a new horizontal box.
+func NewHBox (padding, margin bool) (element *Box) {
+	element = &Box { padding: padding, margin: margin }
 	element.scratch = make(map[tomo.Element] scratchEntry)
-	element.theme.Case = tomo.C("tomo", "vBox")
+	element.theme.Case = tomo.C("tomo", "box")
 	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
 	return
 }
 
-func (element *VBox) Entity () tomo.Entity {
+// NewHBox creates a new vertical box.
+func NewVBox (padding, margin bool) (element *Box) {
+	element = NewHBox(padding, margin)
+	element.vertical = true
+	return
+}
+
+func (element *Box) Entity () tomo.Entity {
 	return element.entity
 }
 
-func (element *VBox) Draw (destination canvas.Canvas) {
+func (element *Box) Draw (destination canvas.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -43,14 +56,20 @@ func (element *VBox) Draw (destination canvas.Canvas) {
 	}
 }
 
-func (element *VBox) Layout () {
+func (element *Box) Layout () {
 	margin  := element.theme.Margin(tomo.PatternBackground)
 	padding := element.theme.Padding(tomo.PatternBackground)
 	bounds  := element.entity.Bounds()
 	if element.padding { bounds = padding.Apply(bounds) }
 
+	var marginSize float64; if element.vertical {
+		marginSize = float64(margin.Y)
+	} else {
+		marginSize = float64(margin.X)
+	}
+
 	freeSpace, nExpanding := element.freeSpace()
-	expandingElementHeight := freeSpace / nExpanding
+	expandingElementSize := freeSpace / nExpanding
 
 	// set the size and position of each element
 	x := float64(bounds.Min.X)
@@ -58,23 +77,31 @@ func (element *VBox) Layout () {
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		entry := element.scratch[element.entity.Child(index)]
 		
-		var height float64; if entry.expand {
-			height = expandingElementHeight
+		var size float64; if entry.expand {
+			size = expandingElementSize
 		} else {
-			height = entry.minimum
+			size = entry.minimum
 		}
 
-		element.entity.PlaceChild (index, tomo.Bounds (
-			int(x),      int(y),
-			bounds.Dx(), int(height)))
-			
-		y += height
-		if element.margin { y += float64(margin.Y) }
+		var childBounds image.Rectangle; if element.vertical {
+			childBounds = tomo.Bounds(int(x), int(y), bounds.Dx(), int(size))
+		} else {
+			childBounds = tomo.Bounds(int(x), int(y), int(size), bounds.Dy())
+		}
+		element.entity.PlaceChild(index, childBounds)
+
+		if element.vertical {
+			y += size
+			if element.margin { y += marginSize }
+		} else {
+			x += size
+			if element.margin { x += marginSize }
+		}
 	}
 
 }
 
-func (element *VBox) Adopt (child tomo.Element, expand bool) {
+func (element *Box) Adopt (child tomo.Element, expand bool) {
 	element.entity.Adopt(child)
 	element.scratch[child] = scratchEntry { expand: expand }
 	element.updateMinimumSize()
@@ -82,7 +109,7 @@ func (element *VBox) Adopt (child tomo.Element, expand bool) {
 	element.entity.InvalidateLayout()
 }
 
-func (element *VBox) Disown (child tomo.Element) {
+func (element *Box) Disown (child tomo.Element) {
 	index := element.entity.IndexOf(child)
 	if index < 0 { return }
 	element.entity.Disown(index)
@@ -92,7 +119,7 @@ func (element *VBox) Disown (child tomo.Element) {
 	element.entity.InvalidateLayout()
 }
 
-func (element *VBox) DisownAll () {
+func (element *Box) DisownAll () {
 	func () {
 		for index := 0; index < element.entity.CountChildren(); index ++ {
 			index := index
@@ -105,18 +132,18 @@ func (element *VBox) DisownAll () {
 	element.entity.InvalidateLayout()
 }
 
-func (element *VBox) HandleChildMinimumSizeChange (child tomo.Element) {
+func (element *Box) HandleChildMinimumSizeChange (child tomo.Element) {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
 
-func (element *VBox) DrawBackground (destination canvas.Canvas) {
+func (element *Box) DrawBackground (destination canvas.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 
 // SetTheme sets the element's theme.
-func (element *VBox) SetTheme (theme tomo.Theme) {
+func (element *Box) SetTheme (theme tomo.Theme) {
 	if theme == element.theme.Theme { return }
 	element.theme.Theme = theme
 	element.updateMinimumSize()
@@ -124,10 +151,21 @@ func (element *VBox) SetTheme (theme tomo.Theme) {
 	element.entity.InvalidateLayout()
 }
 
-func (element *VBox) freeSpace () (space float64, nExpanding float64) {
+func (element *Box) freeSpace () (space float64, nExpanding float64) {
 	margin  := element.theme.Margin(tomo.PatternBackground)
 	padding := element.theme.Padding(tomo.PatternBackground)
-	space    = float64(element.entity.Bounds().Dy())
+
+	var marginSize int; if element.vertical {
+		marginSize = margin.Y
+	} else {
+		marginSize = margin.X
+	}
+	
+	if element.vertical {
+		space = float64(element.entity.Bounds().Dy())
+	} else {
+		space = float64(element.entity.Bounds().Dx())
+	}
 
 	for _, entry := range element.scratch {
 		if entry.expand {
@@ -141,32 +179,48 @@ func (element *VBox) freeSpace () (space float64, nExpanding float64) {
 		space -= float64(padding.Vertical())
 	}
 	if element.margin {
-		space -= float64(margin.Y * (len(element.scratch) - 1))
+		space -= float64(marginSize * (len(element.scratch) - 1))
 	}
 
 	return
 }
 
-func (element *VBox) updateMinimumSize () {
+func (element *Box) updateMinimumSize () {
 	margin  := element.theme.Margin(tomo.PatternBackground)
 	padding := element.theme.Padding(tomo.PatternBackground)
-	var width, height int
+	var breadth, size int
+	var marginSize int; if element.vertical {
+		marginSize = margin.Y
+	} else {
+		marginSize = margin.X
+	}
 	
 	for index := 0; index < element.entity.CountChildren(); index ++ {
-		childWidth, childHeight :=  element.entity.ChildMinimumSize(index)
+		childWidth, childHeight := element.entity.ChildMinimumSize(index)
+		var childBreadth, childSize int; if element.vertical {
+			childBreadth, childSize = childWidth, childHeight
+		} else {
+			childBreadth, childSize = childHeight, childWidth
+		}
 		
 		key   := element.entity.Child(index)
 		entry := element.scratch[key]
-		entry.minimum = float64(childHeight)
+		entry.minimum = float64(childSize)
 		element.scratch[key] = entry
 		
-		if childWidth > width {
-			width = childWidth
+		if childBreadth > breadth {
+			breadth = childBreadth
 		}
-		height += childHeight
+		size += childSize
 		if element.margin && index > 0 {
-			height += margin.Y
+			size += marginSize
 		}
+	}
+
+	var width, height int; if element.vertical {
+		width, height = breadth, size
+	} else {
+		width, height = size, breadth
 	}
 
 	if element.padding {

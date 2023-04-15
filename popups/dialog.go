@@ -2,7 +2,6 @@ package popups
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
@@ -15,6 +14,8 @@ const (
 	DialogKindWarning
 	DialogKindError
 )
+
+// TODO: add ability to have an icon for buttons
 
 // Button represents a dialog response button.
 type Button struct {
@@ -42,11 +43,11 @@ func NewDialog (
 		window, _ = parent.NewModal(image.Rectangle { })
 	}
 	window.SetTitle(title)
+	
+	box        := containers.NewVBox(true,  true)
+	messageRow := containers.NewHBox(false, true)
+	controlRow := containers.NewHBox(false, true)
 
-	container := containers.NewContainer(layouts.Dialog { true, true })
-	window.Adopt(container)
-
-	messageContainer := containers.NewContainer(layouts.Horizontal { true, false })
 	iconId := tomo.IconInformation
 	switch kind {
 	case DialogKindInfo:     iconId = tomo.IconInformation
@@ -55,15 +56,15 @@ func NewDialog (
 	case DialogKindError:    iconId = tomo.IconError
 	}
 	
-	messageContainer.Adopt(elements.NewIcon(iconId, tomo.IconSizeLarge), false)
-	messageContainer.Adopt(elements.NewLabel(message, false), true)
-	container.Adopt(messageContainer, true)
+	messageRow.Adopt(elements.NewIcon(iconId, tomo.IconSizeLarge), false)
+	messageRow.Adopt(elements.NewLabel(message, false), true)
 	
+	controlRow.Adopt(elements.NewSpacer(false), true)
 	if len(buttons) == 0 {
 		button := elements.NewButton("OK")
 		button.SetIcon(tomo.IconYes)
 		button.OnClick(window.Close)
-		container.Adopt(button, false)
+		controlRow.Adopt(button, false)
 		button.Focus()
 	} else {
 		var button *elements.Button
@@ -74,11 +75,14 @@ func NewDialog (
 				buttonDescriptor.OnPress()
 				window.Close()
 			})
-			container.Adopt(button, false)
+			controlRow.Adopt(button, false)
 		}
 		button.Focus()
 	}
 	
+	box.Adopt(messageRow, true)
+	box.Adopt(controlRow, false)
+	window.Adopt(box)
 	window.Show()
 	return
 }
