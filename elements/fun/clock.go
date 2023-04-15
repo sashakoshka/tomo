@@ -8,7 +8,6 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // AnalogClock can display the time of day in an analog format.
 type AnalogClock struct {
@@ -22,7 +21,7 @@ func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 	element = &AnalogClock { }
 	element.theme.Case = tomo.C("tomo", "clock")
 	element.entity = tomo.NewEntity(element)
-	element.core.SetMinimumSize(64, 64)
+	element.entity.SetMinimumSize(64, 64)
 	return
 }
 
@@ -33,12 +32,12 @@ func (element *AnalogClock) Entity () tomo.Entity {
 
 // Draw causes the element to draw to the specified destination canvas.
 func (element *AnalogClock) Draw (destination canvas.Canvas) {
-	bounds := element.Bounds()
+	bounds := element.entity.Bounds()
 
 	state   := tomo.State { }
 	pattern := element.theme.Pattern(tomo.PatternSunken, state)
 	padding := element.theme.Padding(tomo.PatternSunken)
-	pattern.Draw(element.core, bounds)
+	pattern.Draw(destination, bounds)
 
 	bounds = padding.Apply(bounds)
 
@@ -47,6 +46,7 @@ func (element *AnalogClock) Draw (destination canvas.Canvas) {
 
 	for hour := 0; hour < 12; hour ++ {
 		element.radialLine (
+			destination,
 			foreground,
 			0.8, 0.9, float64(hour) / 6 * math.Pi)
 	}
@@ -90,5 +90,5 @@ func (element *AnalogClock) radialLine (
 	max := bounds.Min.Add(image.Pt (
 		int(math.Cos(radian) * outer * width + width),
 		int(math.Sin(radian) * outer * height + height)))
-	shapes.ColorLine(element.core, source, 1, min, max)
+	shapes.ColorLine(destination, source, 1, min, max)
 }

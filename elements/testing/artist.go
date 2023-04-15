@@ -20,13 +20,15 @@ type Artist struct {
 }
 
 // NewArtist creates a new artist test element.
-func NewArtist () *Artist {
-	return &Artist { }
+func NewArtist () (element *Artist) {
+	element = &Artist { }
+	element.entity = tomo.NewEntity(element)
+	element.entity.SetMinimumSize(240, 240)
+	return
 }
 
-func (element *Artist) Bind (entity tomo.Entity) {
-	element.entity = entity
-	if entity != nil { entity.SetMinimumSize(240, 240) }
+func (element *Artist) Entity () tomo.Entity {
+	return element.entity
 }
 
 func (element *Artist) Draw (destination canvas.Canvas) {

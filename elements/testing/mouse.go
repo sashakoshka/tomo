@@ -24,12 +24,13 @@ type Mouse struct {
 func NewMouse () (element *Mouse) {
 	element = &Mouse { }
 	element.theme.Case = tomo.C("tomo", "mouse")
+	element.entity = tomo.NewEntity(element)
+	element.entity.SetMinimumSize(32, 32)
 	return
 }
 
-func (element *Mouse) Bind (entity tomo.Entity) {
-	element.entity = entity
-	entity.SetMinimumSize(32, 32)
+func (element *Mouse) Entity () tomo.Entity {
+	return element.entity
 }
 
 func (element *Mouse) Draw (destination canvas.Canvas) {
