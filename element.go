@@ -28,7 +28,7 @@ type Container interface {
 
 	// HandleChildMinimumSizeChange is called when a child's minimum size is
 	// changed.
-	HandleChildMinimumSizeChange ()
+	HandleChildMinimumSizeChange (child Element)
 }
 
 // Focusable represents an element that has keyboard navigation support.
@@ -115,7 +115,7 @@ type FlexibleContainer interface {
 
 	// HandleChildFlexibleHeightChange is called when the parameters
 	// affecting a child's flexible height are changed.
-	HandleChildFlexibleHeightChange ()
+	HandleChildFlexibleHeightChange (child Flexible)
 }
 
 // Scrollable represents an element that can be scrolled. It acts as a viewport
@@ -145,7 +145,7 @@ type ScrollableContainer interface {
 
 	// HandleChildScrollBoundsChange is called when the content bounds,
 	// viewport bounds, or scroll axes of a child are changed.
-	HandleChildScrollBoundsChange()
+	HandleChildScrollBoundsChange (child Scrollable)
 }
 
 // Collapsible represents an element who's minimum width and height can be

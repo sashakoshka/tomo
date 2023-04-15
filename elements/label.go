@@ -153,8 +153,7 @@ func (element *Label) updateMinimumSize () {
 			em = element.theme.Padding(tomo.PatternBackground)[0]
 		}
 		width, height = em, element.drawer.LineHeight().Round()
-		// FIXME we shoudl not have to pass in the element here
-		element.entity.NotifyFlexibleHeightChange(element)
+		element.entity.NotifyFlexibleHeightChange()
 	} else {
 		bounds := element.drawer.LayoutBounds()
 		width, height = bounds.Dx(), bounds.Dy()

@@ -79,7 +79,8 @@ func (entity *entity) SetMinimumSize (width, height int) {
 	if entity.parent == nil {
 		entity.window.setMinimumSize(width, height)
 	} else {
-		entity.parent.element.(tomo.Container).HandleChildMinimumSizeChange()
+		entity.parent.element.(tomo.Container).
+			HandleChildMinimumSizeChange(entity.element)
 	}
 }
 
@@ -172,10 +173,11 @@ func (entity *entity) FocusPrevious () {
 
 // ----------- FlexibleEntity ----------- //
 
-func (entity *entity) NotifyFlexibleHeightChange (child tomo.Flexible) {
+func (entity *entity) NotifyFlexibleHeightChange () {
 	if entity.parent == nil { return }
 	if parent, ok := entity.parent.element.(tomo.FlexibleContainer); ok {
-		parent.HandleChildFlexibleHeightChange()
+		parent.HandleChildFlexibleHeightChange (
+			entity.element.(tomo.Flexible))
 	}
 }
 
@@ -184,6 +186,7 @@ func (entity *entity) NotifyFlexibleHeightChange (child tomo.Flexible) {
 func (entity *entity) NotifyScrollBoundsChange () {
 	if entity.parent == nil { return }
 	if parent, ok := entity.parent.element.(tomo.ScrollableContainer); ok {
-		parent.HandleChildScrollBoundsChange()
+		parent.HandleChildScrollBoundsChange (
+			entity.element.(tomo.Scrollable))
 	}
 }

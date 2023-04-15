@@ -91,20 +91,19 @@ type FlexibleEntity interface {
 	Entity
 
 	// NotifyFlexibleHeightChange notifies the system that the parameters
-	// affecting a child's flexible height have changed. This method is
-	// expected to be called by flexible child element when their content
-	// changes.
-	NotifyFlexibleHeightChange (child Flexible)
+	// affecting the element's flexible height have changed. This method is
+	// expected to be called by flexible elements when their content changes.
+	NotifyFlexibleHeightChange ()
 }
 
 // ScrollableEntity is given to elements that support the Scrollable interface.
 type ScrollableEntity interface {
 	Entity
 	
-	// NotifyScrollBoundsChange notifies the parent that a child's scroll
-	// content bounds or viewport bounds have changed. This is expected to
-	// be called by child elements when they change their supported scroll
-	// axes, their scroll position (either autonomously or as a result of a
-	// call to ScrollTo()), or their content size.
-	NotifyScrollBoundsChange (child Scrollable)
+	// NotifyScrollBoundsChange notifies the system that the element's
+	// scroll content bounds or viewport bounds have changed. This is
+	// expected to be called by scrollable elements when they change their
+	// supported scroll axes, their scroll position (either autonomously or
+	// as a result of a call to ScrollTo()), or their content size.
+	NotifyScrollBoundsChange ()
 }
