@@ -94,6 +94,10 @@ func (element *Slider) SetEnabled (enabled bool) {
 	element.entity.Invalidate()
 }
 
+func (element *Slider) HandleFocusChange () {
+	element.entity.Invalidate()
+}
+
 func (element *Slider) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled() { return }
 	element.Focus()

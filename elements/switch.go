@@ -97,6 +97,10 @@ func (element *Switch) Draw (destination canvas.Canvas) {
 	element.drawer.Draw(destination, foreground, offset)
 }
 
+func (element *Switch) HandleFocusChange () {
+	element.entity.Invalidate()
+}
+
 func (element *Switch) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled() { return }
 	element.Focus()

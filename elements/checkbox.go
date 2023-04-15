@@ -126,6 +126,10 @@ func (element *Checkbox) SetConfig (new tomo.Config) {
 	element.entity.Invalidate()
 }
 
+func (element *Checkbox) HandleFocusChange () {
+	element.entity.Invalidate()
+}
+
 func (element *Checkbox) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled() { return }
 	element.Focus()

@@ -134,6 +134,10 @@ func (element *TextBox) Draw (destination canvas.Canvas) {
 	}
 }
 
+func (element *TextBox) HandleFocusChange () {
+	element.entity.Invalidate()
+}
+
 func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled() { return }
 	element.Focus()
