@@ -34,8 +34,10 @@ func (ent *entity) unlink () {
 		delete(ent.window.system.drawingInvalid, child)
 		return true
 	})
-	
-	delete(ent.window.system.drawingInvalid, ent)
+
+	if ent.window != nil {
+		delete(ent.window.system.drawingInvalid, ent)
+	}
 	ent.parent = nil
 	ent.window = nil
 }
