@@ -41,6 +41,36 @@ func (element *Checkbox) Entity () tomo.Entity {
 	return element.entity
 }
 
+// Draw causes the element to draw to the specified destination canvas.
+func (element *Checkbox) Draw (destination canvas.Canvas) {
+	bounds := element.entity.Bounds()
+	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
+
+	state := tomo.State {
+		Disabled: !element.Enabled(),
+		Focused:  element.entity.Focused(),
+		Pressed:  element.pressed,
+		On:       element.checked,
+	}
+
+	element.entity.DrawBackground(destination)
+		
+	pattern := element.theme.Pattern(tomo.PatternButton, state)
+	pattern.Draw(destination, boxBounds)
+
+	textBounds := element.drawer.LayoutBounds()
+	margin := element.theme.Margin(tomo.PatternBackground)
+	offset := bounds.Min.Add(image.Point {
+		X: bounds.Dy() + margin.X,
+	})
+
+	offset.Y -= textBounds.Min.Y
+	offset.X -= textBounds.Min.X
+
+	foreground := element.theme.Color(tomo.ColorForeground, state)
+	element.drawer.Draw(destination, foreground, offset)
+}
+
 // OnToggle sets the function to be called when the checkbox is toggled.
 func (element *Checkbox) OnToggle (callback func ()) {
 	element.onToggle = callback
@@ -94,36 +124,6 @@ func (element *Checkbox) SetConfig (new tomo.Config) {
 	element.config.Config = new
 	element.updateMinimumSize()
 	element.entity.Invalidate()
-}
-
-// Draw causes the element to draw to the specified destination canvas.
-func (element *Checkbox) Draw (destination canvas.Canvas) {
-	bounds := element.entity.Bounds()
-	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
-
-	state := tomo.State {
-		Disabled: !element.Enabled(),
-		Focused:  element.entity.Focused(),
-		Pressed:  element.pressed,
-		On:       element.checked,
-	}
-
-	element.entity.DrawBackground(destination)
-		
-	pattern := element.theme.Pattern(tomo.PatternButton, state)
-	pattern.Draw(destination, boxBounds)
-
-	textBounds := element.drawer.LayoutBounds()
-	margin := element.theme.Margin(tomo.PatternBackground)
-	offset := bounds.Min.Add(image.Point {
-		X: bounds.Dy() + margin.X,
-	})
-
-	offset.Y -= textBounds.Min.Y
-	offset.X -= textBounds.Min.X
-
-	foreground := element.theme.Color(tomo.ColorForeground, state)
-	element.drawer.Draw(destination, foreground, offset)
 }
 
 func (element *Checkbox) HandleMouseDown (x, y int, button input.Button) {

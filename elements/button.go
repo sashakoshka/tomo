@@ -44,6 +44,63 @@ func (element *Button) Entity () tomo.Entity {
 	return element.entity
 }
 
+// Draw causes the element to draw to the specified destination canvas.
+func (element *Button) Draw (destination canvas.Canvas) {
+	state   := element.state()
+	bounds  := element.entity.Bounds()
+	pattern := element.theme.Pattern(tomo.PatternButton, state)
+
+	pattern.Draw(destination, bounds)
+	
+	foreground := element.theme.Color(tomo.ColorForeground, state)
+	sink       := element.theme.Sink(tomo.PatternButton)
+	margin     := element.theme.Margin(tomo.PatternButton)
+	
+	offset := image.Pt (
+		bounds.Dx() / 2,
+		bounds.Dy() / 2).Add(bounds.Min)
+
+	if element.showText {
+		textBounds := element.drawer.LayoutBounds()
+		offset.X -= textBounds.Dx() / 2
+		offset.Y -= textBounds.Dy() / 2
+		offset.Y -= textBounds.Min.Y
+		offset.X -= textBounds.Min.X
+	}
+
+	if element.hasIcon {
+		icon := element.theme.Icon(element.iconId, tomo.IconSizeSmall) 
+		if icon != nil {
+			iconBounds := icon.Bounds()
+			addedWidth := iconBounds.Dx()
+			iconOffset := offset
+
+			if element.showText {
+				addedWidth += margin.X
+			}
+			
+			iconOffset.X -= addedWidth / 2
+			iconOffset.Y =
+				bounds.Min.Y +
+				(bounds.Dy() -
+				iconBounds.Dy()) / 2
+			if element.pressed {
+				iconOffset = iconOffset.Add(sink)
+			}
+			offset.X += addedWidth / 2
+
+			icon.Draw(destination, foreground, iconOffset)
+		}
+	}
+
+	if element.showText {
+		if element.pressed {
+			offset = offset.Add(sink)
+		}
+		element.drawer.Draw(destination, foreground, offset)
+	}
+}
+
 // OnClick sets the function to be called when the button is clicked.
 func (element *Button) OnClick (callback func ()) {
 	element.onClick = callback
@@ -114,63 +171,6 @@ func (element *Button) SetConfig (new tomo.Config) {
 	element.config.Config = new
 	element.updateMinimumSize()
 	element.entity.Invalidate()
-}
-
-// Draw causes the element to draw to the specified destination canvas.
-func (element *Button) Draw (destination canvas.Canvas) {
-	state   := element.state()
-	bounds  := element.entity.Bounds()
-	pattern := element.theme.Pattern(tomo.PatternButton, state)
-
-	pattern.Draw(destination, bounds)
-	
-	foreground := element.theme.Color(tomo.ColorForeground, state)
-	sink       := element.theme.Sink(tomo.PatternButton)
-	margin     := element.theme.Margin(tomo.PatternButton)
-	
-	offset := image.Pt (
-		bounds.Dx() / 2,
-		bounds.Dy() / 2).Add(bounds.Min)
-
-	if element.showText {
-		textBounds := element.drawer.LayoutBounds()
-		offset.X -= textBounds.Dx() / 2
-		offset.Y -= textBounds.Dy() / 2
-		offset.Y -= textBounds.Min.Y
-		offset.X -= textBounds.Min.X
-	}
-
-	if element.hasIcon {
-		icon := element.theme.Icon(element.iconId, tomo.IconSizeSmall) 
-		if icon != nil {
-			iconBounds := icon.Bounds()
-			addedWidth := iconBounds.Dx()
-			iconOffset := offset
-
-			if element.showText {
-				addedWidth += margin.X
-			}
-			
-			iconOffset.X -= addedWidth / 2
-			iconOffset.Y =
-				bounds.Min.Y +
-				(bounds.Dy() -
-				iconBounds.Dy()) / 2
-			if element.pressed {
-				iconOffset = iconOffset.Add(sink)
-			}
-			offset.X += addedWidth / 2
-
-			icon.Draw(destination, foreground, iconOffset)
-		}
-	}
-
-	if element.showText {
-		if element.pressed {
-			offset = offset.Add(sink)
-		}
-		element.drawer.Draw(destination, foreground, offset)
-	}
 }
 
 func (element *Button) HandleFocusChange () {
