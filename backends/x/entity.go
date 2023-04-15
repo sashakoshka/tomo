@@ -63,7 +63,7 @@ func (ent *entity) setWindow (window *window) {
 
 func (entity *entity) propagate (callback func (*entity) bool) {
 	for _, child := range entity.children {
-		if callback(child) { break }
+		if !callback(child) { break }
 		child.propagate(callback)
 	}
 }

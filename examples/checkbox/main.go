@@ -1,8 +1,7 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
+// import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
@@ -15,7 +14,7 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Checkboxes")
 
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := containers.NewVBox(true, true)
 	window.Adopt(container)
 
 	introText := elements.NewLabel (
@@ -35,11 +34,11 @@ func run () {
 	vsync := elements.NewCheckbox("Enable vsync", false)
 	vsync.OnToggle (func () {
 		if vsync.Value() {
-			popups.NewDialog (
-				popups.DialogKindInfo,
-				window,
-				"Ha!",
-				"That doesn't do anything.")
+			// popups.NewDialog (
+				// popups.DialogKindInfo,
+				// window,
+				// "Ha!",
+				// "That doesn't do anything.")
 		}
 	})
 	container.Adopt(vsync, false)
