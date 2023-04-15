@@ -3,6 +3,7 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
@@ -18,6 +19,8 @@ import "git.tebibyte.media/sashakoshka/tomo/default/config"
 // Typically, you wont't want to use a ScrollBar by itself. A ScrollContainer is
 // better for most cases.
 type ScrollBar struct {
+	entity tomo.ContainerEntity
+
 	vertical bool
 	enabled  bool
 	dragging bool
@@ -46,16 +49,31 @@ func NewScrollBar (vertical bool) (element *ScrollBar) {
 	} else {
 		element.theme.Case = tomo.C("tomo", "scrollBarVertical")
 	}
-	element.Core, element.core = core.NewCore(element, element.handleResize)
+	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
 	element.updateMinimumSize()
 	return
 }
 
-func (element *ScrollBar) handleResize () {
-	if element.core.HasImage() {
-		element.recalculate()
-		element.draw()
+// Entity returns this element's entity.
+func (element *ScrollBar) Entity () tomo.Entity {
+	return element.entity
+}
+
+// Draw causes the element to draw to the specified destination canvas.
+func (element *ScrollBar) Draw (destination canvas.Canvas) {
+	element.recalculate()
+
+	bounds := element.entity.Bounds()
+	state := tomo.State {
+		Disabled: !element.Enabled(),
+		Pressed:  element.dragging,
 	}
+	element.theme.Pattern(tomo.PatternGutter, state).Draw (
+		destination,
+		bounds)
+	element.theme.Pattern(tomo.PatternHandle, state).Draw (
+		destination,
+		element.bar)
 }
 
 func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
@@ -65,10 +83,10 @@ func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
 	if point.In(element.bar) {
 		// the mouse is pressed down within the bar's handle
 		element.dragging   = true
-		element.drawAndPush()
+		element.entity.Invalidate()
 		element.dragOffset =
 			point.Sub(element.bar.Min).
-			Add(element.Bounds().Min)
+			Add(element.entity.Bounds().Min)
 		element.dragTo(point)
 	} else {
 		// the mouse is pressed down within the bar's gutter
@@ -108,7 +126,7 @@ func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
 func (element *ScrollBar) HandleMouseUp (x, y int, button input.Button) {
 	if element.dragging {
 		element.dragging = false
-		element.drawAndPush()
+		element.entity.Invalidate()
 	}
 }
 
@@ -130,7 +148,7 @@ func (element *ScrollBar) HandleScroll (x, y int, deltaX, deltaY float64) {
 func (element *ScrollBar) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
-	element.drawAndPush()
+	element.entity.Invalidate()
 }
 
 // Enabled returns whether or not the element is enabled.
@@ -142,8 +160,7 @@ func (element *ScrollBar) Enabled () (enabled bool) {
 func (element *ScrollBar) SetBounds (content, viewport image.Rectangle) {
 	element.contentBounds  = content
 	element.viewportBounds = viewport
-	element.recalculate()
-	element.drawAndPush()
+	element.entity.Invalidate()
 }
 
 // OnScroll sets a function to be called when the user tries to move the scroll
@@ -159,7 +176,7 @@ func (element *ScrollBar) OnScroll (callback func (viewport image.Point)) {
 func (element *ScrollBar) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
-	element.drawAndPush()
+	element.entity.Invalidate()
 }
 
 // SetConfig sets the element's configuration.
@@ -167,7 +184,7 @@ func (element *ScrollBar) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
-	element.drawAndPush()
+	element.entity.Invalidate()
 }
 
 func (element *ScrollBar) isAfterHandle (point image.Point) bool {
@@ -180,10 +197,10 @@ func (element *ScrollBar) isAfterHandle (point image.Point) bool {
 
 func (element *ScrollBar) fallbackDragOffset () image.Point {
 	if element.vertical {
-		return element.Bounds().Min.
+		return element.entity.Bounds().Min.
 			Add(image.Pt(0, element.bar.Dy() / 2))
 	} else {
-		return element.Bounds().Min.
+		return element.entity.Bounds().Min.
 			Add(image.Pt(element.bar.Dx() / 2, 0))
 	}
 }
@@ -232,7 +249,7 @@ func (element *ScrollBar) recalculate () {
 }
 
 func (element *ScrollBar) recalculateVertical () {
-	bounds := element.Bounds()
+	bounds := element.entity.Bounds()
 	padding := element.theme.Padding(tomo.PatternGutter)
 	element.track = padding.Apply(bounds)
 
@@ -259,7 +276,7 @@ func (element *ScrollBar) recalculateVertical () {
 }
 
 func (element *ScrollBar) recalculateHorizontal () {
-	bounds := element.Bounds()
+	bounds := element.entity.Bounds()
 	padding := element.theme.Padding(tomo.PatternGutter)
 	element.track = padding.Apply(bounds)
 
@@ -289,33 +306,12 @@ func (element *ScrollBar) updateMinimumSize () {
 	gutterPadding := element.theme.Padding(tomo.PatternGutter)
 	handlePadding := element.theme.Padding(tomo.PatternHandle)
 	if element.vertical {
-		element.core.SetMinimumSize (
+		element.entity.SetMinimumSize (
 			gutterPadding.Horizontal() + handlePadding.Horizontal(),
 			gutterPadding.Vertical()   + handlePadding.Vertical() * 2)
 	} else {
-		element.core.SetMinimumSize (
+		element.entity.SetMinimumSize (
 			gutterPadding.Horizontal() + handlePadding.Horizontal() * 2,
 			gutterPadding.Vertical()   + handlePadding.Vertical())
 	}
-}
-
-func (element *ScrollBar) drawAndPush () {
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
-}
-
-func (element *ScrollBar) draw () {
-	bounds := element.Bounds()
-	state := tomo.State {
-		Disabled: !element.Enabled(),
-		Pressed:  element.dragging,
-	}
-	element.theme.Pattern(tomo.PatternGutter, state).Draw (
-		element.core,
-		bounds)
-	element.theme.Pattern(tomo.PatternHandle, state).Draw (
-		element.core,
-		element.bar)
 }
