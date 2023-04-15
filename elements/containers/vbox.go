@@ -141,7 +141,7 @@ func (element *VBox) freeSpace () (space float64, nExpanding float64) {
 		space -= float64(padding.Vertical())
 	}
 	if element.margin {
-		space -= float64(margin.Y * len(element.scratch) - 1)
+		space -= float64(margin.Y * (len(element.scratch) - 1))
 	}
 
 	return
