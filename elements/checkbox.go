@@ -65,7 +65,6 @@ func (element *Checkbox) Enabled () bool {
 func (element *Checkbox) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
-	if element.entity == nil { return }
 	element.entity.Invalidate()
 }
 
@@ -150,7 +149,6 @@ func (element *Checkbox) HandleMouseUp (x, y int, button input.Button) {
 }
 
 func (element *Checkbox) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
-	if element.entity == nil { return }
 	if key == input.KeyEnter {
 		element.pressed = true
 		element.entity.Invalidate()

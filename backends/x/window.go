@@ -153,6 +153,9 @@ func (window *window) Adopt (child tomo.Element) {
 		if ok && childEntity != nil {
 			window.child = childEntity
 			childEntity.setWindow(window)
+			window.setMinimumSize (
+				childEntity.minWidth,
+				childEntity.minHeight)
 			window.resizeChildToFit()
 		}
 	}

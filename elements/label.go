@@ -51,7 +51,6 @@ func (element *Label) Entity () tomo.Entity {
 func (element *Label) EmCollapse (columns int, rows int) {
 	element.forcedColumns = columns
 	element.forcedRows    = rows
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 }
 
@@ -71,7 +70,6 @@ func (element *Label) SetText (text string) {
 
 	element.text = text
 	element.drawer.SetText([]rune(text))
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -87,7 +85,6 @@ func (element *Label) SetWrap (wrap bool) {
 		element.drawer.SetMaxHeight(0)
 	}
 	element.wrap = wrap
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -97,7 +94,6 @@ func (element *Label) SetAlign (align textdraw.Align) {
 	if align == element.align { return }
 	element.align = align
 	element.drawer.SetAlign(align)
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -109,7 +105,6 @@ func (element *Label) SetTheme (new tomo.Theme) {
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
 		tomo.FontSizeNormal))
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -118,15 +113,12 @@ func (element *Label) SetTheme (new tomo.Theme) {
 func (element *Label) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
-	if element.entity == nil { return }
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
 
 // Draw causes the element to draw to the specified destination canvas.
 func (element *Label) Draw (destination canvas.Canvas) {
-	if element.entity == nil { return }
-	
 	bounds := element.entity.Bounds()
 	
 	if element.wrap {
