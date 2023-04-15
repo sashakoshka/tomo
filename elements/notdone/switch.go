@@ -4,17 +4,12 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Switch is a toggle-able on/off switch with an optional label. It is
 // functionally identical to Checkbox, but plays a different semantic role.
 type Switch struct {
-	*core.Core
-	*core.FocusableCore
-	core core.CoreControl
-	focusableControl core.FocusableCoreControl
 	drawer textdraw.Drawer
 
 	pressed bool

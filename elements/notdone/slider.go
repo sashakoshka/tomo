@@ -3,17 +3,11 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Slider is a slider control with a floating point value between zero and one.
 type Slider struct {
-	*core.Core
-	*core.FocusableCore
-	core core.CoreControl
-	focusableControl core.FocusableCoreControl
-
 	value   float64
 	vertical bool
 	dragging bool

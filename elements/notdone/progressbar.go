@@ -2,14 +2,11 @@ package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // ProgressBar displays a visual indication of how far along a task is.
 type ProgressBar struct {
-	*core.Core
-	core core.CoreControl
 	progress float64
 	
 	config config.Wrapped

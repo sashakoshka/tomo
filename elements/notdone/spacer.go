@@ -1,14 +1,11 @@
 package elements
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Spacer can be used to put space between two elements..
 type Spacer struct {
-	*core.Core
-	core core.CoreControl
 	line bool
 	
 	config config.Wrapped

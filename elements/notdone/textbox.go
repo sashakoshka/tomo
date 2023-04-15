@@ -12,17 +12,11 @@ import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // TextBox is a single-line text input.
 type TextBox struct {
-	*core.Core
-	*core.FocusableCore
-	core core.CoreControl
-	focusableControl core.FocusableCoreControl
-
 	lastClick   time.Time
 	dragging    int
 	dot         textmanip.Dot

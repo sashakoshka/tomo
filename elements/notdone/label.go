@@ -39,8 +39,8 @@ func NewLabel (text string, wrap bool) (element *Label) {
 
 // Bind binds this element to an entity.
 func (element *Label) Bind (entity tomo.Entity) {
-	if entity == nil { element.entity = nil; return }
 	element.entity = entity.(tomo.FlexibleEntity)
+	if element.entity == nil { return }
 	element.updateMinimumSize()
 }
 

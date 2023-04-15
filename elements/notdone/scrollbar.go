@@ -3,7 +3,6 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
@@ -19,9 +18,6 @@ import "git.tebibyte.media/sashakoshka/tomo/default/config"
 // Typically, you wont't want to use a ScrollBar by itself. A ScrollContainer is
 // better for most cases.
 type ScrollBar struct {
-	*core.Core
-	core core.CoreControl
-
 	vertical bool
 	enabled  bool
 	dragging bool

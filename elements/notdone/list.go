@@ -6,17 +6,18 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
+type listEntity interface {
+	tomo.FlexibleEntity
+	tomo.ContainerEntity
+	tomo.ScrollableEntity
+}
+
 // List is an element that contains several objects that a user can select.
 type List struct {
-	*core.Core
-	*core.FocusableCore
-	core core.CoreControl
-	focusableControl core.FocusableCoreControl
-
+	entity listEntity
 	pressed bool
 	
 	contentHeight int
@@ -25,7 +26,6 @@ type List struct {
 	
 	selectedEntry int
 	scroll int
-	entries []ListEntry
 	
 	config config.Wrapped
 	theme  theme.Wrapped
@@ -38,34 +38,12 @@ type List struct {
 func NewList (entries ...ListEntry) (element *List) {
 	element = &List { selectedEntry: -1 }
 	element.theme.Case = tomo.C("tomo", "list")
-	element.Core, element.core = core.NewCore(element, element.handleResize)
-	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore (element.core, func () {
-		if element.core.HasImage () {
-			element.draw()
-			element.core.DamageAll()
-		}
-	})
 	
 	element.entries = make([]ListEntry, len(entries))
 	for index, entry := range entries {
 		element.entries[index] = entry
 	}
-	
-	element.updateMinimumSize()
 	return
-}
-
-func (element *List) handleResize () {
-	for index, entry := range element.entries {
-		element.entries[index] = element.resizeEntryToFit(entry)
-	}
-
-	if element.scroll > element.maxScrollHeight() {
-		element.scroll = element.maxScrollHeight()
-	}
-	element.draw()
-	element.scrollBoundsChange()
 }
 
 // SetTheme sets the element's theme.
@@ -77,7 +55,7 @@ func (element *List) SetTheme (new tomo.Theme) {
 		element.entries[index] = entry
 	}
 	element.updateMinimumSize()
-	element.redo()
+	element.entity.Invalidate()
 }
 
 // SetConfig sets the element's configuration.
@@ -90,18 +68,6 @@ func (element *List) SetConfig (new tomo.Config) {
 	}
 	element.updateMinimumSize()
 	element.redo()
-}
-
-func (element *List) redo () {
-	for index, entry := range element.entries {
-		element.entries[index] = element.resizeEntryToFit(entry)
-	}
-
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-	element.scrollBoundsChange()
 }
 
 // Collapse forces a minimum width and height upon the list. If a zero value is
@@ -211,19 +177,6 @@ func (element *List) ScrollTo (position image.Point) {
 // ScrollAxes returns the supported axes for scrolling.
 func (element *List) ScrollAxes () (horizontal, vertical bool) {
 	return false, true
-}
-
-func (element *List) scrollViewportHeight () (height int) {
-	padding := element.theme.Padding(tomo.PatternSunken)
-	return element.Bounds().Dy() - padding[0] - padding[2]
-}
-
-func (element *List) maxScrollHeight () (height int) {
-	height =
-		element.contentHeight -
-		element.scrollViewportHeight()
-	if height < 0 { height = 0 }
-	return
 }
 
 // OnNoEntrySelected sets a function to be called when the user chooses to
@@ -443,7 +396,32 @@ func (element *List) scrollBoundsChange () {
 	}
 }
 
-func (element *List) draw () {
+func (element *List) scrollViewportHeight () (height int) {
+	padding := element.theme.Padding(tomo.PatternSunken)
+	return element.Bounds().Dy() - padding[0] - padding[2]
+}
+
+func (element *List) maxScrollHeight () (height int) {
+	height =
+		element.contentHeight -
+		element.scrollViewportHeight()
+	if height < 0 { height = 0 }
+	return
+}
+
+func (element *List) Layout () {
+	for index, entry := range element.entries {
+		element.entries[index] = element.resizeEntryToFit(entry)
+	}
+
+	if element.scroll > element.maxScrollHeight() {
+		element.scroll = element.maxScrollHeight()
+	}
+	element.draw()
+	element.scrollBoundsChange()
+}
+
+func (element *List) Draw (destination canvas.Canvas) {
 	bounds      := element.Bounds()
 	padding     := element.theme.Padding(tomo.PatternSunken)
 	innerBounds := padding.Apply(bounds)
