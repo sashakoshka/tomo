@@ -37,6 +37,9 @@ type Container interface {
 type Focusable interface {
 	Element
 
+	// Enabled returns whether or not the element can currently accept focus.
+	Enabled () bool
+
 	// HandleFocusChange is called when the element is focused or unfocused.
 	HandleFocusChange ()
 }

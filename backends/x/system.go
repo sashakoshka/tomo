@@ -62,12 +62,55 @@ func (system *system) SetConfig (config tomo.Config) {
 	})
 }
 
+func (system *system) focus (entity *entity) {
+	previous := system.focused
+	system.focused = entity
+	if previous != nil {
+		previous.element.(tomo.Focusable).HandleFocusChange()
+	}
+	if entity != nil {
+		entity.element.(tomo.Focusable).HandleFocusChange()
+	}
+}
+
 func (system *system) focusNext () {
-	// TODO
+	found   := system.focused == nil
+	focused := false
+	system.propagate (func (entity *entity) bool {
+		if found {
+			// looking for the next element to select
+			child, ok := entity.element.(tomo.Focusable)
+			if ok && child.Enabled() {
+				// found it
+				entity.Focus()
+				focused = true
+				return false
+			}
+		} else {
+			// looking for the current focused element
+			if entity == system.focused {
+				// found it
+				found = true
+			}
+		}
+		return true
+	})
+
+	if !focused { system.focus(nil) }
 }
 
 func (system *system) focusPrevious () {
-	// TODO
+	var behind *entity
+	system.propagate (func (entity *entity) bool {
+		if entity == system.focused {
+			return false
+		}
+
+		child, ok := entity.element.(tomo.Focusable)
+		if ok && child.Enabled() { behind = entity }
+		return true
+	})
+	system.focus(behind)
 }
 
 func (system *system) propagate (callback func (*entity) bool) {

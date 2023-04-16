@@ -30,8 +30,10 @@ func (backend *Backend) NewEntity (owner tomo.Element) tomo.Entity {
 
 func (ent *entity) unlink () {
 	ent.propagate (func (child *entity) bool {
+		if child.window != nil {
+			delete(ent.window.system.drawingInvalid, child)
+		}
 		child.window = nil
-		delete(ent.window.system.drawingInvalid, child)
 		return true
 	})
 
@@ -61,17 +63,19 @@ func (ent *entity) setWindow (window *window) {
 	})
 }
 
-func (entity *entity) propagate (callback func (*entity) bool) {
+func (entity *entity) propagate (callback func (*entity) bool) bool {
 	for _, child := range entity.children {
-		if !callback(child) { break }
-		child.propagate(callback)
+		if !child.propagate(callback) {
+			return false
+		}
 	}
+	return callback(entity)
 }
 
 func (entity *entity) childAt (point image.Point) *entity {
 	for _, child := range entity.children {
 		if point.In(child.bounds) {
-			return child
+			return child.childAt(point)
 		}
 	}
 	return entity
@@ -190,12 +194,7 @@ func (entity *entity) Focused () bool {
 
 func (entity *entity) Focus () {
 	if entity.window == nil { return }
-	previous := entity.window.focused
-	entity.window.focused = entity
-	if previous != nil {
-		previous.element.(tomo.Focusable).HandleFocusChange()
-	}
-	entity.element.(tomo.Focusable).HandleFocusChange()
+	entity.window.system.focus(entity)
 }
 
 func (entity *entity) FocusNext () {
