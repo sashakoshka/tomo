@@ -48,7 +48,7 @@ type TextBox struct {
 // a value. When the value is empty, the placeholder will be displayed in gray
 // text.
 func NewTextBox (placeholder, value string) (element *TextBox) {
-	element = &TextBox { }
+	element = &TextBox { enabled: true }
 	element.theme.Case = tomo.C("tomo", "textBox")
 	element.entity = tomo.NewEntity(element).(textBoxEntity)
 	element.placeholder = placeholder

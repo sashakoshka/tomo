@@ -3,7 +3,6 @@ package main
 import "os"
 import "time"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
@@ -17,7 +16,7 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 200, 216))
 	window.SetTitle("Clock")
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := containers.NewVBox(true, true)
 	window.Adopt(container)
 
 	clock := fun.NewAnalogClock(time.Now())

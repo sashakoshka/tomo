@@ -8,7 +8,6 @@ import _ "image/jpeg"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
@@ -27,9 +26,9 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 256, 0))
 	window.SetTitle("Clipboard")
 
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := containers.NewVBox(true, true)
 	textInput := elements.NewTextBox("", "")
-	controlRow := containers.NewContainer(layouts.Horizontal { true, false })
+	controlRow := containers.NewHBox(false, true)
 	copyButton := elements.NewButton("Copy")
 	copyButton.SetIcon(tomo.IconCopy)
 	pasteButton := elements.NewButton("Paste")
@@ -123,7 +122,7 @@ func run () {
 func imageWindow (parent tomo.Window, image image.Image) {
 	window, _ := parent.NewModal(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Clipboard Image")
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := containers.NewVBox(true, true)
 	closeButton := elements.NewButton("Ok")
 	closeButton.SetIcon(tomo.IconYes)
 	closeButton.OnClick(window.Close)

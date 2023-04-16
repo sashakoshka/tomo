@@ -5,7 +5,6 @@ import _ "embed"
 import _ "image/png"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
@@ -17,11 +16,13 @@ func main () {
 	tomo.Run(run)
 }
 
+// FIXME this entire example seems to be broken
+
 func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 640, 480))
 	window.SetTitle("Raycaster")
 
-	container := containers.NewContainer(layouts.Vertical { false, false })
+	container := containers.NewVBox(false, false)
 	window.Adopt(container)
 
 	wallTexture, _ := TextureFrom(bytes.NewReader(wallTextureBytes))
@@ -48,7 +49,7 @@ func run () {
 		wallTexture,
 	})
 
-	topBar := containers.NewContainer(layouts.Horizontal { true, true })
+	topBar := containers.NewHBox(true, true)
 	staminaBar := elements.NewProgressBar(game.Stamina())
 	healthBar  := elements.NewProgressBar(game.Health())
 	

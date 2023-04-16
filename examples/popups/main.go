@@ -2,7 +2,6 @@ package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
@@ -16,7 +15,7 @@ func run () {
 	if err != nil { panic(err.Error()) }
 	window.SetTitle("Dialog Boxes")
 
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := containers.NewVBox(true, true)
 	window.Adopt(container)
 
 	container.Adopt(elements.NewLabel("Try out different dialogs:", false), true)
@@ -67,9 +66,10 @@ func run () {
 
 	menuButton := elements.NewButton("menu")
 	menuButton.OnClick (func () {
+		// TODO: make a better way to get the bounds of something
 		menu, err := window.NewMenu (
 			tomo.Bounds(0, 0, 64, 64).
-			Add(menuButton.Bounds().Min))
+			Add(menuButton.Entity().Bounds().Min))
 		if err != nil { println(err.Error()) }
 		menu.Adopt(elements.NewLabel("I'm a shy window...", true))
 		menu.Show()

@@ -60,6 +60,10 @@ func NewDialog (
 	messageRow.Adopt(elements.NewLabel(message, false), true)
 	
 	controlRow.Adopt(elements.NewSpacer(false), true)
+	box.Adopt(messageRow, true)
+	box.Adopt(controlRow, false)
+	window.Adopt(box)
+	
 	if len(buttons) == 0 {
 		button := elements.NewButton("OK")
 		button.SetIcon(tomo.IconYes)
@@ -80,9 +84,6 @@ func NewDialog (
 		button.Focus()
 	}
 	
-	box.Adopt(messageRow, true)
-	box.Adopt(controlRow, false)
-	window.Adopt(box)
 	window.Show()
 	return
 }

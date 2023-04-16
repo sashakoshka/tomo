@@ -4,10 +4,11 @@ package main
 import "math"
 import "image"
 import "image/color"
+import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 type ControlState struct {
@@ -21,10 +22,8 @@ type ControlState struct {
 }
 
 type Raycaster struct {
-	*core.Core
-	*core.FocusableCore
-	core core.CoreControl
-	focusableControl core.FocusableCoreControl
+	entity tomo.FocusableEntity
+
 	config config.Wrapped
 
 	Camera
@@ -49,31 +48,105 @@ func NewRaycaster (world World, textures Textures) (element *Raycaster) {
 		textures: textures,
 		renderDistance: 8,
 	}
-	element.Core, element.core = core.NewCore(element, element.drawAll)
-	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.core, element.Draw)
-	element.core.SetMinimumSize(64, 64)
+	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.entity.SetMinimumSize(64, 64)
 	return
+}
+
+func (element *Raycaster) Entity () tomo.Entity {
+	return element.entity
+}
+
+func (element *Raycaster) Draw (destination canvas.Canvas) {
+	bounds := element.entity.Bounds()
+	// artist.FillRectangle(element.core, artist.Uhex(0x000000FF), bounds)
+	width   := bounds.Dx()
+	height  := bounds.Dy()
+	halfway := bounds.Max.Y - height / 2
+
+	ray := Ray { Angle: element.Camera.Angle - element.Camera.Fov / 2 }
+	
+	for x := 0; x < width; x ++ {
+		ray.X = element.Camera.X
+		ray.Y = element.Camera.Y
+		
+		distance, hitPoint, wall, horizontal := ray.Cast (
+			element.world, element.renderDistance)
+		distance *= math.Cos(ray.Angle - element.Camera.Angle)
+		textureX := math.Mod(hitPoint.X + hitPoint.Y, 1)
+		if textureX < 0 { textureX += 1 }
+		
+		wallHeight := height
+		if distance > 0 {
+			wallHeight = int((float64(height) / 2.0) / float64(distance))
+		}
+
+		shade := 1.0
+		if horizontal {
+			shade *= 0.8
+		}
+		shade *= 1 - distance / float64(element.renderDistance)
+		if shade < 0 { shade = 0 }
+
+		ceilingColor := color.RGBA { 0x00, 0x00, 0x00, 0xFF }
+		floorColor   := color.RGBA { 0x39, 0x49, 0x25, 0xFF }
+
+		// draw
+		data, stride := destination.Buffer()
+		wallStart := halfway - wallHeight
+		wallEnd   := halfway + wallHeight
+
+		for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
+			switch {
+			case y < wallStart:
+				data[y * stride + x + bounds.Min.X] = ceilingColor
+
+			case y < wallEnd:
+				textureY :=
+					float64(y - halfway) / 
+					float64(wallEnd - wallStart) + 0.5
+				// fmt.Println(textureY)
+				
+				wallColor := element.textures.At (wall, Vector {
+					textureX,
+					textureY,
+				})
+				wallColor = shadeColor(wallColor, shade)
+				data[y * stride + x + bounds.Min.X] = wallColor
+				
+			default:
+				data[y * stride + x + bounds.Min.X] = floorColor
+			}
+		}
+
+		// increment angle
+		ray.Angle += element.Camera.Fov / float64(width)
+	}
+
+	// element.drawMinimap()
+}
+
+func (element *Raycaster) Invalidate () {
+	element.entity.Invalidate()
 }
 
 func (element *Raycaster) OnControlStateChange (callback func (ControlState)) {
 	element.onControlStateChange = callback
 }
 
-func (element *Raycaster) Draw () {
-	if element.core.HasImage() {
-		element.drawAll()
-		element.core.DamageAll()
-	}
+func (element *Raycaster) Focus () {
+	element.entity.Focus()
 }
 
+func (element *Raycaster) Enabled () bool { return true }
+
+func (element *Raycaster) HandleFocusChange () { }
+
 func (element *Raycaster) HandleMouseDown (x, y int, button input.Button) {
-	if !element.Focused() { element.Focus() }
+	element.entity.Focus()
 }
 
 func (element *Raycaster) HandleMouseUp (x, y int, button input.Button) { }
-func (element *Raycaster) HandleMouseMove (x, y int) { }
-func (element *Raycaster) HandleMouseScroll (x, y int, deltaX, deltaY float64) { }
 
 func (element *Raycaster) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	switch key {
@@ -109,75 +182,6 @@ func (element *Raycaster) HandleKeyUp(key input.Key, modifiers input.Modifiers) 
 	}
 }
 
-func (element *Raycaster) drawAll () {
-	bounds := element.Bounds()
-	// artist.FillRectangle(element.core, artist.Uhex(0x000000FF), bounds)
-	width   := bounds.Dx()
-	height  := bounds.Dy()
-	halfway := bounds.Max.Y - height / 2
-
-	ray := Ray { Angle: element.Camera.Angle - element.Camera.Fov / 2 }
-	
-	for x := 0; x < width; x ++ {
-		ray.X = element.Camera.X
-		ray.Y = element.Camera.Y
-		
-		distance, hitPoint, wall, horizontal := ray.Cast (
-			element.world, element.renderDistance)
-		distance *= math.Cos(ray.Angle - element.Camera.Angle)
-		textureX := math.Mod(hitPoint.X + hitPoint.Y, 1)
-		if textureX < 0 { textureX += 1 }
-		
-		wallHeight := height
-		if distance > 0 {
-			wallHeight = int((float64(height) / 2.0) / float64(distance))
-		}
-
-		shade := 1.0
-		if horizontal {
-			shade *= 0.8
-		}
-		shade *= 1 - distance / float64(element.renderDistance)
-		if shade < 0 { shade = 0 }
-
-		ceilingColor := color.RGBA { 0x00, 0x00, 0x00, 0xFF }
-		floorColor   := color.RGBA { 0x39, 0x49, 0x25, 0xFF }
-
-		// draw
-		data, stride := element.core.Buffer()
-		wallStart := halfway - wallHeight
-		wallEnd   := halfway + wallHeight
-
-		for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
-			switch {
-			case y < wallStart:
-				data[y * stride + x + bounds.Min.X] = ceilingColor
-
-			case y < wallEnd:
-				textureY :=
-					float64(y - halfway) / 
-					float64(wallEnd - wallStart) + 0.5
-				// fmt.Println(textureY)
-				
-				wallColor := element.textures.At (wall, Vector {
-					textureX,
-					textureY,
-				})
-				wallColor = shadeColor(wallColor, shade)
-				data[y * stride + x + bounds.Min.X] = wallColor
-				
-			default:
-				data[y * stride + x + bounds.Min.X] = floorColor
-			}
-		}
-
-		// increment angle
-		ray.Angle += element.Camera.Fov / float64(width)
-	}
-
-	// element.drawMinimap()
-}
-
 func shadeColor (c color.RGBA, brightness float64) color.RGBA {
 	return color.RGBA {
 		uint8(float64(c.R) * brightness),
@@ -187,8 +191,8 @@ func shadeColor (c color.RGBA, brightness float64) color.RGBA {
 	}
 }
 
-func (element *Raycaster) drawMinimap () {
-	bounds := element.Bounds()
+func (element *Raycaster) drawMinimap (destination canvas.Canvas) {
+	bounds := element.entity.Bounds()
 	scale  := 8
 	for y := 0; y < len(element.world.Data) / element.world.Stride; y ++ {
 	for x := 0; x < element.world.Stride; x ++ {
@@ -204,7 +208,7 @@ func (element *Raycaster) drawMinimap () {
 			cellColor = color.RGBA { 0xFF, 0xFF, 0xFF, 0xFF }
 		}
 		shapes.FillColorRectangle (
-			element.core,
+			destination,
 			cellColor,
 			cellBounds.Inset(1))
 	}}
@@ -219,16 +223,16 @@ func (element *Raycaster) drawMinimap () {
 	
 	playerBounds := image.Rectangle { playerPt, playerPt }.Inset(scale / -8)
 	shapes.FillColorEllipse (
-		element.core,
+		destination,
 		artist.Hex(0xFFFFFFFF),
 		playerBounds)
 	shapes.ColorLine (
-		element.core,
+		destination,
 		artist.Hex(0xFFFFFFFF), 1,
 		playerPt,
 		playerAnglePt)
 	shapes.ColorLine (
-		element.core,
+		destination,
 		artist.Hex(0x00FF00FF), 1,
 		playerPt,
 		hitPt)
