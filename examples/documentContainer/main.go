@@ -22,8 +22,8 @@ func run () {
 	file.Close()
 	if err != nil { panic(err.Error()); return  }
 
-	scrollContainer := containers.NewScrollContainer(false, true)
-	document := containers.NewDocumentContainer()
+	scrollContainer := containers.NewScroll(false, true)
+	document := containers.NewDocument()
 
 	document.Adopt (elements.NewLabel (
 		"A document container is a vertically stacked container " +

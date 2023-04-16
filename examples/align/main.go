@@ -11,11 +11,11 @@ func main () {
 }
 
 func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 256, 256))
 	window.SetTitle("Text alignment")
 
-	container := containers.NewDocumentContainer()
-	scrollContainer := containers.NewScrollContainer(false, true)
+	container := containers.NewDocument()
+	scrollContainer := containers.NewScroll(false, true)
 	scrollContainer.Adopt(container)
 	window.Adopt(scrollContainer)
 

@@ -7,8 +7,9 @@ import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 
 type scratchEntry struct {
-	expand  bool
-	minimum float64
+	expand     bool
+	minSize    float64
+	minBreadth float64
 }
 
 // Box is a container that lays out its children horizontally or vertically.
@@ -80,7 +81,7 @@ func (element *Box) Layout () {
 		var size float64; if entry.expand {
 			size = expandingElementSize
 		} else {
-			size = entry.minimum
+			size = entry.minSize
 		}
 
 		var childBounds image.Rectangle; if element.vertical {
@@ -170,7 +171,7 @@ func (element *Box) freeSpace () (space float64, nExpanding float64) {
 		if entry.expand {
 			nExpanding ++;
 		} else {
-			space -= float64(entry.minimum)
+			space -= float64(entry.minSize)
 		}
 	}
 
@@ -204,7 +205,7 @@ func (element *Box) updateMinimumSize () {
 		
 		key   := element.entity.Child(index)
 		entry := element.scratch[key]
-		entry.minimum = float64(childSize)
+		entry.minSize = float64(childSize)
 		element.scratch[key] = entry
 		
 		if childBreadth > breadth {
