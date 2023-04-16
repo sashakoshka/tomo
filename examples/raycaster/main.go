@@ -7,7 +7,6 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 //go:embed wall.png
 var wallTextureBytes []uint8
@@ -22,7 +21,7 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 640, 480))
 	window.SetTitle("Raycaster")
 
-	container := containers.NewVBox(false, false)
+	container := elements.NewVBox(false, false)
 	window.Adopt(container)
 
 	wallTexture, _ := TextureFrom(bytes.NewReader(wallTextureBytes))

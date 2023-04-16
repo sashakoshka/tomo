@@ -4,7 +4,6 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -15,7 +14,7 @@ func run () {
 	window.SetTitle("Text alignment")
 
 	container := containers.NewDocument()
-	scrollContainer := containers.NewScroll(false, true)
+	scrollContainer := elements.NewScroll(false, true)
 	scrollContainer.Adopt(container)
 	window.Adopt(scrollContainer)
 

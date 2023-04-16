@@ -10,7 +10,6 @@ import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -26,9 +25,9 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 256, 0))
 	window.SetTitle("Clipboard")
 
-	container := containers.NewVBox(true, true)
+	container := elements.NewVBox(true, true)
 	textInput := elements.NewTextBox("", "")
-	controlRow := containers.NewHBox(false, true)
+	controlRow := elements.NewHBox(false, true)
 	copyButton := elements.NewButton("Copy")
 	copyButton.SetIcon(tomo.IconCopy)
 	pasteButton := elements.NewButton("Paste")

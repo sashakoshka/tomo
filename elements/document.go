@@ -1,4 +1,4 @@
-package containers
+package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"

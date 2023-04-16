@@ -6,7 +6,6 @@ import _ "image/png"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -22,8 +21,8 @@ func run () {
 	file.Close()
 	if err != nil { panic(err.Error()); return  }
 
-	scrollContainer := containers.NewScroll(false, true)
-	document := containers.NewDocument()
+	scrollContainer := elements.NewScroll(false, true)
+	document := elements.NewDocument()
 
 	document.Adopt (elements.NewLabel (
 		"A document container is a vertically stacked container " +

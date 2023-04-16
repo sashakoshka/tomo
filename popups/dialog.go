@@ -3,7 +3,6 @@ package popups
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 // DialogKind defines the semantic role of a dialog window.
 type DialogKind int
@@ -44,9 +43,9 @@ func NewDialog (
 	}
 	window.SetTitle(title)
 	
-	box        := containers.NewVBox(true,  true)
-	messageRow := containers.NewHBox(false, true)
-	controlRow := containers.NewHBox(false, true)
+	box        := elements.NewVBox(true,  true)
+	messageRow := elements.NewHBox(false, true)
+	controlRow := elements.NewHBox(false, true)
 
 	iconId := tomo.IconInformation
 	switch kind {

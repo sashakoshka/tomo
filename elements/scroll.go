@@ -1,10 +1,9 @@
-package containers
+package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 // import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
@@ -12,8 +11,8 @@ type Scroll struct {
 	entity tomo.ContainerEntity
 	
 	child      tomo.Scrollable
-	horizontal *elements.ScrollBar
-	vertical   *elements.ScrollBar
+	horizontal *ScrollBar
+	vertical   *ScrollBar
 	
 	config config.Wrapped
 	theme  theme.Wrapped
@@ -25,7 +24,7 @@ func NewScroll (horizontal, vertical bool) (element *Scroll) {
 	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
 
 	if horizontal {
-		element.horizontal = elements.NewScrollBar(false)
+		element.horizontal = NewScrollBar(false)
 		element.horizontal.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
 				element.child.ScrollTo(viewport)
@@ -39,7 +38,7 @@ func NewScroll (horizontal, vertical bool) (element *Scroll) {
 		element.entity.Adopt(element.horizontal)
 	}
 	if vertical {
-		element.vertical = elements.NewScrollBar(true)
+		element.vertical = NewScrollBar(true)
 		element.vertical.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
 				element.child.ScrollTo(viewport)

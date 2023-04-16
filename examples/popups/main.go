@@ -4,7 +4,6 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -15,7 +14,7 @@ func run () {
 	if err != nil { panic(err.Error()) }
 	window.SetTitle("Dialog Boxes")
 
-	container := containers.NewVBox(true, true)
+	container := elements.NewVBox(true, true)
 	window.Adopt(container)
 
 	container.Adopt(elements.NewLabel("Try out different dialogs:", false), true)
