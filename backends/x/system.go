@@ -123,6 +123,11 @@ func (system *system) childAt (point image.Point) *entity {
 	return system.child.childAt(point)
 }
 
+func (system *system) scrollTargetChildAt (point image.Point) *entity {
+	if system.child == nil { return nil }
+	return system.child.scrollTargetChildAt(point)
+}
+
 func (system *system) resizeChildToFit () {
 	system.child.bounds        = system.canvas.Bounds()
 	system.child.clippedBounds = system.child.bounds

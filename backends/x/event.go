@@ -190,20 +190,22 @@ func (window *window) handleButtonPress (
 	insideWindow := point.In(window.canvas.Bounds())
 	scrolling    := buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7
 
-	underneath := window.system.childAt(point)
-	
 	if !insideWindow && window.shy && !scrolling {
 		window.Close()
 	} else if scrolling {
-		if child, ok := underneath.element.(tomo.ScrollTarget); ok {
-			sum := scrollSum { }
-			sum.add(buttonEvent.Detail, window, buttonEvent.State)
-			window.compressScrollSum(buttonEvent, &sum)
-			child.HandleScroll (
-				point.X, point.Y,
-				float64(sum.x), float64(sum.y))
+		underneath := window.system.scrollTargetChildAt(point)
+		if underneath != nil {
+			if child, ok := underneath.element.(tomo.ScrollTarget); ok {
+				sum := scrollSum { }
+				sum.add(buttonEvent.Detail, window, buttonEvent.State)
+				window.compressScrollSum(buttonEvent, &sum)
+				child.HandleScroll (
+					point.X, point.Y,
+					float64(sum.x), float64(sum.y))
+			}
 		}
 	} else {
+		underneath := window.system.childAt(point)
 		if child, ok := underneath.element.(tomo.MouseTarget); ok {
 			window.system.drags[buttonEvent.Detail] = child
 			child.HandleMouseDown (

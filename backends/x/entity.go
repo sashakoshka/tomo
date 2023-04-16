@@ -81,6 +81,21 @@ func (entity *entity) childAt (point image.Point) *entity {
 	return entity
 }
 
+func (entity *entity) scrollTargetChildAt (point image.Point) *entity {
+	for _, child := range entity.children {
+		if point.In(child.bounds) {
+			result := child.scrollTargetChildAt(point)
+			if result != nil { return result }
+			break
+		}
+	}
+
+	if _, ok := entity.element.(tomo.ScrollTarget); ok {
+		return entity
+	}
+	return nil
+}
+
 // ----------- Entity ----------- //
 
 func (entity *entity) Invalidate () {

@@ -148,6 +148,16 @@ func (element *Scroll) HandleChildScrollBoundsChange (tomo.Scrollable) {
 	}
 }
 
+func (element *Scroll) HandleScroll (
+	x, y int,
+	deltaX, deltaY float64,
+) {
+	horizontal, vertical := element.child.ScrollAxes()
+	if !horizontal { deltaX = 0 }
+	if !vertical   { deltaY = 0 }
+	element.scrollChildBy(int(deltaX), int(deltaY))
+}
+
 func (element *Scroll) SetTheme (theme tomo.Theme) {
 	if theme == element.theme.Theme { return }
 	element.theme.Theme = theme
@@ -194,4 +204,12 @@ func (element *Scroll) updateEnabled () {
 	if element.vertical != nil {
 		element.vertical.SetEnabled(vertical)
 	}
+}
+
+func (element *Scroll) scrollChildBy (x, y int) {
+	if element.child == nil { return }
+	scrollPoint :=
+		element.child.ScrollViewportBounds().Min.
+		Add(image.Pt(x, y))
+	element.child.ScrollTo(scrollPoint)
 }
