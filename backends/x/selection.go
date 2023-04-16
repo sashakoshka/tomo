@@ -97,11 +97,13 @@ func (request *selectionRequest) convertSelection (
 
 func (request *selectionRequest) die (err error) {
 	request.callback(nil, err)
+	request.window.system.afterEvent()
 	request.state = selReqStateClosed
 }
 
 func (request *selectionRequest) finalize (data data.Data) {
 	request.callback(data, nil)
+	request.window.system.afterEvent()
 	request.state = selReqStateClosed
 }
 

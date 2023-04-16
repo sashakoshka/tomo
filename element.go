@@ -15,12 +15,19 @@ type Element interface {
 	Entity () Entity
 }
 
-// Container is an element capable of containing child elements.
+// Layoutable represents an element that needs to perform layout calculations
+// before it can draw itself.
+type Layoutable interface {
+	Element
+	
+	// Layout causes this element to perform a layout operation.
+	Layout ()
+}
+
+// Container represents an element capable of containing child elements.
 type Container interface {
 	Element
-
-	// Layout causes this element to arrange its children.
-	Layout ()
+	Layoutable
 
 	// DrawBackground causes the element to draw its background pattern to
 	// the specified canvas. The bounds of this canvas specify the area that

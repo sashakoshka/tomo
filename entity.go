@@ -31,14 +31,20 @@ type Entity interface {
 	DrawBackground (canvas.Canvas)
 }
 
+// LayoutEntity is given to elements that support the Layoutable interface.
+type LayoutEntity interface {
+	Entity
+	
+	// InvalidateLayout marks the element's layout as invalid. At the end of
+	// every event, the backend will ask all invalid elements to recalculate
+	// their layouts.
+	InvalidateLayout ()
+}
+
 // ContainerEntity is given to elements that support the Container interface.
 type ContainerEntity interface {
 	Entity
-
-	// InvalidateLayout marks the element's layout as invalid. At the end of
-	// every event, the backend will ask all invalid containers to
-	// recalculate their layouts.
-	InvalidateLayout ()
+	LayoutEntity
 
 	// Adopt adds an element as a child.
 	Adopt (child Element)

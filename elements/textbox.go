@@ -18,6 +18,7 @@ import "git.tebibyte.media/sashakoshka/tomo/default/config"
 type textBoxEntity interface {
 	tomo.FocusableEntity
 	tomo.ScrollableEntity
+	tomo.LayoutEntity
 }
 
 // TextBox is a single-line text input.
@@ -72,7 +73,6 @@ func (element *TextBox) Entity () tomo.Entity {
 // Draw causes the element to draw to the specified destination canvas.
 func (element *TextBox) Draw (destination canvas.Canvas) {
 	bounds := element.entity.Bounds()
-	element.scrollToCursor()
 
 	state := element.state()
 	pattern := element.theme.Pattern(tomo.PatternInput, state)
@@ -132,6 +132,11 @@ func (element *TextBox) Draw (destination canvas.Canvas) {
 				cursorPosition.Y + element.valueDrawer.
 				LineHeight().Round()).Add(offset))
 	}
+}
+
+// Layout causes the element to perform a layout operation.
+func (element *TextBox) Layout () {
+	element.scrollToCursor()
 }
 
 func (element *TextBox) HandleFocusChange () {
@@ -497,8 +502,8 @@ func (element *TextBox) scrollToCursor () {
 	} else if cursorPosition.X < minX {
 		element.scroll -= minX - cursorPosition.X
 		if element.scroll < 0 { element.scroll = 0 }
-		element.entity.Invalidate()
 		element.entity.NotifyScrollBoundsChange()
+		element.entity.Invalidate()
 	}
 }
 

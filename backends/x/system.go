@@ -141,11 +141,13 @@ func (system *system) afterEvent () {
 }
 
 func (system *system) layout (entity *entity, force bool) {
-	if entity == nil || !entity.isContainer { return }
+	if entity == nil { return }
 	if entity.layoutInvalid == true || force {
-		entity.element.(tomo.Container).Layout()
-		entity.layoutInvalid = false
-		force = true
+		if element, ok := entity.element.(tomo.Layoutable); ok {
+			element.Layout()
+			entity.layoutInvalid = false
+			force = true
+		}
 	}
 
 	for _, child := range entity.children {

@@ -98,7 +98,6 @@ func (element *Box) Layout () {
 			if element.margin { x += marginSize }
 		}
 	}
-
 }
 
 func (element *Box) Adopt (child tomo.Element, expand bool) {
