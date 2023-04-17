@@ -69,6 +69,10 @@ type ContainerEntity interface {
 	// index to a bounding rectangle.
 	PlaceChild (index int, bounds image.Rectangle)
 
+	// SelectChild marks a child as selected or unselected, if it is
+	// selectable.
+	SelectChild (index int, selected bool)
+
 	// ChildMinimumSize returns the minimum size of the child at the
 	// specified index.
 	ChildMinimumSize (index int) (width, height int)
@@ -92,6 +96,14 @@ type FocusableEntity interface {
 	// FocusPrevious causes the focus to move to the next element. If this
 	// succeeds, the element will recieve a HandleUnfocus call.	
 	FocusPrevious ()
+}
+
+// SelectableEntity is given to elements that support the Selectable interface.
+type SelectableEntity interface {
+	Entity
+
+	// Selected returns whether this element is currently selected.
+	Selected () bool
 }
 
 // FlexibleEntity is given to elements that support the Flexible interface.

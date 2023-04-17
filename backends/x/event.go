@@ -206,12 +206,19 @@ func (window *window) handleButtonPress (
 		}
 	} else {
 		underneath := window.system.childAt(point)
+		window.system.drags[buttonEvent.Detail] = underneath
 		if child, ok := underneath.element.(tomo.MouseTarget); ok {
-			window.system.drags[buttonEvent.Detail] = child
 			child.HandleMouseDown (
 				point.X, point.Y,
 				input.Button(buttonEvent.Detail))
 		}
+		callback := func (container tomo.MouseTargetContainer) {
+			container.HandleChildMouseDown (
+				point.X, point.Y,
+				input.Button(buttonEvent.Detail),
+				underneath.element)
+		}
+		underneath.forMouseTargetContainers(callback)
 	}
 	
 	window.system.afterEvent()
@@ -223,12 +230,22 @@ func (window *window) handleButtonRelease (
 ) {
 	buttonEvent := *event.ButtonReleaseEvent
 	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
-	child := window.system.drags[buttonEvent.Detail]
-	if child != nil {
-		child.HandleMouseUp (
+	dragging := window.system.drags[buttonEvent.Detail]
+	if dragging != nil {
+		if child, ok := dragging.element.(tomo.MouseTarget); ok {
+			child.HandleMouseUp (
+				int(buttonEvent.EventX),
+				int(buttonEvent.EventY),
+				input.Button(buttonEvent.Detail))
+		}
+		callback := func (container tomo.MouseTargetContainer) {
+			container.HandleChildMouseUp (
 			int(buttonEvent.EventX),
 			int(buttonEvent.EventY),
-			input.Button(buttonEvent.Detail))
+			input.Button(buttonEvent.Detail),
+			dragging.element)
+		}
+		dragging.forMouseTargetContainers(callback)
 	}
 	
 	window.system.afterEvent()
@@ -244,7 +261,7 @@ func (window *window) handleMotionNotify (
 
 	handled := false
 	for _, child := range window.system.drags {
-		if child, ok := child.(tomo.MotionTarget); ok {
+		if child, ok := child.element.(tomo.MotionTarget); ok {
 			child.HandleMotion(x, y)
 			handled = true
 		}

@@ -40,15 +40,41 @@ type Container interface {
 	HandleChildMinimumSizeChange (child Element)
 }
 
+// Enableable represents an element that can be enabled and disabled. Disabled
+// elements typically appear greyed out.
+type Enableable interface {
+	Element
+
+	// Enabled returns whether or not the element is enabled.
+	Enabled () bool
+	
+	// SetEnabled sets whether or not the element is enabled.
+	SetEnabled (bool)
+}
+
 // Focusable represents an element that has keyboard navigation support.
 type Focusable interface {
 	Element
-
-	// Enabled returns whether or not the element can currently accept focus.
-	Enabled () bool
+	Enableable
 
 	// HandleFocusChange is called when the element is focused or unfocused.
 	HandleFocusChange ()
+}
+
+// Selectable represents an element that can be selected. This includes things
+// like list items, files, etc. The difference between this and Focusable is
+// that multiple Selectable elements may be selected at the same time, whereas
+// only one Focusable element may be focused at the same time. Containers who's
+// purpose is to contain selectable elements can determine when to select them
+// by implementing MouseTargetContainer and listening for HandleChildMouseDown
+// events.
+type Selectable interface {
+	Element
+	Enableable
+
+	// HandleSelectionChange is called when the element is selected or
+	// deselected.
+	HandleSelectionChange ()
 }
 
 // KeyboardTarget represents an element that can receive keyboard input.
@@ -78,6 +104,22 @@ type MouseTarget interface {
 	// HandleMouseUp is called when a mouse button is released that was
 	// originally pressed down on this element.
 	HandleMouseUp (x, y int, button input.Button)
+}
+
+// MouseTargetContainer represents an element that wants to know when one
+// of its children is clicked. Children do not have to implement MouseTarget for
+// a container satisfying MouseTargetContainer to be notified that they have
+// been clicked.
+type MouseTargetContainer interface {
+	Container
+
+	// HandleMouseDown is called when a mouse button is pressed down on a
+	// child element.
+	HandleChildMouseDown (x, y int, button input.Button, child Element)
+
+	// HandleMouseUp is called when a mouse button is released that was
+	// originally pressed down on a child element.
+	HandleChildMouseUp (x, y int, button input.Button, child Element)
 }
 
 // MotionTarget represents an element that can receive mouse motion events.

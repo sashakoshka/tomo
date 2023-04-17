@@ -33,7 +33,7 @@ type system struct {
 	drawingInvalid   entitySet
 	anyLayoutInvalid bool
 	
-	drags [10]tomo.MouseTarget
+	drags [10]*entity
 
 	pushFunc func (image.Rectangle)
 }

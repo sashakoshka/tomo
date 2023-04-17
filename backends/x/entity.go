@@ -15,6 +15,7 @@ type entity struct {
 	minWidth      int
 	minHeight     int
 
+	selected      bool
 	layoutInvalid bool
 	isContainer   bool
 }
@@ -42,6 +43,11 @@ func (ent *entity) unlink () {
 	}
 	ent.parent = nil
 	ent.window = nil
+	
+	if element, ok := ent.element.(tomo.Selectable); ok {
+		ent.selected = false
+		element.HandleSelectionChange()
+	}
 }
 
 func (entity *entity) link (parent *entity) {
@@ -94,6 +100,14 @@ func (entity *entity) scrollTargetChildAt (point image.Point) *entity {
 		return entity
 	}
 	return nil
+}
+
+func (entity *entity) forMouseTargetContainers (callback func (tomo.MouseTargetContainer)) {
+	if entity.parent == nil { return }
+	if parent, ok := entity.parent.element.(tomo.MouseTargetContainer); ok {
+		callback(parent)
+	}
+	entity.parent.forMouseTargetContainers(callback)
 }
 
 // ----------- Entity ----------- //
@@ -195,6 +209,14 @@ func (entity *entity) PlaceChild (index int, bounds image.Rectangle) {
 	child.InvalidateLayout()
 }
 
+func (entity *entity) SelectChild (index int, selected bool) {
+	child := entity.children[index]
+	if element, ok := entity.element.(tomo.Selectable); ok {
+		child.selected = selected
+		element.HandleSelectionChange()
+	}
+}
+
 func (entity *entity) ChildMinimumSize (index int) (width, height int) {
 	childEntity := entity.children[index]
 	return childEntity.minWidth, childEntity.minHeight
@@ -218,6 +240,12 @@ func (entity *entity) FocusNext () {
 
 func (entity *entity) FocusPrevious () {
 	entity.window.system.focusPrevious()
+}
+
+// ----------- SelectableEntity ----------- //
+
+func (entity *entity) Selected () bool {
+	return entity.selected
 }
 
 // ----------- FlexibleEntity ----------- //
