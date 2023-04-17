@@ -16,9 +16,8 @@ func run () {
 	window.Adopt(container)
 
 	textBox := elements.NewTextBox("", copypasta)
-	scrollContainer := containers.NewScroll(true, false)
 
-	disconnectedContainer := containers.NewHBox(false, true)
+	disconnectedContainer := elements.NewHBox(false, true)
 	// list := elements.NewList (
 		// elements.NewListEntry("This is list item 0", nil),
 		// elements.NewListEntry("This is list item 1", nil),
@@ -52,9 +51,8 @@ func run () {
 		// list.ScrollTo(viewport)
 	// })
 	
-	scrollContainer.Adopt(textBox)
 	container.Adopt(elements.NewLabel("A ScrollContainer:", false), false)
-	container.Adopt(scrollContainer, false)
+	container.Adopt(elements.NewScroll(textBox, true, false), false)
 	// disconnectedContainer.Adopt(list, false)
 	disconnectedContainer.Adopt (elements.NewLabel (
 		"Notice how the scroll bar to the right can be used to " +

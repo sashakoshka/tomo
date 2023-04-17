@@ -21,7 +21,6 @@ func run () {
 	file.Close()
 	if err != nil { panic(err.Error()); return  }
 
-	scrollContainer := elements.NewScroll(false, true)
 	document := elements.NewDocument()
 
 	document.Adopt (elements.NewLabel (
@@ -60,8 +59,7 @@ func run () {
 		document.Adopt(elements.NewSwitch("", false), false)
 	}
 
-	scrollContainer.Adopt(document)
-	window.Adopt(scrollContainer)
+	window.Adopt(elements.NewScroll(document, false, true))
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

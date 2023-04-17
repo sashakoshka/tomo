@@ -18,7 +18,7 @@ type Scroll struct {
 	theme  theme.Wrapped
 }
 
-func NewScroll (horizontal, vertical bool) (element *Scroll) {
+func NewScroll (child tomo.Scrollable, horizontal, vertical bool) (element *Scroll) {
 	element = &Scroll { }
 	element.theme.Case = tomo.C("tomo", "scroll")
 	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
@@ -51,6 +51,8 @@ func NewScroll (horizontal, vertical bool) (element *Scroll) {
 		})
 		element.entity.Adopt(element.vertical)
 	}
+
+	element.Adopt(child)
 	return
 }
 

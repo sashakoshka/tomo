@@ -13,10 +13,7 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 256, 256))
 	window.SetTitle("Text alignment")
 
-	container := containers.NewDocument()
-	scrollContainer := elements.NewScroll(false, true)
-	scrollContainer.Adopt(container)
-	window.Adopt(scrollContainer)
+	container := elements.NewDocument()
 
 	left    := elements.NewLabel(text, true)
 	center  := elements.NewLabel(text, true)
@@ -32,6 +29,7 @@ func run () {
 	container.Adopt(center, true)
 	container.Adopt(right, true)
 	container.Adopt(justify, true)
+	window.Adopt(elements.NewScroll(container, false, true))
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
