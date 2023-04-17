@@ -261,6 +261,7 @@ func (window *window) handleMotionNotify (
 
 	handled := false
 	for _, child := range window.system.drags {
+		if child == nil { continue }
 		if child, ok := child.element.(tomo.MotionTarget); ok {
 			child.HandleMotion(x, y)
 			handled = true
