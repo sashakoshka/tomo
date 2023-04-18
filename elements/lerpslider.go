@@ -15,16 +15,20 @@ type LerpSlider[T Numeric] struct {
 	max T
 }
 
-// NewLerpSlider creates a new LerpSlider with a minimum and maximum value. If
-// vertical is set to true, the slider will be vertical instead of horizontal.
-func NewLerpSlider[T Numeric] (min, max T, value T, vertical bool) (element *LerpSlider[T]) {
+// NewLerpSlider creates a new LerpSlider with a minimum and maximum value.
+func NewLerpSlider[T Numeric] (
+	min, max T, value T,
+	orientation Orientation,
+) (
+	element *LerpSlider[T],
+) {
 	if min > max {
 		temp := max
 		max = min
 		min = temp
 	}
 	element = &LerpSlider[T] {
-		Slider: NewSlider(0, vertical),
+		Slider: NewSlider(0, orientation),
 		min: min,
 		max: max,
 	}

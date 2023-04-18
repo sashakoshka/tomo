@@ -7,6 +7,19 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
+type ScrollMode int; const (
+	ScrollNeither ScrollMode = 0
+	ScrollVertical           = 1
+	ScrollHorizontal         = 2
+	ScrollBoth               = ScrollVertical | ScrollHorizontal
+)
+
+// Includes returns whether a scroll mode has been or'd with another scroll
+// mode.
+func (mode ScrollMode) Includes (sub ScrollMode) bool {
+	return (mode & sub) > 0
+}
+
 type Scroll struct {
 	entity tomo.ContainerEntity
 	
@@ -18,12 +31,12 @@ type Scroll struct {
 	theme  theme.Wrapped
 }
 
-func NewScroll (child tomo.Scrollable, horizontal, vertical bool) (element *Scroll) {
+func NewScroll (mode ScrollMode, child tomo.Scrollable) (element *Scroll) {
 	element = &Scroll { }
 	element.theme.Case = tomo.C("tomo", "scroll")
 	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
 
-	if horizontal {
+	if mode.Includes(ScrollHorizontal) {
 		element.horizontal = NewScrollBar(false)
 		element.horizontal.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
@@ -37,7 +50,7 @@ func NewScroll (child tomo.Scrollable, horizontal, vertical bool) (element *Scro
 		})
 		element.entity.Adopt(element.horizontal)
 	}
-	if vertical {
+	if mode.Includes(ScrollVertical) {
 		element.vertical = NewScrollBar(true)
 		element.vertical.OnScroll (func (viewport image.Point) {
 			if element.child != nil {

@@ -83,6 +83,12 @@ func (element *Cell) Adopt (child tomo.Element) {
 	element.entity.InvalidateLayout()
 }
 
+// Child returns this element's child. If there is no child, this method will
+// return nil.
+func (element *Cell) Child () tomo.Element {
+	return element.child
+}
+
 // Enabled returns whether this cell is enabled or not.
 func (element *Cell) Enabled () bool {
 	return element.enabled

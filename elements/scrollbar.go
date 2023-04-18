@@ -7,6 +7,13 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
+// Orientation represents an orientation configuration that can be passed to
+// scrollbars and sliders.
+type Orientation bool; const (
+	Vertical Orientation = true
+	Horizontal           = false
+)
+
 // ScrollBar is an element similar to Slider, but it has special behavior that
 // makes it well suited for controlling the viewport position on one axis of a
 // scrollable element. Instead of having a value from zero to one, it stores
@@ -37,14 +44,13 @@ type ScrollBar struct {
 	onScroll func (viewport image.Point)
 }
 
-// NewScrollBar creates a new scroll bar. If vertical is set to true, the scroll
-// bar will be vertical instead of horizontal.
-func NewScrollBar (vertical bool) (element *ScrollBar) {
+// NewScrollBar creates a new scroll bar.
+func NewScrollBar (orientation Orientation) (element *ScrollBar) {
 	element = &ScrollBar {
-		vertical: vertical,
+		vertical: bool(orientation),
 		enabled:  true,
 	}
-	if vertical {
+	if orientation == Vertical {
 		element.theme.Case = tomo.C("tomo", "scrollBarHorizontal")
 	} else {
 		element.theme.Case = tomo.C("tomo", "scrollBarVertical")

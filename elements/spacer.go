@@ -15,14 +15,19 @@ type Spacer struct {
 	theme  theme.Wrapped
 }
 
-// NewSpacer creates a new spacer. If line is set to true, the spacer will be
-// filled with a line color, and if compressed to its minimum width or height,
-// will appear as a line.
-func NewSpacer (line bool) (element *Spacer) {
-	element = &Spacer { line: line }
+// NewSpacer creates a new spacer.
+func NewSpacer () (element *Spacer) {
+	element = &Spacer { }
 	element.entity = tomo.NewEntity(element)
 	element.theme.Case = tomo.C("tomo", "spacer")
 	element.updateMinimumSize()
+	return
+}
+
+// NewLine creates a new line separator.
+func NewLine () (element *Spacer) {
+	element = NewSpacer()
+	element.SetLine(true)
 	return
 }
 

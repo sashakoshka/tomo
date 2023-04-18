@@ -29,7 +29,7 @@ type List struct {
 	onScrollBoundsChange func ()
 }
 
-func NewList (columns int, children ...tomo.Selectable) (element *List) {
+func NewList (columns int, children ...tomo.Element) (element *List) {
 	if columns < 1 { columns = 1 }
 	element = &List { selected: -1 }
 	element.scratch = make(map[tomo.Element] scratchEntry)
@@ -150,6 +150,15 @@ func (element *List) DisownAll () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
+}
+
+func (element *List) Child (index int) tomo.Element {
+	if index < 0 || index >= element.entity.CountChildren() { return nil }
+	return element.entity.Child(index)
+}
+
+func (element *List) CountChildren () int {
+	return element.entity.CountChildren()
 }
 
 func (element *List) HandleChildMouseDown (x, y int, button input.Button, child tomo.Element) {

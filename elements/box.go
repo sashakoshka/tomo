@@ -6,6 +6,21 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 
+// Space is a list of spacing configurations that can be passed to some
+// containers.
+type Space int; const (
+	SpaceNone    = 0
+	SpacePadding = 1
+	SpaceMargin  = 2
+	SpaceBoth    = SpacePadding | SpaceMargin
+)
+
+// Includes returns whether a spacing value has been or'd with another spacing
+// value.
+func (space Space) Includes (sub Space) bool {
+	return (space & sub) > 0
+}
+
 type scratchEntry struct {
 	expand     bool
 	minSize    float64
@@ -26,17 +41,21 @@ type Box struct {
 }
 
 // NewHBox creates a new horizontal box.
-func NewHBox (padding, margin bool) (element *Box) {
-	element = &Box { padding: padding, margin: margin }
+func NewHBox (space Space, children ...tomo.Element) (element *Box) {
+	element = &Box {
+		padding: space.Includes(SpacePadding),
+		margin:  space.Includes(SpaceMargin),
+	}
 	element.scratch = make(map[tomo.Element] scratchEntry)
 	element.theme.Case = tomo.C("tomo", "box")
 	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
+	element.Adopt(children...)
 	return
 }
 
 // NewHBox creates a new vertical box.
-func NewVBox (padding, margin bool) (element *Box) {
-	element = NewHBox(padding, margin)
+func NewVBox (space Space) (element *Box) {
+	element = NewHBox(space)
 	element.vertical = true
 	return
 }
@@ -101,19 +120,33 @@ func (element *Box) Layout () {
 	}
 }
 
-func (element *Box) Adopt (child tomo.Element, expand bool) {
-	element.entity.Adopt(child)
-	element.scratch[child] = scratchEntry { expand: expand }
+func (element *Box) Adopt (children ...tomo.Element) {
+	for _, child := range children {
+		element.entity.Adopt(child)
+		element.scratch[child] = scratchEntry { expand: false }
+	}
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
 
-func (element *Box) Disown (child tomo.Element) {
-	index := element.entity.IndexOf(child)
-	if index < 0 { return }
-	element.entity.Disown(index)
-	delete(element.scratch, child)
+func (element *Box) AdoptExpand (children ...tomo.Element) {
+	for _, child := range children {
+		element.entity.Adopt(child)
+		element.scratch[child] = scratchEntry { expand: true }
+	}
+	element.updateMinimumSize()
+	element.entity.Invalidate()
+	element.entity.InvalidateLayout()
+}
+
+func (element *Box) Disown (children ...tomo.Element) {
+	for _, child := range children {
+		index := element.entity.IndexOf(child)
+		if index < 0 { continue }
+		element.entity.Disown(index)
+		delete(element.scratch, child)
+	}
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
@@ -130,6 +163,15 @@ func (element *Box) DisownAll () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
+}
+
+func (element *Box) Child (index int) tomo.Element {
+	if index < 0 || index >= element.entity.CountChildren() { return nil }
+	return element.entity.Child(index)
+}
+
+func (element *Box) CountChildren () int {
+	return element.entity.CountChildren()
 }
 
 func (element *Box) HandleChildMinimumSizeChange (child tomo.Element) {

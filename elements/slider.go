@@ -26,14 +26,13 @@ type Slider struct {
 	onRelease func ()
 }
 
-// NewSlider creates a new slider with the specified value. If vertical is set
-// to true, 
-func NewSlider (value float64, vertical bool) (element *Slider) {
+// NewSlider creates a new slider with the specified value.
+func NewSlider (value float64, orientation Orientation) (element *Slider) {
 	element = &Slider {
 		value: value,
-		vertical: vertical,
+		vertical: bool(orientation),
 	}
-	if vertical {
+	if orientation == Vertical {
 		element.theme.Case = tomo.C("tomo", "sliderVertical")
 	} else {
 		element.theme.Case = tomo.C("tomo", "sliderHorizontal")

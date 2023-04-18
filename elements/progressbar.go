@@ -18,6 +18,8 @@ type ProgressBar struct {
 // NewProgressBar creates a new progress bar displaying the given progress
 // level.
 func NewProgressBar (progress float64) (element *ProgressBar) {
+	if progress < 0 { progress = 0 }
+	if progress > 1 { progress = 1 }
 	element = &ProgressBar { progress: progress }
 	element.entity = tomo.NewEntity(element)
 	element.theme.Case = tomo.C("tomo", "progressBar")
@@ -48,6 +50,8 @@ func (element *ProgressBar) Draw (destination canvas.Canvas) {
 
 // SetProgress sets the progress level of the bar.
 func (element *ProgressBar) SetProgress (progress float64) {
+	if progress < 0 { progress = 0 }
+	if progress > 1 { progress = 1 }
 	if progress == element.progress { return }
 	element.progress = progress
 	element.entity.Invalidate()

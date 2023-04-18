@@ -24,17 +24,22 @@ type Label struct {
 	theme  theme.Wrapped
 }
 
-// NewLabel creates a new label. If wrap is set to true, the text inside will be
-// wrapped.
-func NewLabel (text string, wrap bool) (element *Label) {
+// NewLabel creates a new label.
+func NewLabel (text string) (element *Label) {
 	element = &Label { }
 	element.theme.Case = tomo.C("tomo", "label")
 	element.entity = tomo.NewEntity(element).(tomo.FlexibleEntity)
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
 		tomo.FontSizeNormal))
-	element.SetWrap(wrap)
 	element.SetText(text)
+	return
+}
+
+// NewLabelWrapped creates a new label with text wrapping on.
+func NewLabelWrapped (text string) (element *Label) {
+	element = NewLabel(text)
+	element.SetWrap(true)
 	return
 }
 

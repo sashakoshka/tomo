@@ -23,11 +23,12 @@ type Document struct {
 	onScrollBoundsChange func ()
 }
 
-func NewDocument () (element *Document) {
+func NewDocument (children ...tomo.Element) (element *Document) {
 	element = &Document { }
 	element.scratch = make(map[tomo.Element] scratchEntry)
 	element.theme.Case = tomo.C("tomo", "document")
 	element.entity = tomo.NewEntity(element).(documentEntity)
+	element.Adopt(children...)
 	return
 }
 
@@ -109,19 +110,33 @@ func (element *Document) Layout () {
 	}
 }
 
-func (element *Document) Adopt (child tomo.Element, expand bool) {
-	element.entity.Adopt(child)
-	element.scratch[child] = scratchEntry { expand: expand }
+func (element *Document) Adopt (children ...tomo.Element) {
+	for _, child := range children {
+		element.entity.Adopt(child)
+		element.scratch[child] = scratchEntry { expand: true }
+	}
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
 
-func (element *Document) Disown (child tomo.Element) {
-	index := element.entity.IndexOf(child)
-	if index < 0 { return }
-	element.entity.Disown(index)
-	delete(element.scratch, child)
+func (element *Document) AdoptInline (children ...tomo.Element) {
+	for _, child := range children {
+		element.entity.Adopt(child)
+		element.scratch[child] = scratchEntry { expand: false }
+	}
+	element.updateMinimumSize()
+	element.entity.Invalidate()
+	element.entity.InvalidateLayout()
+}
+
+func (element *Document) Disown (children ...tomo.Element) {
+	for _, child := range children {
+		index := element.entity.IndexOf(child)
+		if index < 0 { return }
+		element.entity.Disown(index)
+		delete(element.scratch, child)
+	}
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
@@ -138,6 +153,15 @@ func (element *Document) DisownAll () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
+}
+
+func (element *Document) Child (index int) tomo.Element {
+	if index < 0 || index >= element.entity.CountChildren() { return nil }
+	return element.entity.Child(index)
+}
+
+func (element *Document) CountChildren () int {
+	return element.entity.CountChildren()
 }
 
 func (element *Document) HandleChildMinimumSizeChange (child tomo.Element) {

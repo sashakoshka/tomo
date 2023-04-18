@@ -43,9 +43,9 @@ func NewDialog (
 	}
 	window.SetTitle(title)
 	
-	box        := elements.NewVBox(true,  true)
-	messageRow := elements.NewHBox(false, true)
-	controlRow := elements.NewHBox(false, true)
+	box        := elements.NewVBox(elements.SpaceBoth)
+	messageRow := elements.NewHBox(elements.SpaceMargin)
+	controlRow := elements.NewHBox(elements.SpaceMargin)
 
 	iconId := tomo.IconInformation
 	switch kind {
@@ -55,19 +55,19 @@ func NewDialog (
 	case DialogKindError:    iconId = tomo.IconError
 	}
 	
-	messageRow.Adopt(elements.NewIcon(iconId, tomo.IconSizeLarge), false)
-	messageRow.Adopt(elements.NewLabel(message, false), true)
+	messageRow.Adopt(elements.NewIcon(iconId, tomo.IconSizeLarge))
+	messageRow.AdoptExpand(elements.NewLabel(message))
 	
-	controlRow.Adopt(elements.NewSpacer(false), true)
-	box.Adopt(messageRow, true)
-	box.Adopt(controlRow, false)
+	controlRow.AdoptExpand(elements.NewSpacer())
+	box.AdoptExpand(messageRow)
+	box.Adopt(controlRow)
 	window.Adopt(box)
 	
 	if len(buttons) == 0 {
 		button := elements.NewButton("OK")
 		button.SetIcon(tomo.IconYes)
 		button.OnClick(window.Close)
-		controlRow.Adopt(button, false)
+		controlRow.Adopt(button)
 		button.Focus()
 	} else {
 		var button *elements.Button
@@ -78,7 +78,7 @@ func NewDialog (
 				buttonDescriptor.OnPress()
 				window.Close()
 			})
-			controlRow.Adopt(button, false)
+			controlRow.Adopt(button)
 		}
 		button.Focus()
 	}
