@@ -40,7 +40,8 @@ func run () {
 		elements.NewCell(elements.NewLabel("Item 17", false)),
 		elements.NewCell(elements.NewLabel("Item 18", false)),
 		elements.NewCell(elements.NewLabel("Item 19", false)),
-		elements.NewCell(elements.NewLabel("Item 20", false)))
+		elements.NewCell(elements.NewLabel("Item 20", false)),
+		elements.NewCell(elements.NewLabel("Item 21", false)))
 	list.Collapse(0, 32)
 	scrollBar := elements.NewScrollBar(true)
 	list.OnScrollBoundsChange (func () {

@@ -279,16 +279,26 @@ func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
 		} else {
 			return artist.I(8)
 		}
+	case tomo.PatternTableCell:  return artist.I(5)
+	case tomo.PatternTableHead:  return artist.I(5)
 	case tomo.PatternGutter:     return artist.I(0)
 	case tomo.PatternLine:       return artist.I(1)
 	case tomo.PatternMercury:    return artist.I(5)
-	default:                return artist.I(8)
+	default:                     return artist.I(8)
 	}
 }
 
 // Margin returns the default margin value for the given pattern.
 func (Default) Margin (id tomo.Pattern, c tomo.Case) image.Point {
-	return image.Pt(8, 8)
+	switch id {
+	case tomo.PatternSunken:
+		if c.Match("tomo", "list", "") {
+			return image.Pt(-1, -1)
+		} else {
+			return image.Pt(8, 8)
+		}
+	default: return image.Pt(8, 8)
+	}
 }
 
 // Hints returns rendering optimization hints for a particular pattern.
