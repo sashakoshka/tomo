@@ -12,12 +12,12 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 360, 240))
 	window.SetTitle("Scroll")
-	container := elements.NewVBox(true, true)
+	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
 
 	textBox := elements.NewTextBox("", copypasta)
 
-	disconnectedContainer := elements.NewHBox(false, true)
+	disconnectedContainer := elements.NewHBox(elements.SpaceMargin)
 	list := elements.NewList (
 		2,
 		elements.NewCell(elements.NewCheckbox("Item 0", true)),
@@ -42,8 +42,9 @@ func run () {
 		elements.NewCell(elements.NewCheckbox("Item 19", false)),
 		elements.NewCell(elements.NewCheckbox("Item 20", true)),
 		elements.NewCell(elements.NewCheckbox("Item 21", false)),
-		elements.NewCell (elements.NewScroll (elements.NewTextBox (
-			"", "I bet you weren't expecting this!"), true, false)))
+		elements.NewCell(elements.NewScroll (
+			elements.ScrollHorizontal,
+			elements.NewTextBox("", "I bet you weren't expecting this!"))))
 	list.Collapse(0, 32)
 	scrollBar := elements.NewScrollBar(true)
 	list.OnScrollBoundsChange (func () {
@@ -55,16 +56,16 @@ func run () {
 		list.ScrollTo(viewport)
 	})
 	
-	container.Adopt(elements.NewLabel("A ScrollContainer:", false), false)
-	container.Adopt(elements.NewScroll(textBox, true, false), false)
-	disconnectedContainer.Adopt(list, false)
-	disconnectedContainer.Adopt (elements.NewLabel (
+	container.Adopt(elements.NewLabel("A ScrollContainer:"))
+	container.Adopt(elements.NewScroll(elements.ScrollHorizontal, textBox))
+	disconnectedContainer.Adopt(list)
+	disconnectedContainer.AdoptExpand(elements.NewLabelWrapped (
 		"Notice how the scroll bar to the right can be used to " +
 		"control the list, despite not even touching it. It is " +
 		"indeed a thing you can do. It is also terrible UI design so " +
-		"don't do it.", true), true)
-	disconnectedContainer.Adopt(scrollBar, false)
-	container.Adopt(disconnectedContainer, true)
+		"don't do it."))
+	disconnectedContainer.Adopt(scrollBar)
+	container.AdoptExpand(disconnectedContainer)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

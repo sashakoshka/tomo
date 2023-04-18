@@ -12,15 +12,15 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Spaced Out")
 
-	container := elements.NewVBox(true, true)
-	window.Adopt(container)
-
-	container.Adopt (elements.NewLabel("This is at the top", false), false)
-	container.Adopt (elements.NewSpacer(true), false)
-	container.Adopt (elements.NewLabel("This is in the middle", false), false)
-	container.Adopt (elements.NewSpacer(false), true)
-	container.Adopt (elements.NewLabel("This is at the bottom", false), false)
+	container := elements.NewVBox (
+		elements.SpaceBoth,
+		elements.NewLabel("This is at the top"),
+		elements.NewLine(),
+		elements.NewLabel("This is in the middle"))
+	container.AdoptExpand(elements.NewSpacer())
+	container.Adopt(elements.NewLabel("This is at the bottom"))
 	
+	window.Adopt(container)
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

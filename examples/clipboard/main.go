@@ -129,5 +129,7 @@ func imageWindow (parent tomo.Window, image image.Image) {
 	container.AdoptExpand(elements.NewImage(image))
 	container.Adopt(closeButton)
 	window.Adopt(container)
+
+	closeButton.Focus()
 	window.Show()
 }

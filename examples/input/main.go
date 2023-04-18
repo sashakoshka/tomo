@@ -12,7 +12,7 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Enter Details")
-	container := elements.NewVBox(true, true)
+	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
 
 	// create inputs
@@ -45,13 +45,8 @@ func run () {
 	fingerLength.OnChange(check)
 
 	// add elements to container
-	container.Adopt(elements.NewLabel("Choose your words carefully.", false), true)
-	container.Adopt(firstName, false)
-	container.Adopt(lastName, false)
-	container.Adopt(fingerLength, false)
-	container.Adopt(elements.NewSpacer(true), false)
-	container.Adopt(button, false)
-	
+	container.AdoptExpand(elements.NewLabel("Choose your words carefully."))
+	container.Adopt(firstName, lastName, fingerLength, elements.NewLine(), button)
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

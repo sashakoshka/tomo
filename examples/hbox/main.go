@@ -12,12 +12,12 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 360, 0))
 	window.SetTitle("horizontal stack")
 
-	container := elements.NewHBox(true, true)
+	container := elements.NewHBox(elements.SpaceBoth)
 	window.Adopt(container)
 
-	container.Adopt(elements.NewLabel("this is sample text", true), true)
-	container.Adopt(elements.NewLabel("this is sample text", true), true)
-	container.Adopt(elements.NewLabel("this is sample text", true), true)
+	container.AdoptExpand(elements.NewLabelWrapped("this is sample text"))
+	container.AdoptExpand(elements.NewLabelWrapped("this is sample text"))
+	container.AdoptExpand(elements.NewLabelWrapped("this is sample text"))
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

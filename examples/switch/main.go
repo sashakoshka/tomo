@@ -12,12 +12,12 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Switches")
 
-	container := elements.NewVBox(true, true)
+	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
 
-	container.Adopt(elements.NewSwitch("hahahah", false), false)
-	container.Adopt(elements.NewSwitch("hehehehheheh", false), false)
-	container.Adopt(elements.NewSwitch("you can flick da swicth", false), false)
+	container.Adopt(elements.NewSwitch("hahahah", false))
+	container.Adopt(elements.NewSwitch("hehehehheheh", false))
+	container.Adopt(elements.NewSwitch("you can flick da swicth", false))
 		
 	window.OnClose(tomo.Stop)
 	window.Show()

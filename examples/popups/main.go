@@ -14,10 +14,10 @@ func run () {
 	if err != nil { panic(err.Error()) }
 	window.SetTitle("Dialog Boxes")
 
-	container := elements.NewVBox(true, true)
+	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
 
-	container.Adopt(elements.NewLabel("Try out different dialogs:", false), true)
+	container.AdoptExpand(elements.NewLabel("Try out different dialogs:"))
 
 	infoButton := elements.NewButton("popups.DialogKindInfo")
 	infoButton.OnClick (func () {
@@ -27,7 +27,7 @@ func run () {
 			"Information",
 			"You are wacky")
 	})
-	container.Adopt(infoButton, false)
+	container.Adopt(infoButton)
 	infoButton.Focus()
 	
 	questionButton := elements.NewButton("popups.DialogKindQuestion")
@@ -41,7 +41,7 @@ func run () {
 			popups.Button { "No",       func () { } },
 			popups.Button { "Not sure", func () { } })
 	})
-	container.Adopt(questionButton, false)
+	container.Adopt(questionButton)
 	
 	warningButton := elements.NewButton("popups.DialogKindWarning")
 	warningButton.OnClick (func () {
@@ -51,7 +51,7 @@ func run () {
 			"Warning",
 			"They are fast approaching.")
 	})
-	container.Adopt(warningButton, false)
+	container.Adopt(warningButton)
 	
 	errorButton := elements.NewButton("popups.DialogKindError")
 	errorButton.OnClick (func () {
@@ -61,7 +61,7 @@ func run () {
 			"Error",
 			"There is nowhere left to go.")
 	})
-	container.Adopt(errorButton, false)
+	container.Adopt(errorButton)
 
 	menuButton := elements.NewButton("menu")
 	menuButton.OnClick (func () {
@@ -70,14 +70,14 @@ func run () {
 			tomo.Bounds(0, 0, 64, 64).
 			Add(menuButton.Entity().Bounds().Min))
 		if err != nil { println(err.Error()) }
-		menu.Adopt(elements.NewLabel("I'm a shy window...", true))
+		menu.Adopt(elements.NewLabelWrapped("I'm a shy window..."))
 		menu.Show()
 	})
-	container.Adopt(menuButton, false)
+	container.Adopt(menuButton)
 
 	cancelButton := elements.NewButton("No thank you.")
 	cancelButton.OnClick(tomo.Stop)
-	container.Adopt(cancelButton, false)
+	container.Adopt(cancelButton)
 		
 	window.OnClose(tomo.Stop)
 	window.Show()

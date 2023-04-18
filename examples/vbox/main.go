@@ -13,26 +13,25 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 128, 128))
 	window.SetTitle("vertical stack")
 
-	container := elements.NewVBox(true, true)
+	container := elements.NewVBox(elements.SpaceBoth)
 
-	label    := elements.NewLabel("it is a label hehe", true)
+	label    := elements.NewLabelWrapped("it is a label hehe")
 	button   := elements.NewButton("drawing pad")
 	okButton := elements.NewButton("OK")
 	button.OnClick (func () {
 		container.DisownAll()
-		container.Adopt(elements.NewLabel("Draw here:", false), false)
-		container.Adopt(testing.NewMouse(), true)
-		container.Adopt(okButton, false)
+		container.Adopt(elements.NewLabel("Draw here (not really):"))
+		container.AdoptExpand(testing.NewMouse())
+		container.Adopt(okButton)
 		okButton.Focus()
 	})
 	okButton.OnClick(tomo.Stop)
-	
-	container.Adopt(label, true)
-	container.Adopt(button, false)
-	container.Adopt(okButton, false)
-	okButton.Focus()
-	
+
+	container.AdoptExpand(label)
+	container.Adopt(button, okButton)
 	window.Adopt(container)
+	
+	okButton.Focus()
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

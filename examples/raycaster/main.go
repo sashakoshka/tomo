@@ -21,7 +21,7 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 640, 480))
 	window.SetTitle("Raycaster")
 
-	container := elements.NewVBox(false, false)
+	container := elements.NewVBox(elements.SpaceNone)
 	window.Adopt(container)
 
 	wallTexture, _ := TextureFrom(bytes.NewReader(wallTextureBytes))
@@ -48,16 +48,16 @@ func run () {
 		wallTexture,
 	})
 
-	topBar := containers.NewHBox(true, true)
+	topBar := elements.NewHBox(elements.SpaceBoth)
 	staminaBar := elements.NewProgressBar(game.Stamina())
 	healthBar  := elements.NewProgressBar(game.Health())
 	
-	topBar.Adopt(elements.NewLabel("Stamina:", false), false)
-	topBar.Adopt(staminaBar, true)
-	topBar.Adopt(elements.NewLabel("Health:", false), false)
-	topBar.Adopt(healthBar, true)
-	container.Adopt(topBar, false)
-	container.Adopt(game, true)
+	topBar.Adopt(elements.NewLabel("Stamina:"))
+	topBar.AdoptExpand(staminaBar)
+	topBar.Adopt(elements.NewLabel("Health:"))
+	topBar.AdoptExpand(healthBar)
+	container.Adopt(topBar)
+	container.AdoptExpand(game)
 	game.Focus()
 
 	game.OnStatUpdate (func () {

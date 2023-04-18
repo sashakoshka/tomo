@@ -12,29 +12,31 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 360, 0))
 	window.SetTitle("Icons")
 
-	container := elements.NewVBox(true, true)
+	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
 
-	container.Adopt(elements.NewLabel("Just some of the wonderful icons we have:", false), false)
-	container.Adopt(elements.NewSpacer(true), false)
-	container.Adopt(icons(tomo.IconHome, tomo.IconHistory), true)
-	container.Adopt(icons(tomo.IconFile, tomo.IconNetwork), true)
-	container.Adopt(icons(tomo.IconOpen, tomo.IconRemoveFavorite), true)
-	container.Adopt(icons(tomo.IconCursor, tomo.IconDistort), true)
+	container.Adopt (
+		elements.NewLabel("Just some of the wonderful icons we have:"),
+		elements.NewLine())
+	container.AdoptExpand (
+		icons(tomo.IconHome,   tomo.IconHistory),
+		icons(tomo.IconFile,   tomo.IconNetwork),
+		icons(tomo.IconOpen,   tomo.IconRemoveFavorite),
+		icons(tomo.IconCursor, tomo.IconDistort))
 
 	closeButton := elements.NewButton("Yes verynice")
 	closeButton.SetIcon(tomo.IconYes)
 	closeButton.OnClick(tomo.Stop)
-	container.Adopt(closeButton, false)
+	container.Adopt(closeButton)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()
 }
 
-func icons (min, max tomo.Icon) (container *containers.Box) {
-	container = containers.NewHBox(false, true)
+func icons (min, max tomo.Icon) (container *elements.Box) {
+	container = elements.NewHBox(elements.SpaceMargin)
 	for index := min; index <= max; index ++ {
-		container.Adopt(elements.NewIcon(index, tomo.IconSizeSmall), true)
+		container.AdoptExpand(elements.NewIcon(index, tomo.IconSizeSmall))
 	}
 	return
 }

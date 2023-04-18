@@ -54,9 +54,16 @@ func NewHBox (space Space, children ...tomo.Element) (element *Box) {
 }
 
 // NewHBox creates a new vertical box.
-func NewVBox (space Space) (element *Box) {
-	element = NewHBox(space)
-	element.vertical = true
+func NewVBox (space Space, children ...tomo.Element) (element *Box) {
+	element = &Box {
+		padding:  space.Includes(SpacePadding),
+		margin:   space.Includes(SpaceMargin),
+		vertical: true,
+	}
+	element.scratch = make(map[tomo.Element] scratchEntry)
+	element.theme.Case = tomo.C("tomo", "box")
+	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
+	element.Adopt(children...)
 	return
 }
 

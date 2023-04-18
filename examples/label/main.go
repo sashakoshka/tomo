@@ -11,7 +11,7 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 480, 360))
 	window.SetTitle("example label")
-	window.Adopt(elements.NewLabel(text, true))
+	window.Adopt(elements.NewLabelWrapped(text))
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

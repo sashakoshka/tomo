@@ -14,8 +14,9 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(200, 200, 256, 256))
 	window.SetTitle("Main")
 
-	container := elements.NewVBox(true, true)
-	container.Adopt(elements.NewLabel("Main window", false), true)
+	container := elements.NewVBox (
+		elements.SpaceBoth,
+		elements.NewLabel("Main window"))
 	window.Adopt(container)
 		
 	window.OnClose(tomo.Stop)
@@ -31,8 +32,9 @@ func createPanel (parent tomo.MainWindow, id int, bounds image.Rectangle) {
 	window, _ := parent.NewPanel(bounds)
 	title := fmt.Sprint("Panel #", id)
 	window.SetTitle(title)
-	container := containers.NewVBox(true, true)
-	container.Adopt(elements.NewLabel(title, false), true)
+	container := elements.NewVBox (
+		elements.SpaceBoth,
+		elements.NewLabel(title))
 	window.Adopt(container)
 	window.Show()
 }
