@@ -198,7 +198,10 @@ func (element *Scroll) updateMinimumSize () {
 }
 
 func (element *Scroll) updateEnabled () {
-	horizontal, vertical := element.child.ScrollAxes()
+	horizontal, vertical := false, false
+	if element.child != nil {
+		horizontal, vertical = element.child.ScrollAxes()
+	}
 	if element.horizontal != nil {
 		element.horizontal.SetEnabled(horizontal)
 	}

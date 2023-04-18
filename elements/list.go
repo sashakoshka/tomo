@@ -58,6 +58,10 @@ func (element *List) Draw (destination canvas.Canvas) {
 }
 
 func (element *List) Layout () {
+	if element.scroll.Y > element.maxScrollHeight() {
+		element.scroll.Y = element.maxScrollHeight()
+	}
+	
 	margin := element.theme.Margin(tomo.PatternSunken)
 	padding := element.theme.Padding(tomo.PatternSunken)
 	bounds := padding.Apply(element.entity.Bounds())
