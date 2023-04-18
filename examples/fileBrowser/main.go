@@ -3,10 +3,7 @@ package main
 import "os"
 import "path/filepath"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import "git.tebibyte.media/sashakoshka/tomo/elements/file"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
@@ -16,11 +13,11 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 384, 384))
 	window.SetTitle("File browser")
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
 	homeDir, _ := os.UserHomeDir()
 
-	controlBar := containers.NewContainer(layouts.Horizontal { })
+	controlBar := elements.NewHBox(elements.SpaceNone)
 	backButton := elements.NewButton("Back")
 	backButton.SetIcon(tomo.IconBackward)
 	backButton.ShowText(false)
@@ -35,12 +32,11 @@ func run () {
 	upwardButton.ShowText(false)
 	locationInput := elements.NewTextBox("Location", "")
 	
-	statusBar := containers.NewContainer(layouts.Horizontal { true, false })
-	directory, _ := fileElements.NewFile(homeDir, nil)
-	baseName := elements.NewLabel(filepath.Base(homeDir), false)
+	statusBar := elements.NewHBox(elements.SpaceMargin)
+	directory, _ := elements.NewFile(homeDir, nil)
+	baseName := elements.NewLabel(filepath.Base(homeDir))
 	
-	scrollContainer  := containers.NewScrollContainer(false, true)
-	directoryView, _ := fileElements.NewDirectory(homeDir, nil)
+	directoryView, _ := elements.NewDirectory(homeDir, nil)
 	updateStatus := func () {
 		filePath, _ := directoryView.Location()
 		directory.SetLocation(filePath, nil)
@@ -72,19 +68,15 @@ func run () {
 		filePath, _ := directoryView.Location()
 		choose(filepath.Dir(filePath))
 	})
+
+	controlBar.Adopt(backButton, forwardButton, refreshButton, upwardButton)
+	controlBar.AdoptExpand(locationInput)
+	statusBar.Adopt(directory, baseName)
 	
-	controlBar.Adopt(backButton,    false)
-	controlBar.Adopt(forwardButton, false)
-	controlBar.Adopt(refreshButton, false)
-	controlBar.Adopt(upwardButton,  false)
-	controlBar.Adopt(locationInput, true)
-	scrollContainer.Adopt(directoryView)
-	statusBar.Adopt(directory, false)
-	statusBar.Adopt(baseName, false)
-	
-	container.Adopt(controlBar,      false)
-	container.Adopt(scrollContainer, true)
-	container.Adopt(statusBar,       false)
+	container.Adopt(controlBar)
+	container.AdoptExpand (
+		elements.NewScroll(elements.ScrollVertical, directoryView))
+	container.Adopt(statusBar)
 
 	window.OnClose(tomo.Stop)
 	window.Show()

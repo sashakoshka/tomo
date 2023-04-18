@@ -7,6 +7,15 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 
+// TODO: make hidden variants:
+// vertical: one column.
+// flow:     acts like DocumentContainer with all inline elements.
+// create wrapper elements for making a plain version of each of these, but keep
+// the implementations private (but with public methods) so they can be included
+// in other elements.
+// have table be a very tabular thing with named columns that can be sorted,
+// resized, etc.
+
 type listEntity interface {
 	tomo.ContainerEntity
 	tomo.ScrollableEntity
@@ -36,10 +45,7 @@ func NewList (columns int, children ...tomo.Element) (element *List) {
 	element.columnSizes = make([]int, columns)
 	element.theme.Case = tomo.C("tomo", "list")
 	element.entity = tomo.NewEntity(element).(listEntity)
-
-	for _, child := range children {
-		element.Adopt(child)
-	}
+	element.Adopt(children...)
 	return
 }
 
@@ -117,23 +123,27 @@ func (element *List) Layout () {
 	}
 }
 
-func (element *List) Adopt (child tomo.Element) {
-	element.entity.Adopt(child)
-	element.scratch[child] = scratchEntry { }
+func (element *List) Adopt (children ...tomo.Element) {
+	for _, child := range children {
+		element.entity.Adopt(child)
+		element.scratch[child] = scratchEntry { }
+	}
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
 
-func (element *List) Disown (child tomo.Element) {
-	index := element.entity.IndexOf(child)
-	if index < 0 { return }
-	if index == element.selected {
-		element.selected = -1
-		element.entity.SelectChild(index, false)
+func (element *List) Disown (children ...tomo.Element) {
+	for _, child := range children {
+		index := element.entity.IndexOf(child)
+		if index < 0 { return }
+		if index == element.selected {
+			element.selected = -1
+			element.entity.SelectChild(index, false)
+		}
+		element.entity.Disown(index)
+		delete(element.scratch, child)
 	}
-	element.entity.Disown(index)
-	delete(element.scratch, child)
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
