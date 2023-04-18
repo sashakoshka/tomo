@@ -170,6 +170,7 @@ func (system *system) draw () {
 	defer func () { system.invalidateIgnore = false } ()
 
 	for entity := range system.drawingInvalid {
+		if entity.clippedBounds.Empty() { continue }
 		entity.element.Draw (canvas.Cut (
 			system.canvas,
 			entity.clippedBounds))

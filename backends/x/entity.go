@@ -52,6 +52,7 @@ func (ent *entity) unlink () {
 
 func (entity *entity) link (parent *entity) {
 	entity.parent = parent
+	entity.clip(parent.clippedBounds)
 	if parent.window != nil {
 		entity.setWindow(parent.window)
 	}
@@ -108,6 +109,13 @@ func (entity *entity) forMouseTargetContainers (callback func (tomo.MouseTargetC
 		callback(parent, entity.element)
 	}
 	entity.parent.forMouseTargetContainers(callback)
+}
+
+func (entity *entity) clip (bounds image.Rectangle) {
+	entity.clippedBounds = entity.bounds.Intersect(bounds)
+	for _, child := range entity.children {
+		child.clip(entity.clippedBounds)
+	}
 }
 
 // ----------- Entity ----------- //
@@ -204,7 +212,7 @@ func (entity *entity) CountChildren () int {
 func (entity *entity) PlaceChild (index int, bounds image.Rectangle) {
 	child := entity.children[index]
 	child.bounds = bounds
-	child.clippedBounds = entity.bounds.Intersect(bounds)
+	child.clip(entity.clippedBounds)
 	child.Invalidate()
 	child.InvalidateLayout()
 }
