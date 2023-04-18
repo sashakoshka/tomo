@@ -212,11 +212,11 @@ func (window *window) handleButtonPress (
 				point.X, point.Y,
 				input.Button(buttonEvent.Detail))
 		}
-		callback := func (container tomo.MouseTargetContainer) {
+		callback := func (container tomo.MouseTargetContainer, child tomo.Element) {
 			container.HandleChildMouseDown (
 				point.X, point.Y,
 				input.Button(buttonEvent.Detail),
-				underneath.element)
+				child)
 		}
 		underneath.forMouseTargetContainers(callback)
 	}
@@ -238,12 +238,12 @@ func (window *window) handleButtonRelease (
 				int(buttonEvent.EventY),
 				input.Button(buttonEvent.Detail))
 		}
-		callback := func (container tomo.MouseTargetContainer) {
+		callback := func (container tomo.MouseTargetContainer, child tomo.Element) {
 			container.HandleChildMouseUp (
 			int(buttonEvent.EventX),
 			int(buttonEvent.EventY),
 			input.Button(buttonEvent.Detail),
-			dragging.element)
+			child)
 		}
 		dragging.forMouseTargetContainers(callback)
 	}

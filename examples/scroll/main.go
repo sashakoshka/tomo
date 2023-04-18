@@ -1,6 +1,6 @@
 package main
 
-// import "image"
+import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
@@ -18,48 +18,49 @@ func run () {
 	textBox := elements.NewTextBox("", copypasta)
 
 	disconnectedContainer := elements.NewHBox(false, true)
-	// list := elements.NewList (
-		// elements.NewListEntry("This is list item 0", nil),
-		// elements.NewListEntry("This is list item 1", nil),
-		// elements.NewListEntry("This is list item 2", nil),
-		// elements.NewListEntry("This is list item 3", nil),
-		// elements.NewListEntry("This is list item 4", nil),
-		// elements.NewListEntry("This is list item 5", nil),
-		// elements.NewListEntry("This is list item 6", nil),
-		// elements.NewListEntry("This is list item 7", nil),
-		// elements.NewListEntry("This is list item 8", nil),
-		// elements.NewListEntry("This is list item 9", nil),
-		// elements.NewListEntry("This is list item 10", nil),
-		// elements.NewListEntry("This is list item 11", nil),
-		// elements.NewListEntry("This is list item 12", nil),
-		// elements.NewListEntry("This is list item 13", nil),
-		// elements.NewListEntry("This is list item 14", nil),
-		// elements.NewListEntry("This is list item 15", nil),
-		// elements.NewListEntry("This is list item 16", nil),
-		// elements.NewListEntry("This is list item 17", nil),
-		// elements.NewListEntry("This is list item 18", nil),
-		// elements.NewListEntry("This is list item 19", nil),
-		// elements.NewListEntry("This is list item 20", nil))
-	// list.Collapse(0, 32)
-	// scrollBar := elements.NewScrollBar(true)
-	// list.OnScrollBoundsChange (func () {
-		// scrollBar.SetBounds (
-			// list.ScrollContentBounds(),
-			// list.ScrollViewportBounds())
-	// })
-	// scrollBar.OnScroll (func (viewport image.Point) {
-		// list.ScrollTo(viewport)
-	// })
+	list := elements.NewList (
+		1,
+		elements.NewCell(elements.NewLabel("This is list item 0", false)),
+		elements.NewCell(elements.NewLabel("This is list item 1", false)),
+		elements.NewCell(elements.NewLabel("This is list item 2", false)),
+		elements.NewCell(elements.NewLabel("This is list item 3", false)),
+		elements.NewCell(elements.NewLabel("This is list item 4", false)),
+		elements.NewCell(elements.NewLabel("This is list item 5", false)),
+		elements.NewCell(elements.NewLabel("This is list item 6", false)),
+		elements.NewCell(elements.NewLabel("This is list item 7", false)),
+		elements.NewCell(elements.NewLabel("This is list item 8", false)),
+		elements.NewCell(elements.NewLabel("This is list item 9", false)),
+		elements.NewCell(elements.NewLabel("This is list item 10", false)),
+		elements.NewCell(elements.NewLabel("This is list item 11", false)),
+		elements.NewCell(elements.NewLabel("This is list item 12", false)),
+		elements.NewCell(elements.NewLabel("This is list item 13", false)),
+		elements.NewCell(elements.NewLabel("This is list item 14", false)),
+		elements.NewCell(elements.NewLabel("This is list item 15", false)),
+		elements.NewCell(elements.NewLabel("This is list item 16", false)),
+		elements.NewCell(elements.NewLabel("This is list item 17", false)),
+		elements.NewCell(elements.NewLabel("This is list item 18", false)),
+		elements.NewCell(elements.NewLabel("This is list item 19", false)),
+		elements.NewCell(elements.NewLabel("This is list item 20", false)))
+	list.Collapse(0, 32)
+	scrollBar := elements.NewScrollBar(true)
+	list.OnScrollBoundsChange (func () {
+		scrollBar.SetBounds (
+			list.ScrollContentBounds(),
+			list.ScrollViewportBounds())
+	})
+	scrollBar.OnScroll (func (viewport image.Point) {
+		list.ScrollTo(viewport)
+	})
 	
 	container.Adopt(elements.NewLabel("A ScrollContainer:", false), false)
 	container.Adopt(elements.NewScroll(textBox, true, false), false)
-	// disconnectedContainer.Adopt(list, false)
+	disconnectedContainer.Adopt(list, false)
 	disconnectedContainer.Adopt (elements.NewLabel (
 		"Notice how the scroll bar to the right can be used to " +
 		"control the list, despite not even touching it. It is " +
 		"indeed a thing you can do. It is also terrible UI design so " +
 		"don't do it.", true), true)
-	// disconnectedContainer.Adopt(scrollBar, false)
+	disconnectedContainer.Adopt(scrollBar, false)
 	container.Adopt(disconnectedContainer, true)
 	
 	window.OnClose(tomo.Stop)

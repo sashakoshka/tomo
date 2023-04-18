@@ -102,10 +102,10 @@ func (entity *entity) scrollTargetChildAt (point image.Point) *entity {
 	return nil
 }
 
-func (entity *entity) forMouseTargetContainers (callback func (tomo.MouseTargetContainer)) {
+func (entity *entity) forMouseTargetContainers (callback func (tomo.MouseTargetContainer, tomo.Element)) {
 	if entity.parent == nil { return }
 	if parent, ok := entity.parent.element.(tomo.MouseTargetContainer); ok {
-		callback(parent)
+		callback(parent, entity.element)
 	}
 	entity.parent.forMouseTargetContainers(callback)
 }
@@ -211,7 +211,8 @@ func (entity *entity) PlaceChild (index int, bounds image.Rectangle) {
 
 func (entity *entity) SelectChild (index int, selected bool) {
 	child := entity.children[index]
-	if element, ok := entity.element.(tomo.Selectable); ok {
+	if element, ok := child.element.(tomo.Selectable); ok {
+		if child.selected == selected { return }
 		child.selected = selected
 		element.HandleSelectionChange()
 	}
