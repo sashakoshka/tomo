@@ -21,19 +21,12 @@ func (space Space) Includes (sub Space) bool {
 	return (space & sub) > 0
 }
 
-type scratchEntry struct {
-	expand     bool
-	minSize    float64
-	minBreadth float64
-}
-
 // Box is a container that lays out its children horizontally or vertically.
 // Child elements can be set to contract to their minimum size, or expand to
 // fill remaining space. Boxes can be nested and used together to create more
 // complex layouts.
 type Box struct {
-	entity   tomo.ContainerEntity
-	scratch  map[tomo.Element] scratchEntry
+	container
 	theme    theme.Wrapped
 	padding  bool
 	margin   bool
@@ -46,9 +39,10 @@ func NewHBox (space Space, children ...tomo.Element) (element *Box) {
 		padding: space.Includes(SpacePadding),
 		margin:  space.Includes(SpaceMargin),
 	}
-	element.scratch = make(map[tomo.Element] scratchEntry)
-	element.theme.Case = tomo.C("tomo", "box")
 	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
+	element.minimumSize = element.updateMinimumSize
+	element.init()
+	element.theme.Case = tomo.C("tomo", "box")
 	element.Adopt(children...)
 	return
 }
@@ -60,15 +54,12 @@ func NewVBox (space Space, children ...tomo.Element) (element *Box) {
 		margin:   space.Includes(SpaceMargin),
 		vertical: true,
 	}
-	element.scratch = make(map[tomo.Element] scratchEntry)
-	element.theme.Case = tomo.C("tomo", "box")
 	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
+	element.minimumSize = element.updateMinimumSize
+	element.init()
+	element.theme.Case = tomo.C("tomo", "box")
 	element.Adopt(children...)
 	return
-}
-
-func (element *Box) Entity () tomo.Entity {
-	return element.entity
 }
 
 func (element *Box) Draw (destination canvas.Canvas) {
@@ -127,64 +118,8 @@ func (element *Box) Layout () {
 	}
 }
 
-func (element *Box) Adopt (children ...tomo.Element) {
-	for _, child := range children {
-		element.entity.Adopt(child)
-		element.scratch[child] = scratchEntry { expand: false }
-	}
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
 func (element *Box) AdoptExpand (children ...tomo.Element) {
-	for _, child := range children {
-		element.entity.Adopt(child)
-		element.scratch[child] = scratchEntry { expand: true }
-	}
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
-func (element *Box) Disown (children ...tomo.Element) {
-	for _, child := range children {
-		index := element.entity.IndexOf(child)
-		if index < 0 { continue }
-		element.entity.Disown(index)
-		delete(element.scratch, child)
-	}
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
-func (element *Box) DisownAll () {
-	func () {
-		for index := 0; index < element.entity.CountChildren(); index ++ {
-			index := index
-			defer element.entity.Disown(index)
-		}
-	} ()
-	element.scratch = make(map[tomo.Element] scratchEntry)
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
-func (element *Box) Child (index int) tomo.Element {
-	if index < 0 || index >= element.entity.CountChildren() { return nil }
-	return element.entity.Child(index)
-}
-
-func (element *Box) CountChildren () int {
-	return element.entity.CountChildren()
-}
-
-func (element *Box) HandleChildMinimumSizeChange (child tomo.Element) {
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
+	element.adopt(true, children...)
 }
 
 func (element *Box) DrawBackground (destination canvas.Canvas) {

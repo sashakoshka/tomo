@@ -12,9 +12,9 @@ type documentEntity interface {
 }
 
 type Document struct {
+	container
 	entity documentEntity
 	
-	scratch       map[tomo.Element] scratchEntry
 	scroll        image.Point
 	contentBounds image.Rectangle
 
@@ -25,15 +25,13 @@ type Document struct {
 
 func NewDocument (children ...tomo.Element) (element *Document) {
 	element = &Document { }
-	element.scratch = make(map[tomo.Element] scratchEntry)
 	element.theme.Case = tomo.C("tomo", "document")
 	element.entity = tomo.NewEntity(element).(documentEntity)
+	element.container.entity = element.entity
+	element.minimumSize = element.updateMinimumSize
+	element.init()
 	element.Adopt(children...)
 	return
-}
-
-func (element *Document) Entity () tomo.Entity {
-	return element.entity
 }
 
 func (element *Document) Draw (destination canvas.Canvas) {
@@ -111,63 +109,11 @@ func (element *Document) Layout () {
 }
 
 func (element *Document) Adopt (children ...tomo.Element) {
-	for _, child := range children {
-		element.entity.Adopt(child)
-		element.scratch[child] = scratchEntry { expand: true }
-	}
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
+	element.adopt(true, children...)
 }
 
 func (element *Document) AdoptInline (children ...tomo.Element) {
-	for _, child := range children {
-		element.entity.Adopt(child)
-		element.scratch[child] = scratchEntry { expand: false }
-	}
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
-func (element *Document) Disown (children ...tomo.Element) {
-	for _, child := range children {
-		index := element.entity.IndexOf(child)
-		if index < 0 { return }
-		element.entity.Disown(index)
-		delete(element.scratch, child)
-	}
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
-func (element *Document) DisownAll () {
-	func () {
-		for index := 0; index < element.entity.CountChildren(); index ++ {
-			index := index
-			defer element.entity.Disown(index)
-		}
-	} ()
-	element.scratch = make(map[tomo.Element] scratchEntry)
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
-func (element *Document) Child (index int) tomo.Element {
-	if index < 0 || index >= element.entity.CountChildren() { return nil }
-	return element.entity.Child(index)
-}
-
-func (element *Document) CountChildren () int {
-	return element.entity.CountChildren()
-}
-
-func (element *Document) HandleChildMinimumSizeChange (child tomo.Element) {
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
+	element.adopt(false, children...)
 }
 
 func (element *Document) HandleChildFlexibleHeightChange (child tomo.Flexible) {

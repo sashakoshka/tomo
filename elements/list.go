@@ -7,24 +7,15 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 
-// TODO: make hidden variants:
-// vertical: one column.
-// flow:     acts like DocumentContainer with all inline elements.
-// create wrapper elements for making a plain version of each of these, but keep
-// the implementations private (but with public methods) so they can be included
-// in other elements.
-// have table be a very tabular thing with named columns that can be sorted,
-// resized, etc.
-
 type listEntity interface {
 	tomo.ContainerEntity
 	tomo.ScrollableEntity
 }
 
 type List struct {
+	container
 	entity listEntity
 	
-	scratch       map[tomo.Element] scratchEntry
 	scroll        image.Point
 	contentBounds image.Rectangle
 	columnSizes   []int
@@ -41,16 +32,14 @@ type List struct {
 func NewList (columns int, children ...tomo.Element) (element *List) {
 	if columns < 1 { columns = 1 }
 	element = &List { selected: -1 }
-	element.scratch = make(map[tomo.Element] scratchEntry)
 	element.columnSizes = make([]int, columns)
 	element.theme.Case = tomo.C("tomo", "list")
 	element.entity = tomo.NewEntity(element).(listEntity)
+	element.container.entity = element.entity
+	element.minimumSize = element.updateMinimumSize
+	element.init()
 	element.Adopt(children...)
 	return
-}
-
-func (element *List) Entity () tomo.Entity {
-	return element.entity
 }
 
 func (element *List) Draw (destination canvas.Canvas) {
@@ -123,54 +112,6 @@ func (element *List) Layout () {
 	}
 }
 
-func (element *List) Adopt (children ...tomo.Element) {
-	for _, child := range children {
-		element.entity.Adopt(child)
-		element.scratch[child] = scratchEntry { }
-	}
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
-func (element *List) Disown (children ...tomo.Element) {
-	for _, child := range children {
-		index := element.entity.IndexOf(child)
-		if index < 0 { return }
-		if index == element.selected {
-			element.selected = -1
-			element.entity.SelectChild(index, false)
-		}
-		element.entity.Disown(index)
-		delete(element.scratch, child)
-	}
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
-func (element *List) DisownAll () {
-	func () {
-		for index := 0; index < element.entity.CountChildren(); index ++ {
-			index := index
-			defer element.entity.Disown(index)
-		}
-	} ()
-	element.scratch = make(map[tomo.Element] scratchEntry)
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
-
-func (element *List) Child (index int) tomo.Element {
-	if index < 0 || index >= element.entity.CountChildren() { return nil }
-	return element.entity.Child(index)
-}
-
-func (element *List) CountChildren () int {
-	return element.entity.CountChildren()
-}
-
 func (element *List) HandleChildMouseDown (x, y int, button input.Button, child tomo.Element) {
 	if child, ok := child.(tomo.Selectable); ok {
 		index := element.entity.IndexOf(child)
@@ -184,12 +125,6 @@ func (element *List) HandleChildMouseDown (x, y int, button input.Button, child 
 }
 
 func (element *List) HandleChildMouseUp (int, int, input.Button, tomo.Element) { }
-
-func (element *List) HandleChildMinimumSizeChange (child tomo.Element) {
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.entity.InvalidateLayout()
-}
 
 func (element *List) HandleChildFlexibleHeightChange (child tomo.Flexible) {
 	element.updateMinimumSize()
