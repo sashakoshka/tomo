@@ -9,10 +9,10 @@ import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 // Space is a list of spacing configurations that can be passed to some
 // containers.
 type Space int; const (
-	SpaceNone    = 0
-	SpacePadding = 1
-	SpaceMargin  = 2
-	SpaceBoth    = SpacePadding | SpaceMargin
+	SpaceNone    Space = 0
+	SpacePadding Space = 1
+	SpaceMargin  Space = 2
+	SpaceBoth    Space = SpacePadding | SpaceMargin
 )
 
 // Includes returns whether a spacing value has been or'd with another spacing
@@ -62,6 +62,7 @@ func NewVBox (space Space, children ...tomo.Element) (element *Box) {
 	return
 }
 
+// Draw causes the element to draw to the specified destination canvas.
 func (element *Box) Draw (destination canvas.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
@@ -74,6 +75,7 @@ func (element *Box) Draw (destination canvas.Canvas) {
 	}
 }
 
+// Layout causes this element to perform a layout operation.
 func (element *Box) Layout () {
 	margin  := element.theme.Margin(tomo.PatternBackground)
 	padding := element.theme.Padding(tomo.PatternBackground)
@@ -118,10 +120,14 @@ func (element *Box) Layout () {
 	}
 }
 
+// AdoptExpand adds one or more elements to the box. These elements will be
+// expanded to fill in empty space.
 func (element *Box) AdoptExpand (children ...tomo.Element) {
 	element.adopt(true, children...)
 }
 
+// DrawBackground draws this element's background pattern to the specified
+// destination canvas.
 func (element *Box) DrawBackground (destination canvas.Canvas) {
 	element.entity.DrawBackground(destination)
 }

@@ -11,6 +11,9 @@ type documentEntity interface {
 	tomo.ScrollableEntity
 }
 
+// Document is a scrollable container capcable of laying out flexible child
+// elements. Children can be added either inline (similar to an HTML/CSS inline
+// element), or expanding (similar to an HTML/CSS block element).
 type Document struct {
 	container
 	entity documentEntity
@@ -23,6 +26,7 @@ type Document struct {
 	onScrollBoundsChange func ()
 }
 
+// NewDocument creates a new document container.
 func NewDocument (children ...tomo.Element) (element *Document) {
 	element = &Document { }
 	element.theme.Case = tomo.C("tomo", "document")
@@ -34,6 +38,7 @@ func NewDocument (children ...tomo.Element) (element *Document) {
 	return
 }
 
+// Draw causes the element to draw to the specified destination canvas.
 func (element *Document) Draw (destination canvas.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
@@ -46,6 +51,7 @@ func (element *Document) Draw (destination canvas.Canvas) {
 	}
 }
 
+// Layout causes this element to perform a layout operation.
 func (element *Document) Layout () {
 	if element.scroll.Y > element.maxScrollHeight() {
 		element.scroll.Y = element.maxScrollHeight()
@@ -112,10 +118,14 @@ func (element *Document) Layout () {
 	}
 }
 
+// Adopt adds one or more elements to the container, placing each on its own
+// line.
 func (element *Document) Adopt (children ...tomo.Element) {
 	element.adopt(true, children...)
 }
 
+// AdoptInline adds one or more elements to the container, packing multiple
+// elements onto the same line(s).
 func (element *Document) AdoptInline (children ...tomo.Element) {
 	element.adopt(false, children...)
 }
@@ -126,6 +136,8 @@ func (element *Document) HandleChildFlexibleHeightChange (child tomo.Flexible) {
 	element.entity.InvalidateLayout()
 }
 
+// DrawBackground draws this element's background pattern to the specified
+// destination canvas.
 func (element *Document) DrawBackground (destination canvas.Canvas) {
 	element.entity.DrawBackground(destination)
 }

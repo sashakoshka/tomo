@@ -37,6 +37,7 @@ type ScrollBar struct {
 	onScroll func (viewport image.Point)
 }
 
+// NewVScrollBar creates a new vertical scroll bar.
 func NewVScrollBar () (element *ScrollBar) {
 	element = &ScrollBar {
 		vertical: true,

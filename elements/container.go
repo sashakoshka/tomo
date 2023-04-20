@@ -14,10 +14,12 @@ type container struct {
 	minimumSize func ()
 }
 
+// Entity returns this element's entity.
 func (container *container) Entity () tomo.Entity {
 	return container.entity
 }
 
+// Adopt adds one or more elements to the container.
 func (container *container) Adopt (children ...tomo.Element) {
 	container.adopt(false, children...)
 }
@@ -36,6 +38,7 @@ func (container *container) adopt (expand bool, children ...tomo.Element) {
 	container.entity.InvalidateLayout()
 }
 
+// Disown removes one or more elements from the container.
 func (container *container) Disown (children ...tomo.Element) {
 	for _, child := range children {
 		index := container.entity.IndexOf(child)
@@ -48,6 +51,7 @@ func (container *container) Disown (children ...tomo.Element) {
 	container.entity.InvalidateLayout()
 }
 
+// DisownAll removes all elements from the container.
 func (container *container) DisownAll () {
 	func () {
 		for index := 0; index < container.entity.CountChildren(); index ++ {
@@ -61,11 +65,13 @@ func (container *container) DisownAll () {
 	container.entity.InvalidateLayout()
 }
 
+// Child returns the child at the specified index.
 func (container *container) Child (index int) tomo.Element {
 	if index < 0 || index >= container.entity.CountChildren() { return nil }
 	return container.entity.Child(index)
 }
 
+// CountChildren returns the amount of children in this container.
 func (container *container) CountChildren () int {
 	return container.entity.CountChildren()
 }

@@ -7,11 +7,12 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
+// ScrollMode specifies which sides of a Scroll have scroll bars.
 type ScrollMode int; const (
-	ScrollNeither ScrollMode = 0
-	ScrollVertical           = 1
-	ScrollHorizontal         = 2
-	ScrollBoth               = ScrollVertical | ScrollHorizontal
+	ScrollNeither    ScrollMode = 0
+	ScrollVertical   ScrollMode = 1
+	ScrollHorizontal ScrollMode = 2
+	ScrollBoth       ScrollMode = ScrollVertical | ScrollHorizontal
 )
 
 // Includes returns whether a scroll mode has been or'd with another scroll
@@ -20,6 +21,8 @@ func (mode ScrollMode) Includes (sub ScrollMode) bool {
 	return (mode & sub) > 0
 }
 
+// Scroll adds scroll bars to any scrollable element. It also captures scroll
+// wheel input.
 type Scroll struct {
 	entity tomo.ContainerEntity
 	
@@ -31,6 +34,7 @@ type Scroll struct {
 	theme  theme.Wrapped
 }
 
+// NewScroll creates a new scroll element.
 func NewScroll (mode ScrollMode, child tomo.Scrollable) (element *Scroll) {
 	element = &Scroll { }
 	element.theme.Case = tomo.C("tomo", "scroll")
@@ -69,10 +73,12 @@ func NewScroll (mode ScrollMode, child tomo.Scrollable) (element *Scroll) {
 	return
 }
 
+// Entity returns this element's entity.
 func (element *Scroll) Entity () tomo.Entity {
 	return element.entity
 }
 
+// Draw causes the element to draw to the specified destination canvas.
 func (element *Scroll) Draw (destination canvas.Canvas) {
 	if element.horizontal != nil && element.vertical != nil {
 		bounds := element.entity.Bounds()
@@ -85,6 +91,7 @@ func (element *Scroll) Draw (destination canvas.Canvas) {
 	}
 }
 
+// Layout causes this element to perform a layout operation.
 func (element *Scroll) Layout () {
 	bounds := element.entity.Bounds()
 	child  := bounds
@@ -125,10 +132,13 @@ func (element *Scroll) Layout () {
 	}
 }
 
+// DrawBackground draws this element's background pattern to the specified
+// destination canvas.
 func (element *Scroll) DrawBackground (destination canvas.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 
+// Adopt sets this element's child. If nil is passed, any child is removed.
 func (element *Scroll) Adopt (child tomo.Scrollable) {
 	if element.child != nil {
 		element.entity.Disown(element.entity.IndexOf(element.child))
@@ -142,6 +152,12 @@ func (element *Scroll) Adopt (child tomo.Scrollable) {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
+}
+
+// Child returns this element's child. If there is no child, this method will
+// return nil.
+func (element *Scroll) Child () tomo.Scrollable {
+	return element.child
 }
 
 func (element *Scroll) HandleChildMinimumSizeChange (tomo.Element) {
@@ -172,6 +188,7 @@ func (element *Scroll) HandleScroll (
 	element.scrollChildBy(int(deltaX), int(deltaY))
 }
 
+// SetTheme sets the element's theme.
 func (element *Scroll) SetTheme (theme tomo.Theme) {
 	if theme == element.theme.Theme { return }
 	element.theme.Theme = theme
@@ -180,6 +197,7 @@ func (element *Scroll) SetTheme (theme tomo.Theme) {
 	element.entity.InvalidateLayout()
 }
 
+// SetConfig sets the element's configuration.
 func (element *Scroll) SetConfig (config tomo.Config) {
 	element.config.Config = config
 }
