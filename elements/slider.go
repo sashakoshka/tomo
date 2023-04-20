@@ -31,6 +31,7 @@ func NewSlider (value float64, orientation Orientation) (element *Slider) {
 	element = &Slider {
 		value: value,
 		vertical: bool(orientation),
+		enabled: true,
 	}
 	if orientation == Vertical {
 		element.theme.Case = tomo.C("tomo", "sliderVertical")
