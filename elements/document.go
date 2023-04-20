@@ -47,6 +47,10 @@ func (element *Document) Draw (destination canvas.Canvas) {
 }
 
 func (element *Document) Layout () {
+	if element.scroll.Y > element.maxScrollHeight() {
+		element.scroll.Y = element.maxScrollHeight()
+	}
+	
 	margin := element.theme.Margin(tomo.PatternBackground)
 	padding := element.theme.Padding(tomo.PatternBackground)
 	bounds := padding.Apply(element.entity.Bounds())
@@ -73,7 +77,7 @@ func (element *Document) Layout () {
 	
 		width  := int(entry.minBreadth)
 		height := int(entry.minSize)
-		if width + dot.X > bounds.Dx() && !entry.expand {
+		if width + dot.X > bounds.Max.X && !entry.expand {
 			nextLine()
 		}
 		if width < bounds.Dx() && entry.expand {
@@ -134,7 +138,6 @@ func (element *Document) SetTheme (theme tomo.Theme) {
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
-
 
 // ScrollContentBounds returns the full content size of the element.
 func (element *Document) ScrollContentBounds () image.Rectangle {

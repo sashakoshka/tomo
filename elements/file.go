@@ -140,6 +140,10 @@ func (element *File) HandleFocusChange () {
 	element.entity.Invalidate()
 }
 
+func (element *File) HandleSelectionChange () {
+	element.entity.Invalidate()
+}
+
 func (element *File) OnChoose (callback func ()) {
 	element.onChoose = callback
 }

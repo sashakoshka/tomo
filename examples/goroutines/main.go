@@ -15,6 +15,7 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 200, 216))
 	window.SetTitle("Clock")
+	window.SetApplicationName("TomoClock")
 	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
 
