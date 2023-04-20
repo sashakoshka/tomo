@@ -79,6 +79,20 @@ func (entity *entity) propagate (callback func (*entity) bool) bool {
 	return callback(entity)
 }
 
+
+func (entity *entity) propagateAlt (callback func (*entity) bool) bool {
+	if !callback(entity) {
+		return false
+	}
+	
+	for _, child := range entity.children {
+		if !child.propagate(callback) {
+			return false
+		}
+	}
+
+	return true
+}
 func (entity *entity) childAt (point image.Point) *entity {
 	for _, child := range entity.children {
 		if point.In(child.bounds) {

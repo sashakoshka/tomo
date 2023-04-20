@@ -262,12 +262,10 @@ func (element *List) scrollToSelected () {
 	padding := element.theme.Padding(tomo.PatternBackground)
 	bounds  := padding.Apply(element.entity.Bounds())
 	if target.Min.Y < bounds.Min.Y {
-		// TODO
 		element.scroll.Y -= bounds.Min.Y - target.Min.Y
 		element.entity.Invalidate()
 		element.entity.InvalidateLayout()
 	} else if target.Max.Y > bounds.Max.Y {
-		// TODO
 		element.scroll.Y += target.Max.Y - bounds.Max.Y
 		element.entity.Invalidate()
 		element.entity.InvalidateLayout()

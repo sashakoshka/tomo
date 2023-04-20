@@ -18,6 +18,7 @@ func run () {
 	container.Adopt(elements.NewSwitch("hahahah", false))
 	container.Adopt(elements.NewSwitch("hehehehheheh", false))
 	container.Adopt(elements.NewSwitch("you can flick da swicth", false))
+	container.Adopt(elements.NewToggleButton("like a switch, but not", false))
 		
 	window.OnClose(tomo.Stop)
 	window.Show()

@@ -76,7 +76,7 @@ func (system *system) focus (entity *entity) {
 func (system *system) focusNext () {
 	found   := system.focused == nil
 	focused := false
-	system.propagate (func (entity *entity) bool {
+	system.propagateAlt (func (entity *entity) bool {
 		if found {
 			// looking for the next element to select
 			child, ok := entity.element.(tomo.Focusable)
@@ -116,6 +116,11 @@ func (system *system) focusPrevious () {
 func (system *system) propagate (callback func (*entity) bool) {
 	if system.child == nil { return }
 	system.child.propagate(callback)
+}
+
+func (system *system) propagateAlt (callback func (*entity) bool) {
+	if system.child == nil { return }
+	system.child.propagateAlt(callback)
 }
 
 func (system *system) childAt (point image.Point) *entity {

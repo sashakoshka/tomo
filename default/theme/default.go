@@ -16,7 +16,7 @@ import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 //go:embed assets/wintergreen.png
 var defaultAtlasBytes []byte
 var defaultAtlas      canvas.Canvas
-var defaultTextures   [16][9]artist.Pattern
+var defaultTextures   [17][9]artist.Pattern
 //go:embed assets/wintergreen-icons-small.png
 var defaultIconsSmallAtlasBytes []byte
 var defaultIconsSmall [640]binaryIcon
@@ -111,6 +111,8 @@ func init () {
 	atlasCol(14, artist.Inset { 4, 4, 4, 4 })
 	// PatternTableCell:
 	atlasCol(15, artist.Inset { 4, 4, 4, 4 })
+	// PatternLamp:
+	atlasCol(16, artist.Inset { 4, 3, 4, 3 })
 
 	// PatternButton: basic.checkbox
 	atlasCol(9, artist.Inset { 3, 3, 3, 3 })
@@ -233,6 +235,7 @@ func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.P
 	case tomo.PatternMercury:   return defaultTextures[13][offset]
 	case tomo.PatternTableHead: return defaultTextures[14][offset]
 	case tomo.PatternTableCell: return defaultTextures[15][offset]
+	case tomo.PatternLamp:      return defaultTextures[16][offset]
 	default:                    return patterns.Uhex(0xFF00FFFF)
 	}
 }
@@ -284,6 +287,7 @@ func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
 	case tomo.PatternGutter:     return artist.I(0)
 	case tomo.PatternLine:       return artist.I(1)
 	case tomo.PatternMercury:    return artist.I(5)
+	case tomo.PatternLamp:       return artist.I(5, 5, 5, 6)
 	default:                     return artist.I(8)
 	}
 }

@@ -79,6 +79,9 @@ type Pattern int; const (
 
 	// PatternTableCell is a table cell background.
 	PatternTableCell
+
+	// PatternLamp is an indicator light pattern.
+	PatternLamp
 )
 
 // IconSize is a type representing valid icon sizes.
