@@ -2,9 +2,7 @@ package popups
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 // DialogKind defines the semantic role of a dialog window.
 type DialogKind int
@@ -15,6 +13,8 @@ const (
 	DialogKindWarning
 	DialogKindError
 )
+
+// TODO: add ability to have an icon for buttons
 
 // Button represents a dialog response button.
 type Button struct {
@@ -42,11 +42,11 @@ func NewDialog (
 		window, _ = parent.NewModal(image.Rectangle { })
 	}
 	window.SetTitle(title)
+	
+	box        := elements.NewVBox(elements.SpaceBoth)
+	messageRow := elements.NewHBox(elements.SpaceMargin)
+	controlRow := elements.NewHBox(elements.SpaceMargin)
 
-	container := containers.NewContainer(layouts.Dialog { true, true })
-	window.Adopt(container)
-
-	messageContainer := containers.NewContainer(layouts.Horizontal { true, false })
 	iconId := tomo.IconInformation
 	switch kind {
 	case DialogKindInfo:     iconId = tomo.IconInformation
@@ -55,15 +55,19 @@ func NewDialog (
 	case DialogKindError:    iconId = tomo.IconError
 	}
 	
-	messageContainer.Adopt(elements.NewIcon(iconId, tomo.IconSizeLarge), false)
-	messageContainer.Adopt(elements.NewLabel(message, false), true)
-	container.Adopt(messageContainer, true)
+	messageRow.Adopt(elements.NewIcon(iconId, tomo.IconSizeLarge))
+	messageRow.AdoptExpand(elements.NewLabel(message))
+	
+	controlRow.AdoptExpand(elements.NewSpacer())
+	box.AdoptExpand(messageRow)
+	box.Adopt(controlRow)
+	window.Adopt(box)
 	
 	if len(buttons) == 0 {
 		button := elements.NewButton("OK")
 		button.SetIcon(tomo.IconYes)
 		button.OnClick(window.Close)
-		container.Adopt(button, false)
+		controlRow.Adopt(button)
 		button.Focus()
 	} else {
 		var button *elements.Button
@@ -74,7 +78,7 @@ func NewDialog (
 				buttonDescriptor.OnPress()
 				window.Close()
 			})
-			container.Adopt(button, false)
+			controlRow.Adopt(button)
 		}
 		button.Focus()
 	}

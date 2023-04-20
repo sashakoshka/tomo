@@ -4,35 +4,27 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
 }
 
 func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 256, 256))
 	window.SetTitle("Text alignment")
 
-	container := containers.NewDocumentContainer()
-	scrollContainer := containers.NewScrollContainer(false, true)
-	scrollContainer.Adopt(container)
-	window.Adopt(scrollContainer)
-
-	left    := elements.NewLabel(text, true)
-	center  := elements.NewLabel(text, true)
-	right   := elements.NewLabel(text, true)
-	justify := elements.NewLabel(text, true)
+	left    := elements.NewLabelWrapped(text)
+	center  := elements.NewLabelWrapped(text)
+	right   := elements.NewLabelWrapped(text)
+	justify := elements.NewLabelWrapped(text)
 
 	left.SetAlign(textdraw.AlignLeft)
 	center.SetAlign(textdraw.AlignCenter)
 	right.SetAlign(textdraw.AlignRight)
 	justify.SetAlign(textdraw.AlignJustify)
 
-	container.Adopt(left, true)
-	container.Adopt(center, true)
-	container.Adopt(right, true)
-	container.Adopt(justify, true)
+	window.Adopt (elements.NewScroll (elements.ScrollVertical,
+		elements.NewDocument(left, center, right, justify)))
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

@@ -197,8 +197,8 @@ const (
 
 	IconBackward
 	IconForward
-	IconRefresh
 	IconUpward
+	IconRefresh
 
 	IconYes
 	IconNo

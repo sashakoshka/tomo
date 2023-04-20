@@ -3,8 +3,8 @@ package fun
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
@@ -18,21 +18,19 @@ type pianoKey struct {
 
 // Piano is an element that can be used to input midi notes.
 type Piano struct {
-	*core.Core
-	*core.FocusableCore
-	core core.CoreControl
-	focusableControl core.FocusableCoreControl
-	low, high music.Octave
-	
+	entity tomo.FocusableEntity
+
 	config     config.Wrapped
 	theme      theme.Wrapped
 	flatTheme  theme.Wrapped
 	sharpTheme theme.Wrapped
 
+	low, high music.Octave
 	flatKeys  []pianoKey
 	sharpKeys []pianoKey
 	contentBounds image.Rectangle
 
+	enabled bool
 	pressed *pianoKey
 	keynavPressed map[music.Note] bool
 
@@ -43,11 +41,7 @@ type Piano struct {
 // NewPiano returns a new piano element with a lowest and highest octave,
 // inclusive. If low is greater than high, they will be swapped.
 func NewPiano (low, high music.Octave) (element *Piano) {
-	if low > high {
-		temp := low
-		low = high
-		high = temp
-	}
+	if low > high { low, high = high, low }
 	
 	element = &Piano {
 		low:  low,
@@ -58,15 +52,67 @@ func NewPiano (low, high music.Octave) (element *Piano) {
 	element.theme.Case      = tomo.C("tomo", "piano")
 	element.flatTheme.Case  = tomo.C("tomo", "piano", "flatKey")
 	element.sharpTheme.Case = tomo.C("tomo", "piano", "sharpKey")
-	element.Core, element.core = core.NewCore (element, func () {
-		element.recalculate()
-		element.draw()
-	})
-	element.FocusableCore,
-	element.focusableControl = core.NewFocusableCore(element.core, element.redo)
+	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
 	element.updateMinimumSize()
 	return
 }
+
+// Entity returns this element's entity.
+func (element *Piano) Entity () tomo.Entity {
+	return element.entity
+}
+
+// Draw causes the element to draw to the specified destination canvas.
+func (element *Piano) Draw (destination canvas.Canvas) {
+	element.recalculate()
+
+	state := tomo.State {
+		Focused:  element.entity.Focused(),
+		Disabled: !element.Enabled(),
+	}
+
+	for _, key := range element.flatKeys {
+		_, keynavPressed := element.keynavPressed[key.Note]
+		element.drawFlat (
+			destination,
+			key.Rectangle,
+			element.pressed != nil &&
+			(*element.pressed).Note == key.Note || keynavPressed,
+			state)
+	}
+	for _, key := range element.sharpKeys {
+		_, keynavPressed := element.keynavPressed[key.Note]
+		element.drawSharp (
+			destination,
+			key.Rectangle,
+			element.pressed != nil &&
+			(*element.pressed).Note == key.Note || keynavPressed,
+			state)
+	}
+	
+	pattern := element.theme.Pattern(tomo.PatternPinboard, state)
+	artist.DrawShatter (
+		destination, pattern, element.entity.Bounds(),
+		element.contentBounds)
+}
+
+// Focus gives this element input focus.
+func (element *Piano) Focus () {
+	element.entity.Focus()
+}
+
+// Enabled returns whether this piano can be played or not.
+func (element *Piano) Enabled () bool {
+	return element.enabled
+}
+
+// SetEnabled sets whether this piano can be played or not.
+func (element *Piano) SetEnabled (enabled bool) {
+	if element.enabled == enabled { return }
+	element.enabled = enabled
+	element.entity.Invalidate()
+}
+
 
 // OnPress sets a function to be called when a key is pressed.
 func (element *Piano) OnPress (callback func (note music.Note)) {
@@ -90,7 +136,7 @@ func (element *Piano) HandleMouseUp (x, y int, button input.Button) {
 		element.onRelease((*element.pressed).Note)
 	}
 	element.pressed = nil
-	element.redo()
+	element.entity.Invalidate()
 }
 
 func (element *Piano) HandleMotion (x, y int) {
@@ -126,7 +172,7 @@ func (element *Piano) pressUnderMouseCursor (point image.Point) {
 		if element.onPress != nil {
 			element.onPress((*element.pressed).Note)
 		}
-		element.redo()
+		element.entity.Invalidate()
 	}
 }
 
@@ -186,7 +232,7 @@ func (element *Piano) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 		if element.onPress != nil {
 			element.onPress(note)
 		}
-		element.redo()
+		element.entity.Invalidate()
 	}
 }
 
@@ -199,7 +245,7 @@ func (element *Piano) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
 	if element.onRelease != nil {
 		element.onRelease(note)
 	}
-	element.redo()
+	element.entity.Invalidate()
 }
 
 // SetTheme sets the element's theme.
@@ -209,8 +255,7 @@ func (element *Piano) SetTheme (new tomo.Theme) {
 	element.flatTheme.Theme = new
 	element.sharpTheme.Theme = new
 	element.updateMinimumSize()
-	element.recalculate()
-	element.redo()
+	element.entity.Invalidate()
 }
 
 // SetConfig sets the element's configuration.
@@ -218,13 +263,12 @@ func (element *Piano) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
-	element.recalculate()
-	element.redo()
+	element.entity.Invalidate()
 }
 
 func (element *Piano) updateMinimumSize () {
 	padding := element.theme.Padding(tomo.PatternPinboard)
-	element.core.SetMinimumSize (
+	element.entity.SetMinimumSize (
 		pianoKeyWidth * 7 * element.countOctaves() +
 		padding.Horizontal(),
 		64 + padding.Vertical())
@@ -242,19 +286,12 @@ func (element *Piano) countSharps () int {
 	return element.countOctaves() * 5
 }
 
-func (element *Piano) redo () {
-	if element.core.HasImage() {
-		element.draw()
-		element.core.DamageAll()
-	}
-}
-
 func (element *Piano) recalculate () {
 	element.flatKeys  = make([]pianoKey, element.countFlats())
 	element.sharpKeys = make([]pianoKey, element.countSharps())
 
-	padding  := element.theme.Padding(tomo.PatternPinboard)
-	bounds := padding.Apply(element.Bounds())
+	padding := element.theme.Padding(tomo.PatternPinboard)
+	bounds  := padding.Apply(element.entity.Bounds())
 
 	dot := bounds.Min
 	note := element.low.Note(0)
@@ -285,50 +322,24 @@ func (element *Piano) recalculate () {
 	}
 }
 
-func (element *Piano) draw () {
-	state := tomo.State {
-		Focused: element.Focused(),
-		Disabled: !element.Enabled(),
-	}
-
-	for _, key := range element.flatKeys {
-		_, keynavPressed := element.keynavPressed[key.Note]
-		element.drawFlat (
-			key.Rectangle,
-			element.pressed != nil &&
-			(*element.pressed).Note == key.Note || keynavPressed,
-			state)
-	}
-	for _, key := range element.sharpKeys {
-		_, keynavPressed := element.keynavPressed[key.Note]
-		element.drawSharp (
-			key.Rectangle,
-			element.pressed != nil &&
-			(*element.pressed).Note == key.Note || keynavPressed,
-			state)
-	}
-	
-	pattern := element.theme.Pattern(tomo.PatternPinboard, state)
-	artist.DrawShatter (
-		element.core, pattern, element.Bounds(), element.contentBounds)
-}
-
 func (element *Piano) drawFlat (
+	destination canvas.Canvas,
 	bounds image.Rectangle,
 	pressed bool,
 	state tomo.State,
 ) {
 	state.Pressed = pressed
 	pattern := element.flatTheme.Pattern(tomo.PatternButton, state)
-	pattern.Draw(element.core, bounds)
+	pattern.Draw(destination, bounds)
 }
 
 func (element *Piano) drawSharp (
+	destination canvas.Canvas,
 	bounds image.Rectangle,
 	pressed bool,
 	state tomo.State,
 ) {
 	state.Pressed = pressed
 	pattern := element.sharpTheme.Pattern(tomo.PatternButton, state)
-	pattern.Draw(element.core, bounds)
+	pattern.Draw(destination, bounds)
 }

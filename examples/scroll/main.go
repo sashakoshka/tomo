@@ -2,10 +2,8 @@ package main
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -14,37 +12,39 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 360, 240))
 	window.SetTitle("Scroll")
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
 
 	textBox := elements.NewTextBox("", copypasta)
-	scrollContainer := containers.NewScrollContainer(true, false)
 
-	disconnectedContainer := containers.NewContainer (layouts.Horizontal {
-		Gap: true,
-	})
+	disconnectedContainer := elements.NewHBox(elements.SpaceMargin)
 	list := elements.NewList (
-		elements.NewListEntry("This is list item 0", nil),
-		elements.NewListEntry("This is list item 1", nil),
-		elements.NewListEntry("This is list item 2", nil),
-		elements.NewListEntry("This is list item 3", nil),
-		elements.NewListEntry("This is list item 4", nil),
-		elements.NewListEntry("This is list item 5", nil),
-		elements.NewListEntry("This is list item 6", nil),
-		elements.NewListEntry("This is list item 7", nil),
-		elements.NewListEntry("This is list item 8", nil),
-		elements.NewListEntry("This is list item 9", nil),
-		elements.NewListEntry("This is list item 10", nil),
-		elements.NewListEntry("This is list item 11", nil),
-		elements.NewListEntry("This is list item 12", nil),
-		elements.NewListEntry("This is list item 13", nil),
-		elements.NewListEntry("This is list item 14", nil),
-		elements.NewListEntry("This is list item 15", nil),
-		elements.NewListEntry("This is list item 16", nil),
-		elements.NewListEntry("This is list item 17", nil),
-		elements.NewListEntry("This is list item 18", nil),
-		elements.NewListEntry("This is list item 19", nil),
-		elements.NewListEntry("This is list item 20", nil))
+		2,
+		elements.NewCell(elements.NewCheckbox("Item 0", true)),
+		elements.NewCell(elements.NewCheckbox("Item 1", false)),
+		elements.NewCell(elements.NewCheckbox("Item 2", false)),
+		elements.NewCell(elements.NewCheckbox("Item 3", true)),
+		elements.NewCell(elements.NewCheckbox("Item 4", false)),
+		elements.NewCell(elements.NewCheckbox("Item 5", false)),
+		elements.NewCell(elements.NewCheckbox("Item 6", false)),
+		elements.NewCell(elements.NewCheckbox("Item 7", true)),
+		elements.NewCell(elements.NewCheckbox("Item 8", true)),
+		elements.NewCell(elements.NewCheckbox("Item 9", false)),
+		elements.NewCell(elements.NewCheckbox("Item 10", false)),
+		elements.NewCell(elements.NewCheckbox("Item 11", true)),
+		elements.NewCell(elements.NewCheckbox("Item 12", false)),
+		elements.NewCell(elements.NewCheckbox("Item 13", true)),
+		elements.NewCell(elements.NewCheckbox("Item 14", false)),
+		elements.NewCell(elements.NewCheckbox("Item 15", false)),
+		elements.NewCell(elements.NewCheckbox("Item 16", true)),
+		elements.NewCell(elements.NewCheckbox("Item 17", true)),
+		elements.NewCell(elements.NewCheckbox("Item 18", false)),
+		elements.NewCell(elements.NewCheckbox("Item 19", false)),
+		elements.NewCell(elements.NewCheckbox("Item 20", true)),
+		elements.NewCell(elements.NewCheckbox("Item 21", false)),
+		elements.NewCell(elements.NewScroll (
+			elements.ScrollHorizontal,
+			elements.NewTextBox("", "I bet you weren't expecting this!"))))
 	list.Collapse(0, 32)
 	scrollBar := elements.NewScrollBar(true)
 	list.OnScrollBoundsChange (func () {
@@ -56,17 +56,16 @@ func run () {
 		list.ScrollTo(viewport)
 	})
 	
-	scrollContainer.Adopt(textBox)
-	container.Adopt(elements.NewLabel("A ScrollContainer:", false), false)
-	container.Adopt(scrollContainer, false)
-	disconnectedContainer.Adopt(list, false)
-	disconnectedContainer.Adopt (elements.NewLabel (
+	container.Adopt(elements.NewLabel("A ScrollContainer:"))
+	container.Adopt(elements.NewScroll(elements.ScrollHorizontal, textBox))
+	disconnectedContainer.Adopt(list)
+	disconnectedContainer.AdoptExpand(elements.NewLabelWrapped (
 		"Notice how the scroll bar to the right can be used to " +
 		"control the list, despite not even touching it. It is " +
 		"indeed a thing you can do. It is also terrible UI design so " +
-		"don't do it.", true), true)
-	disconnectedContainer.Adopt(scrollBar, false)
-	container.Adopt(disconnectedContainer, true)
+		"don't do it."))
+	disconnectedContainer.Adopt(scrollBar)
+	container.AdoptExpand(disconnectedContainer)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

@@ -6,54 +6,75 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 // Element represents a basic on-screen object.
 type Element interface {
-	// Bounds reports the element's bounding box. This must reflect the
-	// bounding last given to the element by DrawTo.
-	Bounds () image.Rectangle
-	
-	// MinimumSize specifies the minimum amount of pixels this element's
-	// width and height may be set to. If the element is given a resize
-	// event with dimensions smaller than this, it will use its minimum
-	// instead of the offending dimension(s).
-	MinimumSize () (width, height int)
+	// Draw causes the element to draw to the specified canvas. The bounds
+	// of this canvas specify the area that is actually drawn to, while the
+	// Entity bounds specify the actual area of the element.
+	Draw (canvas.Canvas)
 
-	// SetParent sets the parent container of the element. This should only
-	// be called by the parent when the element is adopted. If parent is set
-	// to nil, it will mark itself as not having a parent. If this method is
-	// passed a non-nil value and the element already has a parent, it will
-	// panic.
-	SetParent (Parent)
-
-	// DrawTo gives the element a canvas to draw on, along with a bounding
-	// box to be used for laying out the element. This should only be called
-	// by the parent element. This is typically a region of the parent
-	// element's canvas.
-	DrawTo (canvas canvas.Canvas, bounds image.Rectangle, onDamage func (region image.Rectangle))
+	// Entity returns this element's entity.
+	Entity () Entity
 }
 
-// Focusable represents an element that has keyboard navigation support. This
-// includes inputs, buttons, sliders, etc. as well as any elements that have
-// children (so keyboard navigation events can be propagated downward).
-type Focusable interface {
+// Layoutable represents an element that needs to perform layout calculations
+// before it can draw itself.
+type Layoutable interface {
+	Element
+	
+	// Layout causes this element to perform a layout operation.
+	Layout ()
+}
+
+// Container represents an element capable of containing child elements.
+type Container interface {
+	Element
+	Layoutable
+
+	// DrawBackground causes the element to draw its background pattern to
+	// the specified canvas. The bounds of this canvas specify the area that
+	// is actually drawn to, while the Entity bounds specify the actual area
+	// of the element.
+	DrawBackground (canvas.Canvas)
+
+	// HandleChildMinimumSizeChange is called when a child's minimum size is
+	// changed.
+	HandleChildMinimumSizeChange (child Element)
+}
+
+// Enableable represents an element that can be enabled and disabled. Disabled
+// elements typically appear greyed out.
+type Enableable interface {
 	Element
 
-	// Focused returns whether or not this element or any of its children
-	// are currently focused.
-	Focused () bool
+	// Enabled returns whether or not the element is enabled.
+	Enabled () bool
+	
+	// SetEnabled sets whether or not the element is enabled.
+	SetEnabled (bool)
+}
 
-	// Focus focuses this element, if its parent element grants the
-	// request.
-	Focus ()
+// Focusable represents an element that has keyboard navigation support.
+type Focusable interface {
+	Element
+	Enableable
 
-	// HandleFocus causes this element to mark itself as focused. If the
-	// element does not have children, it is disabled, or there are no more
-	// selectable children in the given direction, it should return false
-	// and do nothing. Otherwise, it should select itself and any children
-	// (if applicable) and return true.
-	HandleFocus (direction input.KeynavDirection) (accepted bool)
+	// HandleFocusChange is called when the element is focused or unfocused.
+	HandleFocusChange ()
+}
 
-	// HandleDeselection causes this element to mark itself and all of its
-	// children as unfocused.
-	HandleUnfocus ()
+// Selectable represents an element that can be selected. This includes things
+// like list items, files, etc. The difference between this and Focusable is
+// that multiple Selectable elements may be selected at the same time, whereas
+// only one Focusable element may be focused at the same time. Containers who's
+// purpose is to contain selectable elements can determine when to select them
+// by implementing MouseTargetContainer and listening for HandleChildMouseDown
+// events.
+type Selectable interface {
+	Element
+	Enableable
+
+	// HandleSelectionChange is called when the element is selected or
+	// deselected.
+	HandleSelectionChange ()
 }
 
 // KeyboardTarget represents an element that can receive keyboard input.
@@ -83,6 +104,22 @@ type MouseTarget interface {
 	// HandleMouseUp is called when a mouse button is released that was
 	// originally pressed down on this element.
 	HandleMouseUp (x, y int, button input.Button)
+}
+
+// MouseTargetContainer represents an element that wants to know when one
+// of its children is clicked. Children do not have to implement MouseTarget for
+// a container satisfying MouseTargetContainer to be notified that they have
+// been clicked.
+type MouseTargetContainer interface {
+	Container
+
+	// HandleMouseDown is called when a mouse button is pressed down on a
+	// child element.
+	HandleChildMouseDown (x, y int, button input.Button, child Element)
+
+	// HandleMouseUp is called when a mouse button is released that was
+	// originally pressed down on a child element.
+	HandleChildMouseUp (x, y int, button input.Button, child Element)
 }
 
 // MotionTarget represents an element that can receive mouse motion events.
@@ -125,6 +162,16 @@ type Flexible interface {
 	FlexibleHeightFor (width int) int
 }
 
+// FlexibleContainer represents an element that is capable of containing
+// flexible children.
+type FlexibleContainer interface {
+	Container
+
+	// HandleChildFlexibleHeightChange is called when the parameters
+	// affecting a child's flexible height are changed.
+	HandleChildFlexibleHeightChange (child Flexible)
+}
+
 // Scrollable represents an element that can be scrolled. It acts as a viewport
 // through which its contents can be observed.
 type Scrollable interface {
@@ -143,6 +190,16 @@ type Scrollable interface {
 
 	// ScrollAxes returns the supported axes for scrolling.
 	ScrollAxes () (horizontal, vertical bool)
+}
+
+// ScrollableContainer represents an element that is capable of containing
+// scrollable children.
+type ScrollableContainer interface {
+	Container
+
+	// HandleChildScrollBoundsChange is called when the content bounds,
+	// viewport bounds, or scroll axes of a child are changed.
+	HandleChildScrollBoundsChange (child Scrollable)
 }
 
 // Collapsible represents an element who's minimum width and height can be

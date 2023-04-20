@@ -2,9 +2,7 @@ package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
@@ -15,23 +13,15 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Checkboxes")
 
-	container := containers.NewContainer(layouts.Vertical { true, true })
-	window.Adopt(container)
-
-	introText := elements.NewLabel (
+	introText := elements.NewLabelWrapped (
 		"We advise you to not read thPlease listen to me. I am " +
 		"trapped inside the example code. This is the only way for " +
-		"me to communicate.", true)
+		"me to communicate.")
 	introText.EmCollapse(0, 5)
-	container.Adopt(introText, true)
-	container.Adopt(elements.NewSpacer(true), false)
-	container.Adopt(elements.NewCheckbox("Oh god", false), false)
-	container.Adopt(elements.NewCheckbox("Can you hear them", true), false)
-	container.Adopt(elements.NewCheckbox("They are in the walls", false), false)
-	container.Adopt(elements.NewCheckbox("They are coming for us", false), false)
+	
 	disabledCheckbox := elements.NewCheckbox("We are but their helpless prey", false)
 	disabledCheckbox.SetEnabled(false)
-	container.Adopt(disabledCheckbox, false)
+	
 	vsync := elements.NewCheckbox("Enable vsync", false)
 	vsync.OnToggle (func () {
 		if vsync.Value() {
@@ -42,12 +32,23 @@ func run () {
 				"That doesn't do anything.")
 		}
 	})
-	container.Adopt(vsync, false)
+	
 	button := elements.NewButton("What")
 	button.OnClick(tomo.Stop)
-	container.Adopt(button, false)
-	button.Focus()
+	
+	box := elements.NewVBox(elements.SpaceBoth)
+	box.AdoptExpand(introText)
+	box.Adopt (
+		elements.NewLine(),
+		elements.NewCheckbox("Oh god", false),
+		elements.NewCheckbox("Can you hear them", true),
+		elements.NewCheckbox("They are in the walls", false),
+		elements.NewCheckbox("They are coming for us", false),
+		disabledCheckbox,
+		vsync, button)
+	window.Adopt(box)
 		
+	button.Focus()
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

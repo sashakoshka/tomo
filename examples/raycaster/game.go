@@ -1,9 +1,7 @@
 package main
 
 import "time"
-import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 
 type Game struct {
 	*Raycaster
@@ -31,21 +29,17 @@ func NewGame (world World, textures Textures) (game *Game) {
 	return
 }
 
-func (game *Game) DrawTo (
-	canvas canvas.Canvas,
-	bounds image.Rectangle,
-	onDamage func (image.Rectangle),
-) {
-	if canvas == nil {
-		select {
-		case game.stopChan <- true:
-		default:
-		}
-	} else if !game.running {
-		game.running = true
-		go game.run()
-	}
-	game.Raycaster.DrawTo(canvas, bounds, onDamage)
+func (game *Game) Start () {
+	if game.running == true { return }
+	game.running = true
+	go game.run()
+}
+
+func (game *Game) Stop () {
+	select {
+	case game.stopChan <- true:
+	default:
+	}	
 }
 
 func (game *Game) Stamina () float64 {
@@ -109,8 +103,8 @@ func (game *Game) tick () {
 	if game.stamina < 0 {
 		game.stamina = 0
 	}
-	
-	tomo.Do(game.Draw)
+
+	tomo.Do(game.Invalidate)
 	if statUpdate && game.onStatUpdate != nil {
 		tomo.Do(game.onStatUpdate)
 	}

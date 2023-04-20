@@ -17,6 +17,9 @@ type Backend interface {
 	// possible. This method must be safe to call from other threads.
 	Do (callback func ())
 
+	// NewEntity creates a new entity for the specified element.
+	NewEntity (owner Element) Entity
+
 	// NewWindow creates a new window within the specified bounding
 	// rectangle. The position on screen may be overridden by the backend or
 	// operating system.

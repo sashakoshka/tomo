@@ -7,17 +7,15 @@ import _ "image/png"
 import "github.com/jezek/xgbutil/gopher"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
 }
 
 func run () {
-	window, _ := tomo.NewWindow(2, 2)
+	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Tomo Logo")
 
 	file, err := os.Open("assets/banner.png")
@@ -26,19 +24,20 @@ func run () {
 	file.Close()
 	if err != nil { fatalError(window, err); return }
 
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := elements.NewVBox(elements.SpaceBoth)
 	logoImage := elements.NewImage(logo)
 	button    := elements.NewButton("Show me a gopher instead")
-	button.OnClick (func () { container.Warp (func () {
-			container.DisownAll()
-			gopher, _, err :=
-				image.Decode(bytes.NewReader(gopher.GopherPng()))
-			if err != nil { fatalError(window, err); return }
-			container.Adopt(elements.NewImage(gopher),true)
-	}) })
+	button.OnClick (func () {
+		window.SetTitle("Not the Tomo Logo")
+		container.DisownAll()
+		gopher, _, err :=
+			image.Decode(bytes.NewReader(gopher.GopherPng()))
+		if err != nil { fatalError(window, err); return }
+		container.AdoptExpand(elements.NewImage(gopher))
+	})
 
-	container.Adopt(logoImage, true)
-	container.Adopt(button, false)
+	container.AdoptExpand(logoImage)
+	container.Adopt(button)
 	window.Adopt(container)
 
 	button.Focus()

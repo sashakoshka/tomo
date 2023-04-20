@@ -8,10 +8,8 @@ import _ "image/jpeg"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -27,9 +25,9 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 256, 0))
 	window.SetTitle("Clipboard")
 
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := elements.NewVBox(elements.SpaceBoth)
 	textInput := elements.NewTextBox("", "")
-	controlRow := containers.NewContainer(layouts.Horizontal { true, false })
+	controlRow := elements.NewHBox(elements.SpaceMargin)
 	copyButton := elements.NewButton("Copy")
 	copyButton.SetIcon(tomo.IconCopy)
 	pasteButton := elements.NewButton("Paste")
@@ -109,11 +107,11 @@ func run () {
 		window.Paste(imageClipboardCallback, validImageTypes...)
 	})
 	
-	container.Adopt(textInput, true)
-	controlRow.Adopt(copyButton, true)
-	controlRow.Adopt(pasteButton, true)
-	controlRow.Adopt(pasteImageButton, true)
-	container.Adopt(controlRow, false)
+	container.AdoptExpand(textInput)
+	controlRow.AdoptExpand(copyButton)
+	controlRow.AdoptExpand(pasteButton)
+	controlRow.AdoptExpand(pasteImageButton)
+	container.Adopt(controlRow)
 	window.Adopt(container)
 		
 	window.OnClose(tomo.Stop)
@@ -123,13 +121,15 @@ func run () {
 func imageWindow (parent tomo.Window, image image.Image) {
 	window, _ := parent.NewModal(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Clipboard Image")
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := elements.NewVBox(elements.SpaceBoth)
 	closeButton := elements.NewButton("Ok")
 	closeButton.SetIcon(tomo.IconYes)
 	closeButton.OnClick(window.Close)
 	
-	container.Adopt(elements.NewImage(image), true)
-	container.Adopt(closeButton, false)
+	container.AdoptExpand(elements.NewImage(image))
+	container.Adopt(closeButton)
 	window.Adopt(container)
+
+	closeButton.Focus()
 	window.Show()
 }

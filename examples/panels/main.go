@@ -3,10 +3,8 @@ package main
 import "fmt"
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -16,8 +14,9 @@ func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(200, 200, 256, 256))
 	window.SetTitle("Main")
 
-	container := containers.NewContainer(layouts.Vertical { true, true })
-	container.Adopt(elements.NewLabel("Main window", false), true)
+	container := elements.NewVBox (
+		elements.SpaceBoth,
+		elements.NewLabel("Main window"))
 	window.Adopt(container)
 		
 	window.OnClose(tomo.Stop)
@@ -33,8 +32,9 @@ func createPanel (parent tomo.MainWindow, id int, bounds image.Rectangle) {
 	window, _ := parent.NewPanel(bounds)
 	title := fmt.Sprint("Panel #", id)
 	window.SetTitle(title)
-	container := containers.NewContainer(layouts.Vertical { true, true })
-	container.Adopt(elements.NewLabel(title, false), true)
+	container := elements.NewVBox (
+		elements.SpaceBoth,
+		elements.NewLabel(title))
 	window.Adopt(container)
 	window.Show()
 }

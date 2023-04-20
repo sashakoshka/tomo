@@ -3,9 +3,7 @@ package main
 import "time"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/layouts"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
@@ -15,16 +13,15 @@ func main () {
 func run () {
 	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Approaching")
-	container := containers.NewContainer(layouts.Vertical { true, true })
+	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
 
-	container.Adopt (elements.NewLabel (
-		"Rapidly approaching your location...", false), false)
+	container.AdoptExpand(elements.NewLabel("Rapidly approaching your location..."))
 	bar := elements.NewProgressBar(0)
-	container.Adopt(bar, false)
+	container.Adopt(bar)
 	button := elements.NewButton("Stop")
 	button.SetEnabled(false)
-	container.Adopt(button, false)
+	container.Adopt(button)
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

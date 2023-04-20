@@ -1,4 +1,4 @@
-package fileElements
+package elements
 
 import "os"
 import "io/fs"

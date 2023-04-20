@@ -6,7 +6,6 @@ import _ "image/png"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-import "git.tebibyte.media/sashakoshka/tomo/elements/containers"
 
 func main () {
 	tomo.Run(run)
@@ -22,47 +21,41 @@ func run () {
 	file.Close()
 	if err != nil { panic(err.Error()); return  }
 
-	scrollContainer := containers.NewScrollContainer(false, true)
-	document := containers.NewDocumentContainer()
-
-	document.Adopt (elements.NewLabel (
-		"A document container is a vertically stacked container " +
-		"capable of properly laying out flexible elements such as " +
-		"text-wrapped labels. You can also include normal elements " +
-		"like:", true), true)
-	document.Adopt (elements.NewButton (
-		"Buttons,"), true)
-	document.Adopt (elements.NewCheckbox (
-		"Checkboxes,", true), true)
-	document.Adopt(elements.NewTextBox("", "And text boxes."), true)
-	document.Adopt (elements.NewSpacer(true), true)
-	document.Adopt (elements.NewLabel (
-		"Document containers are meant to be placed inside of a " +
-		"ScrollContainer, like this one.", true), true)
-	document.Adopt (elements.NewLabel (
-		"You could use document containers to do things like display various " +
-		"forms of hypertext (like HTML, gemtext, markdown, etc.), " +
-		"lay out a settings menu with descriptive label text between " +
-		"control groups like in iOS, or list comment or chat histories.",
-		true), true)
-	document.Adopt(elements.NewImage(logo), true)
-	document.Adopt (elements.NewLabel (
-		"You can also choose whether each element is on its own line " +
-		"(sort of like an HTML/CSS block element) or on a line with " +
-		"other adjacent elements (like an HTML/CSS inline element).",
-		true), true)
-	document.Adopt(elements.NewButton("Just"), false)
-	document.Adopt(elements.NewButton("like"), false)
-	document.Adopt(elements.NewButton("this."), false)
-	document.Adopt (elements.NewLabel (
-		"Oh, you're a switch? Then name all of these switches:",
-		true), true)
+	document := elements.NewDocument()
+	document.Adopt (
+		elements.NewLabelWrapped (
+			"A document container is a vertically stacked container " +
+			"capable of properly laying out flexible elements such as " +
+			"text-wrapped labels. You can also include normal elements " +
+			"like:"),
+		elements.NewButton("Buttons,"),
+		elements.NewCheckbox("Checkboxes,", true),
+		elements.NewTextBox("", "And text boxes."),
+		elements.NewLine(),
+		elements.NewLabelWrapped (
+			"Document containers are meant to be placed inside of a " +
+			"ScrollContainer, like this one."),
+		elements.NewLabelWrapped (
+			"You could use document containers to do things like display various " +
+			"forms of hypertext (like HTML, gemtext, markdown, etc.), " +
+			"lay out a settings menu with descriptive label text between " +
+			"control groups like in iOS, or list comment or chat histories."),
+		elements.NewImage(logo),
+		elements.NewLabelWrapped (
+			"You can also choose whether each element is on its own line " +
+			"(sort of like an HTML/CSS block element) or on a line with " +
+			"other adjacent elements (like an HTML/CSS inline element)."))
+	document.AdoptInline (
+		elements.NewButton("Just"),
+		elements.NewButton("like"),
+		elements.NewButton("this."))
+	document.Adopt (elements.NewLabelWrapped (
+		"Oh, you're a switch? Then name all of these switches:"))
 	for i := 0; i < 30; i ++ {
-		document.Adopt(elements.NewSwitch("", false), false)
+		document.AdoptInline(elements.NewSwitch("", false))
 	}
 
-	scrollContainer.Adopt(document)
-	window.Adopt(scrollContainer)
+	window.Adopt(elements.NewScroll(elements.ScrollVertical, document))
 	window.OnClose(tomo.Stop)
 	window.Show()
 }

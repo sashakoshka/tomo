@@ -13,20 +13,16 @@ import "github.com/jezek/xgbutil/mousebind"
 import "github.com/jezek/xgbutil/xgraphics"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
-import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
-// import "runtime/debug"
 
 type mainWindow struct { *window }
 type menuWindow struct { *window }
 type window struct {
+	system
+	
 	backend *Backend
 	xWindow *xwindow.Window
 	xCanvas *xgraphics.Image
-	canvas  canvas.BasicCanvas
-	child   tomo.Element
-	onClose func ()
-	skipChildDrawCallback bool
 
 	title, application string
 
@@ -34,15 +30,14 @@ type window struct {
 	hasModal    bool
 	shy         bool
 
-	theme  tomo.Theme
-	config tomo.Config
-
 	selectionRequest *selectionRequest
 	selectionClaim   *selectionClaim
 
 	metrics struct {
 		bounds image.Rectangle
 	}
+
+	onClose func ()
 }
 
 func (backend *Backend) NewWindow (
@@ -53,6 +48,7 @@ func (backend *Backend) NewWindow (
 ) {
 	if backend == nil { panic("nil backend") }
 	window, err := backend.newWindow(bounds, false)
+	
 	output = mainWindow { window }
 	return output, err
 }
@@ -68,6 +64,10 @@ func (backend *Backend) newWindow (
 	if bounds.Dy() == 0 { bounds.Max.Y = bounds.Min.Y + 8 }
 	
 	window := &window { backend: backend }
+
+	window.system.initialize()
+	window.system.pushFunc = window.pasteAndPush
+	window.theme.Case = tomo.C("tomo", "window")
 
 	window.xWindow, err = xwindow.Generate(backend.connection)
 	if err != nil { return }
@@ -126,7 +126,7 @@ func (backend *Backend) newWindow (
 	window.SetConfig(backend.config)
 	
 	window.metrics.bounds = bounds
-	window.childMinimumSizeChangeCallback(8, 8)
+	window.setMinimumSize(8, 8)
 
 	window.reallocateCanvas()
 
@@ -136,67 +136,29 @@ func (backend *Backend) newWindow (
 	return
 }
 
-func (window *window) NotifyMinimumSizeChange (child tomo.Element) {
-	window.childMinimumSizeChangeCallback(child.MinimumSize())
-}
-
 func (window *window) Window () tomo.Window {
 	return window
-}
-
-func (window *window) RequestFocus (
-	child tomo.Focusable,
-) (
-	granted bool,
-) {
-	return true
-}
-
-func (window *window) RequestFocusNext (child tomo.Focusable) {
-	if child, ok := window.child.(tomo.Focusable); ok {
-		if !child.HandleFocus(input.KeynavDirectionForward) {
-			child.HandleUnfocus()
-		}
-	}
-}
-
-func (window *window) RequestFocusPrevious (child tomo.Focusable) {
-	if child, ok := window.child.(tomo.Focusable); ok {
-		if !child.HandleFocus(input.KeynavDirectionBackward) {
-			child.HandleUnfocus()
-		}
-	}
 }
 
 func (window *window) Adopt (child tomo.Element) {
 	// disown previous child
 	if window.child != nil {
-		window.child.SetParent(nil)
-		window.child.DrawTo(nil, image.Rectangle { }, nil)
+		window.child.unlink()
+		window.child = nil
 	}
 
+	// adopt new child
 	if child != nil {
-		// adopt new child
-		window.child = child
-		child.SetParent(window)
-		if newChild, ok := child.(tomo.Themeable); ok {
-			newChild.SetTheme(window.theme)
-		}
-		if newChild, ok := child.(tomo.Configurable); ok {
-			newChild.SetConfig(window.config)
-		}
-		if child != nil {
-			if !window.childMinimumSizeChangeCallback(child.MinimumSize()) {
-				window.resizeChildToFit()
-				window.redrawChildEntirely()
-			}
+		childEntity, ok := child.Entity().(*entity)
+		if ok && childEntity != nil {
+			window.child = childEntity
+			childEntity.setWindow(window)
+			window.setMinimumSize (
+				childEntity.minWidth,
+				childEntity.minHeight)
+			window.resizeChildToFit()
 		}
 	}
-}
-
-func (window *window) Child () (child tomo.Element) {
-	child = window.child
-	return
 }
 
 func (window *window) SetTitle (title string) {
@@ -317,43 +279,6 @@ func (window menuWindow) Pin () {
 	// TODO iungrab keyboard and mouse
 }
 
-func (window *window) grabInput () {
-	keybind.GrabKeyboard(window.backend.connection, window.xWindow.Id)
-	mousebind.GrabPointer (
-		window.backend.connection,
-		window.xWindow.Id,
-		window.backend.connection.RootWin(), 0)
-}
-
-func (window *window) ungrabInput () {
-	keybind.UngrabKeyboard(window.backend.connection)
-	mousebind.UngrabPointer(window.backend.connection)
-}
-
-func (window *window) inheritProperties (parent *window) {
-	window.SetApplicationName(parent.application)
-}
-
-func (window *window) setType (ty string) error {
-	return ewmh.WmWindowTypeSet (
-		window.backend.connection,
-		window.xWindow.Id,
-		[]string { "_NET_WM_WINDOW_TYPE_" + ty })
-}
-
-func (window *window) setClientLeader (leader *window) error {
-	hints, _ := icccm.WmHintsGet(window.backend.connection, window.xWindow.Id)
-	if hints == nil {
-		hints = &icccm.Hints { }
-	}
-	hints.Flags |= icccm.HintWindowGroup
-	hints.WindowGroup = leader.xWindow.Id
-	return icccm.WmHintsSet (
-		window.backend.connection,
-		window.xWindow.Id,
-		hints)
-}
-
 func (window *window) Show () {
 	if window.child == nil {
 		window.xCanvas.For (func (x, y int) xgraphics.BGRA {
@@ -362,7 +287,7 @@ func (window *window) Show () {
 
 		window.pushRegion(window.xCanvas.Bounds())
 	}
-	
+
 	window.xWindow.Map()
 	if window.shy { window.grabInput() }
 }
@@ -417,18 +342,41 @@ func (window *window) OnClose (callback func ()) {
 	window.onClose = callback
 }
 
-func (window *window) SetTheme (theme tomo.Theme) {
-	window.theme = theme
-	if child, ok := window.child.(tomo.Themeable); ok {
-		child.SetTheme(theme)
-	}
+func (window *window) grabInput () {
+	keybind.GrabKeyboard(window.backend.connection, window.xWindow.Id)
+	mousebind.GrabPointer (
+		window.backend.connection,
+		window.xWindow.Id,
+		window.backend.connection.RootWin(), 0)
 }
 
-func (window *window) SetConfig (config tomo.Config) {
-	window.config = config
-	if child, ok := window.child.(tomo.Configurable); ok {
-		child.SetConfig(config)
+func (window *window) ungrabInput () {
+	keybind.UngrabKeyboard(window.backend.connection)
+	mousebind.UngrabPointer(window.backend.connection)
+}
+
+func (window *window) inheritProperties (parent *window) {
+	window.SetApplicationName(parent.application)
+}
+
+func (window *window) setType (ty string) error {
+	return ewmh.WmWindowTypeSet (
+		window.backend.connection,
+		window.xWindow.Id,
+		[]string { "_NET_WM_WINDOW_TYPE_" + ty })
+}
+
+func (window *window) setClientLeader (leader *window) error {
+	hints, _ := icccm.WmHintsGet(window.backend.connection, window.xWindow.Id)
+	if hints == nil {
+		hints = &icccm.Hints { }
 	}
+	hints.Flags |= icccm.HintWindowGroup
+	hints.WindowGroup = leader.xWindow.Id
+	return icccm.WmHintsSet (
+		window.backend.connection,
+		window.xWindow.Id,
+		hints)
 }
 
 func (window *window) reallocateCanvas () {
@@ -464,22 +412,7 @@ func (window *window) reallocateCanvas () {
 	
 }
 
-func (window *window) redrawChildEntirely () {
-	window.paste(window.canvas.Bounds())
-	window.pushRegion(window.canvas.Bounds())
-}
-
-func (window *window) resizeChildToFit () {
-	window.skipChildDrawCallback = true
-	window.child.DrawTo (
-		window.canvas,
-		window.canvas.Bounds(),
-		window.childDrawCallback)
-	window.skipChildDrawCallback = false
-}
-
-func (window *window) childDrawCallback (region image.Rectangle) {
-	if window.skipChildDrawCallback { return }
+func (window *window) pasteAndPush (region image.Rectangle) {
 	window.paste(region)
 	window.pushRegion(region)
 }
@@ -492,7 +425,6 @@ func (window *window) paste (region image.Rectangle) {
 	dstStride := window.xCanvas.Stride
 	dstData   := window.xCanvas.Pix
 	
-	// debug.PrintStack()
 	for y := bounds.Min.Y; y < bounds.Max.Y; y ++ {
 		srcYComponent := y * stride
 		dstYComponent := y * dstStride
@@ -507,7 +439,21 @@ func (window *window) paste (region image.Rectangle) {
 	}
 }
 
-func (window *window) childMinimumSizeChangeCallback (width, height int) (resized bool) {
+func (window *window) pushRegion (region image.Rectangle) {
+	if window.xCanvas == nil { panic("whoopsie!!!!!!!!!!!!!!") }
+	image, ok := window.xCanvas.SubImage(region).(*xgraphics.Image)
+	if ok {
+		image.XDraw()
+		image.XExpPaint (
+			window.xWindow.Id,
+			image.Bounds().Min.X,
+			image.Bounds().Min.Y)
+	}
+}
+
+func (window *window) setMinimumSize (width, height int) {
+	if width  < 8 { width  = 8 }
+	if height < 8 { height = 8 }
 	icccm.WmNormalHintsSet (
 		window.backend.connection,
 		window.xWindow.Id,
@@ -523,20 +469,5 @@ func (window *window) childMinimumSizeChangeCallback (width, height int) (resize
 	if newWidth != window.metrics.bounds.Dx() ||
 		newHeight != window.metrics.bounds.Dy() {
 		window.xWindow.Resize(newWidth, newHeight)
-		return true
-	}
-
-	return false
-}
-
-func (window *window) pushRegion (region image.Rectangle) {
-	if window.xCanvas == nil { panic("whoopsie!!!!!!!!!!!!!!") }
-	image, ok := window.xCanvas.SubImage(region).(*xgraphics.Image)
-	if ok {
-		image.XDraw()
-		image.XExpPaint (
-			window.xWindow.Id,
-			image.Bounds().Min.X,
-			image.Bounds().Min.Y)
 	}
 }

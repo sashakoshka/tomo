@@ -212,14 +212,9 @@ func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.P
 	switch id {
 	case tomo.PatternBackground: return patterns.Uhex(0xaaaaaaFF)
 	case tomo.PatternDead:       return defaultTextures[0][offset]
-	case tomo.PatternRaised:
-		if c.Match("tomo", "listEntry", "") {
-			return defaultTextures[10][offset]
-		} else {
-			return defaultTextures[1][offset]
-		}
-	case tomo.PatternSunken:   return defaultTextures[2][offset]
-	case tomo.PatternPinboard: return defaultTextures[3][offset]
+	case tomo.PatternRaised:     return defaultTextures[1][offset]
+	case tomo.PatternSunken:     return defaultTextures[2][offset]
+	case tomo.PatternPinboard:   return defaultTextures[3][offset]
 	case tomo.PatternButton:
 		switch {
 		case c.Match("tomo", "checkbox", ""):  
@@ -272,16 +267,8 @@ func (Default) Color (id tomo.Color, state tomo.State, c tomo.Case) color.RGBA {
 // Padding returns the default padding value for the given pattern.
 func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
 	switch id {
-	case tomo.PatternRaised:
-		if c.Match("tomo", "listEntry", "") {
-			return artist.I(4, 8)
-		} else {
-			return artist.I(8)
-		}
 	case tomo.PatternSunken:
-		if c.Match("tomo", "list", "") {
-			return artist.I(4, 0, 3)
-		} else if c.Match("tomo", "progressBar", "") {
+		if c.Match("tomo", "progressBar", "") {
 			return artist.I(2, 1, 1, 2)
 		} else {
 			return artist.I(8)
@@ -292,16 +279,26 @@ func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
 		} else {
 			return artist.I(8)
 		}
+	case tomo.PatternTableCell:  return artist.I(5)
+	case tomo.PatternTableHead:  return artist.I(5)
 	case tomo.PatternGutter:     return artist.I(0)
 	case tomo.PatternLine:       return artist.I(1)
 	case tomo.PatternMercury:    return artist.I(5)
-	default:                return artist.I(8)
+	default:                     return artist.I(8)
 	}
 }
 
 // Margin returns the default margin value for the given pattern.
 func (Default) Margin (id tomo.Pattern, c tomo.Case) image.Point {
-	return image.Pt(8, 8)
+	switch id {
+	case tomo.PatternSunken:
+		if c.Match("tomo", "list", "") {
+			return image.Pt(-1, -1)
+		} else {
+			return image.Pt(8, 8)
+		}
+	default: return image.Pt(8, 8)
+	}
 }
 
 // Hints returns rendering optimization hints for a particular pattern.

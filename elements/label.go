@@ -2,16 +2,15 @@ package elements
 
 import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/elements/core"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Label is a simple text box.
 type Label struct {
-	*core.Core
-	core core.CoreControl
-
+	entity tomo.FlexibleEntity
+	
 	align  textdraw.Align
 	wrap   bool
 	text   string
@@ -19,50 +18,34 @@ type Label struct {
 
 	forcedColumns int
 	forcedRows    int
+	minHeight     int
 	
 	config config.Wrapped
 	theme  theme.Wrapped
-	
-	onFlexibleHeightChange func ()
 }
 
-// NewLabel creates a new label. If wrap is set to true, the text inside will be
-// wrapped.
-func NewLabel (text string, wrap bool) (element *Label) {
+// NewLabel creates a new label.
+func NewLabel (text string) (element *Label) {
 	element = &Label { }
 	element.theme.Case = tomo.C("tomo", "label")
-	element.Core, element.core = core.NewCore(element, element.handleResize)
+	element.entity = tomo.NewEntity(element).(tomo.FlexibleEntity)
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
 		tomo.FontSizeNormal))
-	element.SetWrap(wrap)
 	element.SetText(text)
 	return
 }
 
-func (element *Label) redo () {
-	face := element.theme.FontFace (
-		tomo.FontStyleRegular,
-		tomo.FontSizeNormal)
-	element.drawer.SetFace(face)
-	element.updateMinimumSize()
-	bounds := element.Bounds()
-	if element.wrap {
-		element.drawer.SetMaxWidth(bounds.Dx())
-		element.drawer.SetMaxHeight(bounds.Dy())
-	}
-	element.draw()
-	element.core.DamageAll()
+// NewLabelWrapped creates a new label with text wrapping on.
+func NewLabelWrapped (text string) (element *Label) {
+	element = NewLabel(text)
+	element.SetWrap(true)
+	return
 }
 
-func (element *Label) handleResize () {
-	bounds := element.Bounds()
-	if element.wrap {
-		element.drawer.SetMaxWidth(bounds.Dx())
-		element.drawer.SetMaxHeight(bounds.Dy())
-	}
-	element.draw()
-	return
+// Entity returns this element's entity.
+func (element *Label) Entity () tomo.Entity {
+	return element.entity
 }
 
 // EmCollapse forces a minimum width and height upon the label. The width is
@@ -82,15 +65,8 @@ func (element *Label) FlexibleHeightFor (width int) (height int) {
 	if element.wrap {
 		return element.drawer.ReccomendedHeightFor(width)
 	} else {
-		_, height = element.MinimumSize()
-		return
+		return element.minHeight
 	}
-}
-
-// OnFlexibleHeightChange sets a function to be called when the parameters
-// affecting this element's flexible height are changed.
-func (element *Label) OnFlexibleHeightChange (callback func ()) {
-	element.onFlexibleHeightChange = callback
 }
 
 // SetText sets the label's text.
@@ -100,11 +76,7 @@ func (element *Label) SetText (text string) {
 	element.text = text
 	element.drawer.SetText([]rune(text))
 	element.updateMinimumSize()
-	
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
+	element.entity.Invalidate()
 }
 
 // SetWrap sets wether or not the label's text wraps. If the text is set to
@@ -119,25 +91,16 @@ func (element *Label) SetWrap (wrap bool) {
 	}
 	element.wrap = wrap
 	element.updateMinimumSize()
-	
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
+	element.entity.Invalidate()
 }
 
 // SetAlign sets the alignment method of the label.
 func (element *Label) SetAlign (align textdraw.Align) {
 	if align == element.align { return }
-	
 	element.align = align
 	element.drawer.SetAlign(align)
 	element.updateMinimumSize()
-	
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
+	element.entity.Invalidate()
 }
 
 // SetTheme sets the element's theme.
@@ -148,11 +111,7 @@ func (element *Label) SetTheme (new tomo.Theme) {
 		tomo.FontStyleRegular,
 		tomo.FontSizeNormal))
 	element.updateMinimumSize()
-	
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
-	}
+	element.entity.Invalidate()
 }
 
 // SetConfig sets the element's configuration.
@@ -160,11 +119,25 @@ func (element *Label) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
+	element.entity.Invalidate()
+}
+
+// Draw causes the element to draw to the specified destination canvas.
+func (element *Label) Draw (destination canvas.Canvas) {
+	bounds := element.entity.Bounds()
 	
-	if element.core.HasImage () {
-		element.draw()
-		element.core.DamageAll()
+	if element.wrap {
+		element.drawer.SetMaxWidth(bounds.Dx())
+		element.drawer.SetMaxHeight(bounds.Dy())
 	}
+	
+	element.entity.DrawBackground(destination)
+
+	textBounds := element.drawer.LayoutBounds()
+	foreground := element.theme.Color (
+		tomo.ColorForeground,
+		tomo.State { })
+	element.drawer.Draw(destination, foreground, bounds.Min.Sub(textBounds.Min))
 }
 
 func (element *Label) updateMinimumSize () {
@@ -176,9 +149,7 @@ func (element *Label) updateMinimumSize () {
 			em = element.theme.Padding(tomo.PatternBackground)[0]
 		}
 		width, height = em, element.drawer.LineHeight().Round()
-		if element.onFlexibleHeightChange != nil {
-			element.onFlexibleHeightChange()
-		}
+		element.entity.NotifyFlexibleHeightChange()
 	} else {
 		bounds := element.drawer.LayoutBounds()
 		width, height = bounds.Dx(), bounds.Dy()
@@ -196,18 +167,6 @@ func (element *Label) updateMinimumSize () {
 			Mul(fixed.I(element.forcedRows)).Floor()
 	}
 
-	element.core.SetMinimumSize(width, height)
-}
-
-func (element *Label) draw () {
-	element.core.DrawBackground (
-		element.theme.Pattern(tomo.PatternBackground, tomo.State { }))
-
-	bounds := element.Bounds()
-	textBounds := element.drawer.LayoutBounds()
-
-	foreground := element.theme.Color (
-		tomo.ColorForeground,
-		tomo.State { })
-	element.drawer.Draw(element.core, foreground, bounds.Min.Sub(textBounds.Min))
+	element.minHeight = height
+	element.entity.SetMinimumSize(width, height)
 }
