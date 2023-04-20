@@ -17,19 +17,22 @@ type LerpSlider[T Numeric] struct {
 	max T
 }
 
-// NewLerpSlider creates a new LerpSlider with a minimum and maximum value.
-func NewLerpSlider[T Numeric] (
-	min, max T, value T,
-	orientation Orientation,
-) (
-	element *LerpSlider[T],
-) {
+// NewVLerpSlider creates a new horizontal LerpSlider with a minimum and maximum
+// value.
+func NewVLerpSlider[T Numeric] (min, max T, value T) (element *LerpSlider[T]) {
+	element = NewHLerpSlider(min, max, value)
+	element.vertical = true
+	return
+}
+
+// NewHLerpSlider creates a new horizontal LerpSlider with a minimum and maximum
+// value.
+func NewHLerpSlider[T Numeric] (min, max T, value T) (element *LerpSlider[T]) {
 	if min > max { min, max = max, min }
 	element = &LerpSlider[T] {
 		min: min,
 		max: max,
 	}
-	element.vertical = bool(orientation)
 	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
 	element.construct()
 	element.SetValue(value)

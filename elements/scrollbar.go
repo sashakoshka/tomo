@@ -7,13 +7,6 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
-// Orientation represents an orientation configuration that can be passed to
-// scrollbars and sliders.
-type Orientation bool; const (
-	Vertical Orientation = true
-	Horizontal           = false
-)
-
 // ScrollBar is an element similar to Slider, but it has special behavior that
 // makes it well suited for controlling the viewport position on one axis of a
 // scrollable element. Instead of having a value from zero to one, it stores
@@ -26,7 +19,7 @@ type Orientation bool; const (
 // Typically, you wont't want to use a ScrollBar by itself. A ScrollContainer is
 // better for most cases.
 type ScrollBar struct {
-	entity tomo.ContainerEntity
+	entity tomo.Entity
 
 	vertical bool
 	enabled  bool
@@ -44,18 +37,24 @@ type ScrollBar struct {
 	onScroll func (viewport image.Point)
 }
 
-// NewScrollBar creates a new scroll bar.
-func NewScrollBar (orientation Orientation) (element *ScrollBar) {
+func NewVScrollBar () (element *ScrollBar) {
 	element = &ScrollBar {
-		vertical: bool(orientation),
+		vertical: true,
 		enabled:  true,
 	}
-	if orientation == Vertical {
-		element.theme.Case = tomo.C("tomo", "scrollBarHorizontal")
-	} else {
-		element.theme.Case = tomo.C("tomo", "scrollBarVertical")
+	element.theme.Case = tomo.C("tomo", "scrollBarVertical")
+	element.entity = tomo.NewEntity(element).(tomo.Entity)
+	element.updateMinimumSize()
+	return
+}
+
+// NewHScrollBar creates a new horizontal scroll bar.
+func NewHScrollBar () (element *ScrollBar) {
+	element = &ScrollBar {
+		enabled: true,
 	}
-	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
+	element.theme.Case = tomo.C("tomo", "scrollBarHorizontal")
+	element.entity = tomo.NewEntity(element).(tomo.Entity)
 	element.updateMinimumSize()
 	return
 }

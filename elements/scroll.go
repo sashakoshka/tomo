@@ -37,7 +37,7 @@ func NewScroll (mode ScrollMode, child tomo.Scrollable) (element *Scroll) {
 	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
 
 	if mode.Includes(ScrollHorizontal) {
-		element.horizontal = NewScrollBar(false)
+		element.horizontal = NewHScrollBar()
 		element.horizontal.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
 				element.child.ScrollTo(viewport)
@@ -51,7 +51,7 @@ func NewScroll (mode ScrollMode, child tomo.Scrollable) (element *Scroll) {
 		element.entity.Adopt(element.horizontal)
 	}
 	if mode.Includes(ScrollVertical) {
-		element.vertical = NewScrollBar(true)
+		element.vertical = NewVScrollBar()
 		element.vertical.OnScroll (func (viewport image.Point) {
 			if element.child != nil {
 				element.child.ScrollTo(viewport)

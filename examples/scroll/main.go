@@ -46,7 +46,7 @@ func run () {
 			elements.ScrollHorizontal,
 			elements.NewTextBox("", "I bet you weren't expecting this!"))))
 	list.Collapse(0, 32)
-	scrollBar := elements.NewScrollBar(true)
+	scrollBar := elements.NewVScrollBar()
 	list.OnScrollBoundsChange (func () {
 		scrollBar.SetBounds (
 			list.ScrollContentBounds(),

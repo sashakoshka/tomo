@@ -12,11 +12,17 @@ type Slider struct {
 	slider
 }
 
-// NewSlider creates a new slider with the specified value.
-func NewSlider (value float64, orientation Orientation) (element *Slider) {
+// NewVSlider creates a new horizontal slider with the specified value.
+func NewVSlider (value float64) (element *Slider) {
+	element = NewHSlider(value)
+	element.vertical = true
+	return
+}
+
+// NewHSlider creates a new horizontal slider with the specified value.
+func NewHSlider (value float64) (element *Slider) {
 	element = &Slider { }
 	element.value = value
-	element.vertical = bool(orientation)
 	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
 	element.construct()
 	return
