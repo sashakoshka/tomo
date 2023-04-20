@@ -10,12 +10,14 @@ import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 type listEntity interface {
 	tomo.ContainerEntity
 	tomo.ScrollableEntity
+	tomo.FocusableEntity
 }
 
 type List struct {
 	container
 	entity listEntity
-	
+
+	enabled       bool
 	scroll        image.Point
 	contentBounds image.Rectangle
 	selected      int
@@ -29,7 +31,10 @@ type List struct {
 }
 
 func NewList (children ...tomo.Element) (element *List) {
-	element = &List { selected: -1 }
+	element = &List {
+		selected: -1,
+		enabled: true,
+	}
 	element.theme.Case = tomo.C("tomo", "list")
 	element.entity = tomo.NewEntity(element).(listEntity)
 	element.container.entity = element.entity
@@ -45,7 +50,7 @@ func (element *List) Draw (destination canvas.Canvas) {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
 	}
 
-	pattern := element.theme.Pattern(tomo.PatternSunken, tomo.State { })
+	pattern := element.theme.Pattern(tomo.PatternSunken, element.state())
 	artist.DrawShatter(destination, pattern, element.entity.Bounds(), rocks...)
 }
 
@@ -87,18 +92,52 @@ func (element *List) Layout () {
 	}
 }
 
-func (element *List) HandleChildMouseDown  (
+func (element *List) Enabled () bool {
+	return element.enabled
+}
+
+func (element *List) SetEnabled (enabled bool) {
+	if element.enabled == enabled { return }
+	element.enabled = enabled
+	element.entity.Invalidate()
+}
+
+func (element *List) Focus () {
+	element.entity.Focus()
+}
+
+func (element *List) HandleFocusChange () {
+	element.entity.Invalidate()
+}
+
+func (element *List) HandleMouseDown (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
+	if !element.enabled { return }
+	element.Focus()
+	element.selectNone()
+}
+
+func (element *List) HandleMouseUp (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) { }
+
+func (element *List) HandleChildMouseDown (
 	position image.Point,
 	button input.Button,
 	modifiers input.Modifiers,
 	child tomo.Element,
 ) {
+	if !element.enabled { return }
+	element.Focus()
 	if child, ok := child.(tomo.Selectable); ok {
 		index := element.entity.IndexOf(child)
 		if element.selected == index { return }
-		if element.selected >= 0 {
-			element.entity.SelectChild(element.selected, false)
-		}
+		element.selectNone()
 		element.selected = index
 		element.entity.SelectChild(index, true)
 	}
@@ -116,6 +155,24 @@ func (element *List) HandleChildFlexibleHeightChange (child tomo.Flexible) {
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
+
+func (element *List) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+	if !element.Enabled() { return }
+	index := -1
+	switch key {
+	case input.KeyUp, input.KeyLeft:
+		index = element.selected - 1
+	case input.KeyDown, input.KeyRight:
+		index = element.selected + 1
+	}
+	if index >= 0 && index < element.entity.CountChildren() {
+		element.selectNone()
+		element.selected = index
+		element.entity.SelectChild(index, true)
+	}
+}
+
+func (element *List) HandleKeyUp(key input.Key, modifiers input.Modifiers) { }
 
 func (element *List) DrawBackground (destination canvas.Canvas) {
 	element.entity.DrawBackground(destination)
@@ -189,6 +246,23 @@ func (element *List) OnScrollBoundsChange (callback func ()) {
 // ScrollAxes returns the supported axes for scrolling.
 func (element *List) ScrollAxes () (horizontal, vertical bool) {
 	return false, true
+}
+
+func (element *List) selectNone () {
+	if element.selected >= 0 {
+		element.entity.SelectChild(element.selected, false)
+	}
+}
+
+func (element *List) setSelected (child tomo.Element) {
+	
+}
+
+func (element *List) state () tomo.State {
+	return tomo.State {
+		Focused: element.entity.Focused(),
+		Disabled: !element.enabled,
+	}
 }
 
 func (element *List) maxScrollHeight () (height int) {
