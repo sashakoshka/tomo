@@ -18,7 +18,6 @@ type List struct {
 	
 	scroll        image.Point
 	contentBounds image.Rectangle
-	columnSizes   []int
 	selected      int
 	
 	forcedMinimumWidth  int
@@ -29,10 +28,8 @@ type List struct {
 	onScrollBoundsChange func ()
 }
 
-func NewList (columns int, children ...tomo.Element) (element *List) {
-	if columns < 1 { columns = 1 }
+func NewList (children ...tomo.Element) (element *List) {
 	element = &List { selected: -1 }
-	element.columnSizes = make([]int, columns)
 	element.theme.Case = tomo.C("tomo", "list")
 	element.entity = tomo.NewEntity(element).(listEntity)
 	element.container.entity = element.entity
@@ -62,45 +59,23 @@ func (element *List) Layout () {
 	bounds := padding.Apply(element.entity.Bounds())
 	element.contentBounds = image.Rectangle { }
 
-	dot         := bounds.Min.Sub(element.scroll)
-	xStart      := dot.X
-	rowHeight   := 0
-	columnIndex := 0
-	nextLine := func () {
-		dot.X = xStart
-		dot.Y += margin.Y
-		dot.Y += rowHeight
-		rowHeight   = 0
-		columnIndex = 0
-	}
+	dot := bounds.Min.Sub(element.scroll)
 
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		child := element.entity.Child(index)
 		entry := element.scratch[child]
 	
-		if columnIndex >= len(element.columnSizes) {
-			nextLine()
-		}
-		width  := element.columnSizes[columnIndex]
+		width  := bounds.Dx()
 		height := int(entry.minSize)
-
-		if len(element.columnSizes) == 1 && width < bounds.Dx() {
-			width = bounds.Dx()
-		}
-		
-		if rowHeight < height {
-			rowHeight = height
-		}
 
 		childBounds := tomo.Bounds (
 			dot.X, dot.Y,
 			width, height)
 		element.entity.PlaceChild(index, childBounds)
 		element.contentBounds = element.contentBounds.Union(childBounds)
-		
-		dot.X += width + margin.X
 
-		columnIndex ++
+		dot.Y += height
+		dot.Y += margin.Y
 	}
 	
 	element.contentBounds =
@@ -218,23 +193,10 @@ func (element *List) updateMinimumSize () {
 	margin := element.theme.Margin(tomo.PatternSunken)
 	padding := element.theme.Padding(tomo.PatternSunken)
 
-	for index := range element.columnSizes {
-		element.columnSizes[index] = 0
-	}
-
-	height      := 0
-	rowHeight   := 0
-	columnIndex := 0
-	nextLine := func () {
-		height += rowHeight
-		rowHeight   = 0
-		columnIndex = 0
-	}
+	width  := 0
+	height := 0
 	for index := 0; index < element.entity.CountChildren(); index ++ {
-		if columnIndex >= len(element.columnSizes) {
-			if index > 0 { height += margin.Y }
-			nextLine()
-		}
+		if index > 0 { height += margin.Y }
 
 		child := element.entity.Child(index)
 		entry := element.scratch[child]
@@ -243,30 +205,19 @@ func (element *List) updateMinimumSize () {
 		entry.minBreadth = float64(entryWidth)
 		entry.minSize    = float64(entryHeight)
 		element.scratch[child] = entry
-		
-		if rowHeight < entryHeight {
-			rowHeight = entryHeight
-		}
-		if element.columnSizes[columnIndex] < entryWidth {
-			element.columnSizes[columnIndex] = entryWidth
-		}
 
-		columnIndex ++
+		height += entryHeight
+		if width < entryWidth { width = entryWidth }
 	}
-	nextLine()
 
-	width := 0; for index, size := range element.columnSizes {
-		width += size
-		if index > 0 { width += margin.X }
-	}
 	width  += padding.Horizontal()
 	height += padding.Vertical()
 
-	if element.forcedMinimumHeight > 0 {
-		height = element.forcedMinimumHeight
-	}
 	if element.forcedMinimumWidth > 0 {
 		width = element.forcedMinimumWidth
+	}
+	if element.forcedMinimumHeight > 0 {
+		height = element.forcedMinimumHeight
 	}
 
 	element.entity.SetMinimumSize(width, height)

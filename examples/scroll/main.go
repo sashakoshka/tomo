@@ -19,7 +19,6 @@ func run () {
 
 	disconnectedContainer := elements.NewHBox(elements.SpaceMargin)
 	list := elements.NewList (
-		2,
 		elements.NewCell(elements.NewCheckbox("Item 0", true)),
 		elements.NewCell(elements.NewCheckbox("Item 1", false)),
 		elements.NewCell(elements.NewCheckbox("Item 2", false)),

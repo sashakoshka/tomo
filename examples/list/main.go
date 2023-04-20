@@ -53,7 +53,6 @@ func run () {
 	}
 
 	list := elements.NewList (
-		1,
 		makePage("button", func () { turnPage(button) }),
 		makePage("mouse",  func () { turnPage(mouse) }),
 		makePage("input",  func () { turnPage(input) }),
