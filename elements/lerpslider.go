@@ -1,5 +1,7 @@
 package elements
 
+import "git.tebibyte.media/sashakoshka/tomo"
+
 // Numeric is a type constraint representing a number.
 type Numeric interface {
 	~float32 | ~float64 |
@@ -10,7 +12,7 @@ type Numeric interface {
 // LerpSlider is a slider that has a minimum and maximum value, and who's value
 // can be any numeric type.
 type LerpSlider[T Numeric] struct {
-	*Slider
+	slider
 	min T
 	max T
 }
@@ -22,16 +24,14 @@ func NewLerpSlider[T Numeric] (
 ) (
 	element *LerpSlider[T],
 ) {
-	if min > max {
-		temp := max
-		max = min
-		min = temp
-	}
+	if min > max { min, max = max, min }
 	element = &LerpSlider[T] {
-		Slider: NewSlider(0, orientation),
 		min: min,
 		max: max,
 	}
+	element.vertical = bool(orientation)
+	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.construct()
 	element.SetValue(value)
 	return
 }
@@ -39,13 +39,13 @@ func NewLerpSlider[T Numeric] (
 // SetValue sets the slider's value.
 func (element *LerpSlider[T]) SetValue (value T) {
 	value -= element.min
-	element.Slider.SetValue(float64(value) / float64(element.Range()))
+	element.slider.SetValue(float64(value) / float64(element.Range()))
 }
 
 // Value returns the slider's value.
 func (element *LerpSlider[T]) Value () (value T) {
 	return T (
-		float64(element.Slider.Value()) * float64(element.Range())) +
+		float64(element.slider.Value()) * float64(element.Range())) +
 		element.min
 }
 

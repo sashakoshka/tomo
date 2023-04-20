@@ -9,6 +9,20 @@ import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Slider is a slider control with a floating point value between zero and one.
 type Slider struct {
+	slider
+}
+
+// NewSlider creates a new slider with the specified value.
+func NewSlider (value float64, orientation Orientation) (element *Slider) {
+	element = &Slider { }
+	element.value = value
+	element.vertical = bool(orientation)
+	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.construct()
+	return
+}
+
+type slider struct {
 	entity tomo.FocusableEntity
 	
 	value      float64
@@ -26,30 +40,23 @@ type Slider struct {
 	onRelease func ()
 }
 
-// NewSlider creates a new slider with the specified value.
-func NewSlider (value float64, orientation Orientation) (element *Slider) {
-	element = &Slider {
-		value: value,
-		vertical: bool(orientation),
-		enabled: true,
-	}
-	if orientation == Vertical {
+func (element *slider) construct () {
+	element.enabled = true
+	if element.vertical {
 		element.theme.Case = tomo.C("tomo", "sliderVertical")
 	} else {
 		element.theme.Case = tomo.C("tomo", "sliderHorizontal")
 	}
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
 	element.updateMinimumSize()
-	return
 }
 
 // Entity returns this element's entity.
-func (element *Slider) Entity () tomo.Entity {
+func (element *slider) Entity () tomo.Entity {
 	return element.entity
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Slider) Draw (destination canvas.Canvas) {
+func (element *slider) Draw (destination canvas.Canvas) {
 	bounds := element.entity.Bounds()
 	element.track = element.theme.Padding(tomo.PatternGutter).Apply(bounds)
 	if element.vertical {
@@ -78,27 +85,27 @@ func (element *Slider) Draw (destination canvas.Canvas) {
 }
 
 // Focus gives this element input focus.
-func (element *Slider) Focus () {
+func (element *slider) Focus () {
 	if !element.entity.Focused() { element.entity.Focus() }
 }
 
 // Enabled returns whether this slider can be dragged or not.
-func (element *Slider) Enabled () bool {
+func (element *slider) Enabled () bool {
 	return element.enabled
 }
 
 // SetEnabled sets whether this slider can be dragged or not.
-func (element *Slider) SetEnabled (enabled bool) {
+func (element *slider) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
 	element.entity.Invalidate()
 }
 
-func (element *Slider) HandleFocusChange () {
+func (element *slider) HandleFocusChange () {
 	element.entity.Invalidate()
 }
 
-func (element *Slider) HandleMouseDown (x, y int, button input.Button) {
+func (element *slider) HandleMouseDown (x, y int, button input.Button) {
 	if !element.Enabled() { return }
 	element.Focus()
 	if button == input.ButtonLeft {
@@ -111,7 +118,7 @@ func (element *Slider) HandleMouseDown (x, y int, button input.Button) {
 	}
 }
 
-func (element *Slider) HandleMouseUp (x, y int, button input.Button) {
+func (element *slider) HandleMouseUp (x, y int, button input.Button) {
 	if button != input.ButtonLeft || !element.dragging { return }
 	element.dragging = false
 	if element.onRelease != nil {
@@ -120,7 +127,7 @@ func (element *Slider) HandleMouseUp (x, y int, button input.Button) {
 	element.entity.Invalidate()
 }
 
-func (element *Slider) HandleMotion (x, y int) {
+func (element *slider) HandleMotion (x, y int) {
 	if element.dragging {
 		element.dragging = true
 		element.value = element.valueFor(x, y)
@@ -131,9 +138,9 @@ func (element *Slider) HandleMotion (x, y int) {
 	}
 }
 
-func (element *Slider) HandleScroll (x, y int, deltaX, deltaY float64) { }
+func (element *slider) HandleScroll (x, y int, deltaX, deltaY float64) { }
 
-func (element *Slider) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+func (element *slider) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	switch key {
 	case input.KeyUp:
 		element.changeValue(0.1)
@@ -154,15 +161,15 @@ func (element *Slider) HandleKeyDown (key input.Key, modifiers input.Modifiers) 
 	}
 }
 
-func (element *Slider) HandleKeyUp (key input.Key, modifiers input.Modifiers) { }
+func (element *slider) HandleKeyUp (key input.Key, modifiers input.Modifiers) { }
 
 // Value returns the slider's value.
-func (element *Slider) Value () (value float64) {
+func (element *slider) Value () (value float64) {
 	return element.value
 }
 
 // SetValue sets the slider's value.
-func (element *Slider) SetValue (value float64) {
+func (element *slider) SetValue (value float64) {
 	if value < 0 { value = 0 }
 	if value > 1 { value = 1 }
 	
@@ -177,31 +184,31 @@ func (element *Slider) SetValue (value float64) {
 
 // OnSlide sets a function to be called every time the slider handle changes
 // position while being dragged.
-func (element *Slider) OnSlide (callback func ()) {
+func (element *slider) OnSlide (callback func ()) {
 	element.onSlide = callback
 }
 
 // OnRelease sets a function to be called when the handle stops being dragged.
-func (element *Slider) OnRelease (callback func ()) {
+func (element *slider) OnRelease (callback func ()) {
 	element.onRelease = callback
 }
 
 // SetTheme sets the element's theme.
-func (element *Slider) SetTheme (new tomo.Theme) {
+func (element *slider) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
 	element.entity.Invalidate()
 }
 
 // SetConfig sets the element's configuration.
-func (element *Slider) SetConfig (new tomo.Config) {
+func (element *slider) SetConfig (new tomo.Config) {
 	if new == element.config.Config { return }
 	element.config.Config = new
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
 
-func (element *Slider) changeValue (delta float64) {
+func (element *slider) changeValue (delta float64) {
 	element.value += delta
 	if element.value < 0 {
 		element.value = 0
@@ -215,7 +222,7 @@ func (element *Slider) changeValue (delta float64) {
 	element.entity.Invalidate()
 }
 
-func (element *Slider) valueFor (x, y int) (value float64) {
+func (element *slider) valueFor (x, y int) (value float64) {
 	if element.vertical {
 		value =
 			float64(y - element.track.Min.Y - element.bar.Dy() / 2) /
@@ -232,7 +239,7 @@ func (element *Slider) valueFor (x, y int) (value float64) {
 	return
 }
 
-func (element *Slider) updateMinimumSize () {
+func (element *slider) updateMinimumSize () {
 	gutterPadding := element.theme.Padding(tomo.PatternGutter)
 	handlePadding := element.theme.Padding(tomo.PatternHandle)
 	if element.vertical {
