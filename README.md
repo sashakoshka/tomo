@@ -12,4 +12,5 @@ easily extendable with custom backends and elements.
 You can find out more about how to use it by visiting the examples directory,
 or pull up its documentation by running `godoc` within the repository. You can
 also view it on the web on
- [pkg.go.dev](https://pkg.go.dev/git.tebibyte.media/sashakoshka/tomo).
+ [pkg.go.dev](https://pkg.go.dev/git.tebibyte.media/sashakoshka/tomo) (although
+it may be slightly out of date).
