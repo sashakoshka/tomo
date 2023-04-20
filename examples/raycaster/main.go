@@ -57,12 +57,13 @@ func run () {
 	topBar.Adopt(elements.NewLabel("Health:"))
 	topBar.AdoptExpand(healthBar)
 	container.Adopt(topBar)
-	container.AdoptExpand(game)
+	container.AdoptExpand(game.Raycaster)
 	game.Focus()
 
 	game.OnStatUpdate (func () {
 		staminaBar.SetProgress(game.Stamina())
 	})
+	game.Start()
 	
 	window.OnClose(tomo.Stop)
 	window.Show()

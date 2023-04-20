@@ -103,7 +103,7 @@ func (game *Game) tick () {
 	if game.stamina < 0 {
 		game.stamina = 0
 	}
-	
+
 	tomo.Do(game.Invalidate)
 	if statUpdate && game.onStatUpdate != nil {
 		tomo.Do(game.onStatUpdate)

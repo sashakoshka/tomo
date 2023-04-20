@@ -138,6 +138,8 @@ func (element *Raycaster) Focus () {
 	element.entity.Focus()
 }
 
+func (element *Raycaster) SetEnabled (bool) { }
+
 func (element *Raycaster) Enabled () bool { return true }
 
 func (element *Raycaster) HandleFocusChange () { }
