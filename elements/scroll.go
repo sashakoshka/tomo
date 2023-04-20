@@ -2,7 +2,7 @@ package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-// import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
@@ -179,8 +179,9 @@ func (element *Scroll) HandleChildScrollBoundsChange (tomo.Scrollable) {
 }
 
 func (element *Scroll) HandleScroll (
-	x, y int,
+	position image.Point,
 	deltaX, deltaY float64,
+	modifiers input.Modifiers,
 ) {
 	horizontal, vertical := element.child.ScrollAxes()
 	if !horizontal { deltaX = 0 }

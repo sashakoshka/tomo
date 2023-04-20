@@ -82,18 +82,21 @@ func (element *ScrollBar) Draw (destination canvas.Canvas) {
 		element.bar)
 }
 
-func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
+func (element *ScrollBar) HandleMouseDown  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	velocity := element.config.ScrollVelocity()
-	point := image.Pt(x, y)
 
-	if point.In(element.bar) {
+	if position.In(element.bar) {
 		// the mouse is pressed down within the bar's handle
 		element.dragging   = true
 		element.entity.Invalidate()
 		element.dragOffset =
-			point.Sub(element.bar.Min).
+			position.Sub(element.bar.Min).
 			Add(element.entity.Bounds().Min)
-		element.dragTo(point)
+		element.dragTo(position)
 	} else {
 		// the mouse is pressed down within the bar's gutter
 		switch button {
@@ -102,7 +105,7 @@ func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
 			// the middle of the handle
 			element.dragging = true
 			element.dragOffset = element.fallbackDragOffset()
-			element.dragTo(point)
+			element.dragTo(position)
 			
 		case input.ButtonMiddle:
 			// page up/down on middle click
@@ -112,7 +115,7 @@ func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
 			} else {
 				viewport = element.viewportBounds.Dx()
 			}
-			if element.isAfterHandle(point) {
+			if element.isAfterHandle(position) {
 				element.scrollBy(viewport)
 			} else {
 				element.scrollBy(-viewport)
@@ -120,7 +123,7 @@ func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
 			
 		case input.ButtonRight:
 			// inch up/down on right click
-			if element.isAfterHandle(point) {
+			if element.isAfterHandle(position) {
 				element.scrollBy(velocity)
 			} else {
 				element.scrollBy(-velocity)
@@ -129,20 +132,28 @@ func (element *ScrollBar) HandleMouseDown (x, y int, button input.Button) {
 	}
 }
 
-func (element *ScrollBar) HandleMouseUp (x, y int, button input.Button) {
+func (element *ScrollBar) HandleMouseUp  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if element.dragging {
 		element.dragging = false
 		element.entity.Invalidate()
 	}
 }
 
-func (element *ScrollBar) HandleMotion (x, y int) {
+func (element *ScrollBar) HandleMotion (position image.Point) {
 	if element.dragging {
-		element.dragTo(image.Pt(x, y))
+		element.dragTo(position)
 	}
 }
 
-func (element *ScrollBar) HandleScroll (x, y int, deltaX, deltaY float64) {
+func (element *ScrollBar) HandleScroll (
+	position image.Point,
+	deltaX, deltaY float64,
+	modifiers input.Modifiers,
+) {
 	if element.vertical {
 		element.scrollBy(int(deltaY))
 	} else {

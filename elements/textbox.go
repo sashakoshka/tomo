@@ -143,12 +143,16 @@ func (element *TextBox) HandleFocusChange () {
 	element.entity.Invalidate()
 }
 
-func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
+func (element *TextBox) HandleMouseDown  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if !element.Enabled() { return }
 	element.Focus()
 
 	if button == input.ButtonLeft {
-		runeIndex := element.atPosition(image.Pt(x, y))
+		runeIndex := element.atPosition(position)
 		if runeIndex == -1 { return }
 		
 		if time.Since(element.lastClick) < element.config.DoubleClickDelay() {
@@ -164,19 +168,19 @@ func (element *TextBox) HandleMouseDown (x, y int, button input.Button) {
 	}
 }
 
-func (element *TextBox) HandleMotion (x, y int) {
+func (element *TextBox) HandleMotion (position image.Point) {
 	if !element.Enabled() { return }
 
 	switch element.dragging {
 	case 1:
-		runeIndex := element.atPosition(image.Pt(x, y))
+		runeIndex := element.atPosition(position)
 		if runeIndex > -1 {
 			element.dot.End = runeIndex
 			element.entity.Invalidate()
 		}
 		
 	case 2:
-		runeIndex := element.atPosition(image.Pt(x, y))
+		runeIndex := element.atPosition(position)
 		if runeIndex > -1 {
 			if runeIndex < element.dot.Start {
 				element.dot.End =
@@ -213,7 +217,11 @@ func (element *TextBox) atPosition (position image.Point) int {
 		fixedutil.Pt(position.Sub(offset).Add(textBoundsMin)))
 }
 
-func (element *TextBox) HandleMouseUp (x, y int, button input.Button) {
+func (element *TextBox) HandleMouseUp  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if button == input.ButtonLeft {
 		element.dragging = 0
 	}

@@ -130,18 +130,26 @@ func (element *Checkbox) HandleFocusChange () {
 	element.entity.Invalidate()
 }
 
-func (element *Checkbox) HandleMouseDown (x, y int, button input.Button) {
+func (element *Checkbox) HandleMouseDown (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if !element.Enabled() { return }
 	element.Focus()
 	element.pressed = true
 	element.entity.Invalidate()
 }
 
-func (element *Checkbox) HandleMouseUp (x, y int, button input.Button) {
+func (element *Checkbox) HandleMouseUp (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if button != input.ButtonLeft || !element.pressed { return }
 
 	element.pressed = false
-	within := image.Point { x, y }.In(element.entity.Bounds())
+	within := position.In(element.entity.Bounds())
 	if within {
 		element.checked = !element.checked
 	}

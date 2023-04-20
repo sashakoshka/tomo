@@ -189,6 +189,7 @@ func (window *window) handleButtonPress (
 	point        := image.Pt(int(buttonEvent.EventX), int(buttonEvent.EventY))
 	insideWindow := point.In(window.canvas.Bounds())
 	scrolling    := buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7
+	modifiers    := window.modifiersFromState(buttonEvent.State)
 
 	if !insideWindow && window.shy && !scrolling {
 		window.Close()
@@ -200,8 +201,8 @@ func (window *window) handleButtonPress (
 				sum.add(buttonEvent.Detail, window, buttonEvent.State)
 				window.compressScrollSum(buttonEvent, &sum)
 				child.HandleScroll (
-					point.X, point.Y,
-					float64(sum.x), float64(sum.y))
+					point, float64(sum.x), float64(sum.y),
+					modifiers)
 			}
 		}
 	} else {
@@ -209,14 +210,13 @@ func (window *window) handleButtonPress (
 		window.system.drags[buttonEvent.Detail] = underneath
 		if child, ok := underneath.element.(tomo.MouseTarget); ok {
 			child.HandleMouseDown (
-				point.X, point.Y,
-				input.Button(buttonEvent.Detail))
+				point, input.Button(buttonEvent.Detail),
+				modifiers)
 		}
 		callback := func (container tomo.MouseTargetContainer, child tomo.Element) {
 			container.HandleChildMouseDown (
-				point.X, point.Y,
-				input.Button(buttonEvent.Detail),
-				child)
+				point, input.Button(buttonEvent.Detail),
+				modifiers, child)
 		}
 		underneath.forMouseTargetContainers(callback)
 	}
@@ -230,20 +230,25 @@ func (window *window) handleButtonRelease (
 ) {
 	buttonEvent := *event.ButtonReleaseEvent
 	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
+	modifiers := window.modifiersFromState(buttonEvent.State)
 	dragging := window.system.drags[buttonEvent.Detail]
+	
 	if dragging != nil {
 		if child, ok := dragging.element.(tomo.MouseTarget); ok {
 			child.HandleMouseUp (
-				int(buttonEvent.EventX),
-				int(buttonEvent.EventY),
-				input.Button(buttonEvent.Detail))
+				image.Pt (
+					int(buttonEvent.EventX),
+					int(buttonEvent.EventY)),
+				input.Button(buttonEvent.Detail),
+				modifiers)
 		}
 		callback := func (container tomo.MouseTargetContainer, child tomo.Element) {
 			container.HandleChildMouseUp (
-			int(buttonEvent.EventX),
-			int(buttonEvent.EventY),
-			input.Button(buttonEvent.Detail),
-			child)
+				image.Pt (
+					int(buttonEvent.EventX),
+					int(buttonEvent.EventY)),
+				input.Button(buttonEvent.Detail),
+				modifiers, child)
 		}
 		dragging.forMouseTargetContainers(callback)
 	}
@@ -263,7 +268,7 @@ func (window *window) handleMotionNotify (
 	for _, child := range window.system.drags {
 		if child == nil { continue }
 		if child, ok := child.element.(tomo.MotionTarget); ok {
-			child.HandleMotion(x, y)
+			child.HandleMotion(image.Pt(x, y))
 			handled = true
 		}
 	}
@@ -271,7 +276,7 @@ func (window *window) handleMotionNotify (
 	if !handled {
 		child := window.system.childAt(image.Pt(x, y))
 		if child, ok := child.element.(tomo.MotionTarget); ok {
-			child.HandleMotion(x, y)
+			child.HandleMotion(image.Pt(x, y))
 		}
 	}
 	

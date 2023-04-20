@@ -124,13 +124,26 @@ func (element *Directory) Layout () {
 	}
 }
 
-func (element *Directory) HandleMouseDown (x, y int, button input.Button) {
+func (element *Directory) HandleMouseDown  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	element.selectNone()
 }
 
-func (element *Directory) HandleMouseUp (x, y int, button input.Button) { }
+func (element *Directory) HandleMouseUp  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) { }
 
-func (element *Directory) HandleChildMouseDown (x, y int, button input.Button, child tomo.Element) {
+func (element *Directory) HandleChildMouseDown  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+	child tomo.Element,
+) {
 	element.selectNone()
 	if child, ok := child.(tomo.Selectable); ok {
 		index := element.entity.IndexOf(child)
@@ -138,7 +151,12 @@ func (element *Directory) HandleChildMouseDown (x, y int, button input.Button, c
 	}
 }
 
-func (element *Directory) HandleChildMouseUp (int, int, input.Button, tomo.Element) { }
+func (element *Directory) HandleChildMouseUp  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+	child tomo.Element,
+) { }
 
 func (element *Directory) HandleChildFlexibleHeightChange (child tomo.Flexible) {
 	element.updateMinimumSize()

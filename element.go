@@ -99,11 +99,17 @@ type MouseTarget interface {
 
 	// HandleMouseDown is called when a mouse button is pressed down on this
 	// element.
-	HandleMouseDown (x, y int, button input.Button)
+	HandleMouseDown (
+		position image.Point,
+		button input.Button,
+		modifiers input.Modifiers)
 
 	// HandleMouseUp is called when a mouse button is released that was
 	// originally pressed down on this element.
-	HandleMouseUp (x, y int, button input.Button)
+	HandleMouseUp (
+		position image.Point,
+		button input.Button,
+		modifiers input.Modifiers)
 }
 
 // MouseTargetContainer represents an element that wants to know when one
@@ -115,11 +121,19 @@ type MouseTargetContainer interface {
 
 	// HandleMouseDown is called when a mouse button is pressed down on a
 	// child element.
-	HandleChildMouseDown (x, y int, button input.Button, child Element)
+	HandleChildMouseDown (
+		position image.Point,
+		button input.Button,
+		modifiers input.Modifiers,
+		child Element)
 
 	// HandleMouseUp is called when a mouse button is released that was
 	// originally pressed down on a child element.
-	HandleChildMouseUp (x, y int, button input.Button, child Element)
+	HandleChildMouseUp (
+		position image.Point,
+		button input.Button,
+		modifiers input.Modifiers,
+		child Element)
 }
 
 // MotionTarget represents an element that can receive mouse motion events.
@@ -129,7 +143,7 @@ type MotionTarget interface {
 	// HandleMotion is called when the mouse is moved over this element,
 	// or the mouse is moving while being held down and originally pressed
 	// down on this element.
-	HandleMotion (x, y int)
+	HandleMotion (position image.Point)
 }
 
 // ScrollTarget represents an element that can receive mouse scroll events.
@@ -138,7 +152,10 @@ type ScrollTarget interface {
 
 	// HandleScroll is called when the mouse is scrolled. The X and Y
 	// direction of the scroll event are passed as deltaX and deltaY.
-	HandleScroll (x, y int, deltaX, deltaY float64)
+	HandleScroll (
+		position image.Point,
+		deltaX, deltaY float64,
+		modifiers input.Modifiers)
 }
 
 // Flexible represents an element who's preferred minimum height can change in
@@ -158,7 +175,8 @@ type Flexible interface {
 	// minimum size that the element may be resized to.
 	//
 	// It is important to note that if a parent container checks for
-	// flexible chilren, it itself will likely need to be flexible.
+	// flexible chilren, it itself will likely need to be either scrollable
+	// or flexible.
 	FlexibleHeightFor (width int) int
 }
 

@@ -177,7 +177,11 @@ func (element *Button) HandleFocusChange () {
 	element.entity.Invalidate()
 }
 
-func (element *Button) HandleMouseDown (x, y int, button input.Button) {
+func (element *Button) HandleMouseDown (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if !element.Enabled() { return }
 	element.Focus()
 	if button != input.ButtonLeft { return }
@@ -185,10 +189,14 @@ func (element *Button) HandleMouseDown (x, y int, button input.Button) {
 	element.entity.Invalidate()
 }
 
-func (element *Button) HandleMouseUp (x, y int, button input.Button) {
+func (element *Button) HandleMouseUp (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if button != input.ButtonLeft { return }
 	element.pressed = false
-	within := image.Point { x, y }.In(element.entity.Bounds())
+	within := position.In(element.entity.Bounds())
 	if element.Enabled() && within && element.onClick != nil {
 		element.onClick()
 	}

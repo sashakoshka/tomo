@@ -125,7 +125,7 @@ func (element *File) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	}
 }
 
-func (element *File) HandleKeyUp(key input.Key, modifiers input.Modifiers) {
+func (element *File) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
 	if key == input.KeyEnter && element.pressed {
 		element.pressed = false
 		if !element.Enabled() { return }
@@ -165,7 +165,11 @@ func (element *File) SetEnabled (enabled bool) {
 	element.entity.Invalidate()
 }
 
-func (element *File) HandleMouseDown (x, y int, button input.Button) {
+func (element *File) HandleMouseDown  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if !element.Enabled() { return }
 	if !element.entity.Focused() { element.Focus() }
 	if button != input.ButtonLeft { return }
@@ -173,10 +177,14 @@ func (element *File) HandleMouseDown (x, y int, button input.Button) {
 	element.entity.Invalidate()
 }
 
-func (element *File) HandleMouseUp (x, y int, button input.Button) {
+func (element *File) HandleMouseUp  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if button != input.ButtonLeft { return }
 	element.pressed = false
-	within := image.Point { x, y }.In(element.entity.Bounds())
+	within := position.In(element.entity.Bounds())
 	if time.Since(element.lastClick) < element.config.DoubleClickDelay() {
 		if element.Enabled() && within && element.onChoose != nil {
 			element.onChoose()

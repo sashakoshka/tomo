@@ -87,7 +87,12 @@ func (element *List) Layout () {
 	}
 }
 
-func (element *List) HandleChildMouseDown (x, y int, button input.Button, child tomo.Element) {
+func (element *List) HandleChildMouseDown  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+	child tomo.Element,
+) {
 	if child, ok := child.(tomo.Selectable); ok {
 		index := element.entity.IndexOf(child)
 		if element.selected == index { return }
@@ -99,7 +104,12 @@ func (element *List) HandleChildMouseDown (x, y int, button input.Button, child 
 	}
 }
 
-func (element *List) HandleChildMouseUp (int, int, input.Button, tomo.Element) { }
+func (element *List) HandleChildMouseUp  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+	child tomo.Element,
+) { }
 
 func (element *List) HandleChildFlexibleHeightChange (child tomo.Flexible) {
 	element.updateMinimumSize()

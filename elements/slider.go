@@ -111,12 +111,16 @@ func (element *slider) HandleFocusChange () {
 	element.entity.Invalidate()
 }
 
-func (element *slider) HandleMouseDown (x, y int, button input.Button) {
+func (element *slider) HandleMouseDown  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if !element.Enabled() { return }
 	element.Focus()
 	if button == input.ButtonLeft {
 		element.dragging = true
-		element.value = element.valueFor(x, y)
+		element.value = element.valueFor(position.X, position.Y)
 		if element.onSlide != nil {
 			element.onSlide()
 		}
@@ -124,7 +128,11 @@ func (element *slider) HandleMouseDown (x, y int, button input.Button) {
 	}
 }
 
-func (element *slider) HandleMouseUp (x, y int, button input.Button) {
+func (element *slider) HandleMouseUp  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	if button != input.ButtonLeft || !element.dragging { return }
 	element.dragging = false
 	if element.onRelease != nil {
@@ -133,10 +141,10 @@ func (element *slider) HandleMouseUp (x, y int, button input.Button) {
 	element.entity.Invalidate()
 }
 
-func (element *slider) HandleMotion (x, y int) {
+func (element *slider) HandleMotion (position image.Point) {
 	if element.dragging {
 		element.dragging = true
-		element.value = element.valueFor(x, y)
+		element.value = element.valueFor(position.X, position.Y)
 		if element.onSlide != nil {
 			element.onSlide()
 		}
@@ -144,7 +152,11 @@ func (element *slider) HandleMotion (x, y int) {
 	}
 }
 
-func (element *slider) HandleScroll (x, y int, deltaX, deltaY float64) { }
+func (element *slider) HandleScroll (
+	position image.Point,
+	deltaX, deltaY float64,
+	modifiers input.Modifiers,
+) { }
 
 func (element *slider) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	switch key {
