@@ -140,6 +140,7 @@ func (element *List) HandleChildMouseDown (
 		element.selectNone()
 		element.selected = index
 		element.entity.SelectChild(index, true)
+		element.scrollToSelected()
 	}
 }
 
@@ -169,6 +170,7 @@ func (element *List) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 		element.selectNone()
 		element.selected = index
 		element.entity.SelectChild(index, true)
+		element.scrollToSelected()
 	}
 }
 
@@ -254,8 +256,22 @@ func (element *List) selectNone () {
 	}
 }
 
-func (element *List) setSelected (child tomo.Element) {
-	
+func (element *List) scrollToSelected () {
+	if element.selected < 0 { return }
+	target := element.entity.Child(element.selected).Entity().Bounds()
+	padding := element.theme.Padding(tomo.PatternBackground)
+	bounds  := padding.Apply(element.entity.Bounds())
+	if target.Min.Y < bounds.Min.Y {
+		// TODO
+		element.scroll.Y -= bounds.Min.Y - target.Min.Y
+		element.entity.Invalidate()
+		element.entity.InvalidateLayout()
+	} else if target.Max.Y > bounds.Max.Y {
+		// TODO
+		element.scroll.Y += target.Max.Y - bounds.Max.Y
+		element.entity.Invalidate()
+		element.entity.InvalidateLayout()
+	} 
 }
 
 func (element *List) state () tomo.State {
