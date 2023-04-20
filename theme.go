@@ -29,8 +29,17 @@ type Color int; const (
 	// ColorForeground is the text/icon color of the theme.
 	ColorForeground
 
+	// ColorMidground is a generic raised element color.
+	ColorMidground
+
 	// ColorBackground is the background color of the theme.
 	ColorBackground
+
+	// ColorShadow is a generic shadow color.
+	ColorShadow
+
+	// ColorShine is a generic highlight color.
+	ColorShine
 
 	// ColorAccent is the accent color of the theme.
 	ColorAccent
