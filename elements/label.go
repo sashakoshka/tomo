@@ -1,7 +1,10 @@
 package elements
 
+import "image"
 import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/data"
+import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/default/theme"
@@ -46,6 +49,32 @@ func NewLabelWrapped (text string) (element *Label) {
 // Entity returns this element's entity.
 func (element *Label) Entity () tomo.Entity {
 	return element.entity
+}
+
+// Draw causes the element to draw to the specified destination canvas.
+func (element *Label) Draw (destination canvas.Canvas) {
+	bounds := element.entity.Bounds()
+	
+	if element.wrap {
+		element.drawer.SetMaxWidth(bounds.Dx())
+		element.drawer.SetMaxHeight(bounds.Dy())
+	}
+	
+	element.entity.DrawBackground(destination)
+
+	textBounds := element.drawer.LayoutBounds()
+	foreground := element.theme.Color (
+		tomo.ColorForeground,
+		tomo.State { })
+	element.drawer.Draw(destination, foreground, bounds.Min.Sub(textBounds.Min))
+}
+
+// Copy copies the label's textto the clipboard.
+func (element *Label) Copy () {
+	window := element.entity.Window()
+	if window != nil {
+		window.Copy(data.Bytes(data.MimePlain, []byte(element.text)))
+	}
 }
 
 // EmCollapse forces a minimum width and height upon the label. The width is
@@ -122,22 +151,42 @@ func (element *Label) SetConfig (new tomo.Config) {
 	element.entity.Invalidate()
 }
 
-// Draw causes the element to draw to the specified destination canvas.
-func (element *Label) Draw (destination canvas.Canvas) {
-	bounds := element.entity.Bounds()
-	
-	if element.wrap {
-		element.drawer.SetMaxWidth(bounds.Dx())
-		element.drawer.SetMaxHeight(bounds.Dy())
+func (element *Label) HandleMouseDown  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
+	if button == input.ButtonRight {
+		element.contextMenu(position)
+	}
+}
+
+func (element *Label) HandleMouseUp  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) { }
+
+func (element *Label) contextMenu (position image.Point) {
+	window := element.entity.Window()
+	menu, err := window.NewMenu(image.Rectangle { position, position })
+	if err != nil { return }
+
+	closeAnd := func (callback func ()) func () {
+		return func () { callback(); menu.Close() }
 	}
 	
-	element.entity.DrawBackground(destination)
+	copyButton := NewButton("Copy")
+	copyButton.ShowText(false)
+	copyButton.SetIcon(tomo.IconCopy)
+	copyButton.OnClick(closeAnd(element.Copy))
 
-	textBounds := element.drawer.LayoutBounds()
-	foreground := element.theme.Color (
-		tomo.ColorForeground,
-		tomo.State { })
-	element.drawer.Draw(destination, foreground, bounds.Min.Sub(textBounds.Min))
+	menu.Adopt (NewHBox (
+		SpaceNone,
+		copyButton,
+	))
+	copyButton.Focus()
+	menu.Show()
 }
 
 func (element *Label) updateMinimumSize () {

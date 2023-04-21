@@ -151,7 +151,8 @@ func (element *TextBox) HandleMouseDown  (
 	if !element.Enabled() { return }
 	element.Focus()
 
-	if button == input.ButtonLeft {
+	switch button {
+	case input.ButtonLeft:
 		runeIndex := element.atPosition(position)
 		if runeIndex == -1 { return }
 		
@@ -165,6 +166,18 @@ func (element *TextBox) HandleMouseDown  (
 		}
 		
 		element.entity.Invalidate()
+	case input.ButtonRight:
+		element.contextMenu(position)
+	}
+}
+
+func (element *TextBox) HandleMouseUp  (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
+	if button == input.ButtonLeft {
+		element.dragging = 0
 	}
 }
 
@@ -217,23 +230,12 @@ func (element *TextBox) atPosition (position image.Point) int {
 		fixedutil.Pt(position.Sub(offset).Add(textBoundsMin)))
 }
 
-func (element *TextBox) HandleMouseUp  (
-	position image.Point,
-	button input.Button,
-	modifiers input.Modifiers,
-) {
-	if button == input.ButtonLeft {
-		element.dragging = 0
-	}
-}
-
 func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) {
 	if element.onKeyDown != nil && element.onKeyDown(key, modifiers) {
 		return
 	}
 
 	scrollMemory := element.scroll
-	altered     := true
 	textChanged := false
 	switch {
 	case key == input.KeyEnter:
@@ -269,6 +271,8 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 				element.dot,
 				modifiers.Control)
 		}
+		element.scrollToCursor()
+		element.entity.Invalidate()
 			
 	case key == input.KeyRight:
 		if modifiers.Shift {
@@ -282,38 +286,24 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 				element.dot,
 				modifiers.Control)
 		}
+		element.scrollToCursor()
+		element.entity.Invalidate()
 
 	case key == 'a' && modifiers.Control:
 		element.dot.Start = 0
 		element.dot.End   = len(element.text)
+		element.scrollToCursor()
+		element.entity.Invalidate()
 
-	case key == 'x' && modifiers.Control:
-		var lifted []rune
-		element.text, element.dot, lifted = textmanip.Lift (
-			element.text,
-			element.dot)
-		if lifted != nil {
-			element.clipboardPut(lifted)
-			textChanged = true
-		}
+	case key == 'x' && modifiers.Control: element.Cut()
+	case key == 'c' && modifiers.Control: element.Copy()
+	case key == 'v' && modifiers.Control: element.Paste()
 
-	case key == 'c' && modifiers.Control:
-		element.clipboardPut(element.dot.Slice(element.text))
-
-	case key == 'v' && modifiers.Control:
-		window := element.entity.Window()
-		if window == nil { break }
-		window.Paste (func (d data.Data, err error) {
-			if err != nil { return }
-			reader, ok := d[data.MimePlain]
-			if !ok { return }
-			bytes, _ := io.ReadAll(reader)
-			element.text, element.dot = textmanip.Type (
-				element.text,
-				element.dot,
-				[]rune(string(bytes))...)
-			element.notifyAsyncTextChange()
-		})
+	case key == input.KeyMenu:
+		pos := fixedutil.RoundPt(element.valueDrawer.PositionAt(element.dot.End)).
+			Add(element.textOffset())
+		pos.Y += element.valueDrawer.LineHeight().Round()
+		element.contextMenu(pos)
 		
 	case key.Printable():
 		element.text, element.dot = textmanip.Type (
@@ -321,27 +311,52 @@ func (element *TextBox) HandleKeyDown(key input.Key, modifiers input.Modifiers) 
 			element.dot,
 			rune(key))
 		textChanged = true
-			
-	default:
-		altered = false
 	}
 
 	if textChanged {
 		element.runOnChange()
 		element.valueDrawer.SetText(element.text)
-	}
-
-	if altered {
 		element.scrollToCursor()
+		element.entity.Invalidate()
 	}
 
 	if (textChanged || scrollMemory != element.scroll) {
 		element.entity.NotifyScrollBoundsChange()
 	}
-	
-	if altered {
-		element.entity.Invalidate()
+}
+
+// Cut cuts the selected text in the text box and places it in the clipboard.
+func (element *TextBox) Cut () {
+	var lifted []rune
+	element.text, element.dot, lifted = textmanip.Lift (
+		element.text,
+		element.dot)
+	if lifted != nil {
+		element.clipboardPut(lifted)
+		element.notifyAsyncTextChange()
 	}
+}
+
+// Copy copies the selected text in the text box and places it in the clipboard.
+func (element *TextBox) Copy () {
+	element.clipboardPut(element.dot.Slice(element.text))
+}
+
+// Paste pastes text data from the clipboard into the text box.
+func (element *TextBox) Paste () {
+	window := element.entity.Window()
+	if window == nil { return }
+	window.Paste (func (d data.Data, err error) {
+		if err != nil { return }
+		reader, ok := d[data.MimePlain]
+		if !ok { return }
+		bytes, _ := io.ReadAll(reader)
+		element.text, element.dot = textmanip.Type (
+			element.text,
+			element.dot,
+			[]rune(string(bytes))...)
+		element.notifyAsyncTextChange()
+	})
 }
 
 func (element *TextBox) HandleKeyUp(key input.Key, modifiers input.Modifiers) { }
@@ -480,6 +495,42 @@ func (element *TextBox) SetConfig (new tomo.Config) {
 	element.config.Config = new
 	element.updateMinimumSize()
 	element.entity.Invalidate()
+}
+
+func (element *TextBox) contextMenu (position image.Point) {
+	window := element.entity.Window()
+	menu, err := window.NewMenu(image.Rectangle { position, position })
+	if err != nil { return }
+
+	closeAnd := func (callback func ()) func () {
+		return func () { callback(); menu.Close() }
+	}
+
+	cutButton := NewButton("Cut")
+	cutButton.ShowText(false)
+	cutButton.SetIcon(tomo.IconCut)
+	cutButton.SetEnabled(!element.dot.Empty())
+	cutButton.OnClick(closeAnd(element.Cut))
+	
+	copyButton := NewButton("Copy")
+	copyButton.ShowText(false)
+	copyButton.SetIcon(tomo.IconCopy)
+	copyButton.SetEnabled(!element.dot.Empty())
+	copyButton.OnClick(closeAnd(element.Copy))
+	
+	pasteButton := NewButton("Paste")
+	pasteButton.ShowText(false)
+	pasteButton.SetIcon(tomo.IconPaste)
+	pasteButton.OnClick(closeAnd(element.Paste))
+
+	menu.Adopt (NewHBox (
+		SpaceNone,
+		pasteButton,
+		copyButton,
+		cutButton,
+	))
+	pasteButton.Focus()
+	menu.Show()
 }
 
 func (element *TextBox) runOnChange () {

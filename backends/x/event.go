@@ -40,7 +40,6 @@ func (window *window) handleExpose (
 	event xevent.ExposeEvent,
 ) {
 	_, region := window.compressExpose(*event.ExposeEvent)
-	window.system.afterEvent()
 	window.pushRegion(region)
 }
 
@@ -79,8 +78,6 @@ func (window *window) handleConfigureNotify (
 			window.child.Invalidate()
 			window.child.InvalidateLayout()
 		}
-		
-		window.system.afterEvent()
 	}
 }
 
@@ -140,8 +137,6 @@ func (window *window) handleKeyPress (
 		focused, ok := window.focused.element.(tomo.KeyboardTarget)
 		if ok { focused.HandleKeyDown(key, modifiers) }
 	}
-	
-	window.system.afterEvent()
 }
 
 func (window *window) handleKeyRelease (
@@ -174,8 +169,6 @@ func (window *window) handleKeyRelease (
 	if window.focused != nil {
 		focused, ok := window.focused.element.(tomo.KeyboardTarget)
 		if ok { focused.HandleKeyUp(key, modifiers) }
-		
-		window.system.afterEvent()
 	}
 }
 
@@ -220,8 +213,6 @@ func (window *window) handleButtonPress (
 		}
 		underneath.forMouseTargetContainers(callback)
 	}
-	
-	window.system.afterEvent()
 }
 
 func (window *window) handleButtonRelease (
@@ -252,8 +243,6 @@ func (window *window) handleButtonRelease (
 		}
 		dragging.forMouseTargetContainers(callback)
 	}
-	
-	window.system.afterEvent()
 }
 
 func (window *window) handleMotionNotify (
@@ -279,8 +268,6 @@ func (window *window) handleMotionNotify (
 			child.HandleMotion(image.Pt(x, y))
 		}
 	}
-	
-	window.system.afterEvent()
 }
 
 func (window *window) handleSelectionNotify (

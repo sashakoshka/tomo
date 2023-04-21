@@ -67,11 +67,11 @@ func (backend *Backend) Run () (err error) {
 			<- pingAfter
 		case callback := <- backend.doChannel:
 			callback()
-			for _, window := range backend.windows {
-				window.system.afterEvent()
-			}
 		case <- pingQuit:
 			return
+		}
+		for _, window := range backend.windows {
+			window.system.afterEvent()
 		}
 	}
 }
