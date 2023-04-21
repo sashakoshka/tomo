@@ -26,7 +26,8 @@ type List struct {
 	forcedMinimumHeight int
 
 	theme theme.Wrapped
-	
+
+	onClick func ()
 	onScrollBoundsChange func ()
 }
 
@@ -92,6 +93,22 @@ func (element *List) Layout () {
 	}
 }
 
+func (element *List) Selected () tomo.Selectable {
+	if element.selected == -1 { return nil }
+	child, ok := element.entity.Child(element.selected).(tomo.Selectable)
+	if !ok { return nil }
+	return child
+}
+
+func (element *List) Select (child tomo.Selectable) {
+	index := element.entity.IndexOf(child)
+	if element.selected == index { return }
+	element.selectNone()
+	element.selected = index
+	element.entity.SelectChild(index, true)
+	element.scrollToSelected()
+}
+
 func (element *List) Enabled () bool {
 	return element.enabled
 }
@@ -135,12 +152,7 @@ func (element *List) HandleChildMouseDown (
 	if !element.enabled { return }
 	element.Focus()
 	if child, ok := child.(tomo.Selectable); ok {
-		index := element.entity.IndexOf(child)
-		if element.selected == index { return }
-		element.selectNone()
-		element.selected = index
-		element.entity.SelectChild(index, true)
-		element.scrollToSelected()
+		element.Select(child)
 	}
 }
 
@@ -149,7 +161,12 @@ func (element *List) HandleChildMouseUp  (
 	button input.Button,
 	modifiers input.Modifiers,
 	child tomo.Element,
-) { }
+) {
+	if !position.In(child.Entity().Bounds()) { return }
+	if element.onClick != nil {
+		element.onClick()
+	}
+}
 
 func (element *List) HandleChildFlexibleHeightChange (child tomo.Flexible) {
 	element.updateMinimumSize()
@@ -165,6 +182,10 @@ func (element *List) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 		index = element.selected - 1
 	case input.KeyDown, input.KeyRight:
 		index = element.selected + 1
+	case input.KeyEnter:
+		if element.onClick != nil {
+			element.onClick()
+		}
 	}
 	if index >= 0 && index < element.entity.CountChildren() {
 		element.selectNone()
@@ -243,6 +264,10 @@ func (element *List) ScrollTo (position image.Point) {
 // bounds, content bounds, or scroll axes change.
 func (element *List) OnScrollBoundsChange (callback func ()) {
 	element.onScrollBoundsChange = callback
+}
+
+func (element *List) OnClick (callback func ()) {
+	element.onClick = callback
 }
 
 // ScrollAxes returns the supported axes for scrolling.

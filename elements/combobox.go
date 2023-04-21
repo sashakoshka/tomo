@@ -8,6 +8,7 @@ import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 import "git.tebibyte.media/sashakoshka/tomo/default/config"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 
+// Option specifies a ComboBox option. A blank option will display as "(None)".
 type Option string
 
 func (option Option) Title () string {
@@ -18,7 +19,7 @@ func (option Option) Title () string {
 	}
 }
 
-// Button is a clickable button.
+// ComboBox is an input that can be one of several predetermined values.
 type ComboBox struct {
 	entity tomo.FocusableEntity
 	drawer textdraw.Drawer
@@ -35,7 +36,7 @@ type ComboBox struct {
 	onChange func ()
 }
 
-// NewButton creates a new button with the specified label text.
+// NewComboBox creates a new ComboBox with the specifed options.
 func NewComboBox (options ...Option) (element *ComboBox) {
 	if len(options) == 0 { options = []Option { "" } }
 	element = &ComboBox { enabled: true, options: options }
@@ -98,15 +99,17 @@ func (element *ComboBox) Draw (destination canvas.Canvas) {
 	element.drawer.Draw(destination, foreground, offset)
 }
 
-// OnClick sets the function to be called when the button is clicked.
+// OnChange sets the function to be called when this element's value is changed.
 func (element *ComboBox) OnChange (callback func ()) {
 	element.onChange = callback
 }
 
+// Value returns this element's value.
 func (element *ComboBox) Value () Option {
 	return element.selected
 }
 
+// Select sets this element's value.
 func (element *ComboBox) Select (option Option) {
 	element.selected = option
 	element.drawer.SetText([]rune(option.Title()))
@@ -117,6 +120,7 @@ func (element *ComboBox) Select (option Option) {
 	}
 }
 
+// Filled returns whether this element has a value other than (None).
 func (element *ComboBox) Filled () bool {
 	return element.selected != ""
 }
@@ -126,12 +130,12 @@ func (element *ComboBox) Focus () {
 	if !element.entity.Focused() { element.entity.Focus() }
 }
 
-// Enabled returns whether this button is enabled or not.
+// Enabled returns whether this element is enabled or not.
 func (element *ComboBox) Enabled () bool {
 	return element.enabled
 }
 
-// SetEnabled sets whether this button can be clicked or not.
+// SetEnabled sets whether this element is enabled or not.
 func (element *ComboBox) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
@@ -180,6 +184,7 @@ func (element *ComboBox) HandleMouseUp (
 
 func (element *ComboBox) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if !element.Enabled() { return }
+	// TODO: use arrow keys to cycle options
 	if key == input.KeyEnter {
 		element.pressed = true
 		element.entity.Invalidate()
@@ -200,18 +205,25 @@ func (element *ComboBox) dropDown () {
 	menu, err := window.NewMenu(element.entity.Bounds())
 	if err != nil { return }
 
+	cellToOption := make(map[tomo.Selectable] Option)
+
 	list := NewList()
 	for _, option := range element.options {
 		option := option
 		cell := NewCell(NewLabel(option.Title()))
-		cell.OnSelectionChange(func () {
-			if cell.Selected() {
-				element.Select(option)
-				menu.Close()
-			}
-		})
+		cellToOption[cell] = option
 		list.Adopt(cell)
+
+		if option == element.selected {
+			list.Select(cell)
+		}
 	}
+	list.OnClick(func () {
+		selected := list.Selected()
+		if selected == nil { return }
+		element.Select(cellToOption[selected])
+		menu.Close()
+	})
 
 	menu.Adopt(list)
 	list.Focus()
