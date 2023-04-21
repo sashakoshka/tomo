@@ -284,7 +284,7 @@ func (element *List) selectNone () {
 func (element *List) scrollToSelected () {
 	if element.selected < 0 { return }
 	target := element.entity.Child(element.selected).Entity().Bounds()
-	padding := element.theme.Padding(tomo.PatternBackground)
+	padding := element.theme.Padding(tomo.PatternSunken)
 	bounds  := padding.Apply(element.entity.Bounds())
 	if target.Min.Y < bounds.Min.Y {
 		element.scroll.Y -= bounds.Min.Y - target.Min.Y

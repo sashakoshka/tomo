@@ -276,6 +276,8 @@ func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
 	case tomo.PatternSunken:
 		if c.Match("tomo", "progressBar", "") {
 			return artist.I(2, 1, 1, 2)
+		} else if c.Match("tomo", "list", "") {
+			return artist.I(2)
 		} else {
 			return artist.I(8)
 		}
