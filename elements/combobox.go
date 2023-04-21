@@ -184,10 +184,33 @@ func (element *ComboBox) HandleMouseUp (
 
 func (element *ComboBox) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if !element.Enabled() { return }
-	// TODO: use arrow keys to cycle options
-	if key == input.KeyEnter {
+
+	selectionDelta := 0
+	switch key {
+	case input.KeyEnter:
 		element.pressed = true
 		element.entity.Invalidate()
+	case input.KeyUp, input.KeyLeft:
+		selectionDelta = -1
+	case input.KeyDown, input.KeyRight:
+		selectionDelta = 1
+	}
+
+	if selectionDelta != 0 {
+		selected := 0
+		for index, option := range element.options {
+			if option == element.selected {
+				selected = index
+			}
+		}
+		selected += selectionDelta
+		if selected < 0 {
+			selected = len(element.options) - 1
+		} else if selected >= len(element.options) {
+			selected = 0
+		}
+
+		element.Select(element.options[selected])
 	}
 }
 
