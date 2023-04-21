@@ -232,7 +232,9 @@ const (
 	IconUnite
 	IconDiffer
 	IconInvert
-	IconIntersect)
+	IconIntersect
+
+	IconExpand)
 
 const (
 	// Status icons

@@ -19,6 +19,11 @@ func run () {
 	firstName    := elements.NewTextBox("First name", "")
 	lastName     := elements.NewTextBox("Last name", "")
 	fingerLength := elements.NewTextBox("Length of fingers", "")
+	purpose      := elements.NewComboBox (
+		"",
+		"Gaslight",
+		"Gatekeep",
+		"Girlboss")
 	button       := elements.NewButton("Ok")
 
 	button.SetEnabled(false)
@@ -36,17 +41,24 @@ func run () {
 	// enable the Ok button if all three inputs have text in them
 	check := func () {
 		button.SetEnabled (
-			firstName.Filled() &&
-			lastName.Filled() &&
-			fingerLength.Filled())
+			firstName.Filled()    &&
+			lastName.Filled()     &&
+			fingerLength.Filled() &&
+			purpose.Filled())
 	}
 	firstName.OnChange(check)
 	lastName.OnChange(check)
 	fingerLength.OnChange(check)
+	purpose.OnChange(check)
 
 	// add elements to container
 	container.AdoptExpand(elements.NewLabel("Choose your words carefully."))
-	container.Adopt(firstName, lastName, fingerLength, elements.NewLine(), button)
+	container.Adopt (
+		firstName, lastName,
+		fingerLength,
+		elements.NewLabel("Purpose:"),
+		purpose,
+		elements.NewLine(), button)
 	window.OnClose(tomo.Stop)
 	window.Show()
 }
