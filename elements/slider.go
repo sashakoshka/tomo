@@ -67,14 +67,14 @@ func (element *slider) Draw (destination canvas.Canvas) {
 	element.track = element.theme.Padding(tomo.PatternGutter).Apply(bounds)
 	if element.vertical {
 		barSize := element.track.Dx()
-		element.bar = image.Rect(0, 0, barSize, barSize).Add(bounds.Min)
+		element.bar = image.Rect(0, 0, barSize, barSize).Add(element.track.Min)
 		barOffset :=
 			float64(element.track.Dy() - barSize) *
 			(1 - element.value)
 		element.bar = element.bar.Add(image.Pt(0, int(barOffset)))
 	} else {
 		barSize := element.track.Dy()
-		element.bar = image.Rect(0, 0, barSize, barSize).Add(bounds.Min)
+		element.bar = image.Rect(0, 0, barSize, barSize).Add(element.track.Min)
 		barOffset :=
 			float64(element.track.Dx() - barSize) *
 			element.value
@@ -87,7 +87,7 @@ func (element *slider) Draw (destination canvas.Canvas) {
 		Pressed:  element.dragging,
 	}
 	element.theme.Pattern(tomo.PatternGutter, state).Draw(destination, bounds)
-	element.theme.Pattern(tomo.PatternHandle, state).Draw(destination, bounds)
+	element.theme.Pattern(tomo.PatternHandle, state).Draw(destination, element.bar)
 }
 
 // Focus gives this element input focus.
