@@ -52,9 +52,10 @@ func (element *Mouse) Draw (destination canvas.Canvas) {
 		bounds.Min.Add(image.Pt(1, bounds.Dy() - 2)),
 		bounds.Min.Add(image.Pt(bounds.Dx() - 2, 1)))
 	if element.pressed {
+		midpoint := bounds.Min.Add(bounds.Max.Sub(bounds.Min).Div(2))
 		shapes.ColorLine (
 			destination, artist.Hex(0x000000FF), 1,
-			bounds.Min, element.lastMousePos)
+			midpoint, element.lastMousePos)
 	}
 }
 
@@ -70,16 +71,27 @@ func (element *Mouse) SetConfig (new tomo.Config) {
 	element.entity.Invalidate()
 }
 
-func (element *Mouse) HandleMouseDown (x, y int, button input.Button) {
+func (element *Mouse) HandleMouseDown (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	element.pressed = true
+	element.lastMousePos = position
+	element.entity.Invalidate()
 }
 
-func (element *Mouse) HandleMouseUp (x, y int, button input.Button) {
+func (element *Mouse) HandleMouseUp (
+	position image.Point,
+	button input.Button,
+	modifiers input.Modifiers,
+) {
 	element.pressed = false
+	element.entity.Invalidate()
 }
 
-func (element *Mouse) HandleMotion (x, y int) {
+func (element *Mouse) HandleMotion (position image.Point) {
 	if !element.pressed { return }
-	element.lastMousePos = image.Pt(x, y)
+	element.lastMousePos = position
 	element.entity.Invalidate()
 }
