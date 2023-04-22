@@ -70,7 +70,6 @@ func (context linePlottingContext) lineLow () {
 	point := context.min
 
 	for ; point.X < context.max.X; point.X ++ {
-		if !point.In(context.bounds) { break }
 		context.plotColor(point)
 		if D > 0 {
 			D += 2 * (deltaY - deltaX)
@@ -95,7 +94,6 @@ func (context linePlottingContext) lineHigh () {
 	point := context.min
 
 	for ; point.Y < context.max.Y; point.Y ++ {
-		if !point.In(context.bounds) { break }
 		context.plotColor(point)
 		if D > 0 {
 			point.X += xi
