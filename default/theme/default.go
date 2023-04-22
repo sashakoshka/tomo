@@ -278,6 +278,8 @@ func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
 			return artist.I(2, 1, 1, 2)
 		} else if c.Match("tomo", "list", "") {
 			return artist.I(2)
+		} else if  c.Match("tomo", "flowList", "") {
+			return artist.I(2)
 		} else {
 			return artist.I(8)
 		}
@@ -302,6 +304,8 @@ func (Default) Margin (id tomo.Pattern, c tomo.Case) image.Point {
 	switch id {
 	case tomo.PatternSunken:
 		if c.Match("tomo", "list", "") {
+			return image.Pt(-1, -1)
+		} else if c.Match("tomo", "flowList", "") {
 			return image.Pt(-1, -1)
 		} else {
 			return image.Pt(8, 8)

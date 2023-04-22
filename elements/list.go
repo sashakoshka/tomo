@@ -13,7 +13,7 @@ type listEntity interface {
 	tomo.FocusableEntity
 }
 
-type List struct {
+type list struct {
 	container
 	entity listEntity
 
@@ -31,21 +31,42 @@ type List struct {
 	onScrollBoundsChange func ()
 }
 
+type List struct {
+	list
+}
+
+type FlowList struct {
+	list
+}
+
 func NewList (children ...tomo.Element) (element *List) {
-	element = &List {
-		selected: -1,
-		enabled: true,
-	}
-	element.theme.Case = tomo.C("tomo", "list")
-	element.entity = tomo.NewEntity(element).(listEntity)
+	element = &List { }
+	element.theme.Case       = tomo.C("tomo", "list")
+	element.entity           = tomo.NewEntity(element).(listEntity)
 	element.container.entity = element.entity
-	element.minimumSize = element.updateMinimumSize
-	element.init()
-	element.Adopt(children...)
+	element.minimumSize      = element.updateMinimumSize
+	element.init(children...)
 	return
 }
 
-func (element *List) Draw (destination canvas.Canvas) {
+func NewFlowList (children ...tomo.Element) (element *FlowList) {
+	element = &FlowList { }
+	element.theme.Case       = tomo.C("tomo", "flowList")
+	element.entity           = tomo.NewEntity(element).(listEntity)
+	element.container.entity = element.entity
+	element.minimumSize      = element.updateMinimumSize
+	element.init(children...)
+	return
+}
+
+func (element *list) init (children ...tomo.Element) {
+	element.selected = -1
+	element.enabled  = true
+	element.container.init()
+	element.Adopt(children...)
+}
+
+func (element *list) Draw (destination canvas.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -93,14 +114,69 @@ func (element *List) Layout () {
 	}
 }
 
-func (element *List) Selected () tomo.Selectable {
+func (element *FlowList) Layout () {
+	if element.scroll.Y > element.maxScrollHeight() {
+		element.scroll.Y = element.maxScrollHeight()
+	}
+	
+	margin := element.theme.Margin(tomo.PatternSunken)
+	padding := element.theme.Padding(tomo.PatternSunken)
+	bounds := padding.Apply(element.entity.Bounds())
+	element.contentBounds = image.Rectangle { }
+
+	dot := bounds.Min.Sub(element.scroll)
+	xStart := dot.X
+	rowHeight := 0
+
+	nextLine := func () {
+		dot.X = xStart
+		dot.Y += margin.Y
+		dot.Y += rowHeight
+		rowHeight = 0
+	}
+	
+	for index := 0; index < element.entity.CountChildren(); index ++ {
+		child := element.entity.Child(index)
+		entry := element.scratch[child]
+	
+		width  := int(entry.minBreadth)
+		height := int(entry.minSize)
+		if width + dot.X > bounds.Max.X {
+			nextLine()
+		}
+		if typedChild, ok := child.(tomo.Flexible); ok {
+			height = typedChild.FlexibleHeightFor(width)
+		}
+		if rowHeight < height {
+			rowHeight = height
+		}
+
+		childBounds := tomo.Bounds (
+			dot.X, dot.Y,
+			width, height)
+		element.entity.PlaceChild(index, childBounds)
+		element.contentBounds = element.contentBounds.Union(childBounds)
+		
+		dot.X += width + margin.X
+	}
+	
+	element.contentBounds =
+		element.contentBounds.Sub(element.contentBounds.Min)
+		
+	element.entity.NotifyScrollBoundsChange()
+	if element.onScrollBoundsChange != nil {
+		element.onScrollBoundsChange()
+	}
+}
+
+func (element *list) Selected () tomo.Selectable {
 	if element.selected == -1 { return nil }
 	child, ok := element.entity.Child(element.selected).(tomo.Selectable)
 	if !ok { return nil }
 	return child
 }
 
-func (element *List) Select (child tomo.Selectable) {
+func (element *list) Select (child tomo.Selectable) {
 	index := element.entity.IndexOf(child)
 	if element.selected == index { return }
 	element.selectNone()
@@ -109,25 +185,25 @@ func (element *List) Select (child tomo.Selectable) {
 	element.scrollToSelected()
 }
 
-func (element *List) Enabled () bool {
+func (element *list) Enabled () bool {
 	return element.enabled
 }
 
-func (element *List) SetEnabled (enabled bool) {
+func (element *list) SetEnabled (enabled bool) {
 	if element.enabled == enabled { return }
 	element.enabled = enabled
 	element.entity.Invalidate()
 }
 
-func (element *List) Focus () {
+func (element *list) Focus () {
 	element.entity.Focus()
 }
 
-func (element *List) HandleFocusChange () {
+func (element *list) HandleFocusChange () {
 	element.entity.Invalidate()
 }
 
-func (element *List) HandleMouseDown (
+func (element *list) HandleMouseDown (
 	position image.Point,
 	button input.Button,
 	modifiers input.Modifiers,
@@ -137,13 +213,13 @@ func (element *List) HandleMouseDown (
 	element.selectNone()
 }
 
-func (element *List) HandleMouseUp (
+func (element *list) HandleMouseUp (
 	position image.Point,
 	button input.Button,
 	modifiers input.Modifiers,
 ) { }
 
-func (element *List) HandleChildMouseDown (
+func (element *list) HandleChildMouseDown (
 	position image.Point,
 	button input.Button,
 	modifiers input.Modifiers,
@@ -156,7 +232,7 @@ func (element *List) HandleChildMouseDown (
 	}
 }
 
-func (element *List) HandleChildMouseUp  (
+func (element *list) HandleChildMouseUp  (
 	position image.Point,
 	button input.Button,
 	modifiers input.Modifiers,
@@ -168,13 +244,13 @@ func (element *List) HandleChildMouseUp  (
 	}
 }
 
-func (element *List) HandleChildFlexibleHeightChange (child tomo.Flexible) {
-	element.updateMinimumSize()
+func (element *list) HandleChildFlexibleHeightChange (child tomo.Flexible) {
+	element.minimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
 
-func (element *List) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
+func (element *list) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	if !element.Enabled() { return }
 	index := -1
 	switch key {
@@ -195,17 +271,17 @@ func (element *List) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 	}
 }
 
-func (element *List) HandleKeyUp(key input.Key, modifiers input.Modifiers) { }
+func (element *list) HandleKeyUp(key input.Key, modifiers input.Modifiers) { }
 
-func (element *List) DrawBackground (destination canvas.Canvas) {
+func (element *list) DrawBackground (destination canvas.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 
 // SetTheme sets the element's theme.
-func (element *List) SetTheme (theme tomo.Theme) {
+func (element *list) SetTheme (theme tomo.Theme) {
 	if theme == element.theme.Theme { return }
 	element.theme.Theme = theme
-	element.updateMinimumSize()
+	element.minimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
@@ -215,7 +291,7 @@ func (element *List) SetTheme (theme tomo.Theme) {
 // If the list's height goes beyond the forced size, it will need to be accessed
 // via scrolling. If an entry's width goes beyond the forced size, its text will
 // be truncated so that it fits.
-func (element *List) Collapse (width, height int) {
+func (element *list) Collapse (width, height int) {
 	if
 		element.forcedMinimumWidth == width &&
 		element.forcedMinimumHeight == height {
@@ -226,20 +302,20 @@ func (element *List) Collapse (width, height int) {
 	element.forcedMinimumWidth  = width
 	element.forcedMinimumHeight = height
 	
-	element.updateMinimumSize()
+	element.minimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
 
 // ScrollContentBounds returns the full content size of the element.
-func (element *List) ScrollContentBounds () image.Rectangle {
+func (element *list) ScrollContentBounds () image.Rectangle {
 	return element.contentBounds
 }
 
 // ScrollViewportBounds returns the size and position of the element's
 // viewport relative to ScrollBounds.
-func (element *List) ScrollViewportBounds () image.Rectangle {
-	padding := element.theme.Padding(tomo.PatternBackground)
+func (element *list) ScrollViewportBounds () image.Rectangle {
+	padding := element.theme.Padding(tomo.PatternSunken)
 	bounds  := padding.Apply(element.entity.Bounds())
 	bounds   = bounds.Sub(bounds.Min).Add(element.scroll)
 	return bounds
@@ -247,7 +323,7 @@ func (element *List) ScrollViewportBounds () image.Rectangle {
 
 // ScrollTo scrolls the viewport to the specified point relative to
 // ScrollBounds.
-func (element *List) ScrollTo (position image.Point) {
+func (element *list) ScrollTo (position image.Point) {
 	if position.Y < 0 {
 		position.Y = 0
 	}
@@ -262,26 +338,26 @@ func (element *List) ScrollTo (position image.Point) {
 
 // OnScrollBoundsChange sets a function to be called when the element's viewport
 // bounds, content bounds, or scroll axes change.
-func (element *List) OnScrollBoundsChange (callback func ()) {
+func (element *list) OnScrollBoundsChange (callback func ()) {
 	element.onScrollBoundsChange = callback
 }
 
-func (element *List) OnClick (callback func ()) {
+func (element *list) OnClick (callback func ()) {
 	element.onClick = callback
 }
 
 // ScrollAxes returns the supported axes for scrolling.
-func (element *List) ScrollAxes () (horizontal, vertical bool) {
+func (element *list) ScrollAxes () (horizontal, vertical bool) {
 	return false, true
 }
 
-func (element *List) selectNone () {
+func (element *list) selectNone () {
 	if element.selected >= 0 {
 		element.entity.SelectChild(element.selected, false)
 	}
 }
 
-func (element *List) scrollToSelected () {
+func (element *list) scrollToSelected () {
 	if element.selected < 0 { return }
 	target := element.entity.Child(element.selected).Entity().Bounds()
 	padding := element.theme.Padding(tomo.PatternSunken)
@@ -297,14 +373,14 @@ func (element *List) scrollToSelected () {
 	} 
 }
 
-func (element *List) state () tomo.State {
+func (element *list) state () tomo.State {
 	return tomo.State {
 		Focused: element.entity.Focused(),
 		Disabled: !element.enabled,
 	}
 }
 
-func (element *List) maxScrollHeight () (height int) {
+func (element *list) maxScrollHeight () (height int) {
 	padding := element.theme.Padding(tomo.PatternSunken)
 	viewportHeight := element.entity.Bounds().Dy() - padding.Vertical()
 	height = element.contentBounds.Dy() - viewportHeight
@@ -344,4 +420,24 @@ func (element *List) updateMinimumSize () {
 	}
 
 	element.entity.SetMinimumSize(width, height)
+}
+
+func (element *FlowList) updateMinimumSize () {
+	padding := element.theme.Padding(tomo.PatternSunken)
+	minimumWidth := 0
+	for index := 0; index < element.entity.CountChildren(); index ++ {
+		width, height := element.entity.ChildMinimumSize(index)
+		if width > minimumWidth {
+			minimumWidth = width
+		}
+		
+		key   := element.entity.Child(index)
+		entry := element.scratch[key]
+		entry.minSize    = float64(height)
+		entry.minBreadth = float64(width)
+		element.scratch[key] = entry
+	}
+	element.entity.SetMinimumSize (
+		minimumWidth + padding.Horizontal(),
+		padding.Vertical())
 }
