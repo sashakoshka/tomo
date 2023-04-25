@@ -234,7 +234,10 @@ const (
 	IconInvert
 	IconIntersect
 
-	IconExpand)
+	IconExpand
+
+	IconPin
+	IconUnpin)
 
 const (
 	// Status icons
