@@ -28,6 +28,7 @@ type list struct {
 	theme theme.Wrapped
 
 	onClick func ()
+	onSelectionChange func ()
 	onScrollBoundsChange func ()
 }
 
@@ -182,6 +183,9 @@ func (element *list) Select (child tomo.Selectable) {
 	element.selectNone()
 	element.selected = index
 	element.entity.SelectChild(index, true)
+	if element.onSelectionChange != nil {
+		element.onSelectionChange()
+	}
 	element.scrollToSelected()
 }
 
@@ -267,6 +271,9 @@ func (element *list) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 		element.selectNone()
 		element.selected = index
 		element.entity.SelectChild(index, true)
+	if element.onSelectionChange != nil {
+		element.onSelectionChange()
+	}
 		element.scrollToSelected()
 	}
 }
@@ -346,6 +353,10 @@ func (element *list) OnClick (callback func ()) {
 	element.onClick = callback
 }
 
+func (element *list) OnSelectionChange (callback func ()) {
+	element.onSelectionChange = callback
+}
+
 // ScrollAxes returns the supported axes for scrolling.
 func (element *list) ScrollAxes () (horizontal, vertical bool) {
 	return false, true
@@ -354,6 +365,9 @@ func (element *list) ScrollAxes () (horizontal, vertical bool) {
 func (element *list) selectNone () {
 	if element.selected >= 0 {
 		element.entity.SelectChild(element.selected, false)
+	if element.onSelectionChange != nil {
+		element.onSelectionChange()
+	}
 	}
 }
 
