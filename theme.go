@@ -105,7 +105,7 @@ const (
 type Icon int
 
 // IconNone specifies no icon.
-const IconNone = -1
+const IconNone Icon = -1
 
 const (
 	// Place icons
