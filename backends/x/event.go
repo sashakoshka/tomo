@@ -43,10 +43,15 @@ func (window *window) handleExpose (
 	window.pushRegion(region)
 }
 
-func (window *window) updateBounds (x, y int16, width, height uint16) {
-	window.metrics.bounds =
-		image.Rect(0, 0, int(width), int(height)).
-		Add(image.Pt(int(x), int(y)))
+func (window *window) updateBounds () {
+	// FIXME: some window managers parent windows more than once, we might
+	// need to sum up all their positions.
+	decorGeometry, _ := window.xWindow.DecorGeometry()
+	windowGeometry, _ := window.xWindow.Geometry()
+	window.metrics.bounds = tomo.Bounds (
+		windowGeometry.X() + decorGeometry.X(),
+		windowGeometry.Y() + decorGeometry.Y(),
+		windowGeometry.Width(), windowGeometry.Height())
 }
 
 func (window *window) handleConfigureNotify (
@@ -62,15 +67,10 @@ func (window *window) handleConfigureNotify (
 	sizeChanged :=
 		window.metrics.bounds.Dx() != newWidth ||
 		window.metrics.bounds.Dy() != newHeight
-	window.updateBounds (
-		configureEvent.X, configureEvent.Y,
-		configureEvent.Width, configureEvent.Height)
+	window.updateBounds()
 
 	if sizeChanged {
 		configureEvent = window.compressConfigureNotify(configureEvent)
-		window.updateBounds (
-			configureEvent.X, configureEvent.Y,
-			configureEvent.Width, configureEvent.Height)
 		window.reallocateCanvas()
 		window.resizeChildToFit()
 
