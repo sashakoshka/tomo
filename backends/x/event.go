@@ -143,6 +143,8 @@ func (window *window) handleKeyRelease (
 	connection *xgbutil.XUtil,
 	event xevent.KeyReleaseEvent,
 ) {
+	if window.hasModal { return }
+	
 	keyEvent := *event.KeyReleaseEvent
 
 	// do not process this event if it was generated from a key repeat
@@ -219,6 +221,8 @@ func (window *window) handleButtonRelease (
 	connection *xgbutil.XUtil,
 	event xevent.ButtonReleaseEvent,
 ) {
+	if window.hasModal { return }
+	
 	buttonEvent := *event.ButtonReleaseEvent
 	if buttonEvent.Detail >= 4 && buttonEvent.Detail <= 7 { return }
 	modifiers := window.modifiersFromState(buttonEvent.State)
@@ -249,6 +253,8 @@ func (window *window) handleMotionNotify (
 	connection *xgbutil.XUtil,
 	event xevent.MotionNotifyEvent,
 ) {
+	if window.hasModal { return }
+	
 	motionEvent := window.compressMotionNotify(*event.MotionNotifyEvent)
 	x := int(motionEvent.EventX)
 	y :=int(motionEvent.EventY)
