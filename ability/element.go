@@ -225,9 +225,8 @@ type Collapsible interface {
 type Themeable interface {
 	tomo.Element
 	
-	// SetTheme sets the element's theme to something fulfilling the
-	// theme.Theme interface.
-	SetTheme (tomo.Theme)
+	// HandleThemeChange is called whenever the theme is changed.
+	HandleThemeChange ()
 }
 
 // Configurable represents an element that can modify its behavior to fit within
@@ -235,7 +234,7 @@ type Themeable interface {
 type Configurable interface {
 	tomo.Element
 	
-	// SetConfig sets the element's configuration to something fulfilling
-	// the config.Config interface.
-	SetConfig (tomo.Config)
+	// HandleConfigChange is called whenever configuration parameters are
+	// changed.
+	HandleConfigChange ()
 }
