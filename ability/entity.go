@@ -99,3 +99,22 @@ type ScrollableEntity interface {
 	// as a result of a call to ScrollTo()), or their content size.
 	NotifyScrollBoundsChange ()
 }
+
+// ThemeableEntity is given to elements that support the Themeable interface.
+type ThemeableEntity interface {
+	tomo.Entity
+
+	// Theme returns the currently active theme. When this value changes,
+	// the HandleThemeChange method of the element is called.
+	Theme () tomo.Theme
+}
+
+// ConfigurableEntity is given to elements that support the Configurable
+// interface.
+type ConfigurableEntity interface {
+	tomo.Entity
+
+	// Config returns the currently active config. When this value changes,
+	// the HandleThemeChange method of the element is called.
+	Config () tomo.Config
+}
