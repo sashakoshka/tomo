@@ -14,7 +14,7 @@ func init () {
 		"/usr/lib/nasin/plugins",
 		"/usr/local/lib/nasin/plugins")
 	homeDir, err := os.UserHomeDir()
-	if err != nil {
+	if err == nil {
 		pluginPaths = append (
 			pluginPaths,
 			filepath.Join(homeDir, ".local/lib/nasin/plugins"))

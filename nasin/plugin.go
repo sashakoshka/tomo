@@ -8,12 +8,7 @@ import "plugin"
 import "path/filepath"
 import "git.tebibyte.media/sashakoshka/tomo"
 
-type expectsFunc     func () tomo.Version
-type nameFunc        func () string
-type descriptionFunc func () string
 type backendFactory  func () (tomo.Backend, error)
-type themeFactory    func () tomo.Theme
-
 var factories []backendFactory
 var theme tomo.Theme
 
@@ -21,7 +16,9 @@ var pluginPaths []string
 
 func loadPlugins () {
 	for _, dir := range pluginPaths {
-		loadPluginsFrom(dir)
+		if dir != "" {
+			loadPluginsFrom(dir)
+		}
 	}
 }
 
@@ -40,9 +37,7 @@ func loadPluginsFrom (dir string) {
 
 func loadPlugin (path string) {
 	die := func (reason string) {
-		println (
-			"nasin: could not load plugin at ",
-			path + ":", reason)
+		println("nasin: could not load plugin at", path + ":", reason)
 	}
 
 	plugin, err := plugin.Open(path)
@@ -52,11 +47,11 @@ func loadPlugin (path string) {
 	}
 
 	// check for and obtain basic plugin functions
-	expects, ok := extract[expectsFunc](plugin, "Expects")
+	expects, ok := extract[func () tomo.Version](plugin, "Expects")
 	if !ok { die("does not implement Expects() tomo.Version"); return }
-	name, ok := extract[nameFunc](plugin, "Name")
+	name, ok := extract[func () string](plugin, "Name")
 	if !ok { die("does not implement Name() string"); return }
-	_, ok = extract[descriptionFunc](plugin, "Description")
+	_, ok = extract[func () string](plugin, "Description")
 	if !ok { die("does not implement Description() string"); return }
 
 	// check for version compatibility
@@ -71,11 +66,11 @@ func loadPlugin (path string) {
 	}
 
 	// if it's a backend plugin...
-	newBackend, ok := extract[backendFactory](plugin, "NewBackend")
+	newBackend, ok := extract[func () (tomo.Backend, error)](plugin, "NewBackend")
 	if ok { factories = append(factories, newBackend) }
 
 	// if it's a theme plugin...
-	newTheme, ok := extract[themeFactory](plugin, "NewTheme")
+	newTheme, ok := extract[func () tomo.Theme](plugin, "NewTheme")
 	if ok { theme = newTheme() }
 
 	println("nasin: loaded plugin", name())

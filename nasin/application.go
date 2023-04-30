@@ -6,7 +6,6 @@ import "git.tebibyte.media/sashakoshka/tomo"
 
 // Application represents a Tomo/Nasin application.
 type Application interface {
-	Name () string
 	Init () error
 }
 
