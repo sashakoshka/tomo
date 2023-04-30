@@ -3,8 +3,9 @@ package x
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
+import defaultTheme  "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import defaultConfig "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 type entitySet map[*entity] struct { }
 
@@ -24,10 +25,10 @@ func (set entitySet) Add (entity *entity) {
 type system struct {
 	child   *entity
 	focused *entity
-	canvas  canvas.BasicCanvas
+	canvas  artist.BasicCanvas
 
-	theme  theme.Wrapped
-	config config.Wrapped
+	theme  tomo.Theme
+	config tomo.Config
 
 	invalidateIgnore bool
 	drawingInvalid   entitySet
@@ -42,21 +43,29 @@ func (system *system) initialize () {
 	system.drawingInvalid = make(entitySet)
 }
 
-func (system *system) SetTheme (theme tomo.Theme) {
-	system.theme.Theme = theme
+func (system *system) setTheme (theme tomo.Theme) {
+	if theme == nil {
+		system.theme = defaultTheme.Default { }
+	} else {
+		system.theme = theme
+	}
 	system.propagate (func (entity *entity) bool {
-		if child, ok := system.child.element.(tomo.Themeable); ok {
-			child.SetTheme(theme)
+		if child, ok := system.child.element.(ability.Themeable); ok {
+			child.HandleThemeChange()
 		}
 		return true
 	})
 }
 
-func (system *system) SetConfig (config tomo.Config) {
-	system.config.Config = config
+func (system *system) setConfig (config tomo.Config) {
+	if config == nil {
+		system.config = defaultConfig.Default { }
+	} else {
+		system.config = config
+	}
 	system.propagate (func (entity *entity) bool {
-		if child, ok := system.child.element.(tomo.Configurable); ok {
-			child.SetConfig(config)
+		if child, ok := system.child.element.(ability.Configurable); ok {
+			child.HandleConfigChange()
 		}
 		return true
 	})
@@ -66,10 +75,10 @@ func (system *system) focus (entity *entity) {
 	previous := system.focused
 	system.focused = entity
 	if previous != nil {
-		previous.element.(tomo.Focusable).HandleFocusChange()
+		previous.element.(ability.Focusable).HandleFocusChange()
 	}
 	if entity != nil {
-		entity.element.(tomo.Focusable).HandleFocusChange()
+		entity.element.(ability.Focusable).HandleFocusChange()
 	}
 }
 
@@ -79,7 +88,7 @@ func (system *system) focusNext () {
 	system.propagateAlt (func (entity *entity) bool {
 		if found {
 			// looking for the next element to select
-			child, ok := entity.element.(tomo.Focusable)
+			child, ok := entity.element.(ability.Focusable)
 			if ok && child.Enabled() {
 				// found it
 				entity.Focus()
@@ -106,7 +115,7 @@ func (system *system) focusPrevious () {
 			return false
 		}
 
-		child, ok := entity.element.(tomo.Focusable)
+		child, ok := entity.element.(ability.Focusable)
 		if ok && child.Enabled() { behind = entity }
 		return true
 	})
@@ -153,7 +162,7 @@ func (system *system) afterEvent () {
 func (system *system) layout (entity *entity, force bool) {
 	if entity == nil { return }
 	if entity.layoutInvalid == true || force {
-		if element, ok := entity.element.(tomo.Layoutable); ok {
+		if element, ok := entity.element.(ability.Layoutable); ok {
 			element.Layout()
 			entity.layoutInvalid = false
 			force = true
@@ -176,7 +185,7 @@ func (system *system) draw () {
 
 	for entity := range system.drawingInvalid {
 		if entity.clippedBounds.Empty() { continue }
-		entity.element.Draw (canvas.Cut (
+		entity.element.Draw (artist.Cut (
 			system.canvas,
 			entity.clippedBounds))
 		finalBounds = finalBounds.Union(entity.clippedBounds)
