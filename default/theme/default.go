@@ -9,13 +9,13 @@ import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
 import defaultfont "git.tebibyte.media/sashakoshka/tomo/default/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 
 //go:embed assets/wintergreen.png
 var defaultAtlasBytes []byte
-var defaultAtlas      canvas.Canvas
+var defaultAtlas      artist.Canvas
 var defaultTextures   [17][9]artist.Pattern
 //go:embed assets/wintergreen-icons-small.png
 var defaultIconsSmallAtlasBytes []byte
@@ -27,7 +27,7 @@ var defaultIconsLarge [640]binaryIcon
 func atlasCell (col, row int, border artist.Inset) {
 	bounds := image.Rect(0, 0, 16, 16).Add(image.Pt(col, row).Mul(16))
 	defaultTextures[col][row] = patterns.Border {
-		Canvas: canvas.Cut(defaultAtlas, bounds),
+		Canvas: artist.Cut(defaultAtlas, bounds),
 		Inset:  border,
 	}
 }
@@ -43,7 +43,7 @@ type binaryIcon struct {
 	stride int
 }
 
-func (icon binaryIcon) Draw (destination canvas.Canvas, color color.RGBA, at image.Point) {
+func (icon binaryIcon) Draw (destination artist.Canvas, color color.RGBA, at image.Point) {
 	bounds := icon.Bounds().Add(at).Intersect(destination.Bounds())
 	point := image.Point { }
 	data, stride := destination.Buffer()
@@ -85,7 +85,7 @@ func binaryIconFrom (source image.Image, clip image.Rectangle) (icon binaryIcon)
 
 func init () {
 	defaultAtlasImage, _, _ := image.Decode(bytes.NewReader(defaultAtlasBytes))
-	defaultAtlas = canvas.FromImage(defaultAtlasImage)
+	defaultAtlas = artist.FromImage(defaultAtlasImage)
 
 	// PatternDead
 	atlasCol(0, artist.Inset { })
@@ -241,9 +241,9 @@ func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.P
 }
 
 func (Default) Color (id tomo.Color, state tomo.State, c tomo.Case) color.RGBA {
-	if state.Disabled { return artist.Hex(0x444444FF) }
+	if state.Disabled { return artutil.Hex(0x444444FF) }
 	
-	return artist.Hex (map[tomo.Color] uint32 {
+	return artutil.Hex (map[tomo.Color] uint32 {
 		tomo.ColorBlack:        0x272d24FF,
 		tomo.ColorRed:          0x8c4230FF,
 		tomo.ColorGreen:        0x69905fFF,
