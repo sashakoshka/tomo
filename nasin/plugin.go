@@ -1,16 +1,14 @@
 package nasin
 
 import "os"
-import "fmt"
 // TODO: possibly fork the official plugin module and add support for other
 // operating systems? perhaps enhance the Lookup function with
 // the generic extract function we have here for extra type safety goodness.
 import "plugin"
-import "strings"
 import "path/filepath"
 import "git.tebibyte.media/sashakoshka/tomo"
 
-type expectsFunc     func () (int, int, int)
+type expectsFunc     func () tomo.Version
 type nameFunc        func () string
 type descriptionFunc func () string
 type backendFactory  func () (tomo.Backend, error)
@@ -19,24 +17,10 @@ type themeFactory    func () tomo.Theme
 var factories []backendFactory
 var theme tomo.Theme
 
-func loadPlugins () {
-	// TODO: do not hardcode all these paths here, have separate files that
-	// build on different platforms that set these paths.
-	
-	pathVariable := os.Getenv("NASIN_PLUGIN_PATH")
-	paths := strings.Split(pathVariable, ":")
-	paths = append (
-		paths,
-		"/usr/lib/nasin/plugins",
-		"/usr/local/lib/nasin/plugins")
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		paths = append (
-			paths,
-			filepath.Join(homeDir, ".local/lib/nasin/plugins"))
-	}
+var pluginPaths []string
 
-	for _, dir := range paths {
+func loadPlugins () {
+	for _, dir := range pluginPaths {
 		loadPluginsFrom(dir)
 	}
 }
@@ -69,23 +53,19 @@ func loadPlugin (path string) {
 
 	// check for and obtain basic plugin functions
 	expects, ok := extract[expectsFunc](plugin, "Expects")
-	if !ok { die("does not implement Expects() (int, int, int)"); return }
+	if !ok { die("does not implement Expects() tomo.Version"); return }
 	name, ok := extract[nameFunc](plugin, "Name")
 	if !ok { die("does not implement Name() string"); return }
 	_, ok = extract[descriptionFunc](plugin, "Description")
 	if !ok { die("does not implement Description() string"); return }
 
 	// check for version compatibility
-	// TODO: have exported version type in tomo base package, and have a
-	// function within that that gives the current tomo/nasin version. call
-	// that here.
-	major, minor, patch := expects()
-	currentVersion := version { 0, 0, 0 }
-	pluginVersion  := version { major, minor, patch }
+	pluginVersion  := expects()
+	currentVersion := tomo.CurrentVersion()
 	if !pluginVersion.CompatibleABI(currentVersion) {
 		die (
 			"plugin (" + pluginVersion.String() +
-			") incompatible with nasin/tomo version (" +
+			") incompatible with tomo/nasin version (" +
 			currentVersion.String() + ")")
 		return
 	}
@@ -106,14 +86,4 @@ func extract[T any] (plugin *plugin.Plugin, name string) (value T, ok bool) {
 	if err != nil { return }
 	value, ok = symbol.(T)
 	return
-}
-
-type version [3]int
-
-func (version version) CompatibleABI (other version) bool {
-	return version[0] == other[0] && version[1] == other[1]
-}
-
-func (version version) String () string {
-	return fmt.Sprint(version[0], ".", version[1], ".", version[2])
 }
