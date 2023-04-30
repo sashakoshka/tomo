@@ -1,7 +1,6 @@
 package tomo
 
 import "image"
-import "errors"
 
 // Backend represents a connection to a display server, or something similar.
 // It is capable of managing an event loop, and creating windows.
@@ -32,33 +31,21 @@ type Backend interface {
 	SetConfig (Config)
 }
 
-// BackendFactory represents a function capable of constructing a backend
-// struct. Any connections should be initialized within this function. If there
-// any errors encountered during this process, the function should immediately
-// stop, clean up any resources, and return an error.
-type BackendFactory func () (backend Backend, err error)
+var backend Backend
 
-// RegisterBackend registers a backend factory. When an application calls
-// tomo.Run(), the first registered backend that does not throw an error will be
-// used.
-func RegisterBackend (factory BackendFactory) {
-	factories = append(factories, factory)
+// GetBackend returns the currently running backend.
+func GetBackend () Backend {
+	return backend
 }
 
-var factories []BackendFactory
+// SetBackend sets the currently running backend. The backend can only be set
+// once—if there already is one then this function will do nothing.
+func SetBackend (b Backend) {
+	if backend != nil { return }
+	backend = b
+}
 
-func instantiateBackend () (backend Backend, err error) {
-	// find a suitable backend
-	for _, factory := range factories {
-		backend, err = factory()
-		if err == nil && backend != nil { return }
-	}
-
-	// if none were found, but there was no error produced, produce an
-	// error
-	if err == nil {
-		err = errors.New("no available backends")
-	}
-
-	return
+// Bounds creates a rectangle from an x, y, width, and height.
+func Bounds (x, y, width, height int) image.Rectangle {
+	return image.Rect(x, y, x + width, y + height)
 }

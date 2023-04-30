@@ -1,4 +1,4 @@
-package canvas
+package artist
 
 import "image"
 import "image/draw"
