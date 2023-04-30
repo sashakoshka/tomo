@@ -4,14 +4,14 @@ import "image"
 import "errors"
 import "git.tebibyte.media/sashakoshka/tomo"
 
-// Application is 
+// Application represents a Tomo/Nasin application.
 type Application interface {
 	Name () string
 	Init () error
 }
 
-// Run runs the given application. This function will block until the
-// application exits.
+// Run initializes Tomo and Nasin, and runs the given application. This function
+// will block until the application exits or a fatal error occurrs.
 func Run (application Application) {
 	loadPlugins()
 
