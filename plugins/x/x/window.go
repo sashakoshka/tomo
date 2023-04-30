@@ -20,7 +20,7 @@ type menuWindow struct { *window }
 type window struct {
 	system
 	
-	backend *Backend
+	backend *backend
 	xWindow *xwindow.Window
 	xCanvas *xgraphics.Image
 
@@ -40,7 +40,7 @@ type window struct {
 	onClose func ()
 }
 
-func (backend *Backend) NewWindow (
+func (backend *backend) NewWindow (
 	bounds image.Rectangle,
 ) (
 	output tomo.MainWindow,
@@ -53,7 +53,7 @@ func (backend *Backend) NewWindow (
 	return output, err
 }
 
-func (backend *Backend) newWindow (
+func (backend *backend) newWindow (
 	bounds   image.Rectangle,
 	override bool,
 ) (
@@ -67,7 +67,6 @@ func (backend *Backend) newWindow (
 
 	window.system.initialize()
 	window.system.pushFunc = window.pasteAndPush
-	window.theme.Case = tomo.C("tomo", "window")
 
 	window.xWindow, err = xwindow.Generate(backend.connection)
 	if err != nil { return }
@@ -122,8 +121,8 @@ func (backend *Backend) newWindow (
 	xevent.SelectionRequestFun(window.handleSelectionRequest).
 		Connect(backend.connection, window.xWindow.Id)
 
-	window.SetTheme(backend.theme)
-	window.SetConfig(backend.config)
+	window.setTheme(backend.theme)
+	window.setConfig(backend.config)
 	
 	window.metrics.bounds = bounds
 	window.setMinimumSize(8, 8)
@@ -418,7 +417,7 @@ func (window *window) pasteAndPush (region image.Rectangle) {
 }
 
 func (window *window) paste (region image.Rectangle) {
-	canvas := canvas.Cut(window.canvas, region)
+	canvas := artist.Cut(window.canvas, region)
 	data, stride := canvas.Buffer()
 	bounds := canvas.Bounds().Intersect(window.xCanvas.Bounds())
 

@@ -3,7 +3,7 @@ package ability
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // Layoutable represents an element that needs to perform layout calculations
 // before it can draw itself.
@@ -23,7 +23,7 @@ type Container interface {
 	// the specified canvas. The bounds of this canvas specify the area that
 	// is actually drawn to, while the Entity bounds specify the actual area
 	// of the element.
-	DrawBackground (canvas.Canvas)
+	DrawBackground (artist.Canvas)
 
 	// HandleChildMinimumSizeChange is called when a child's minimum size is
 	// changed.

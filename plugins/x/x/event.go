@@ -3,6 +3,7 @@ package x
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
@@ -134,7 +135,7 @@ func (window *window) handleKeyPress (
 	} else if key == input.KeyEscape && window.shy {
 		window.Close()
 	} else if window.focused != nil {
-		focused, ok := window.focused.element.(tomo.KeyboardTarget)
+		focused, ok := window.focused.element.(ability.KeyboardTarget)
 		if ok { focused.HandleKeyDown(key, modifiers) }
 	}
 }
@@ -169,7 +170,7 @@ func (window *window) handleKeyRelease (
 	modifiers.NumberPad = numberPad
 
 	if window.focused != nil {
-		focused, ok := window.focused.element.(tomo.KeyboardTarget)
+		focused, ok := window.focused.element.(ability.KeyboardTarget)
 		if ok { focused.HandleKeyUp(key, modifiers) }
 	}
 }
@@ -191,7 +192,7 @@ func (window *window) handleButtonPress (
 	} else if scrolling {
 		underneath := window.system.scrollTargetChildAt(point)
 		if underneath != nil {
-			if child, ok := underneath.element.(tomo.ScrollTarget); ok {
+			if child, ok := underneath.element.(ability.ScrollTarget); ok {
 				sum := scrollSum { }
 				sum.add(buttonEvent.Detail, window, buttonEvent.State)
 				window.compressScrollSum(buttonEvent, &sum)
@@ -203,12 +204,12 @@ func (window *window) handleButtonPress (
 	} else {
 		underneath := window.system.childAt(point)
 		window.system.drags[buttonEvent.Detail] = underneath
-		if child, ok := underneath.element.(tomo.MouseTarget); ok {
+		if child, ok := underneath.element.(ability.MouseTarget); ok {
 			child.HandleMouseDown (
 				point, input.Button(buttonEvent.Detail),
 				modifiers)
 		}
-		callback := func (container tomo.MouseTargetContainer, child tomo.Element) {
+		callback := func (container ability.MouseTargetContainer, child tomo.Element) {
 			container.HandleChildMouseDown (
 				point, input.Button(buttonEvent.Detail),
 				modifiers, child)
@@ -229,7 +230,7 @@ func (window *window) handleButtonRelease (
 	dragging := window.system.drags[buttonEvent.Detail]
 	
 	if dragging != nil {
-		if child, ok := dragging.element.(tomo.MouseTarget); ok {
+		if child, ok := dragging.element.(ability.MouseTarget); ok {
 			child.HandleMouseUp (
 				image.Pt (
 					int(buttonEvent.EventX),
@@ -237,7 +238,7 @@ func (window *window) handleButtonRelease (
 				input.Button(buttonEvent.Detail),
 				modifiers)
 		}
-		callback := func (container tomo.MouseTargetContainer, child tomo.Element) {
+		callback := func (container ability.MouseTargetContainer, child tomo.Element) {
 			container.HandleChildMouseUp (
 				image.Pt (
 					int(buttonEvent.EventX),
@@ -262,7 +263,7 @@ func (window *window) handleMotionNotify (
 	handled := false
 	for _, child := range window.system.drags {
 		if child == nil { continue }
-		if child, ok := child.element.(tomo.MotionTarget); ok {
+		if child, ok := child.element.(ability.MotionTarget); ok {
 			child.HandleMotion(image.Pt(x, y))
 			handled = true
 		}
@@ -270,7 +271,7 @@ func (window *window) handleMotionNotify (
 
 	if !handled {
 		child := window.system.childAt(image.Pt(x, y))
-		if child, ok := child.element.(tomo.MotionTarget); ok {
+		if child, ok := child.element.(ability.MotionTarget); ok {
 			child.HandleMotion(image.Pt(x, y))
 		}
 	}

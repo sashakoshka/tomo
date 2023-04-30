@@ -112,7 +112,7 @@ var keypadCodeTable = map[xproto.Keysym] input.Key {
 
 // initializeKeymapInformation grabs keyboard mapping information from the X
 // server.
-func (backend *Backend) initializeKeymapInformation () {
+func (backend *backend) initializeKeymapInformation () {
 	keybind.Initialize(backend.connection)
 	backend.modifierMasks.capsLock   = backend.keysymToMask(0xFFE5)
 	backend.modifierMasks.shiftLock  = backend.keysymToMask(0xFFE6)
@@ -127,7 +127,7 @@ func (backend *Backend) initializeKeymapInformation () {
 
 // keysymToKeycode converts an X keysym to an X keycode, instead of the other
 // way around.
-func (backend *Backend) keysymToKeycode (
+func (backend *backend) keysymToKeycode (
 	symbol xproto.Keysym,
 ) (
 	code xproto.Keycode,
@@ -148,7 +148,7 @@ func (backend *Backend) keysymToKeycode (
 }
 
 // keysymToMask returns the X modmask for a given modifier key.
-func (backend *Backend) keysymToMask (
+func (backend *backend) keysymToMask (
 	symbol xproto.Keysym,
 ) (
 	mask uint16,
@@ -164,7 +164,7 @@ func (backend *Backend) keysymToMask (
 // fleshed out version of some of the logic found in xgbutil/keybind/encoding.go
 // to get a full keycode to keysym conversion, but eliminates redundant work by
 // going straight to a tomo keycode.
-func (backend *Backend) keycodeToKey (
+func (backend *backend) keycodeToKey (
 	keycode xproto.Keycode,
 	state   uint16,
 ) (

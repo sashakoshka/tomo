@@ -3,6 +3,7 @@ package x
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 
 type entity struct {
 	window      *window
@@ -20,9 +21,9 @@ type entity struct {
 	isContainer   bool
 }
 
-func (backend *Backend) NewEntity (owner tomo.Element) tomo.Entity {
+func (backend *backend) NewEntity (owner tomo.Element) tomo.Entity {
 	entity := &entity { element: owner }
-	if _, ok := owner.(tomo.Container); ok {
+	if _, ok := owner.(ability.Container); ok {
 		entity.isContainer = true
 		entity.InvalidateLayout()
 	}
@@ -44,7 +45,7 @@ func (ent *entity) unlink () {
 	ent.parent = nil
 	ent.window = nil
 	
-	if element, ok := ent.element.(tomo.Selectable); ok {
+	if element, ok := ent.element.(ability.Selectable); ok {
 		ent.selected = false
 		element.HandleSelectionChange()
 	}
@@ -111,15 +112,15 @@ func (entity *entity) scrollTargetChildAt (point image.Point) *entity {
 		}
 	}
 
-	if _, ok := entity.element.(tomo.ScrollTarget); ok {
+	if _, ok := entity.element.(ability.ScrollTarget); ok {
 		return entity
 	}
 	return nil
 }
 
-func (entity *entity) forMouseTargetContainers (callback func (tomo.MouseTargetContainer, tomo.Element)) {
+func (entity *entity) forMouseTargetContainers (callback func (ability.MouseTargetContainer, tomo.Element)) {
 	if entity.parent == nil { return }
-	if parent, ok := entity.parent.element.(tomo.MouseTargetContainer); ok {
+	if parent, ok := entity.parent.element.(ability.MouseTargetContainer); ok {
 		callback(parent, entity.element)
 	}
 	entity.parent.forMouseTargetContainers(callback)
@@ -156,18 +157,19 @@ func (entity *entity) SetMinimumSize (width, height int) {
 			entity.window.setMinimumSize(width, height)
 		}
 	} else {
-		entity.parent.element.(tomo.Container).
+		entity.parent.element.(ability.Container).
 			HandleChildMinimumSizeChange(entity.element)
 	}
 }
 
-func (entity *entity) DrawBackground (destination canvas.Canvas) {
+func (entity *entity) DrawBackground (destination artist.Canvas) {
 	if entity.parent != nil {
-		entity.parent.element.(tomo.Container).DrawBackground(destination)
+		entity.parent.element.(ability.Container).DrawBackground(destination)
 	} else if entity.window != nil {
 		entity.window.system.theme.Pattern (
 			tomo.PatternBackground,
-			tomo.State { }).Draw (
+			tomo.State { },
+			tomo.C("tomo", "window")).Draw (
 				destination,
 				entity.window.canvas.Bounds())
 	}
@@ -233,7 +235,7 @@ func (entity *entity) PlaceChild (index int, bounds image.Rectangle) {
 
 func (entity *entity) SelectChild (index int, selected bool) {
 	child := entity.children[index]
-	if element, ok := child.element.(tomo.Selectable); ok {
+	if element, ok := child.element.(ability.Selectable); ok {
 		if child.selected == selected { return }
 		child.selected = selected
 		element.HandleSelectionChange()
@@ -275,9 +277,9 @@ func (entity *entity) Selected () bool {
 
 func (entity *entity) NotifyFlexibleHeightChange () {
 	if entity.parent == nil { return }
-	if parent, ok := entity.parent.element.(tomo.FlexibleContainer); ok {
+	if parent, ok := entity.parent.element.(ability.FlexibleContainer); ok {
 		parent.HandleChildFlexibleHeightChange (
-			entity.element.(tomo.Flexible))
+			entity.element.(ability.Flexible))
 	}
 }
 
@@ -285,8 +287,8 @@ func (entity *entity) NotifyFlexibleHeightChange () {
 
 func (entity *entity) NotifyScrollBoundsChange () {
 	if entity.parent == nil { return }
-	if parent, ok := entity.parent.element.(tomo.ScrollableContainer); ok {
+	if parent, ok := entity.parent.element.(ability.ScrollableContainer); ok {
 		parent.HandleChildScrollBoundsChange (
-			entity.element.(tomo.Scrollable))
+			entity.element.(ability.Scrollable))
 	}
 }

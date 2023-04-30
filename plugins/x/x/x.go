@@ -8,8 +8,7 @@ import "github.com/jezek/xgbutil/xevent"
 import "github.com/jezek/xgbutil/keybind"
 import "github.com/jezek/xgbutil/mousebind"
 
-// Backend is an instance of an X backend.
-type Backend struct {
+type backend struct {
 	connection *xgbutil.XUtil
 
 	doChannel chan(func ())
@@ -36,7 +35,7 @@ type Backend struct {
 
 // NewBackend instantiates an X backend.
 func NewBackend () (output tomo.Backend, err error) {
-	backend := &Backend {
+	backend := &backend {
 		windows:   map[xproto.Window] *window { },
 		doChannel: make(chan func (), 32),
 		open:      true,
@@ -54,9 +53,7 @@ func NewBackend () (output tomo.Backend, err error) {
 	return
 }
 
-// Run runs the backend's event loop. This method will not exit until Stop() is
-// called, or the backend experiences a fatal error.
-func (backend *Backend) Run () (err error) {
+func (backend *backend) Run () (err error) {
 	backend.assert()
 	pingBefore,
 	pingAfter,
@@ -76,8 +73,7 @@ func (backend *Backend) Run () (err error) {
 	}
 }
 
-// Stop gracefully closes the connection and stops the event loop.
-func (backend *Backend) Stop () {
+func (backend *backend) Stop () {
 	backend.assert()
 	if !backend.open { return }
 	backend.open = false
@@ -93,31 +89,27 @@ func (backend *Backend) Stop () {
 	backend.connection.Conn().Close()
 }
 
-// Do executes the specified callback within the main thread as soon as
-// possible. This function can be safely called from other threads.
-func (backend *Backend) Do (callback func ()) {
+func (backend *backend) Do (callback func ()) {
 	backend.assert()
 	backend.doChannel <- callback
 }
 
-// SetTheme sets the theme of all open windows.
-func (backend *Backend) SetTheme (theme tomo.Theme) {
+func (backend *backend) SetTheme (theme tomo.Theme) {
 	backend.assert()
 	backend.theme = theme
 	for _, window := range backend.windows {
-		window.SetTheme(theme)
+		window.setTheme(theme)
 	}
 }
 
-// SetConfig sets the configuration of all open windows.
-func (backend *Backend) SetConfig (config tomo.Config) {
+func (backend *backend) SetConfig (config tomo.Config) {
 	backend.assert()
 	backend.config = config
 	for _, window := range backend.windows {
-		window.SetConfig(config)
+		window.setConfig(config)
 	}
 } 
 
-func (backend *Backend) assert () {
+func (backend *backend) assert () {
 	if backend == nil { panic("nil backend") }
 }
