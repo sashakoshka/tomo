@@ -2,7 +2,7 @@ package x
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 type entity struct {
 	window      *window

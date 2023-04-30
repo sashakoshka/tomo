@@ -5,18 +5,17 @@ package artutil
 import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
 
 // Fill fills the destination canvas with the given pattern.
-func Fill (destination canvas.Canvas, source artist.Pattern) (updated image.Rectangle) {
+func Fill (destination artist.Canvas, source artist.Pattern) (updated image.Rectangle) {
 	source.Draw(destination, destination.Bounds())
 	return destination.Bounds()
 }
 
 // DrawClip lets you draw several subsets of a pattern at once.
 func DrawClip (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	source      artist.Pattern,
 	bounds      image.Rectangle,
 	subsets     ...image.Rectangle,
@@ -24,7 +23,7 @@ func DrawClip (
 	updatedRegion image.Rectangle,
 ) {
 	for _, subset := range subsets {
-		source.Draw(canvas.Cut(destination, subset), bounds)
+		source.Draw(artist.Cut(destination, subset), bounds)
 		updatedRegion = updatedRegion.Union(subset)
 	}
 	return
@@ -33,7 +32,7 @@ func DrawClip (
 // DrawShatter is like an inverse of DrawClip, drawing nothing in the areas
 // specified by "rocks".
 func DrawShatter (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	source      artist.Pattern,
 	bounds      image.Rectangle,
 	rocks       ...image.Rectangle,
@@ -48,8 +47,8 @@ func DrawShatter (
 // resulting canvas can be sourced from shape drawing functions. I beg of you
 // please do not call this every time you need to draw a shape with a pattern on
 // it because that is horrible and cruel to the computer.
-func AllocateSample (source artist.Pattern, width, height int) canvas.Canvas {
-	allocated := canvas.NewBasicCanvas(width, height)
+func AllocateSample (source artist.Pattern, width, height int) artist.Canvas {
+	allocated := artist.NewBasicCanvas(width, height)
 	Fill(allocated, source)
 	return allocated
 }

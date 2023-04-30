@@ -13,7 +13,7 @@ import "github.com/jezek/xgbutil/mousebind"
 import "github.com/jezek/xgbutil/xgraphics"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 type mainWindow struct { *window }
 type menuWindow struct { *window }

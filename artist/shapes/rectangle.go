@@ -2,14 +2,14 @@ package shapes
 
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
 
 // TODO: return updatedRegion for all routines in this package
 
 func FillRectangle (
-	destination canvas.Canvas,
-	source      canvas.Canvas,
+	destination artist.Canvas,
+	source      artist.Canvas,
 	bounds      image.Rectangle,
 ) (
 	updatedRegion image.Rectangle,
@@ -38,8 +38,8 @@ func FillRectangle (
 }
 
 func StrokeRectangle (
-	destination canvas.Canvas,
-	source      canvas.Canvas,
+	destination artist.Canvas,
+	source      artist.Canvas,
 	bounds      image.Rectangle,
 	weight      int,
 ) (
@@ -55,8 +55,8 @@ func StrokeRectangle (
 // FillRectangleShatter is like FillRectangle, but it does not draw in areas
 // specified in "rocks".
 func FillRectangleShatter (
-	destination canvas.Canvas,
-	source      canvas.Canvas,
+	destination artist.Canvas,
+	source      artist.Canvas,
 	bounds      image.Rectangle,
 	rocks       ...image.Rectangle,
 ) (
@@ -65,7 +65,7 @@ func FillRectangleShatter (
 	tiles := shatter.Shatter(bounds, rocks...)
 	for _, tile := range tiles {
 		FillRectangle (
-			canvas.Cut(destination, tile),
+			artist.Cut(destination, tile),
 			source, tile)
 		updatedRegion = updatedRegion.Union(tile)
 	}
@@ -75,7 +75,7 @@ func FillRectangleShatter (
 // FillColorRectangle fills a rectangle within the destination canvas with a
 // solid color.
 func FillColorRectangle (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	color       color.RGBA,
 	bounds      image.Rectangle,
 ) (
@@ -97,7 +97,7 @@ func FillColorRectangle (
 // FillColorRectangleShatter is like FillColorRectangle, but it does not draw in
 // areas specified in "rocks".
 func FillColorRectangleShatter (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	color       color.RGBA,
 	bounds      image.Rectangle,
 	rocks       ...image.Rectangle,
@@ -115,7 +115,7 @@ func FillColorRectangleShatter (
 // StrokeColorRectangle is similar to FillColorRectangle, but it draws an inset
 // outline of the given rectangle instead.
 func StrokeColorRectangle (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	color       color.RGBA,
 	bounds      image.Rectangle,
 	weight      int,
