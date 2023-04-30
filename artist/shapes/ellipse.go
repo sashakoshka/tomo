@@ -3,7 +3,7 @@ package shapes
 import "math"
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // TODO: redo fill ellipse, stroke ellipse, etc. so that it only takes in
 // destination and source, using the bounds of destination as the bounds of the
@@ -11,8 +11,8 @@ import "git.tebibyte.media/sashakoshka/tomo/canvas"
 // of both canvases.
 
 func FillEllipse (
-	destination canvas.Canvas,
-	source      canvas.Canvas,
+	destination artist.Canvas,
+	source      artist.Canvas,
 	bounds      image.Rectangle,
 ) (
 	updatedRegion image.Rectangle,
@@ -42,8 +42,8 @@ func FillEllipse (
 }
 
 func StrokeEllipse (
-	destination canvas.Canvas,
-	source      canvas.Canvas,
+	destination artist.Canvas,
+	source      artist.Canvas,
 	bounds      image.Rectangle,
 	weight      int,
 ) {
@@ -170,7 +170,7 @@ func (context ellipsePlottingContext) plotEllipse () {
 // FillColorEllipse fills an ellipse within the destination canvas with a solid
 // color.
 func FillColorEllipse (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	color       color.RGBA,
 	bounds      image.Rectangle,
 ) (
@@ -196,7 +196,7 @@ func FillColorEllipse (
 // StrokeColorEllipse is similar to FillColorEllipse, but it draws an inset
 // outline of an ellipse instead.
 func StrokeColorEllipse (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	color       color.RGBA,
 	bounds      image.Rectangle,
 	weight      int,

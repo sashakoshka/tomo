@@ -1,7 +1,6 @@
 package patterns
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // Border is a pattern that behaves similarly to border-image in CSS. It divides
@@ -31,20 +30,20 @@ import "git.tebibyte.media/sashakoshka/tomo/artist"
 // This pattern can be used to make a static image texture into something that
 // responds well to being resized.
 type Border struct {
-	canvas.Canvas
+	artist.Canvas
 	artist.Inset
 }
 
 // Draw draws the border pattern onto the destination canvas within the given
 // bounds.
-func (pattern Border) Draw (destination canvas.Canvas, bounds image.Rectangle) {
+func (pattern Border) Draw (destination artist.Canvas, bounds image.Rectangle) {
 	drawBounds := bounds.Canon().Intersect(destination.Bounds())
 	if drawBounds.Empty() { return }
 
 	srcSections := nonasect(pattern.Bounds(), pattern.Inset)
 	srcTextures := [9]Texture { }
 	for index, section := range srcSections {
-		srcTextures[index].Canvas = canvas.Cut(pattern, section)
+		srcTextures[index].Canvas = artist.Cut(pattern, section)
 	}
 	
 	dstSections := nonasect(bounds, pattern.Inset)

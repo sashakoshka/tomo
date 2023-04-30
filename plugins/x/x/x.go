@@ -121,7 +121,3 @@ func (backend *Backend) SetConfig (config tomo.Config) {
 func (backend *Backend) assert () {
 	if backend == nil { panic("nil backend") }
 }
-
-func init () {
-	tomo.RegisterBackend(NewBackend)
-}
