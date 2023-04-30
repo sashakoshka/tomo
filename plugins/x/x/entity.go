@@ -292,3 +292,15 @@ func (entity *entity) NotifyScrollBoundsChange () {
 			entity.element.(ability.Scrollable))
 	}
 }
+
+// ----------- ThemeableEntity ----------- //
+
+func (entity *entity) Theme () tomo.Theme {
+	return entity.window.theme
+}
+
+// ----------- ConfigurableEntity ----------- //
+
+func (entity *entity) Config () tomo.Config {
+	return entity.window.config
+}

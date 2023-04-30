@@ -5,11 +5,11 @@ import "time"
 import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
+import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
 import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 import defaultfont "git.tebibyte.media/sashakoshka/tomo/default/font"
 
@@ -22,7 +22,7 @@ type Artist struct {
 // NewArtist creates a new artist test element.
 func NewArtist () (element *Artist) {
 	element = &Artist { }
-	element.entity = tomo.NewEntity(element)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.entity.SetMinimumSize(240, 240)
 	return
 }
@@ -31,7 +31,7 @@ func (element *Artist) Entity () tomo.Entity {
 	return element.entity
 }
 
-func (element *Artist) Draw (destination canvas.Canvas) {
+func (element *Artist) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 	patterns.Uhex(0x000000FF).Draw(destination, bounds)
 
@@ -44,28 +44,28 @@ func (element *Artist) Draw (destination canvas.Canvas) {
 
 	// 4, 0
 	c40 := element.cellAt(destination, 4, 0)
-	shapes.StrokeColorRectangle(c40, artist.Hex(0x888888FF), c40.Bounds(), 1)
+	shapes.StrokeColorRectangle(c40, artutil.Hex(0x888888FF), c40.Bounds(), 1)
 	shapes.ColorLine (
-		c40, artist.Hex(0xFF0000FF), 1,
+		c40, artutil.Hex(0xFF0000FF), 1,
 		c40.Bounds().Min, c40.Bounds().Max)
 
 	// 0, 1
 	c01 := element.cellAt(destination, 0, 1)
-	shapes.StrokeColorRectangle(c01, artist.Hex(0x888888FF), c01.Bounds(), 1)
-	shapes.FillColorEllipse(destination, artist.Hex(0x00FF00FF), c01.Bounds())
+	shapes.StrokeColorRectangle(c01, artutil.Hex(0x888888FF), c01.Bounds(), 1)
+	shapes.FillColorEllipse(destination, artutil.Hex(0x00FF00FF), c01.Bounds())
 
 	// 1, 1 - 3, 1
 	for x := 1; x < 4; x ++ {
 		c := element.cellAt(destination, x, 1)
 		shapes.StrokeColorRectangle (
-			destination, artist.Hex(0x888888FF),
+			destination, artutil.Hex(0x888888FF),
 			c.Bounds(), 1)
 		shapes.StrokeColorEllipse (
 			destination,
 			[]color.RGBA {
-				artist.Hex(0xFF0000FF),
-				artist.Hex(0x00FF00FF),
-				artist.Hex(0xFF00FFFF),
+				artutil.Hex(0xFF0000FF),
+				artutil.Hex(0x00FF00FF),
+				artutil.Hex(0xFF00FFFF),
 			} [x - 1],
 			c.Bounds(), x)
 	}
@@ -93,12 +93,12 @@ func (element *Artist) Draw (destination canvas.Canvas) {
 
 	// 0, 2
 	c02 := element.cellAt(destination, 0, 2)
-	shapes.StrokeColorRectangle(c02, artist.Hex(0x888888FF), c02.Bounds(), 1)
+	shapes.StrokeColorRectangle(c02, artutil.Hex(0x888888FF), c02.Bounds(), 1)
 	shapes.FillEllipse(c02, c41, c02.Bounds())
 
 	// 1, 2
 	c12 := element.cellAt(destination, 1, 2)
-	shapes.StrokeColorRectangle(c12, artist.Hex(0x888888FF), c12.Bounds(), 1)
+	shapes.StrokeColorRectangle(c12, artutil.Hex(0x888888FF), c12.Bounds(), 1)
 	shapes.StrokeEllipse(c12, c41, c12.Bounds(), 5)
 	
 	// 2, 2
@@ -135,7 +135,7 @@ func (element *Artist) Draw (destination canvas.Canvas) {
 	patterns.Border {
 		Canvas: element.thingy(c42),
 		Inset:  artist.Inset { 8, 8, 8, 8 },
-	}.Draw(canvas.Cut(c23, c23.Bounds().Inset(16)), c23.Bounds())
+	}.Draw(artist.Cut(c23, c23.Bounds().Inset(16)), c23.Bounds())
 	
 	// how long did that take to render?
 	drawTime := time.Since(drawStart)
@@ -146,13 +146,13 @@ func (element *Artist) Draw (destination canvas.Canvas) {
 		drawTime.Milliseconds(),
 		drawTime.Microseconds())))
 	textDrawer.Draw (
-		destination, artist.Hex(0xFFFFFFFF),
+		destination, artutil.Hex(0xFFFFFFFF),
 		image.Pt(bounds.Min.X + 8, bounds.Max.Y - 24))
 }
 
-func (element *Artist) colorLines (destination canvas.Canvas, weight int, bounds image.Rectangle) {
+func (element *Artist) colorLines (destination artist.Canvas, weight int, bounds image.Rectangle) {
 	bounds = bounds.Inset(4)
-	c := artist.Hex(0xFFFFFFFF)
+	c := artutil.Hex(0xFFFFFFFF)
 	shapes.ColorLine(destination, c, weight, bounds.Min, bounds.Max)
 	shapes.ColorLine (
 		destination, c, weight,
@@ -184,24 +184,24 @@ func (element *Artist) colorLines (destination canvas.Canvas, weight int, bounds
 		image.Pt(bounds.Min.X + bounds.Dx() / 2, bounds.Max.Y))
 }
 
-func (element *Artist) cellAt (destination canvas.Canvas, x, y int) (canvas.Canvas) {
+func (element *Artist) cellAt (destination artist.Canvas, x, y int) (artist.Canvas) {
 	bounds := element.entity.Bounds()
 	cellBounds := image.Rectangle { }
 	cellBounds.Min = bounds.Min
 	cellBounds.Max.X = bounds.Min.X + bounds.Dx() / 5
 	cellBounds.Max.Y = bounds.Min.Y + (bounds.Dy() - 48) / 4
-	return canvas.Cut (destination, cellBounds.Add (image.Pt (
+	return artist.Cut (destination, cellBounds.Add (image.Pt (
 		x * cellBounds.Dx(),
 		y * cellBounds.Dy())))
 }
 
-func (element *Artist) thingy (destination canvas.Canvas) (result canvas.Canvas) {
+func (element *Artist) thingy (destination artist.Canvas) (result artist.Canvas) {
 	bounds := destination.Bounds()
 	bounds = image.Rect(0, 0, 32, 32).Add(bounds.Min)
-	shapes.FillColorRectangle(destination, artist.Hex(0x440000FF), bounds)
-	shapes.StrokeColorRectangle(destination, artist.Hex(0xFF0000FF), bounds, 1)
-	shapes.StrokeColorRectangle(destination, artist.Hex(0x004400FF), bounds.Inset(4), 1)
-	shapes.FillColorRectangle(destination, artist.Hex(0x004444FF), bounds.Inset(12))
-	shapes.StrokeColorRectangle(destination, artist.Hex(0x888888FF), bounds.Inset(8), 1)
-	return canvas.Cut(destination, bounds)
+	shapes.FillColorRectangle(destination, artutil.Hex(0x440000FF), bounds)
+	shapes.StrokeColorRectangle(destination, artutil.Hex(0xFF0000FF), bounds, 1)
+	shapes.StrokeColorRectangle(destination, artutil.Hex(0x004400FF), bounds.Inset(4), 1)
+	shapes.FillColorRectangle(destination, artutil.Hex(0x004444FF), bounds.Inset(12))
+	shapes.StrokeColorRectangle(destination, artutil.Hex(0x888888FF), bounds.Inset(8), 1)
+	return artist.Cut(destination, bounds)
 }
