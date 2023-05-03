@@ -1,22 +1,16 @@
 package elements
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 
-type cellEntity interface {
-	tomo.ContainerEntity
-	tomo.SelectableEntity
-}
 
 // Cell is a single-element container that satisfies tomo.Selectable. It
 // provides styling based on whether or not it is selected.
 type Cell struct {
-	entity  cellEntity
+	entity  tomo.Entity
 	child   tomo.Element
 	enabled bool
-	theme   theme.Wrapped
 
 	onSelectionChange func ()
 }
@@ -38,7 +32,7 @@ func (element *Cell) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Cell) Draw (destination canvas.Canvas) {
+func (element *Cell) Draw (destination artist.Canvas) {
 	bounds  := element.entity.Bounds()
 	pattern := element.theme.Pattern(tomo.PatternTableCell, element.state())
 	if element.child == nil {
@@ -62,7 +56,7 @@ func (element *Cell) Layout () {
 
 // DrawBackground draws this element's background pattern to the specified
 // destination canvas.
-func (element *Cell) DrawBackground (destination canvas.Canvas) {
+func (element *Cell) DrawBackground (destination artist.Canvas) {
 	element.theme.Pattern(tomo.PatternTableCell, element.state()).
 		Draw(destination, element.entity.Bounds())
 }

@@ -5,14 +5,12 @@ import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Label is a simple text box.
 type Label struct {
-	entity tomo.FlexibleEntity
+	entity tomo.Entity
 	
 	align  textdraw.Align
 	wrap   bool
@@ -22,16 +20,13 @@ type Label struct {
 	forcedColumns int
 	forcedRows    int
 	minHeight     int
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 }
 
 // NewLabel creates a new label.
 func NewLabel (text string) (element *Label) {
 	element = &Label { }
 	element.theme.Case = tomo.C("tomo", "label")
-	element.entity = tomo.NewEntity(element).(tomo.FlexibleEntity)
+	element.entity = tomo.NewEntity(element)
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
 		tomo.FontSizeNormal))
@@ -52,7 +47,7 @@ func (element *Label) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Label) Draw (destination canvas.Canvas) {
+func (element *Label) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 	
 	if element.wrap {

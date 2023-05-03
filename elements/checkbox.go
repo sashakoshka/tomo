@@ -3,14 +3,13 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Checkbox is a toggle-able checkbox with a label.
 type Checkbox struct {
-	entity tomo.FocusableEntity
+	entity tomo.Entity
 	drawer textdraw.Drawer
 
 	enabled bool
@@ -18,16 +17,13 @@ type Checkbox struct {
 	checked bool
 	text    string
 	
-	config config.Wrapped
-	theme  theme.Wrapped
-	
 	onToggle func ()
 }
 
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked, enabled: true }
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.entity = tomo.NewEntity(element).(checkboxEntity)
 	element.theme.Case = tomo.C("tomo", "checkbox")
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
@@ -42,7 +38,7 @@ func (element *Checkbox) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Checkbox) Draw (destination canvas.Canvas) {
+func (element *Checkbox) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 

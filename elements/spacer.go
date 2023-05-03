@@ -1,24 +1,18 @@
 package elements
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // Spacer can be used to put space between two elements..
 type Spacer struct {
 	entity tomo.Entity
-	
 	line bool
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 }
 
 // NewSpacer creates a new spacer.
 func NewSpacer () (element *Spacer) {
 	element = &Spacer { }
-	element.entity = tomo.NewEntity(element)
+	element.entity = tomo.NewEntity(element).(spacerEntity)
 	element.theme.Case = tomo.C("tomo", "spacer")
 	element.updateMinimumSize()
 	return
@@ -37,7 +31,7 @@ func (element *Spacer) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Spacer) Draw (destination canvas.Canvas) {
+func (element *Spacer) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 
 	if element.line {

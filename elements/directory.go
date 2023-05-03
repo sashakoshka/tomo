@@ -4,17 +4,12 @@ import "image"
 import "path/filepath"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 
 // TODO: base on flow implementation of list. also be able to switch to a table
 // variant for a more information dense view.
-
-type directoryEntity interface {
-	tomo.ContainerEntity
-	tomo.ScrollableEntity
-}
 
 type historyEntry struct {
 	location string
@@ -25,8 +20,7 @@ type historyEntry struct {
 // file system.
 type Directory struct {
 	container
-	entity directoryEntity
-	theme  theme.Wrapped
+	entity tomo.Entity
 	
 	scroll        image.Point
 	contentBounds image.Rectangle
@@ -57,7 +51,7 @@ func NewDirectory (
 	return
 }
 
-func (element *Directory) Draw (destination canvas.Canvas) {
+func (element *Directory) Draw (destination artist.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -158,7 +152,7 @@ func (element *Directory) HandleChildMouseUp  (
 	child tomo.Element,
 ) { }
 
-func (element *Directory) HandleChildFlexibleHeightChange (child tomo.Flexible) {
+func (element *Directory) HandleChildFlexibleHeightChange (child ability.Flexible) {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
@@ -204,7 +198,7 @@ func (element *Directory) ScrollAxes () (horizontal, vertical bool) {
 	return false, true
 }
 
-func (element *Directory) DrawBackground (destination canvas.Canvas) {
+func (element *Directory) DrawBackground (destination artist.Canvas) {
 	element.theme.Pattern(tomo.PatternPinboard, tomo.State { }).
 		Draw(destination, element.entity.Bounds())
 }

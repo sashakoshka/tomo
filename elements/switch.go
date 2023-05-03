@@ -3,24 +3,19 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 // Switch is a toggle-able on/off switch with an optional label. It is
 // functionally identical to Checkbox, but plays a different semantic role.
 type Switch struct {
-	entity tomo.FocusableEntity
+	entity tomo.Entity
 	drawer textdraw.Drawer
 
 	enabled bool
 	pressed bool
 	checked bool
 	text    string
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 	
 	onToggle func ()
 }
@@ -32,7 +27,7 @@ func NewSwitch (text string, on bool) (element *Switch) {
 		text:    text,
 		enabled: true,
 	}
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.entity = tomo.NewEntity(element).(checkboxEntity)
 	element.theme.Case = tomo.C("tomo", "switch")
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
@@ -48,7 +43,7 @@ func (element *Switch) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Switch) Draw (destination canvas.Canvas) {
+func (element *Switch) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy()).Add(bounds.Min)

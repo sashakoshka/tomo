@@ -1,6 +1,7 @@
 package elements
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 
 type scratchEntry struct {
 	expand     bool
@@ -9,7 +10,7 @@ type scratchEntry struct {
 }
 
 type container struct {
-	entity   tomo.ContainerEntity
+	entity   tomo.Entity
 	scratch  map[tomo.Element] scratchEntry
 	minimumSize func ()
 }

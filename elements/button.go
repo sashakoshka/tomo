@@ -3,22 +3,18 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 
 // Button is a clickable button.
 type Button struct {
-	entity tomo.FocusableEntity
+	entity tomo.Entity
 	drawer textdraw.Drawer
 
 	enabled bool
 	pressed bool
 	text    string
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 
 	showText bool
 	hasIcon  bool
@@ -30,7 +26,7 @@ type Button struct {
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
 	element = &Button { showText: true, enabled: true }
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.entity = tomo.NewEntity(element).(buttonEntity)
 	element.theme.Case = tomo.C("tomo", "button")
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
@@ -45,7 +41,7 @@ func (element *Button) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Button) Draw (destination canvas.Canvas) {
+func (element *Button) Draw (destination artist.Canvas) {
 	state   := element.state()
 	bounds  := element.entity.Bounds()
 	pattern := element.theme.Pattern(tomo.PatternButton, state)
