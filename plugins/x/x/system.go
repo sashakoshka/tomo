@@ -146,9 +146,7 @@ func (system *system) resizeChildToFit () {
 	system.child.bounds        = system.canvas.Bounds()
 	system.child.clippedBounds = system.child.bounds
 	system.child.Invalidate()
-	if system.child.isContainer {
-		system.child.InvalidateLayout()
-	}
+	system.child.InvalidateLayout()
 }
 
 func (system *system) afterEvent () {

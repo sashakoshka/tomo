@@ -18,15 +18,11 @@ type entity struct {
 
 	selected      bool
 	layoutInvalid bool
-	isContainer   bool
 }
 
 func (backend *backend) NewEntity (owner tomo.Element) tomo.Entity {
 	entity := &entity { element: owner }
-	if _, ok := owner.(ability.Container); ok {
-		entity.isContainer = true
-		entity.InvalidateLayout()
-	}
+	entity.InvalidateLayout()
 	return entity
 }
 
@@ -179,7 +175,7 @@ func (entity *entity) DrawBackground (destination artist.Canvas) {
 
 func (entity *entity) InvalidateLayout () {
 	if entity.window == nil { return }
-	if !entity.isContainer { return }
+	if _, ok := entity.element.(ability.Layoutable); !ok { return }
 	entity.layoutInvalid = true
 	entity.window.system.anyLayoutInvalid = true
 }
