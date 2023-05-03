@@ -6,6 +6,7 @@ import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/ability"
 
 type entity struct {
+	backend     *backend
 	window      *window
 	parent      *entity
 	children    []*entity
@@ -21,7 +22,7 @@ type entity struct {
 }
 
 func (backend *backend) NewEntity (owner tomo.Element) tomo.Entity {
-	entity := &entity { element: owner }
+	entity := &entity { element: owner, backend: backend }
 	entity.InvalidateLayout()
 	return entity
 }
@@ -162,7 +163,7 @@ func (entity *entity) DrawBackground (destination artist.Canvas) {
 	if entity.parent != nil {
 		entity.parent.element.(ability.Container).DrawBackground(destination)
 	} else if entity.window != nil {
-		entity.window.system.theme.Pattern (
+		entity.backend.theme.Pattern (
 			tomo.PatternBackground,
 			tomo.State { },
 			tomo.C("tomo", "window")).Draw (
@@ -292,11 +293,11 @@ func (entity *entity) NotifyScrollBoundsChange () {
 // ----------- ThemeableEntity ----------- //
 
 func (entity *entity) Theme () tomo.Theme {
-	return entity.window.theme
+	return entity.backend.theme
 }
 
 // ----------- ConfigurableEntity ----------- //
 
 func (entity *entity) Config () tomo.Config {
-	return entity.window.config
+	return entity.backend.config
 }

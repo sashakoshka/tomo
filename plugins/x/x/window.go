@@ -120,9 +120,6 @@ func (backend *backend) newWindow (
 		Connect(backend.connection, window.xWindow.Id)
 	xevent.SelectionRequestFun(window.handleSelectionRequest).
 		Connect(backend.connection, window.xWindow.Id)
-
-	window.setTheme(backend.theme)
-	window.setConfig(backend.config)
 	
 	window.metrics.bounds = bounds
 	window.setMinimumSize(8, 8)

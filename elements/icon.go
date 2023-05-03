@@ -4,6 +4,8 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
+var iconCase = tomo.C("tomo", "icon")
+
 // Icon is an element capable of displaying a singular icon.
 type Icon struct {
 	entity tomo.Entity
@@ -17,8 +19,7 @@ func NewIcon (id tomo.Icon, size tomo.IconSize) (element *Icon) {
 		id:   id,
 		size: size,
 	}
-	element.entity = tomo.NewEntity(element).(ability.ThemeableEntity)
-	element.theme.Case = tomo.C("tomo", "icon")
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.updateMinimumSize()
 	return
 }
@@ -37,11 +38,7 @@ func (element *Icon) SetIcon (id tomo.Icon, size tomo.IconSize) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *Icon) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	if element.entity == nil { return }
+func (element *Icon) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -52,8 +49,8 @@ func (element *Icon) Draw (destination artist.Canvas) {
 	
 	bounds := element.entity.Bounds()
 	state  := tomo.State { }
-	element.theme.
-		Pattern(tomo.PatternBackground, state).
+	element.entity.Theme().
+		Pattern(tomo.PatternBackground, state, iconCase).
 		Draw(destination, bounds)
 	icon := element.icon()
 	if icon != nil {
@@ -63,13 +60,13 @@ func (element *Icon) Draw (destination artist.Canvas) {
 			(bounds.Dy() - iconBounds.Dy()) / 2)
 		icon.Draw (
 			destination,
-			element.theme.Color(tomo.ColorForeground, state),
+			element.entity.Theme().Color(tomo.ColorForeground, state, iconCase),
 			bounds.Min.Add(offset))
 	}
 }
 
 func (element *Icon) icon () artist.Icon {
-	return element.theme.Icon(element.id, element.size)
+	return element.entity.Theme().Icon(element.id, element.size, iconCase)
 }
 
 func (element *Icon) updateMinimumSize () {

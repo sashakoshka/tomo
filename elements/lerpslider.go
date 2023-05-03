@@ -33,7 +33,7 @@ func NewHLerpSlider[T Numeric] (min, max T, value T) (element *LerpSlider[T]) {
 		min: min,
 		max: max,
 	}
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.construct()
 	element.SetValue(value)
 	return

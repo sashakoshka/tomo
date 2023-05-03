@@ -15,8 +15,8 @@ type Image struct {
 
 // NewImage creates a new image element.
 func NewImage (image image.Image) (element *Image) {
-	element = &Image { buffer: canvas.FromImage(image) }
-	element.entity = tomo.NewEntity(element)
+	element = &Image { buffer: artist.FromImage(image) }
+	element.entity = tomo.GetBackend().NewEntity(element)
 	bounds := element.buffer.Bounds()
 	element.entity.SetMinimumSize(bounds.Dx(), bounds.Dy())
 	return

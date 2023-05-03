@@ -4,8 +4,9 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
+
+var checkboxCase = tomo.C("tomo", "checkbox")
 
 // Checkbox is a toggle-able checkbox with a label.
 type Checkbox struct {
@@ -23,11 +24,11 @@ type Checkbox struct {
 // NewCheckbox creates a new cbeckbox with the specified label text.
 func NewCheckbox (text string, checked bool) (element *Checkbox) {
 	element = &Checkbox { checked: checked, enabled: true }
-	element.entity = tomo.NewEntity(element).(checkboxEntity)
-	element.theme.Case = tomo.C("tomo", "checkbox")
-	element.drawer.SetFace (element.theme.FontFace (
+	element.entity = tomo.GetBackend().NewEntity(element)
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
+		tomo.FontSizeNormal,
+		checkboxCase))
 	element.SetText(text)
 	return
 }
@@ -51,11 +52,11 @@ func (element *Checkbox) Draw (destination artist.Canvas) {
 
 	element.entity.DrawBackground(destination)
 		
-	pattern := element.theme.Pattern(tomo.PatternButton, state)
+	pattern := element.entity.Theme().Pattern(tomo.PatternButton, state, checkboxCase)
 	pattern.Draw(destination, boxBounds)
 
 	textBounds := element.drawer.LayoutBounds()
-	margin := element.theme.Margin(tomo.PatternBackground)
+	margin := element.entity.Theme().Margin(tomo.PatternBackground, checkboxCase)
 	offset := bounds.Min.Add(image.Point {
 		X: bounds.Dy() + margin.X,
 	})
@@ -63,7 +64,7 @@ func (element *Checkbox) Draw (destination artist.Canvas) {
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := element.theme.Color(tomo.ColorForeground, state)
+	foreground := element.entity.Theme().Color(tomo.ColorForeground, state, checkboxCase)
 	element.drawer.Draw(destination, foreground, offset)
 }
 
@@ -103,21 +104,11 @@ func (element *Checkbox) SetText (text string) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *Checkbox) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.drawer.SetFace (element.theme.FontFace (
+func (element *Checkbox) HandleThemeChange () {
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *Checkbox) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+		tomo.FontSizeNormal,
+		checkboxCase))
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -179,7 +170,7 @@ func (element *Checkbox) updateMinimumSize () {
 	if element.text == "" {
 		element.entity.SetMinimumSize(textBounds.Dy(), textBounds.Dy())
 	} else {
-		margin := element.theme.Margin(tomo.PatternBackground)
+		margin := element.entity.Theme().Margin(tomo.PatternBackground, checkboxCase)
 		element.entity.SetMinimumSize (
 			textBounds.Dy() + margin.X + textBounds.Dx(),
 			textBounds.Dy())

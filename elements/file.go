@@ -7,6 +7,8 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
+var fileCase = tomo.C("files", "file")
+
 // File displays an interactive visual representation of a file within any
 // file system.
 type File struct {
@@ -32,8 +34,7 @@ func NewFile (
 	err error,
 ) {
 	element = &File { enabled: true }
-	element.theme.Case = tomo.C("files", "file")
-	element.entity = tomo.NewEntity(element).(fileEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	err = element.SetLocation(location, within)
 	return
 }
@@ -48,9 +49,9 @@ func (element *File) Draw (destination artist.Canvas) {
 	// background
 	state  := element.state()
 	bounds := element.entity.Bounds()
-	sink   := element.theme.Sink(tomo.PatternButton)
-	element.theme.
-		Pattern(tomo.PatternButton, state).
+	sink   := element.entity.Theme().Sink(tomo.PatternButton, fileCase)
+	element.entity.Theme().
+		Pattern(tomo.PatternButton, state, fileCase).
 		Draw(destination, bounds)
 
 	// icon
@@ -65,7 +66,7 @@ func (element *File) Draw (destination artist.Canvas) {
 		}
 		icon.Draw (
 			destination,
-			element.theme.Color(tomo.ColorForeground, state),
+			element.entity.Theme().Color(tomo.ColorForeground, state, fileCase),
 			bounds.Min.Add(offset))
 	}
 }
@@ -174,7 +175,7 @@ func (element *File) HandleMouseUp  (
 	if button != input.ButtonLeft { return }
 	element.pressed = false
 	within := position.In(element.entity.Bounds())
-	if time.Since(element.lastClick) < element.config.DoubleClickDelay() {
+	if time.Since(element.lastClick) < element.entity.Config().DoubleClickDelay() {
 		if element.Enabled() && within && element.onChoose != nil {
 			element.onChoose()
 		}
@@ -184,17 +185,8 @@ func (element *File) HandleMouseUp  (
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *File) SetTheme (theme tomo.Theme) {
-	if theme == element.theme.Theme { return }
-	element.theme.Theme = theme
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *File) SetConfig (config tomo.Config) {
-	if config == element.config.Config { return }
-	element.config.Config = config
+func (element *File) HandleThemeChange () {
+	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
 
@@ -208,11 +200,11 @@ func (element *File) state () tomo.State {
 }
 
 func (element *File) icon () artist.Icon {
-	return element.theme.Icon(element.iconID, tomo.IconSizeLarge)
+	return element.entity.Theme().Icon(element.iconID, tomo.IconSizeLarge, fileCase)
 }
 
 func (element *File) updateMinimumSize () {
-	padding := element.theme.Padding(tomo.PatternButton)
+	padding := element.entity.Theme().Padding(tomo.PatternButton, fileCase)
 	icon := element.icon()
 	if icon == nil {
 		element.entity.SetMinimumSize (

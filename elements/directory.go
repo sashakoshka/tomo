@@ -11,6 +11,8 @@ import "git.tebibyte.media/sashakoshka/tomo/shatter"
 // TODO: base on flow implementation of list. also be able to switch to a table
 // variant for a more information dense view.
 
+var directoryCase = tomo.C("tomo", "list")
+
 type historyEntry struct {
 	location string
 	filesystem ReadDirStatFS
@@ -42,8 +44,7 @@ func NewDirectory (
 	err error,
 ) {
 	element = &Directory { }
-	element.theme.Case = tomo.C("tomo", "list")
-	element.entity = tomo.NewEntity(element).(directoryEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.container.entity = element.entity
 	element.minimumSize = element.updateMinimumSize
 	element.init()
@@ -59,7 +60,7 @@ func (element *Directory) Draw (destination artist.Canvas) {
 
 	tiles := shatter.Shatter(element.entity.Bounds(), rocks...)
 	for _, tile := range tiles {
-		element.DrawBackground(canvas.Cut(destination, tile))
+		element.DrawBackground(artist.Cut(destination, tile))
 	}
 }
 
@@ -68,8 +69,8 @@ func (element *Directory) Layout () {
 		element.scroll.Y = element.maxScrollHeight()
 	}
 	
-	margin := element.theme.Margin(tomo.PatternPinboard)
-	padding := element.theme.Padding(tomo.PatternPinboard)
+	margin := element.entity.Theme().Margin(tomo.PatternPinboard, directoryCase)
+	padding := element.entity.Theme().Padding(tomo.PatternPinboard, directoryCase)
 	bounds := padding.Apply(element.entity.Bounds())
 	element.contentBounds = image.Rectangle { }
 
@@ -93,7 +94,7 @@ func (element *Directory) Layout () {
 		if width + dot.X > bounds.Max.X {
 			nextLine()
 		}
-		if typedChild, ok := child.(tomo.Flexible); ok {
+		if typedChild, ok := child.(ability.Flexible); ok {
 			height = typedChild.FlexibleHeightFor(width)
 		}
 		if rowHeight < height {
@@ -139,7 +140,7 @@ func (element *Directory) HandleChildMouseDown  (
 	child tomo.Element,
 ) {
 	element.selectNone()
-	if child, ok := child.(tomo.Selectable); ok {
+	if child, ok := child.(ability.Selectable); ok {
 		index := element.entity.IndexOf(child)
 		element.entity.SelectChild(index, true)
 	}
@@ -166,7 +167,7 @@ func (element *Directory) ScrollContentBounds () image.Rectangle {
 // ScrollViewportBounds returns the size and position of the element's
 // viewport relative to ScrollBounds.
 func (element *Directory) ScrollViewportBounds () image.Rectangle {
-	padding := element.theme.Padding(tomo.PatternPinboard)
+	padding := element.entity.Theme().Padding(tomo.PatternPinboard, directoryCase)
 	bounds  := padding.Apply(element.entity.Bounds())
 	bounds   = bounds.Sub(bounds.Min).Add(element.scroll)
 	return bounds
@@ -199,14 +200,11 @@ func (element *Directory) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *Directory) DrawBackground (destination artist.Canvas) {
-	element.theme.Pattern(tomo.PatternPinboard, tomo.State { }).
+	element.entity.Theme().Pattern(tomo.PatternPinboard, tomo.State { }, directoryCase).
 		Draw(destination, element.entity.Bounds())
 }
 
-// SetTheme sets the element's theme.
-func (element *Directory) SetTheme (theme tomo.Theme) {
-	if theme == element.theme.Theme { return }
-	element.theme.Theme = theme
+func (element *Directory) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
@@ -295,7 +293,7 @@ func (element *Directory) selectNone () {
 }
 
 func (element *Directory) maxScrollHeight () (height int) {
-	padding := element.theme.Padding(tomo.PatternSunken)
+	padding := element.entity.Theme().Padding(tomo.PatternSunken, directoryCase)
 	viewportHeight := element.entity.Bounds().Dy() - padding.Vertical()
 	height = element.contentBounds.Dy() - viewportHeight
 	if height < 0 { height = 0 }
@@ -304,7 +302,7 @@ func (element *Directory) maxScrollHeight () (height int) {
 
 
 func (element *Directory) updateMinimumSize () {
-	padding := element.theme.Padding(tomo.PatternPinboard)
+	padding := element.entity.Theme().Padding(tomo.PatternPinboard, directoryCase)
 	minimumWidth := 0
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		width, height := element.entity.ChildMinimumSize(index)
