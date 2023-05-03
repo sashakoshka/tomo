@@ -3,11 +3,13 @@ package fun
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
+
+var pianoCase = tomo.C("tomo", "piano")
+var flatCase  = tomo.C("tomo", "piano", "flatKey")
+var sharpCase = tomo.C("tomo", "piano", "sharpKey")
 
 const pianoKeyWidth = 18
 
@@ -18,12 +20,7 @@ type pianoKey struct {
 
 // Piano is an element that can be used to input midi notes.
 type Piano struct {
-	entity tomo.FocusableEntity
-
-	config     config.Wrapped
-	theme      theme.Wrapped
-	flatTheme  theme.Wrapped
-	sharpTheme theme.Wrapped
+	entity tomo.Entity
 
 	low, high music.Octave
 	flatKeys  []pianoKey
@@ -49,10 +46,7 @@ func NewPiano (low, high music.Octave) (element *Piano) {
 		keynavPressed: make(map[music.Note] bool),
 	}
 	
-	element.theme.Case      = tomo.C("tomo", "piano")
-	element.flatTheme.Case  = tomo.C("tomo", "piano", "flatKey")
-	element.sharpTheme.Case = tomo.C("tomo", "piano", "sharpKey")
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.updateMinimumSize()
 	return
 }
@@ -63,7 +57,7 @@ func (element *Piano) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Piano) Draw (destination canvas.Canvas) {
+func (element *Piano) Draw (destination artist.Canvas) {
 	element.recalculate()
 
 	state := tomo.State {
@@ -90,8 +84,8 @@ func (element *Piano) Draw (destination canvas.Canvas) {
 			state)
 	}
 	
-	pattern := element.theme.Pattern(tomo.PatternPinboard, state)
-	artist.DrawShatter (
+	pattern := element.entity.Theme().Pattern(tomo.PatternPinboard, state, pianoCase)
+	artutil.DrawShatter (
 		destination, pattern, element.entity.Bounds(),
 		element.contentBounds)
 }
@@ -248,26 +242,13 @@ func (element *Piano) HandleKeyUp (key input.Key, modifiers input.Modifiers) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *Piano) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.flatTheme.Theme = new
-	element.sharpTheme.Theme = new
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *Piano) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+func (element *Piano) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
 
 func (element *Piano) updateMinimumSize () {
-	padding := element.theme.Padding(tomo.PatternPinboard)
+	padding := element.entity.Theme().Padding(tomo.PatternPinboard, pianoCase)
 	element.entity.SetMinimumSize (
 		pianoKeyWidth * 7 * element.countOctaves() +
 		padding.Horizontal(),
@@ -290,7 +271,7 @@ func (element *Piano) recalculate () {
 	element.flatKeys  = make([]pianoKey, element.countFlats())
 	element.sharpKeys = make([]pianoKey, element.countSharps())
 
-	padding := element.theme.Padding(tomo.PatternPinboard)
+	padding := element.entity.Theme().Padding(tomo.PatternPinboard, pianoCase)
 	bounds  := padding.Apply(element.entity.Bounds())
 
 	dot := bounds.Min
@@ -323,23 +304,23 @@ func (element *Piano) recalculate () {
 }
 
 func (element *Piano) drawFlat (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	bounds image.Rectangle,
 	pressed bool,
 	state tomo.State,
 ) {
 	state.Pressed = pressed
-	pattern := element.flatTheme.Pattern(tomo.PatternButton, state)
+	pattern := element.entity.Theme().Pattern(tomo.PatternButton, state, flatCase)
 	pattern.Draw(destination, bounds)
 }
 
 func (element *Piano) drawSharp (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	bounds image.Rectangle,
 	pressed bool,
 	state tomo.State,
 ) {
 	state.Pressed = pressed
-	pattern := element.sharpTheme.Pattern(tomo.PatternButton, state)
+	pattern := element.entity.Theme().Pattern(tomo.PatternButton, state, sharpCase)
 	pattern.Draw(destination, bounds)
 }
