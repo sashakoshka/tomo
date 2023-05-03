@@ -5,22 +5,21 @@ import "math"
 import "image"
 import "image/color"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+
+var clockCase = tomo.C("tomo", "clock")
 
 // AnalogClock can display the time of day in an analog format.
 type AnalogClock struct {
 	entity tomo.Entity
 	time   time.Time
-	theme  theme.Wrapped
 }
 
 // NewAnalogClock creates a new analog clock that displays the specified time.
 func NewAnalogClock (newTime time.Time) (element *AnalogClock) {
 	element = &AnalogClock { }
-	element.theme.Case = tomo.C("tomo", "clock")
-	element.entity = tomo.NewEntity(element)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.entity.SetMinimumSize(64, 64)
 	return
 }
@@ -31,18 +30,18 @@ func (element *AnalogClock) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *AnalogClock) Draw (destination canvas.Canvas) {
+func (element *AnalogClock) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 
 	state   := tomo.State { }
-	pattern := element.theme.Pattern(tomo.PatternSunken, state)
-	padding := element.theme.Padding(tomo.PatternSunken)
+	pattern := element.entity.Theme().Pattern(tomo.PatternSunken, state, clockCase)
+	padding := element.entity.Theme().Padding(tomo.PatternSunken, clockCase)
 	pattern.Draw(destination, bounds)
 
 	bounds = padding.Apply(bounds)
 
-	foreground := element.theme.Color(tomo.ColorForeground, state)
-	accent     := element.theme.Color(tomo.ColorAccent, state)
+	foreground := element.entity.Theme().Color(tomo.ColorForeground, state, clockCase)
+	accent     := element.entity.Theme().Color(tomo.ColorAccent, state, clockCase)
 
 	for hour := 0; hour < 12; hour ++ {
 		element.radialLine (
@@ -67,15 +66,12 @@ func (element *AnalogClock) SetTime (newTime time.Time) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *AnalogClock) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
+func (element *AnalogClock) HandleThemeChange () {
 	element.entity.Invalidate()
 }
 
 func (element *AnalogClock) radialLine (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	source color.RGBA,
 	inner  float64,
 	outer  float64,
