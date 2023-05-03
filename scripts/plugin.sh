@@ -7,5 +7,5 @@ mkdir -p "$pluginInstallPath"
 
 install() {
 	go build -buildmode=plugin -o "build/$1.so" "./plugins/$1" && \
-	cp build/x.so $pluginInstallPath
+	cp "build/$1.so" $pluginInstallPath
 }
