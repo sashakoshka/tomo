@@ -3,23 +3,18 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 
 // ToggleButton is a togglable button.
 type ToggleButton struct {
-	entity tomo.FocusableEntity
+	entity tomo.Entity
 	drawer textdraw.Drawer
 
 	enabled bool
 	pressed bool
 	on      bool
 	text    string
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 
 	showText bool
 	hasIcon  bool
@@ -35,7 +30,7 @@ func NewToggleButton (text string, on bool) (element *ToggleButton) {
 		enabled:  true,
 		on:       on,
 	}
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.entity = tomo.NewEntity(element)
 	element.theme.Case = tomo.C("tomo", "toggleButton")
 	element.drawer.SetFace (element.theme.FontFace (
 		tomo.FontStyleRegular,
@@ -50,7 +45,7 @@ func (element *ToggleButton) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *ToggleButton) Draw (destination canvas.Canvas) {
+func (element *ToggleButton) Draw (destination artist.Canvas) {
 	state   := element.state()
 	bounds  := element.entity.Bounds()
 	pattern := element.theme.Pattern(tomo.PatternButton, state)

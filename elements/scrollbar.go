@@ -3,9 +3,8 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 
 // ScrollBar is an element similar to Slider, but it has special behavior that
 // makes it well suited for controlling the viewport position on one axis of a
@@ -31,9 +30,6 @@ type ScrollBar struct {
 	contentBounds  image.Rectangle
 	viewportBounds image.Rectangle
 	
-	config config.Wrapped
-	theme  theme.Wrapped
-	
 	onScroll func (viewport image.Point)
 }
 
@@ -44,7 +40,7 @@ func NewVScrollBar () (element *ScrollBar) {
 		enabled:  true,
 	}
 	element.theme.Case = tomo.C("tomo", "scrollBarVertical")
-	element.entity = tomo.NewEntity(element).(tomo.Entity)
+	element.entity = tomo.NewEntity(element).(scrollBarEntity)
 	element.updateMinimumSize()
 	return
 }
@@ -66,7 +62,7 @@ func (element *ScrollBar) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *ScrollBar) Draw (destination canvas.Canvas) {
+func (element *ScrollBar) Draw (destination artist.Canvas) {
 	element.recalculate()
 
 	bounds := element.entity.Bounds()

@@ -2,17 +2,12 @@ package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // ProgressBar displays a visual indication of how far along a task is.
 type ProgressBar struct {
 	entity tomo.Entity
 	progress float64
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 }
 
 // NewProgressBar creates a new progress bar displaying the given progress
@@ -33,7 +28,7 @@ func (element *ProgressBar) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *ProgressBar) Draw (destination canvas.Canvas) {
+func (element *ProgressBar) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 
 	pattern := element.theme.Pattern(tomo.PatternSunken, tomo.State { })
@@ -61,14 +56,6 @@ func (element *ProgressBar) SetProgress (progress float64) {
 func (element *ProgressBar) SetTheme (new tomo.Theme) {
 	if new == element.theme.Theme { return }
 	element.theme.Theme = new
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *ProgressBar) SetConfig (new tomo.Config) {
-	if new == nil || new == element.config.Config { return }
-	element.config.Config = new
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }

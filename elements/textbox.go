@@ -7,23 +7,14 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
-
-type textBoxEntity interface {
-	tomo.FocusableEntity
-	tomo.ScrollableEntity
-	tomo.LayoutEntity
-}
 
 // TextBox is a single-line text input.
 type TextBox struct {
-	entity textBoxEntity
+	entity tomo.Entity
 	
 	enabled     bool
 	lastClick   time.Time
@@ -35,9 +26,6 @@ type TextBox struct {
 	
 	placeholderDrawer textdraw.Drawer
 	valueDrawer       textdraw.Drawer
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 	
 	onKeyDown func (key input.Key, modifiers input.Modifiers) (handled bool)
 	onChange  func ()
@@ -71,7 +59,7 @@ func (element *TextBox) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *TextBox) Draw (destination canvas.Canvas) {
+func (element *TextBox) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 
 	state := element.state()

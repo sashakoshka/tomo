@@ -2,14 +2,11 @@ package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
 
 // Icon is an element capable of displaying a singular icon.
 type Icon struct {
 	entity tomo.Entity
-	theme  theme.Wrapped
 	id     tomo.Icon
 	size   tomo.IconSize
 }
@@ -20,7 +17,7 @@ func NewIcon (id tomo.Icon, size tomo.IconSize) (element *Icon) {
 		id:   id,
 		size: size,
 	}
-	element.entity = tomo.NewEntity(element)
+	element.entity = tomo.NewEntity(element).(ability.ThemeableEntity)
 	element.theme.Case = tomo.C("tomo", "icon")
 	element.updateMinimumSize()
 	return
@@ -50,7 +47,7 @@ func (element *Icon) SetTheme (new tomo.Theme) {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Icon) Draw (destination canvas.Canvas) {
+func (element *Icon) Draw (destination artist.Canvas) {
 	if element.entity == nil { return }
 	
 	bounds := element.entity.Bounds()

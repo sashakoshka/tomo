@@ -2,26 +2,19 @@ package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-
-type documentEntity interface {
-	tomo.ContainerEntity
-	tomo.ScrollableEntity
-}
 
 // Document is a scrollable container capcable of laying out flexible child
 // elements. Children can be added either inline (similar to an HTML/CSS inline
 // element), or expanding (similar to an HTML/CSS block element).
 type Document struct {
 	container
-	entity documentEntity
+	entity tomo.Entity
 	
 	scroll        image.Point
 	contentBounds image.Rectangle
-
-	theme theme.Wrapped
 	
 	onScrollBoundsChange func ()
 }
@@ -30,7 +23,7 @@ type Document struct {
 func NewDocument (children ...tomo.Element) (element *Document) {
 	element = &Document { }
 	element.theme.Case = tomo.C("tomo", "document")
-	element.entity = tomo.NewEntity(element).(documentEntity)
+	element.entity = tomo.NewEntity(element)
 	element.container.entity = element.entity
 	element.minimumSize = element.updateMinimumSize
 	element.init()
@@ -39,7 +32,7 @@ func NewDocument (children ...tomo.Element) (element *Document) {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Document) Draw (destination canvas.Canvas) {
+func (element *Document) Draw (destination artist.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -130,7 +123,7 @@ func (element *Document) AdoptInline (children ...tomo.Element) {
 	element.adopt(false, children...)
 }
 
-func (element *Document) HandleChildFlexibleHeightChange (child tomo.Flexible) {
+func (element *Document) HandleChildFlexibleHeightChange (child ability.Flexible) {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
@@ -138,7 +131,7 @@ func (element *Document) HandleChildFlexibleHeightChange (child tomo.Flexible) {
 
 // DrawBackground draws this element's background pattern to the specified
 // destination canvas.
-func (element *Document) DrawBackground (destination canvas.Canvas) {
+func (element *Document) DrawBackground (destination artist.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 

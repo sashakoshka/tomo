@@ -3,19 +3,11 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-
-type listEntity interface {
-	tomo.ContainerEntity
-	tomo.ScrollableEntity
-	tomo.FocusableEntity
-}
 
 type list struct {
 	container
-	entity listEntity
+	entity tomo.Entity
 
 	enabled       bool
 	scroll        image.Point
@@ -24,8 +16,6 @@ type list struct {
 	
 	forcedMinimumWidth  int
 	forcedMinimumHeight int
-
-	theme theme.Wrapped
 
 	onClick func ()
 	onSelectionChange func ()
@@ -43,7 +33,7 @@ type FlowList struct {
 func NewList (children ...tomo.Element) (element *List) {
 	element = &List { }
 	element.theme.Case       = tomo.C("tomo", "list")
-	element.entity           = tomo.NewEntity(element).(listEntity)
+	element.entity           = tomo.NewEntity(element)
 	element.container.entity = element.entity
 	element.minimumSize      = element.updateMinimumSize
 	element.init(children...)
@@ -67,7 +57,7 @@ func (element *list) init (children ...tomo.Element) {
 	element.Adopt(children...)
 }
 
-func (element *list) Draw (destination canvas.Canvas) {
+func (element *list) Draw (destination artist.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -170,14 +160,14 @@ func (element *FlowList) Layout () {
 	}
 }
 
-func (element *list) Selected () tomo.Selectable {
+func (element *list) Selected () ability.Selectable {
 	if element.selected == -1 { return nil }
 	child, ok := element.entity.Child(element.selected).(tomo.Selectable)
 	if !ok { return nil }
 	return child
 }
 
-func (element *list) Select (child tomo.Selectable) {
+func (element *list) Select (child ability.Selectable) {
 	index := element.entity.IndexOf(child)
 	if element.selected == index { return }
 	element.selectNone()
@@ -248,7 +238,7 @@ func (element *list) HandleChildMouseUp  (
 	}
 }
 
-func (element *list) HandleChildFlexibleHeightChange (child tomo.Flexible) {
+func (element *list) HandleChildFlexibleHeightChange (child ability.Flexible) {
 	element.minimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
@@ -280,7 +270,7 @@ func (element *list) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 
 func (element *list) HandleKeyUp(key input.Key, modifiers input.Modifiers) { }
 
-func (element *list) DrawBackground (destination canvas.Canvas) {
+func (element *list) DrawBackground (destination artist.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 

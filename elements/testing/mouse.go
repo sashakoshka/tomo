@@ -4,7 +4,6 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
 
@@ -13,7 +12,7 @@ var mouseCase = tomo.C("tomo", "mouse")
 // Mouse is an element capable of testing mouse input. When the mouse is clicked
 // and dragged on it, it draws a trail.
 type Mouse struct {
-	entity       ability.ThemeableEntity
+	entity       tomo.Entity
 	pressed      bool
 	lastMousePos image.Point
 }
@@ -21,7 +20,7 @@ type Mouse struct {
 // NewMouse creates a new mouse test element.
 func NewMouse () (element *Mouse) {
 	element = &Mouse { }
-	element.entity = tomo.GetBackend().NewEntity(element).(ability.ThemeableEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.entity.SetMinimumSize(32, 32)
 	return
 }

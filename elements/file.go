@@ -6,22 +6,11 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
-
-type fileEntity interface {
-	tomo.SelectableEntity
-	tomo.FocusableEntity
-}
 
 // File displays an interactive visual representation of a file within any
 // file system.
 type File struct {
-	entity fileEntity
-	
-	config config.Wrapped
-	theme  theme.Wrapped
+	entity tomo.Entity
 
 	lastClick  time.Time
 	pressed    bool
@@ -55,7 +44,7 @@ func (element *File) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *File) Draw (destination canvas.Canvas) {
+func (element *File) Draw (destination artist.Canvas) {
 	// background
 	state  := element.state()
 	bounds := element.entity.Bounds()

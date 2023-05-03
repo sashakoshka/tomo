@@ -3,9 +3,8 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 
 // Slider is a slider control with a floating point value between zero and one.
 type Slider struct {
@@ -23,14 +22,12 @@ func NewVSlider (value float64) (element *Slider) {
 func NewHSlider (value float64) (element *Slider) {
 	element = &Slider { }
 	element.value = value
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
+	element.entity = tomo.NewEntity(element)
 	element.construct()
 	return
 }
 
 type slider struct {
-	entity tomo.FocusableEntity
-	
 	value      float64
 	vertical   bool
 	dragging   bool
@@ -38,9 +35,6 @@ type slider struct {
 	dragOffset int
 	track      image.Rectangle
 	bar        image.Rectangle
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 	
 	onSlide   func ()
 	onRelease func ()
@@ -62,7 +56,7 @@ func (element *slider) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *slider) Draw (destination canvas.Canvas) {
+func (element *slider) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 	element.track = element.theme.Padding(tomo.PatternGutter).Apply(bounds)
 	if element.vertical {
