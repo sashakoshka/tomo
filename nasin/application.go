@@ -19,6 +19,7 @@ func Run (application Application) {
 		println("nasin: cannot start application:", err.Error())
 		return
 	}
+	backend.SetTheme(theme)
 	tomo.SetBackend(backend)
 	
 	if application == nil { panic("nasin: nil application") }
