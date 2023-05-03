@@ -11,7 +11,6 @@ import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
 import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
 import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
-import defaultfont "git.tebibyte.media/sashakoshka/tomo/default/font"
 
 // Artist is an element that displays shapes and patterns drawn by the artist
 // package in order to test it.
@@ -140,7 +139,10 @@ func (element *Artist) Draw (destination artist.Canvas) {
 	// how long did that take to render?
 	drawTime := time.Since(drawStart)
 	textDrawer := textdraw.Drawer { }
-	textDrawer.SetFace(defaultfont.FaceRegular)
+	textDrawer.SetFace(element.entity.Theme().FontFace (
+		tomo.FontStyleRegular,
+		tomo.FontSizeNormal,
+		tomo.C("tomo", "artist")))
 	textDrawer.SetText ([]rune (fmt.Sprintf (
 		"%dms\n%dus",
 		drawTime.Milliseconds(),
