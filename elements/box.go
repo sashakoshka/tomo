@@ -2,9 +2,10 @@ package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+
+var boxCase = tomo.C("tomo", "box") 
 
 // Space is a list of spacing configurations that can be passed to some
 // containers.
@@ -27,7 +28,6 @@ func (space Space) Includes (sub Space) bool {
 // complex layouts.
 type Box struct {
 	container
-	theme    theme.Wrapped
 	padding  bool
 	margin   bool
 	vertical bool
@@ -39,10 +39,9 @@ func NewHBox (space Space, children ...tomo.Element) (element *Box) {
 		padding: space.Includes(SpacePadding),
 		margin:  space.Includes(SpaceMargin),
 	}
-	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.minimumSize = element.updateMinimumSize
 	element.init()
-	element.theme.Case = tomo.C("tomo", "box")
 	element.Adopt(children...)
 	return
 }
@@ -54,16 +53,15 @@ func NewVBox (space Space, children ...tomo.Element) (element *Box) {
 		margin:   space.Includes(SpaceMargin),
 		vertical: true,
 	}
-	element.entity = tomo.NewEntity(element).(tomo.ContainerEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.minimumSize = element.updateMinimumSize
 	element.init()
-	element.theme.Case = tomo.C("tomo", "box")
 	element.Adopt(children...)
 	return
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Box) Draw (destination canvas.Canvas) {
+func (element *Box) Draw (destination artist.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -71,14 +69,14 @@ func (element *Box) Draw (destination canvas.Canvas) {
 
 	tiles := shatter.Shatter(element.entity.Bounds(), rocks...)
 	for _, tile := range tiles {
-		element.entity.DrawBackground(canvas.Cut(destination, tile))
+		element.entity.DrawBackground(artist.Cut(destination, tile))
 	}
 }
 
 // Layout causes this element to perform a layout operation.
 func (element *Box) Layout () {
-	margin  := element.theme.Margin(tomo.PatternBackground)
-	padding := element.theme.Padding(tomo.PatternBackground)
+	margin  := element.entity.Theme().Margin(tomo.PatternBackground, boxCase)
+	padding := element.entity.Theme().Padding(tomo.PatternBackground, boxCase)
 	bounds  := element.entity.Bounds()
 	if element.padding { bounds = padding.Apply(bounds) }
 
@@ -128,22 +126,19 @@ func (element *Box) AdoptExpand (children ...tomo.Element) {
 
 // DrawBackground draws this element's background pattern to the specified
 // destination canvas.
-func (element *Box) DrawBackground (destination canvas.Canvas) {
+func (element *Box) DrawBackground (destination artist.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 
-// SetTheme sets the element's theme.
-func (element *Box) SetTheme (theme tomo.Theme) {
-	if theme == element.theme.Theme { return }
-	element.theme.Theme = theme
+func (element *Box) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
 }
 
 func (element *Box) freeSpace () (space float64, nExpanding float64) {
-	margin  := element.theme.Margin(tomo.PatternBackground)
-	padding := element.theme.Padding(tomo.PatternBackground)
+	margin  := element.entity.Theme().Margin(tomo.PatternBackground, boxCase)
+	padding := element.entity.Theme().Padding(tomo.PatternBackground, boxCase)
 
 	var marginSize int; if element.vertical {
 		marginSize = margin.Y
@@ -176,8 +171,8 @@ func (element *Box) freeSpace () (space float64, nExpanding float64) {
 }
 
 func (element *Box) updateMinimumSize () {
-	margin  := element.theme.Margin(tomo.PatternBackground)
-	padding := element.theme.Padding(tomo.PatternBackground)
+	margin  := element.entity.Theme().Margin(tomo.PatternBackground, boxCase)
+	padding := element.entity.Theme().Padding(tomo.PatternBackground, boxCase)
 	var breadth, size int
 	var marginSize int; if element.vertical {
 		marginSize = margin.Y

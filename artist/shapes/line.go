@@ -2,12 +2,12 @@ package shapes
 
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // ColorLine draws a line from one point to another with the specified weight
 // and color.
 func ColorLine (
-	destination canvas.Canvas,
+	destination artist.Canvas,
 	color       color.RGBA,
 	weight      int,
 	min         image.Point,

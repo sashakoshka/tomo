@@ -3,9 +3,7 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // ScrollBar is an element similar to Slider, but it has special behavior that
 // makes it well suited for controlling the viewport position on one axis of a
@@ -21,6 +19,8 @@ import "git.tebibyte.media/sashakoshka/tomo/default/config"
 type ScrollBar struct {
 	entity tomo.Entity
 
+	c tomo.Case
+
 	vertical bool
 	enabled  bool
 	dragging bool
@@ -31,9 +31,6 @@ type ScrollBar struct {
 	contentBounds  image.Rectangle
 	viewportBounds image.Rectangle
 	
-	config config.Wrapped
-	theme  theme.Wrapped
-	
 	onScroll func (viewport image.Point)
 }
 
@@ -43,8 +40,8 @@ func NewVScrollBar () (element *ScrollBar) {
 		vertical: true,
 		enabled:  true,
 	}
-	element.theme.Case = tomo.C("tomo", "scrollBarVertical")
-	element.entity = tomo.NewEntity(element).(tomo.Entity)
+	element.c = tomo.C("tomo", "scrollBarVertical")
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.updateMinimumSize()
 	return
 }
@@ -54,8 +51,8 @@ func NewHScrollBar () (element *ScrollBar) {
 	element = &ScrollBar {
 		enabled: true,
 	}
-	element.theme.Case = tomo.C("tomo", "scrollBarHorizontal")
-	element.entity = tomo.NewEntity(element).(tomo.Entity)
+	element.c = tomo.C("tomo", "scrollBarHorizontal")
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.updateMinimumSize()
 	return
 }
@@ -66,7 +63,7 @@ func (element *ScrollBar) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *ScrollBar) Draw (destination canvas.Canvas) {
+func (element *ScrollBar) Draw (destination artist.Canvas) {
 	element.recalculate()
 
 	bounds := element.entity.Bounds()
@@ -74,10 +71,10 @@ func (element *ScrollBar) Draw (destination canvas.Canvas) {
 		Disabled: !element.Enabled(),
 		Pressed:  element.dragging,
 	}
-	element.theme.Pattern(tomo.PatternGutter, state).Draw (
+	element.entity.Theme().Pattern(tomo.PatternGutter, state, element.c).Draw (
 		destination,
 		bounds)
-	element.theme.Pattern(tomo.PatternHandle, state).Draw (
+	element.entity.Theme().Pattern(tomo.PatternHandle, state, element.c).Draw (
 		destination,
 		element.bar)
 }
@@ -87,7 +84,7 @@ func (element *ScrollBar) HandleMouseDown  (
 	button input.Button,
 	modifiers input.Modifiers,
 ) {
-	velocity := element.config.ScrollVelocity()
+	velocity := element.entity.Config().ScrollVelocity()
 
 	if position.In(element.bar) {
 		// the mouse is pressed down within the bar's handle
@@ -189,17 +186,7 @@ func (element *ScrollBar) OnScroll (callback func (viewport image.Point)) {
 	element.onScroll = callback
 }
 
-// SetTheme sets the element's theme.
-func (element *ScrollBar) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *ScrollBar) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+func (element *ScrollBar) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -267,7 +254,7 @@ func (element *ScrollBar) recalculate () {
 
 func (element *ScrollBar) recalculateVertical () {
 	bounds := element.entity.Bounds()
-	padding := element.theme.Padding(tomo.PatternGutter)
+	padding := element.entity.Theme().Padding(tomo.PatternGutter, element.c)
 	element.track = padding.Apply(bounds)
 
 	contentBounds  := element.contentBounds
@@ -294,7 +281,7 @@ func (element *ScrollBar) recalculateVertical () {
 
 func (element *ScrollBar) recalculateHorizontal () {
 	bounds := element.entity.Bounds()
-	padding := element.theme.Padding(tomo.PatternGutter)
+	padding := element.entity.Theme().Padding(tomo.PatternGutter, element.c)
 	element.track = padding.Apply(bounds)
 
 	contentBounds  := element.contentBounds
@@ -320,8 +307,8 @@ func (element *ScrollBar) recalculateHorizontal () {
 }
 
 func (element *ScrollBar) updateMinimumSize () {
-	gutterPadding := element.theme.Padding(tomo.PatternGutter)
-	handlePadding := element.theme.Padding(tomo.PatternHandle)
+	gutterPadding := element.entity.Theme().Padding(tomo.PatternGutter, element.c)
+	handlePadding := element.entity.Theme().Padding(tomo.PatternHandle, element.c)
 	if element.vertical {
 		element.entity.SetMinimumSize (
 			gutterPadding.Horizontal() + handlePadding.Horizontal(),

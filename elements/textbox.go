@@ -7,23 +7,16 @@ import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 import "git.tebibyte.media/sashakoshka/tomo/textmanip"
 import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
 import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
 
-type textBoxEntity interface {
-	tomo.FocusableEntity
-	tomo.ScrollableEntity
-	tomo.LayoutEntity
-}
+var textBoxCase = tomo.C("tomo", "textBox")
 
 // TextBox is a single-line text input.
 type TextBox struct {
-	entity textBoxEntity
+	entity tomo.Entity
 	
 	enabled     bool
 	lastClick   time.Time
@@ -36,9 +29,6 @@ type TextBox struct {
 	placeholderDrawer textdraw.Drawer
 	valueDrawer       textdraw.Drawer
 	
-	config config.Wrapped
-	theme  theme.Wrapped
-	
 	onKeyDown func (key input.Key, modifiers input.Modifiers) (handled bool)
 	onChange  func ()
 	onEnter   func ()
@@ -50,15 +40,14 @@ type TextBox struct {
 // text.
 func NewTextBox (placeholder, value string) (element *TextBox) {
 	element = &TextBox { enabled: true }
-	element.theme.Case = tomo.C("tomo", "textBox")
-	element.entity = tomo.NewEntity(element).(textBoxEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.placeholder = placeholder
-	element.placeholderDrawer.SetFace (element.theme.FontFace (
+	element.placeholderDrawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
-	element.valueDrawer.SetFace (element.theme.FontFace (
+		tomo.FontSizeNormal, textBoxCase))
+	element.valueDrawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
+		tomo.FontSizeNormal, textBoxCase))
 	element.placeholderDrawer.SetText([]rune(placeholder))
 	element.updateMinimumSize()
 	element.SetValue(value)
@@ -71,19 +60,19 @@ func (element *TextBox) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *TextBox) Draw (destination canvas.Canvas) {
+func (element *TextBox) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 
 	state := element.state()
-	pattern := element.theme.Pattern(tomo.PatternInput, state)
-	padding := element.theme.Padding(tomo.PatternInput)
-	innerCanvas := canvas.Cut(destination, padding.Apply(bounds))
+	pattern := element.entity.Theme().Pattern(tomo.PatternInput, state, textBoxCase)
+	padding := element.entity.Theme().Padding(tomo.PatternInput, textBoxCase)
+	innerCanvas := artist.Cut(destination, padding.Apply(bounds))
 	pattern.Draw(destination, bounds)
 	offset := element.textOffset()
 
 	if element.entity.Focused() && !element.dot.Empty() {
 		// draw selection bounds
-		accent := element.theme.Color(tomo.ColorAccent,  state)
+		accent := element.entity.Theme().Color(tomo.ColorAccent, state, textBoxCase)
 		canon := element.dot.Canon()
 		foff  := fixedutil.Pt(offset)
 		start := element.valueDrawer.PositionAt(canon.Start).Add(foff)
@@ -101,9 +90,9 @@ func (element *TextBox) Draw (destination canvas.Canvas) {
 	if len(element.text) == 0 {
 		// draw placeholder
 		textBounds := element.placeholderDrawer.LayoutBounds()
-		foreground := element.theme.Color (
+		foreground := element.entity.Theme().Color (
 			tomo.ColorForeground,
-			tomo.State { Disabled: true })
+			tomo.State { Disabled: true }, textBoxCase)
 		element.placeholderDrawer.Draw (
 			innerCanvas,
 			foreground,
@@ -111,7 +100,7 @@ func (element *TextBox) Draw (destination canvas.Canvas) {
 	} else {
 		// draw input value
 		textBounds := element.valueDrawer.LayoutBounds()
-		foreground := element.theme.Color(tomo.ColorForeground, state)
+		foreground := element.entity.Theme().Color(tomo.ColorForeground, state, textBoxCase)
 		element.valueDrawer.Draw (
 			innerCanvas,
 			foreground,
@@ -120,7 +109,7 @@ func (element *TextBox) Draw (destination canvas.Canvas) {
 	
 	if element.entity.Focused() && element.dot.Empty() {
 		// draw cursor
-		foreground := element.theme.Color(tomo.ColorForeground, state)
+		foreground := element.entity.Theme().Color(tomo.ColorForeground, state, textBoxCase)
 		cursorPosition := fixedutil.RoundPt (
 			element.valueDrawer.PositionAt(element.dot.End))
 		shapes.ColorLine (
@@ -156,7 +145,7 @@ func (element *TextBox) HandleMouseDown  (
 		runeIndex := element.atPosition(position)
 		if runeIndex == -1 { return }
 		
-		if time.Since(element.lastClick) < element.config.DoubleClickDelay() {
+		if time.Since(element.lastClick) < element.entity.Config().DoubleClickDelay() {
 			element.dragging = 2
 			element.dot = textmanip.WordAround(element.text, runeIndex)
 		} else {
@@ -214,7 +203,7 @@ func (element *TextBox) HandleMotion (position image.Point) {
 }
 
 func (element *TextBox) textOffset () image.Point {
-	padding     := element.theme.Padding(tomo.PatternInput)
+	padding     := element.entity.Theme().Padding(tomo.PatternInput, textBoxCase)
 	bounds      := element.entity.Bounds()
 	innerBounds := padding.Apply(bounds)
 	textHeight  := element.valueDrawer.LineHeight().Round()
@@ -476,23 +465,13 @@ func (element *TextBox) ScrollAxes () (horizontal, vertical bool) {
 	return true, false
 }
 
-// SetTheme sets the element's theme.
-func (element *TextBox) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	face := element.theme.FontFace (
+func (element *TextBox) HandleThemeChange () {
+	face := element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal)
+		tomo.FontSizeNormal,
+		textBoxCase)
 	element.placeholderDrawer.SetFace(face)
 	element.valueDrawer.SetFace(face)
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *TextBox) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -540,12 +519,12 @@ func (element *TextBox) runOnChange () {
 }
 
 func (element *TextBox) scrollViewportWidth () (width int) {
-	padding := element.theme.Padding(tomo.PatternInput)
+	padding := element.entity.Theme().Padding(tomo.PatternInput, textBoxCase)
 	return padding.Apply(element.entity.Bounds()).Dx()
 }
 
 func (element *TextBox) scrollToCursor () {
-	padding := element.theme.Padding(tomo.PatternInput)
+	padding := element.entity.Theme().Padding(tomo.PatternInput, textBoxCase)
 	bounds  := padding.Apply(element.entity.Bounds())
 	bounds = bounds.Sub(bounds.Min)
 	bounds.Max.X -= element.valueDrawer.Em().Round()
@@ -568,7 +547,7 @@ func (element *TextBox) scrollToCursor () {
 
 func (element *TextBox) updateMinimumSize () {
 	textBounds := element.placeholderDrawer.LayoutBounds()
-	padding := element.theme.Padding(tomo.PatternInput)
+	padding := element.entity.Theme().Padding(tomo.PatternInput, textBoxCase)
 	element.entity.SetMinimumSize (
 		padding.Horizontal() + textBounds.Dx(),
 		padding.Vertical()   +

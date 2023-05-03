@@ -1,17 +1,21 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
+import "git.tebibyte.media/sashakoshka/tomo/ability"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/testing"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
-	tomo.Run(run)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 300, 0))
+type Application struct { }
+
+func (Application) Init () error {
+	window, err := nasin.NewWindow(tomo.Bounds(0, 0, 300, 0))
+	if err != nil { return err }
 	window.SetTitle("List Sidebar")
 
 	container := elements.NewHBox(elements.SpaceBoth)
@@ -44,7 +48,7 @@ func run () {
 		elements.NewCheckbox("Bone", false))
 	art := testing.NewArtist()
 
-	makePage := func (name string, callback func ()) tomo.Selectable {
+	makePage := func (name string, callback func ()) ability.Selectable {
 		cell := elements.NewCell(elements.NewLabel(name))
 		cell.OnSelectionChange (func () {
 			if cell.Selected() { callback() }
@@ -63,6 +67,7 @@ func run () {
 	container.Adopt(list)
 	turnPage(intro)
 	
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
+	return nil
 }

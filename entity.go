@@ -1,15 +1,20 @@
 package tomo
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
-// Entity is a handle given to elements by the backend. Different types of
-// entities may be assigned to elements that support different capabilities.
+// Entity is a handle given to elements by the backend. Extended entity
+// interfaces are defined in the ability module.
 type Entity interface {
 	// Invalidate marks the element's current visual as invalid. At the end
 	// of every event, the backend will ask all invalid entities to redraw
 	// themselves.
 	Invalidate ()
+
+	// InvalidateLayout marks the element's layout as invalid. At the end of
+	// every event, the backend will ask all invalid elements to recalculate
+	// their layouts.
+	InvalidateLayout ()
 
 	// Bounds returns the bounds of the element to be used for drawing and
 	// layout.
@@ -28,23 +33,9 @@ type Entity interface {
 	// labels. If there is no parent element (that is, the element is
 	// directly inside of the window), the backend will draw a default
 	// background pattern.
-	DrawBackground (canvas.Canvas)
-}
+	DrawBackground (artist.Canvas)
 
-// LayoutEntity is given to elements that support the Layoutable interface.
-type LayoutEntity interface {
-	Entity
-	
-	// InvalidateLayout marks the element's layout as invalid. At the end of
-	// every event, the backend will ask all invalid elements to recalculate
-	// their layouts.
-	InvalidateLayout ()
-}
-
-// ContainerEntity is given to elements that support the Container interface.
-type ContainerEntity interface {
-	Entity
-	LayoutEntity
+	// --- Behaviors relating to parenting ---
 
 	// Adopt adds an element as a child.
 	Adopt (child Element)
@@ -76,11 +67,8 @@ type ContainerEntity interface {
 	// ChildMinimumSize returns the minimum size of the child at the
 	// specified index.
 	ChildMinimumSize (index int) (width, height int)
-}
 
-// FocusableEntity is given to elements that support the Focusable interface.
-type FocusableEntity interface {
-	Entity
+	// --- Behaviors relating to input focus ---
 
 	// Focused returns whether the element currently has input focus.
 	Focused () bool
@@ -96,34 +84,31 @@ type FocusableEntity interface {
 	// FocusPrevious causes the focus to move to the next element. If this
 	// succeeds, the element will recieve a HandleUnfocus call.	
 	FocusPrevious ()
-}
-
-// SelectableEntity is given to elements that support the Selectable interface.
-type SelectableEntity interface {
-	Entity
 
 	// Selected returns whether this element is currently selected.
 	Selected () bool
-}
 
-// FlexibleEntity is given to elements that support the Flexible interface.
-type FlexibleEntity interface {
-	Entity
+	// --- Behaviors relating to scrolling --- //
 
 	// NotifyFlexibleHeightChange notifies the system that the parameters
 	// affecting the element's flexible height have changed. This method is
 	// expected to be called by flexible elements when their content changes.
 	NotifyFlexibleHeightChange ()
-}
 
-// ScrollableEntity is given to elements that support the Scrollable interface.
-type ScrollableEntity interface {
-	Entity
-	
 	// NotifyScrollBoundsChange notifies the system that the element's
 	// scroll content bounds or viewport bounds have changed. This is
 	// expected to be called by scrollable elements when they change their
 	// supported scroll axes, their scroll position (either autonomously or
 	// as a result of a call to ScrollTo()), or their content size.
 	NotifyScrollBoundsChange ()
+
+	// --- Behaviors relating to themeing ---
+
+	// Theme returns the currently active theme. When this value changes,
+	// the HandleThemeChange method of the element is called.
+	Theme () Theme
+
+	// Config returns the currently active config. When this value changes,
+	// the HandleThemeChange method of the element is called.
+	Config () Config
 }

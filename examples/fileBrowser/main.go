@@ -3,19 +3,23 @@ package main
 import "os"
 import "path/filepath"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
-	tomo.Run(run)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 384, 384))
+type Application struct { }
+
+func (Application) Init () error {
+	window, err := nasin.NewWindow(tomo.Bounds(0, 0, 384, 384))
+	if err != nil { return err }
 	window.SetTitle("File browser")
 	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
-	homeDir, _ := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
+	if err != nil { return err }
 
 	controlBar := elements.NewHBox(elements.SpaceNone)
 	backButton := elements.NewButton("Back")
@@ -78,6 +82,7 @@ func run () {
 		elements.NewScroll(elements.ScrollVertical, directoryView))
 	container.Adopt(statusBar)
 
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
+	return nil
 }

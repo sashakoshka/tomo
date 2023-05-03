@@ -2,14 +2,13 @@ package elements
 
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
+
+var iconCase = tomo.C("tomo", "icon")
 
 // Icon is an element capable of displaying a singular icon.
 type Icon struct {
 	entity tomo.Entity
-	theme  theme.Wrapped
 	id     tomo.Icon
 	size   tomo.IconSize
 }
@@ -20,8 +19,7 @@ func NewIcon (id tomo.Icon, size tomo.IconSize) (element *Icon) {
 		id:   id,
 		size: size,
 	}
-	element.entity = tomo.NewEntity(element)
-	element.theme.Case = tomo.C("tomo", "icon")
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.updateMinimumSize()
 	return
 }
@@ -40,23 +38,19 @@ func (element *Icon) SetIcon (id tomo.Icon, size tomo.IconSize) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *Icon) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	if element.entity == nil { return }
+func (element *Icon) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Icon) Draw (destination canvas.Canvas) {
+func (element *Icon) Draw (destination artist.Canvas) {
 	if element.entity == nil { return }
 	
 	bounds := element.entity.Bounds()
 	state  := tomo.State { }
-	element.theme.
-		Pattern(tomo.PatternBackground, state).
+	element.entity.Theme().
+		Pattern(tomo.PatternBackground, state, iconCase).
 		Draw(destination, bounds)
 	icon := element.icon()
 	if icon != nil {
@@ -66,13 +60,13 @@ func (element *Icon) Draw (destination canvas.Canvas) {
 			(bounds.Dy() - iconBounds.Dy()) / 2)
 		icon.Draw (
 			destination,
-			element.theme.Color(tomo.ColorForeground, state),
+			element.entity.Theme().Color(tomo.ColorForeground, state, iconCase),
 			bounds.Min.Add(offset))
 	}
 }
 
 func (element *Icon) icon () artist.Icon {
-	return element.theme.Icon(element.id, element.size)
+	return element.entity.Theme().Icon(element.id, element.size, iconCase)
 }
 
 func (element *Icon) updateMinimumSize () {

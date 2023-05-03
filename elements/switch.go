@@ -3,24 +3,21 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+
+var switchCase = tomo.C("tomo", "switch")
 
 // Switch is a toggle-able on/off switch with an optional label. It is
 // functionally identical to Checkbox, but plays a different semantic role.
 type Switch struct {
-	entity tomo.FocusableEntity
+	entity tomo.Entity
 	drawer textdraw.Drawer
 
 	enabled bool
 	pressed bool
 	checked bool
 	text    string
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 	
 	onToggle func ()
 }
@@ -32,11 +29,10 @@ func NewSwitch (text string, on bool) (element *Switch) {
 		text:    text,
 		enabled: true,
 	}
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
-	element.theme.Case = tomo.C("tomo", "switch")
-	element.drawer.SetFace (element.theme.FontFace (
+	element.entity = tomo.GetBackend().NewEntity(element)
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
+		tomo.FontSizeNormal, switchCase))
 	element.drawer.SetText([]rune(text))
 	element.updateMinimumSize()
 	return
@@ -48,7 +44,7 @@ func (element *Switch) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Switch) Draw (destination canvas.Canvas) {
+func (element *Switch) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy()).Add(bounds.Min)
@@ -76,24 +72,24 @@ func (element *Switch) Draw (destination canvas.Canvas) {
 		}
 	}
 
-	gutterPattern := element.theme.Pattern (
-		tomo.PatternGutter, state)
+	gutterPattern := element.entity.Theme().Pattern (
+		tomo.PatternGutter, state, switchCase)
 	gutterPattern.Draw(destination, gutterBounds)
 	
-	handlePattern := element.theme.Pattern (
-		tomo.PatternHandle, state)
+	handlePattern := element.entity.Theme().Pattern (
+		tomo.PatternHandle, state, switchCase)
 	handlePattern.Draw(destination, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := bounds.Min.Add(image.Point {
 		X: bounds.Dy() * 2 +
-			element.theme.Margin(tomo.PatternBackground).X,
+			element.entity.Theme().Margin(tomo.PatternBackground, switchCase).X,
 	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := element.theme.Color(tomo.ColorForeground, state)
+	foreground := element.entity.Theme().Color(tomo.ColorForeground, state, switchCase)
 	element.drawer.Draw(destination, foreground, offset)
 }
 
@@ -186,21 +182,10 @@ func (element *Switch) SetText (text string) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *Switch) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.drawer.SetFace (element.theme.FontFace (
+func (element *Switch) HandleThemeChange () {
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *Switch) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+		tomo.FontSizeNormal, switchCase))
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -214,7 +199,7 @@ func (element *Switch) updateMinimumSize () {
 	} else {
 		element.entity.SetMinimumSize (
 			lineHeight * 2 +
-			element.theme.Margin(tomo.PatternBackground).X +
+			element.entity.Theme().Margin(tomo.PatternBackground, switchCase).X +
 			textBounds.Dx(),
 			lineHeight)
 	}

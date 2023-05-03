@@ -3,22 +3,19 @@ package elements
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
+
+var buttonCase = tomo.C("tomo", "button")
 
 // Button is a clickable button.
 type Button struct {
-	entity tomo.FocusableEntity
+	entity tomo.Entity
 	drawer textdraw.Drawer
 
 	enabled bool
 	pressed bool
 	text    string
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 
 	showText bool
 	hasIcon  bool
@@ -30,11 +27,11 @@ type Button struct {
 // NewButton creates a new button with the specified label text.
 func NewButton (text string) (element *Button) {
 	element = &Button { showText: true, enabled: true }
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
-	element.theme.Case = tomo.C("tomo", "button")
-	element.drawer.SetFace (element.theme.FontFace (
+	element.entity = tomo.GetBackend().NewEntity(element)
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
+		tomo.FontSizeNormal,
+		buttonCase))
 	element.SetText(text)
 	return
 }
@@ -45,16 +42,16 @@ func (element *Button) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Button) Draw (destination canvas.Canvas) {
+func (element *Button) Draw (destination artist.Canvas) {
 	state   := element.state()
 	bounds  := element.entity.Bounds()
-	pattern := element.theme.Pattern(tomo.PatternButton, state)
+	pattern := element.entity.Theme().Pattern(tomo.PatternButton, state, buttonCase)
 
 	pattern.Draw(destination, bounds)
 	
-	foreground := element.theme.Color(tomo.ColorForeground, state)
-	sink       := element.theme.Sink(tomo.PatternButton)
-	margin     := element.theme.Margin(tomo.PatternButton)
+	foreground := element.entity.Theme().Color(tomo.ColorForeground, state, buttonCase)
+	sink       := element.entity.Theme().Sink(tomo.PatternButton, buttonCase)
+	margin     := element.entity.Theme().Margin(tomo.PatternButton, buttonCase)
 	
 	offset := image.Pt (
 		bounds.Dx() / 2,
@@ -69,7 +66,7 @@ func (element *Button) Draw (destination canvas.Canvas) {
 	}
 
 	if element.hasIcon {
-		icon := element.theme.Icon(element.iconId, tomo.IconSizeSmall) 
+		icon := element.entity.Theme().Icon(element.iconId, tomo.IconSizeSmall, buttonCase) 
 		if icon != nil {
 			iconBounds := icon.Bounds()
 			addedWidth := iconBounds.Dx()
@@ -154,21 +151,11 @@ func (element *Button) ShowText (showText bool) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *Button) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.drawer.SetFace (element.theme.FontFace (
+func (element *Button) HandleThemeChange () {
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *Button) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+		tomo.FontSizeNormal,
+		buttonCase))
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -223,14 +210,14 @@ func (element *Button) HandleKeyUp(key input.Key, modifiers input.Modifiers) {
 }
 
 func (element *Button) updateMinimumSize () {
-	padding := element.theme.Padding(tomo.PatternButton)
-	margin  := element.theme.Margin(tomo.PatternButton)
+	padding := element.entity.Theme().Padding(tomo.PatternButton, buttonCase)
+	margin  := element.entity.Theme().Margin(tomo.PatternButton, buttonCase)
 
 	textBounds  := element.drawer.LayoutBounds()
 	minimumSize := textBounds.Sub(textBounds.Min)
 	
 	if element.hasIcon {
-		icon := element.theme.Icon(element.iconId, tomo.IconSizeSmall) 
+		icon := element.entity.Theme().Icon(element.iconId, tomo.IconSizeSmall, buttonCase) 
 		if icon != nil {
 			bounds := icon.Bounds()
 			if element.showText {

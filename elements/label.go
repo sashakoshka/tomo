@@ -5,14 +5,14 @@ import "golang.org/x/image/math/fixed"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+
+var labelCase = tomo.C("tomo", "label")
 
 // Label is a simple text box.
 type Label struct {
-	entity tomo.FlexibleEntity
+	entity tomo.Entity
 	
 	align  textdraw.Align
 	wrap   bool
@@ -22,19 +22,15 @@ type Label struct {
 	forcedColumns int
 	forcedRows    int
 	minHeight     int
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 }
 
 // NewLabel creates a new label.
 func NewLabel (text string) (element *Label) {
 	element = &Label { }
-	element.theme.Case = tomo.C("tomo", "label")
-	element.entity = tomo.NewEntity(element).(tomo.FlexibleEntity)
-	element.drawer.SetFace (element.theme.FontFace (
+	element.entity = tomo.GetBackend().NewEntity(element)
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
+		tomo.FontSizeNormal, labelCase))
 	element.SetText(text)
 	return
 }
@@ -52,7 +48,7 @@ func (element *Label) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Label) Draw (destination canvas.Canvas) {
+func (element *Label) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 	
 	if element.wrap {
@@ -63,9 +59,9 @@ func (element *Label) Draw (destination canvas.Canvas) {
 	element.entity.DrawBackground(destination)
 
 	textBounds := element.drawer.LayoutBounds()
-	foreground := element.theme.Color (
+	foreground := element.entity.Theme().Color (
 		tomo.ColorForeground,
-		tomo.State { })
+		tomo.State { }, labelCase)
 	element.drawer.Draw(destination, foreground, bounds.Min.Sub(textBounds.Min))
 }
 
@@ -132,21 +128,10 @@ func (element *Label) SetAlign (align textdraw.Align) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *Label) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.drawer.SetFace (element.theme.FontFace (
+func (element *Label) HandleThemeChange () {
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *Label) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+		tomo.FontSizeNormal, labelCase))
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -195,7 +180,7 @@ func (element *Label) updateMinimumSize () {
 	if element.wrap {
 		em := element.drawer.Em().Round()
 		if em < 1 {
-			em = element.theme.Padding(tomo.PatternBackground)[0]
+			em = element.entity.Theme().Padding(tomo.PatternBackground, labelCase)[0]
 		}
 		width, height = em, element.drawer.LineHeight().Round()
 		element.entity.NotifyFlexibleHeightChange()

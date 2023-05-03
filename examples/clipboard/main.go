@@ -7,13 +7,9 @@ import _ "image/gif"
 import _ "image/jpeg"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
-
-func main () {
-	tomo.Run(run)
-}
 
 var validImageTypes = []data.Mime {
 	data.M("image", "png"),
@@ -21,8 +17,15 @@ var validImageTypes = []data.Mime {
 	data.M("image", "jpeg"),
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 256, 0))
+func main () {
+	nasin.Run(Application { })
+}
+
+type Application struct { }
+
+func (Application) Init () error {
+	window, err:= nasin.NewWindow(tomo.Bounds(0, 0, 256, 0))
+	if err != nil { return err }
 	window.SetTitle("Clipboard")
 
 	container := elements.NewVBox(elements.SpaceBoth)
@@ -114,8 +117,9 @@ func run () {
 	container.Adopt(controlRow)
 	window.Adopt(container)
 		
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
+	return nil
 }
 
 func imageWindow (parent tomo.Window, image image.Image) {

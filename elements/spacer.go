@@ -1,25 +1,20 @@
 package elements
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
-import "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
+
+var spacerCase = tomo.C("tomo", "spacer")
 
 // Spacer can be used to put space between two elements..
 type Spacer struct {
 	entity tomo.Entity
-	
 	line bool
-	
-	config config.Wrapped
-	theme  theme.Wrapped
 }
 
 // NewSpacer creates a new spacer.
 func NewSpacer () (element *Spacer) {
 	element = &Spacer { }
-	element.entity = tomo.NewEntity(element)
-	element.theme.Case = tomo.C("tomo", "spacer")
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.updateMinimumSize()
 	return
 }
@@ -37,18 +32,18 @@ func (element *Spacer) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Spacer) Draw (destination canvas.Canvas) {
+func (element *Spacer) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 
 	if element.line {
-		pattern := element.theme.Pattern (
+		pattern := element.entity.Theme().Pattern (
 			tomo.PatternLine,
-			tomo.State { })
+			tomo.State { }, spacerCase)
 		pattern.Draw(destination, bounds)
 	} else {
-		pattern := element.theme.Pattern (
+		pattern := element.entity.Theme().Pattern (
 			tomo.PatternBackground,
-			tomo.State { })
+			tomo.State { }, spacerCase)
 		pattern.Draw(destination, bounds)
 	}
 }
@@ -61,23 +56,13 @@ func (element *Spacer) SetLine (line bool) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *Spacer) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *Spacer) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+func (element *Spacer) HandleThemeChange () {
 	element.entity.Invalidate()
 }
 
 func (element *Spacer) updateMinimumSize () {
 	if element.line {
-		padding := element.theme.Padding(tomo.PatternLine)
+		padding := element.entity.Theme().Padding(tomo.PatternLine, spacerCase)
 		element.entity.SetMinimumSize (
 			padding.Horizontal(),
 			padding.Vertical())

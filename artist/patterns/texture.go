@@ -1,18 +1,18 @@
 package patterns
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist"
 
 // Texture is a pattern that tiles the content of a canvas both horizontally and
 // vertically.
 type Texture struct {
-	canvas.Canvas
+	artist.Canvas
 }
 
 // Draw tiles the pattern's canvas within the given bounds. The minimum
 // point of the pattern's canvas will be lined up with the minimum point of the
 // bounding rectangle.
-func (pattern Texture) Draw (destination canvas.Canvas, bounds image.Rectangle) {
+func (pattern Texture) Draw (destination artist.Canvas, bounds image.Rectangle) {
 	dstBounds := bounds.Canon().Intersect(destination.Bounds())
 	if dstBounds.Empty() { return }
 

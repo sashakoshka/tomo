@@ -9,7 +9,7 @@ type scratchEntry struct {
 }
 
 type container struct {
-	entity   tomo.ContainerEntity
+	entity   tomo.Entity
 	scratch  map[tomo.Element] scratchEntry
 	minimumSize func ()
 }

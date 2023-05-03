@@ -9,14 +9,14 @@ import "golang.org/x/image/font"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/canvas"
+import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
 import defaultfont "git.tebibyte.media/sashakoshka/tomo/default/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 
-//go:embed assets/wintergreen.png
+//go:embed assets/default.png
 var defaultAtlasBytes []byte
-var defaultAtlas      canvas.Canvas
-var defaultTextures   [17][9]artist.Pattern
+var defaultAtlas      artist.Canvas
+var defaultTextures   [7][7]artist.Pattern
 //go:embed assets/wintergreen-icons-small.png
 var defaultIconsSmallAtlasBytes []byte
 var defaultIconsSmall [640]binaryIcon
@@ -25,9 +25,9 @@ var defaultIconsLargeAtlasBytes []byte
 var defaultIconsLarge [640]binaryIcon
 
 func atlasCell (col, row int, border artist.Inset) {
-	bounds := image.Rect(0, 0, 16, 16).Add(image.Pt(col, row).Mul(16))
+	bounds := image.Rect(0, 0, 8, 8).Add(image.Pt(col, row).Mul(8))
 	defaultTextures[col][row] = patterns.Border {
-		Canvas: canvas.Cut(defaultAtlas, bounds),
+		Canvas: artist.Cut(defaultAtlas, bounds),
 		Inset:  border,
 	}
 }
@@ -43,7 +43,7 @@ type binaryIcon struct {
 	stride int
 }
 
-func (icon binaryIcon) Draw (destination canvas.Canvas, color color.RGBA, at image.Point) {
+func (icon binaryIcon) Draw (destination artist.Canvas, color color.RGBA, at image.Point) {
 	bounds := icon.Bounds().Add(at).Intersect(destination.Bounds())
 	point := image.Point { }
 	data, stride := destination.Buffer()
@@ -85,43 +85,15 @@ func binaryIconFrom (source image.Image, clip image.Rectangle) (icon binaryIcon)
 
 func init () {
 	defaultAtlasImage, _, _ := image.Decode(bytes.NewReader(defaultAtlasBytes))
-	defaultAtlas = canvas.FromImage(defaultAtlasImage)
+	defaultAtlas = artist.FromImage(defaultAtlasImage)
 
-	// PatternDead
-	atlasCol(0, artist.Inset { })
-	// PatternRaised
-	atlasCol(1, artist.Inset { 6, 6, 6, 6 })
-	// PatternSunken
-	atlasCol(2, artist.Inset { 4, 4, 4, 4 })
-	// PatternPinboard
-	atlasCol(3, artist.Inset { 2, 2, 2, 2 })
-	// PatternButton
-	atlasCol(4, artist.Inset { 6, 6, 6, 6 })
-	// PatternInput
-	atlasCol(5, artist.Inset { 4, 4, 4, 4 })
-	// PatternGutter
-	atlasCol(6, artist.Inset { 7, 7, 7, 7 })
-	// PatternHandle
-	atlasCol(7, artist.Inset { 3, 3, 3, 3 })
-	// PatternLine
-	atlasCol(8, artist.Inset { 1, 1, 1, 1 })
-	// PatternMercury
-	atlasCol(13, artist.Inset { 2, 2, 2, 2 })
-	// PatternTableHead:
-	atlasCol(14, artist.Inset { 4, 4, 4, 4 })
-	// PatternTableCell:
-	atlasCol(15, artist.Inset { 4, 4, 4, 4 })
-	// PatternLamp:
-	atlasCol(16, artist.Inset { 4, 3, 4, 3 })
-
-	// PatternButton: basic.checkbox
-	atlasCol(9, artist.Inset { 3, 3, 3, 3 })
-	// PatternRaised: basic.listEntry
-	atlasCol(10, artist.Inset { 3, 3, 3, 3 })
-	// PatternRaised: fun.flatKey
-	atlasCol(11, artist.Inset { 3, 3, 5, 3 })
-	// PatternRaised: fun.sharpKey
-	atlasCol(12, artist.Inset { 3, 3, 4, 3 })
+	atlasCol(0, artist.I(0))
+	atlasCol(1, artist.I(3))
+	atlasCol(2, artist.I(1))
+	atlasCol(3, artist.I(1))
+	atlasCol(4, artist.I(1))
+	atlasCol(5, artist.I(3))
+	atlasCol(6, artist.I(1))
 
 	// set up small icons
 	defaultIconsSmallAtlasImage, _, _ := image.Decode (
@@ -217,33 +189,23 @@ func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.P
 	case tomo.PatternRaised:     return defaultTextures[1][offset]
 	case tomo.PatternSunken:     return defaultTextures[2][offset]
 	case tomo.PatternPinboard:   return defaultTextures[3][offset]
-	case tomo.PatternButton:
-		switch {
-		case c.Match("tomo", "checkbox", ""):  
-			return defaultTextures[9][offset]
-		case c.Match("tomo", "piano", "flatKey"):
-			return defaultTextures[11][offset]
-		case c.Match("tomo", "piano", "sharpKey"):
-			return defaultTextures[12][offset]
-		default:
-			return defaultTextures[4][offset]
-		}
-	case tomo.PatternInput:     return defaultTextures[5][offset]
-	case tomo.PatternGutter:    return defaultTextures[6][offset]
-	case tomo.PatternHandle:    return defaultTextures[7][offset]
-	case tomo.PatternLine:      return defaultTextures[8][offset]
-	case tomo.PatternMercury:   return defaultTextures[13][offset]
-	case tomo.PatternTableHead: return defaultTextures[14][offset]
-	case tomo.PatternTableCell: return defaultTextures[15][offset]
-	case tomo.PatternLamp:      return defaultTextures[16][offset]
-	default:                    return patterns.Uhex(0xFF00FFFF)
+	case tomo.PatternButton:     return defaultTextures[1][offset]
+	case tomo.PatternInput:      return defaultTextures[2][offset]
+	case tomo.PatternGutter:     return defaultTextures[2][offset]
+	case tomo.PatternHandle:     return defaultTextures[3][offset]
+	case tomo.PatternLine:       return defaultTextures[0][offset]
+	case tomo.PatternMercury:    return defaultTextures[4][offset]
+	case tomo.PatternTableHead:  return defaultTextures[5][offset]
+	case tomo.PatternTableCell:  return defaultTextures[5][offset]
+	case tomo.PatternLamp:       return defaultTextures[6][offset]
+	default:                     return patterns.Uhex(0xFF00FFFF)
 	}
 }
 
 func (Default) Color (id tomo.Color, state tomo.State, c tomo.Case) color.RGBA {
-	if state.Disabled { return artist.Hex(0x444444FF) }
+	if state.Disabled { return artutil.Hex(0x444444FF) }
 	
-	return artist.Hex (map[tomo.Color] uint32 {
+	return artutil.Hex (map[tomo.Color] uint32 {
 		tomo.ColorBlack:        0x272d24FF,
 		tomo.ColorRed:          0x8c4230FF,
 		tomo.ColorGreen:        0x69905fFF,
@@ -262,56 +224,26 @@ func (Default) Color (id tomo.Color, state tomo.State, c tomo.Case) color.RGBA {
 		tomo.ColorBrightWhite:  0xcfd7d2FF,
 	
 		tomo.ColorForeground: 0x000000FF,
-		tomo.ColorMidground:  0x97A09BFF,
+		tomo.ColorMidground:  0x656565FF,
 		tomo.ColorBackground: 0xAAAAAAFF,
-		tomo.ColorShadow:     0x445754FF,
-		tomo.ColorShine:      0xCFD7D2FF,
-		tomo.ColorAccent:     0x408090FF,
+		tomo.ColorShadow:     0x000000FF,
+		tomo.ColorShine:      0xFFFFFFFF,
+		tomo.ColorAccent:     0xff3300FF,
 	} [id])
 }
 
 // Padding returns the default padding value for the given pattern.
 func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
 	switch id {
-	case tomo.PatternSunken:
-		if c.Match("tomo", "progressBar", "") {
-			return artist.I(2, 1, 1, 2)
-		} else if c.Match("tomo", "list", "") {
-			return artist.I(2)
-		} else if  c.Match("tomo", "flowList", "") {
-			return artist.I(2)
-		} else {
-			return artist.I(8)
-		}
-	case tomo.PatternPinboard:
-		if c.Match("tomo", "piano", "") {
-			return artist.I(2)
-		} else {
-			return artist.I(8)
-		}
-	case tomo.PatternTableCell:  return artist.I(5)
-	case tomo.PatternTableHead:  return artist.I(5)
-	case tomo.PatternGutter:     return artist.I(0)
-	case tomo.PatternLine:       return artist.I(1)
-	case tomo.PatternMercury:    return artist.I(5)
-	case tomo.PatternLamp:       return artist.I(5, 5, 5, 6)
-	default:                     return artist.I(8)
+	case tomo.PatternGutter: return artist.I(0)
+	case tomo.PatternLine:   return artist.I(1)
+	default:                 return artist.I(6)
 	}
 }
 
 // Margin returns the default margin value for the given pattern.
 func (Default) Margin (id tomo.Pattern, c tomo.Case) image.Point {
-	switch id {
-	case tomo.PatternSunken:
-		if c.Match("tomo", "list", "") {
-			return image.Pt(-1, -1)
-		} else if c.Match("tomo", "flowList", "") {
-			return image.Pt(-1, -1)
-		} else {
-			return image.Pt(8, 8)
-		}
-	default: return image.Pt(8, 8)
-	}
+	return image.Pt(6, 6)
 }
 
 // Hints returns rendering optimization hints for a particular pattern.

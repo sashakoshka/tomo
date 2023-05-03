@@ -1,17 +1,19 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
-	tomo.Run(run)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, err := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
-	if err != nil { panic(err.Error()) }
+type Application struct { }
+
+func (Application) Init () error {
+	window, err := nasin.NewWindow(tomo.Bounds(0, 0, 0, 0))
+	if err != nil { return err }
 	window.SetTitle("Dialog Boxes")
 
 	container := elements.NewVBox(elements.SpaceBoth)
@@ -76,9 +78,10 @@ func run () {
 	container.Adopt(menuButton)
 
 	cancelButton := elements.NewButton("No thank you.")
-	cancelButton.OnClick(tomo.Stop)
+	cancelButton.OnClick(nasin.Stop)
 	container.Adopt(cancelButton)
 		
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
+	return nil
 }
