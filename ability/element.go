@@ -1,3 +1,4 @@
+// Package ability defines extended interfaces that elements can support.
 package ability
 
 import "image"
