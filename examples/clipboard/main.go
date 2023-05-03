@@ -17,7 +17,6 @@ var validImageTypes = []data.Mime {
 	data.M("image", "jpeg"),
 }
 
-
 func main () {
 	nasin.Run(Application { })
 }

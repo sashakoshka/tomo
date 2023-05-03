@@ -6,22 +6,25 @@ import "bytes"
 import _ "image/png"
 import "github.com/jezek/xgbutil/gopher"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 func main () {
-	tomo.Run(run)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
+type Application struct { }
+
+func (Application) Init () error {
+	window, _ := nasin.NewWindow(tomo.Bounds(0, 0, 0, 0))
 	window.SetTitle("Tomo Logo")
 
 	file, err := os.Open("assets/banner.png")
-	if err != nil { fatalError(window, err); return }
+	if err != nil { return err }
 	logo, _, err := image.Decode(file)
 	file.Close()
-	if err != nil { fatalError(window, err); return }
+	if err != nil { return err }
 
 	container := elements.NewVBox(elements.SpaceBoth)
 	logoImage := elements.NewImage(logo)
@@ -41,8 +44,9 @@ func run () {
 
 	button.Focus()
 	
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
+	return nil
 }
 
 func fatalError (window tomo.Window, err error) {
@@ -53,7 +57,7 @@ func fatalError (window tomo.Window, err error) {
 		err.Error(),
 		popups.Button {
 			Name: "OK",
-			OnPress: tomo.Stop,
+			OnPress: nasin.Stop,
 		})
 } 
 
