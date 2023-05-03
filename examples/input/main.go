@@ -6,11 +6,14 @@ import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 func main () {
-	tomo.Run(run)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
+type Application struct { }
+
+func (Application) Init () error {
+	window, err := nasin.NewWindow(tomo.Bounds(0, 0, 0, 0))
+	if err != nil { return err }
 	window.SetTitle("Enter Details")
 	container := elements.NewVBox(elements.SpaceBoth)
 	window.Adopt(container)
@@ -59,6 +62,7 @@ func run () {
 		elements.NewLabel("Purpose:"),
 		purpose,
 		elements.NewLine(), button)
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
+	return nil
 }

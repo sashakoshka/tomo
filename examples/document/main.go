@@ -4,21 +4,25 @@ import "os"
 import "image"
 import _ "image/png"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 func main () {
-	tomo.Run(run)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 383, 360))
+type Application struct { }
+
+func (Application) Init () error {
+	window, err := nasin.NewWindow(tomo.Bounds(0, 0, 383, 360))
+	if err != nil { return err }
 	window.SetTitle("Document Container")
 	
 	file, err := os.Open("assets/banner.png")
-	if err != nil { panic(err.Error()); return  }
+	if err != nil { return err }
 	logo, _, err := image.Decode(file)
 	file.Close()
-	if err != nil { panic(err.Error()); return  }
+	if err != nil { return err }
 
 	document := elements.NewDocument()
 	document.Adopt (
@@ -55,6 +59,7 @@ func run () {
 	}
 
 	window.Adopt(elements.NewScroll(elements.ScrollVertical, document))
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
+	return nil
 }

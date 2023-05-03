@@ -1,14 +1,18 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 func main () {
-	tomo.Run(run)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 0, 0))
+type Application struct { }
+
+func (Application) Init () error {
+	window, err := nasin.NewWindow(tomo.Bounds(0, 0, 0, 0))
+	if err != nil { return err }
 	window.SetTitle("Spaced Out")
 
 	container := elements.NewVBox (
@@ -20,6 +24,7 @@ func run () {
 	container.Adopt(elements.NewLabel("This is at the bottom"))
 	
 	window.Adopt(container)
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
+	return nil
 }

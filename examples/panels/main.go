@@ -3,14 +3,18 @@ package main
 import "fmt"
 import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 
 func main () {
-	tomo.Run(run)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(200, 200, 256, 256))
+type Application struct { }
+
+func (Application) Init () error {
+	window, err := nasin.NewWindow(tomo.Bounds(200, 200, 256, 256))
+	if err != nil { return err }
 	window.SetTitle("Main")
 
 	container := elements.NewVBox (
@@ -18,13 +22,14 @@ func run () {
 		elements.NewLabel("Main window"))
 	window.Adopt(container)
 		
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
 
 	createPanel(window, 0, tomo.Bounds(-64, 20,  0, 0))
 	createPanel(window, 1, tomo.Bounds(200, 20,  0, 0))
 	createPanel(window, 2, tomo.Bounds(-64, 180, 0, 0))
 	createPanel(window, 3, tomo.Bounds(200, 180, 0, 0))
+	return nil
 }
 
 func createPanel (parent tomo.MainWindow, id int, bounds image.Rectangle) {

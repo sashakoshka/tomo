@@ -92,7 +92,7 @@ func init () {
 	atlasCol(2, artist.I(1))
 	atlasCol(3, artist.I(1))
 	atlasCol(4, artist.I(1))
-	atlasCol(5, artist.I(2))
+	atlasCol(5, artist.I(3))
 	atlasCol(6, artist.I(1))
 
 	// set up small icons
@@ -236,6 +236,7 @@ func (Default) Color (id tomo.Color, state tomo.State, c tomo.Case) color.RGBA {
 func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
 	switch id {
 	case tomo.PatternGutter: return artist.I(0)
+	case tomo.PatternLine:   return artist.I(1)
 	default:                 return artist.I(6)
 	}
 }
