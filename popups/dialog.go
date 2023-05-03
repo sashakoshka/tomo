@@ -37,7 +37,7 @@ func NewDialog (
 	window tomo.Window,
 ) {
 	if parent == nil {
-		window, _ = tomo.NewWindow(image.Rectangle { })
+		window, _ = tomo.GetBackend().NewWindow(image.Rectangle { })
 	} else {
 		window, _ = parent.NewModal(image.Rectangle { })
 	}
