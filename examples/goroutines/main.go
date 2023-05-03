@@ -1,19 +1,20 @@
 package main
 
-import "os"
 import "time"
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
-	tomo.Run(run)
-	os.Exit(0)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 200, 216))
+type Application struct { }
+
+func (Application) Init () error {
+	window, err := nasin.NewWindow(tomo.Bounds(0, 0, 200, 216))
+	if err != nil { return err }
 	window.SetTitle("Clock")
 	window.SetApplicationName("TomoClock")
 	container := elements.NewVBox(elements.SpaceBoth)
@@ -24,9 +25,10 @@ func run () {
 	container.AdoptExpand(clock)
 	container.Adopt(label)
 	
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
 	go tick(label, clock)
+	return nil
 }
 
 func formatTime () (timeString string) {
@@ -35,7 +37,7 @@ func formatTime () (timeString string) {
 
 func tick (label *elements.Label, clock *fun.AnalogClock) {
 	for {
-		tomo.Do (func () {
+		nasin.Do (func () {
 			label.SetText(formatTime())
 			clock.SetTime(time.Now())
 		})
