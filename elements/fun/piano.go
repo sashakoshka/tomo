@@ -1,11 +1,11 @@
 package fun
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
-import "git.tebibyte.media/sashakoshka/tomo/elements/fun/music"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
+import "tomo/artist/artutil"
+import "tomo/elements/fun/music"
 
 var pianoCase = tomo.C("tomo", "piano")
 var flatCase  = tomo.C("tomo", "piano", "flatKey")

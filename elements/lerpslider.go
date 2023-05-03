@@ -1,6 +1,6 @@
 package elements
 
-import "git.tebibyte.media/sashakoshka/tomo"
+import "tomo"
 
 // Numeric is a type constraint representing a number.
 type Numeric interface {

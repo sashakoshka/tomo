@@ -4,8 +4,8 @@ package artutil
 
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/shatter"
+import "tomo/artist"
+import "tomo/shatter"
 
 // Fill fills the destination canvas with the given pattern.
 func Fill (destination artist.Canvas, source artist.Pattern) (updated image.Rectangle) {

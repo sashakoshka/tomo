@@ -2,9 +2,9 @@ package patterns
 
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
-import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
+import "tomo/artist"
+import "tomo/artist/shapes"
+import "tomo/artist/artutil"
 
 // Uniform is a pattern that draws a solid color.
 type Uniform color.RGBA

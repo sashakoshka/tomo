@@ -1,8 +1,8 @@
 package main
 
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/nasin"
-import "git.tebibyte.media/sashakoshka/tomo/elements/testing"
+import "tomo"
+import "tomo/nasin"
+import "tomo/elements/testing"
 import "git.tebibyte.media/sashakoshka/ezprof/ez"
 
 func main () {

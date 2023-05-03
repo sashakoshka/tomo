@@ -1,6 +1,6 @@
 package tomo
 
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo/artist"
 
 // Element represents a basic on-screen object. Extended element interfaces are
 // defined in the ability module.

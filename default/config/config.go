@@ -1,7 +1,7 @@
 package config
 
 import "time"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "tomo"
 
 // Default specifies default configuration values.
 type Default struct { }

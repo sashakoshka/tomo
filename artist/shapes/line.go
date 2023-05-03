@@ -2,7 +2,7 @@ package shapes
 
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo/artist"
 
 // ColorLine draws a line from one point to another with the specified weight
 // and color.

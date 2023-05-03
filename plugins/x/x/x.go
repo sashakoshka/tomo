@@ -1,8 +1,8 @@
 package x
 
-import "git.tebibyte.media/sashakoshka/tomo"
-import defaultTheme  "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import defaultConfig "git.tebibyte.media/sashakoshka/tomo/default/config"
+import "tomo"
+import defaultTheme  "tomo/default/theme"
+import defaultConfig "tomo/default/config"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"

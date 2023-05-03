@@ -3,7 +3,7 @@ package x
 import "unicode"
 import "github.com/jezek/xgb/xproto"
 import "github.com/jezek/xgbutil/keybind"
-import "git.tebibyte.media/sashakoshka/tomo/input"
+import "tomo/input"
 
 // when making changes to this file, look at keysymdef.h and
 // https://tronche.com/gui/x/xlib/input/keyboard-encoding.html

@@ -3,7 +3,7 @@ package shapes
 import "math"
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo/artist"
 
 // TODO: redo fill ellipse, stroke ellipse, etc. so that it only takes in
 // destination and source, using the bounds of destination as the bounds of the

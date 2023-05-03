@@ -1,8 +1,8 @@
 // Plugin x provides the X11 backend as a plugin.
 package main
 
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/plugins/x/x"
+import "tomo"
+import "tomo/plugins/x/x"
 
 func Expects () tomo.Version {
 	return tomo.Version { 0, 0, 0 }

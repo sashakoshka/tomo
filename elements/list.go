@@ -1,11 +1,11 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
-import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
+import "tomo/ability"
+import "tomo/artist/artutil"
 
 type list struct {
 	container

@@ -1,9 +1,9 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
 
 // Slider is a slider control with a floating point value between zero and one.
 type Slider struct {

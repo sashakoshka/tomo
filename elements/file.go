@@ -3,9 +3,9 @@ package elements
 import "time"
 import "io/fs"
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
 
 var fileCase = tomo.C("files", "file")
 

@@ -1,9 +1,9 @@
 package x
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
+import "tomo"
+import "tomo/artist"
+import "tomo/ability"
 
 type entity struct {
 	backend     *backend

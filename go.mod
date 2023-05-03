@@ -1,4 +1,4 @@
-module git.tebibyte.media/sashakoshka/tomo
+module tomo
 
 go 1.19
 

@@ -11,9 +11,9 @@ import "github.com/jezek/xgbutil/xwindow"
 import "github.com/jezek/xgbutil/keybind"
 import "github.com/jezek/xgbutil/mousebind"
 import "github.com/jezek/xgbutil/xgraphics"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/data"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo"
+import "tomo/data"
+import "tomo/artist"
 
 type mainWindow struct { *window }
 type menuWindow struct { *window }

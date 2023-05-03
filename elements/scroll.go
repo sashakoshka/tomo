@@ -1,10 +1,10 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
+import "tomo/ability"
 
 var scrollCase = tomo.C("tomo", "scroll")
 

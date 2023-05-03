@@ -1,7 +1,7 @@
 package patterns
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo/artist"
 
 // Border is a pattern that behaves similarly to border-image in CSS. It divides
 // a source canvas into nine sections...

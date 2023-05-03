@@ -5,11 +5,11 @@ import "image"
 import _ "image/png"
 import _ "image/gif"
 import _ "image/jpeg"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/data"
-import "git.tebibyte.media/sashakoshka/tomo/nasin"
-import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
+import "tomo"
+import "tomo/data"
+import "tomo/nasin"
+import "tomo/popups"
+import "tomo/elements"
 
 var validImageTypes = []data.Mime {
 	data.M("image", "png"),

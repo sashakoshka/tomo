@@ -1,10 +1,10 @@
 package main
 
 import "time"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/nasin"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
-import "git.tebibyte.media/sashakoshka/tomo/elements/fun"
+import "tomo"
+import "tomo/nasin"
+import "tomo/elements"
+import "tomo/elements/fun"
 
 func main () {
 	nasin.Run(Application { })

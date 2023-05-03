@@ -2,11 +2,11 @@ package elements
 
 import "image"
 import "path/filepath"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
-import "git.tebibyte.media/sashakoshka/tomo/shatter"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
+import "tomo/ability"
+import "tomo/shatter"
 
 // TODO: base on flow implementation of list. also be able to switch to a table
 // variant for a more information dense view.

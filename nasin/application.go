@@ -2,7 +2,7 @@ package nasin
 
 import "image"
 import "errors"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "tomo"
 
 // Application represents a Tomo/Nasin application.
 type Application interface {

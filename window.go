@@ -1,7 +1,7 @@
 package tomo
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/data"
+import "tomo/data"
 
 // TODO: add support for the icon window because imagine if we allowed
 // applications to display live updating information readouts on their icons.

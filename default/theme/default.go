@@ -7,11 +7,11 @@ import _ "image/png"
 import "image/color"
 import "golang.org/x/image/font"
 import "golang.org/x/image/font/basicfont"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/data"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
-import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
+import "tomo"
+import "tomo/data"
+import "tomo/artist"
+import "tomo/artist/artutil"
+import "tomo/artist/patterns"
 
 //go:embed assets/default.png
 var defaultAtlasBytes []byte

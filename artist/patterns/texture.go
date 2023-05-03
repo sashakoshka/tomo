@@ -1,7 +1,7 @@
 package patterns
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo/artist"
 
 // Texture is a pattern that tiles the content of a canvas both horizontally and
 // vertically.

@@ -2,8 +2,8 @@ package shapes
 
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/shatter"
+import "tomo/artist"
+import "tomo/shatter"
 
 // TODO: return updatedRegion for all routines in this package
 

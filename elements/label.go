@@ -2,11 +2,11 @@ package elements
 
 import "image"
 import "golang.org/x/image/math/fixed"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/data"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/textdraw"
+import "tomo"
+import "tomo/data"
+import "tomo/input"
+import "tomo/artist"
+import "tomo/textdraw"
 
 var labelCase = tomo.C("tomo", "label")
 

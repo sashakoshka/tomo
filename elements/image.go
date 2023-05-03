@@ -1,9 +1,9 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
+import "tomo"
+import "tomo/artist"
+import "tomo/artist/patterns"
 
 // TODO: this element is lame need to make it better
 

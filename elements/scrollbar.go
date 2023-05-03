@@ -1,9 +1,9 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
 
 // ScrollBar is an element similar to Slider, but it has special behavior that
 // makes it well suited for controlling the viewport position on one axis of a

@@ -1,8 +1,8 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo"
+import "tomo/artist"
 
 var progressBarCase = tomo.C("tomo", "progressBar")
 

@@ -2,9 +2,9 @@
 package ability
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
 
 // Layoutable represents an element that needs to perform layout calculations
 // before it can draw itself.

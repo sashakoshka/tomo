@@ -1,10 +1,10 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
-import "git.tebibyte.media/sashakoshka/tomo/shatter"
+import "tomo"
+import "tomo/artist"
+import "tomo/ability"
+import "tomo/shatter"
 
 var documentCase = tomo.C("tomo", "document")
 

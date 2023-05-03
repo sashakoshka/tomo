@@ -3,8 +3,8 @@ package tomo
 import "image"
 import "image/color"
 import "golang.org/x/image/font"
-import "git.tebibyte.media/sashakoshka/tomo/data"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo/data"
+import "tomo/artist"
 
 // Color lits a number of cannonical colors, each with its own ID.
 type Color int; const (

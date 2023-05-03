@@ -1,8 +1,8 @@
 package x
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
+import "tomo/artist"
+import "tomo/ability"
 
 type entitySet map[*entity] struct { }
 

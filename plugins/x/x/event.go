@@ -1,9 +1,9 @@
 package x
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
+import "tomo"
+import "tomo/input"
+import "tomo/ability"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"

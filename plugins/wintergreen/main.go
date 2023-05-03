@@ -1,8 +1,8 @@
 // Plugin wintergreen provides a calm, bluish green theme.
 package main
 
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/plugins/wintergreen/wintergreen"
+import "tomo"
+import "tomo/plugins/wintergreen/wintergreen"
 
 func Expects () tomo.Version {
 	return tomo.Version { 0, 0, 0 }

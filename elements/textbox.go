@@ -3,14 +3,14 @@ package elements
 import "io"
 import "time"
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/data"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/textdraw"
-import "git.tebibyte.media/sashakoshka/tomo/textmanip"
-import "git.tebibyte.media/sashakoshka/tomo/fixedutil"
-import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
+import "tomo"
+import "tomo/data"
+import "tomo/input"
+import "tomo/artist"
+import "tomo/textdraw"
+import "tomo/textmanip"
+import "tomo/fixedutil"
+import "tomo/artist/shapes"
 
 var textBoxCase = tomo.C("tomo", "textBox")
 

@@ -6,7 +6,7 @@ import "os"
 // the generic extract function we have here for extra type safety goodness.
 import "plugin"
 import "path/filepath"
-import "git.tebibyte.media/sashakoshka/tomo"
+import "tomo"
 
 type backendFactory  func () (tomo.Backend, error)
 var factories []backendFactory

@@ -1,9 +1,9 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/shatter"
+import "tomo"
+import "tomo/artist"
+import "tomo/shatter"
 
 var boxCase = tomo.C("tomo", "box") 
 

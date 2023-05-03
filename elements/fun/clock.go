@@ -4,9 +4,9 @@ import "time"
 import "math"
 import "image"
 import "image/color"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
+import "tomo"
+import "tomo/artist"
+import "tomo/artist/shapes"
 
 var clockCase = tomo.C("tomo", "clock")
 

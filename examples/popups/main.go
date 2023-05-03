@@ -1,9 +1,9 @@
 package main
 
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/nasin"
-import "git.tebibyte.media/sashakoshka/tomo/popups"
-import "git.tebibyte.media/sashakoshka/tomo/elements"
+import "tomo"
+import "tomo/nasin"
+import "tomo/popups"
+import "tomo/elements"
 
 func main () {
 	nasin.Run(Application { })

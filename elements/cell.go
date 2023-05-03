@@ -1,8 +1,8 @@
 package elements
 
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
+import "tomo"
+import "tomo/artist"
+import "tomo/artist/artutil"
 
 var cellCase = tomo.C("tomo", "cell")
 

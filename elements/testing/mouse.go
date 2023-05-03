@@ -1,11 +1,11 @@
 package testing
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/artist/shapes"
-import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
+import "tomo/artist/shapes"
+import "tomo/artist/artutil"
 
 var mouseCase = tomo.C("tomo", "mouse")
 

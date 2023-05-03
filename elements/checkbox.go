@@ -1,10 +1,10 @@
 package elements
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/input"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/textdraw"
+import "tomo"
+import "tomo/input"
+import "tomo/artist"
+import "tomo/textdraw"
 
 var checkboxCase = tomo.C("tomo", "checkbox")
 

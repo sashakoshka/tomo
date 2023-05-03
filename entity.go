@@ -1,7 +1,7 @@
 package tomo
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo/artist"
 
 // Entity is a handle given to elements by the backend. Extended entity
 // interfaces are defined in the ability module.

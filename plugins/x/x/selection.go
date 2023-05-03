@@ -7,7 +7,7 @@ import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
 import "github.com/jezek/xgbutil/xprop"
 import "github.com/jezek/xgbutil/xevent"
-import "git.tebibyte.media/sashakoshka/tomo/data"
+import "tomo/data"
 
 const clipboardName = "CLIPBOARD"
 

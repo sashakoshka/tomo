@@ -1,7 +1,7 @@
 package elements
 
-import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/artist"
+import "tomo"
+import "tomo/artist"
 
 var spacerCase = tomo.C("tomo", "spacer")
 
