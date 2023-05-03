@@ -3,7 +3,6 @@ package main
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/popups"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
 	tomo.Run(run)

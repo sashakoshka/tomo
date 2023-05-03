@@ -4,7 +4,6 @@ import "os"
 import "path/filepath"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
 	tomo.Run(run)

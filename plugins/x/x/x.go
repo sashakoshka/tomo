@@ -42,6 +42,9 @@ func NewBackend () (output tomo.Backend, err error) {
 		doChannel: make(chan func (), 32),
 		open:      true,
 	}
+
+	backend.SetTheme(nil)
+	backend.SetConfig(nil)
 	
 	// connect to X
 	backend.connection, err = xgbutil.NewConn()
@@ -115,7 +118,6 @@ func (backend *backend) SetConfig (config tomo.Config) {
 	} else {
 		backend.config = config
 	}
-	backend.config = config
 	for _, window := range backend.windows {
 		window.handleConfigChange()
 	}
