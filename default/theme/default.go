@@ -6,11 +6,11 @@ import _ "embed"
 import _ "image/png"
 import "image/color"
 import "golang.org/x/image/font"
+import "golang.org/x/image/font/basicfont"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/data"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
-import defaultfont "git.tebibyte.media/sashakoshka/tomo/default/font"
 import "git.tebibyte.media/sashakoshka/tomo/artist/patterns"
 
 //go:embed assets/default.png
@@ -135,16 +135,7 @@ type Default struct { }
 
 // FontFace returns the default font face.
 func (Default) FontFace (style tomo.FontStyle, size tomo.FontSize, c tomo.Case) font.Face {
-	switch style {
-	case tomo.FontStyleBold:
-		return defaultfont.FaceBold
-	case tomo.FontStyleItalic:
-		return defaultfont.FaceItalic
-	case tomo.FontStyleBoldItalic:
-		return defaultfont.FaceBoldItalic
-	default:
-		return defaultfont.FaceRegular
-	}
+	return basicfont.Face7x13
 }
 
 // Icon returns an icon from the default set corresponding to the given name.
