@@ -1,7 +1,6 @@
 package elements
 
 import "git.tebibyte.media/sashakoshka/tomo"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
 
 type scratchEntry struct {
 	expand     bool

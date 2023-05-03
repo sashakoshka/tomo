@@ -7,6 +7,8 @@ import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/ability"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 
+var comboBoxCase = tomo.C("tomo", "comboBox")
+
 // Option specifies a ComboBox option. A blank option will display as "(None)".
 type Option string
 
@@ -36,11 +38,11 @@ type ComboBox struct {
 func NewComboBox (options ...Option) (element *ComboBox) {
 	if len(options) == 0 { options = []Option { "" } }
 	element = &ComboBox { enabled: true, options: options }
-	element.entity = tomo.NewEntity(element).(tomo.FocusableEntity)
-	element.theme.Case = tomo.C("tomo", "comboBox")
-	element.drawer.SetFace (element.theme.FontFace (
+	element.entity = tomo.GetBackend().NewEntity(element)
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
+		tomo.FontSizeNormal,
+		comboBoxCase))
 	element.Select(options[0])
 	return
 }
@@ -54,14 +56,14 @@ func (element *ComboBox) Entity () tomo.Entity {
 func (element *ComboBox) Draw (destination artist.Canvas) {
 	state   := element.state()
 	bounds  := element.entity.Bounds()
-	pattern := element.theme.Pattern(tomo.PatternButton, state)
+	pattern := element.entity.Theme().Pattern(tomo.PatternButton, state, comboBoxCase)
 
 	pattern.Draw(destination, bounds)
 	
-	foreground := element.theme.Color(tomo.ColorForeground, state)
-	sink       := element.theme.Sink(tomo.PatternButton)
-	margin     := element.theme.Margin(tomo.PatternButton)
-	padding    := element.theme.Padding(tomo.PatternButton)
+	foreground := element.entity.Theme().Color(tomo.ColorForeground, state, comboBoxCase)
+	sink       := element.entity.Theme().Sink(tomo.PatternButton, comboBoxCase)
+	margin     := element.entity.Theme().Margin(tomo.PatternButton, comboBoxCase)
+	padding    := element.entity.Theme().Padding(tomo.PatternButton, comboBoxCase)
 	
 	offset := image.Pt(0, bounds.Dy() / 2).Add(bounds.Min)
 
@@ -70,7 +72,7 @@ func (element *ComboBox) Draw (destination artist.Canvas) {
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	icon := element.theme.Icon(tomo.IconExpand, tomo.IconSizeSmall) 
+	icon := element.entity.Theme().Icon(tomo.IconExpand, tomo.IconSizeSmall, comboBoxCase) 
 	if icon != nil {
 		iconBounds := icon.Bounds()
 		addedWidth := iconBounds.Dx() + margin.X
@@ -138,21 +140,11 @@ func (element *ComboBox) SetEnabled (enabled bool) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *ComboBox) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.drawer.SetFace (element.theme.FontFace (
+func (element *ComboBox) HandleThemeChange () {
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *ComboBox) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+		tomo.FontSizeNormal,
+		comboBoxCase))
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -224,7 +216,7 @@ func (element *ComboBox) dropDown () {
 	menu, err := window.NewMenu(element.entity.Bounds())
 	if err != nil { return }
 
-	cellToOption := make(map[tomo.Selectable] Option)
+	cellToOption := make(map[ability.Selectable] Option)
 
 	list := NewList()
 	for _, option := range element.options {
@@ -250,13 +242,13 @@ func (element *ComboBox) dropDown () {
 }
 
 func (element *ComboBox) updateMinimumSize () {
-	padding := element.theme.Padding(tomo.PatternButton)
-	margin  := element.theme.Margin(tomo.PatternButton)
+	padding := element.entity.Theme().Padding(tomo.PatternButton, comboBoxCase)
+	margin  := element.entity.Theme().Margin(tomo.PatternButton, comboBoxCase)
 
 	textBounds  := element.drawer.LayoutBounds()
 	minimumSize := textBounds.Sub(textBounds.Min)
 	
-	icon := element.theme.Icon(tomo.IconExpand, tomo.IconSizeSmall) 
+	icon := element.entity.Theme().Icon(tomo.IconExpand, tomo.IconSizeSmall, comboBoxCase) 
 	if icon != nil {
 		bounds := icon.Bounds()
 		minimumSize.Max.X += bounds.Dx()

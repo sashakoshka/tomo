@@ -1,16 +1,19 @@
 package main
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import "git.tebibyte.media/sashakoshka/tomo/nasin"
 import "git.tebibyte.media/sashakoshka/tomo/elements"
 import "git.tebibyte.media/sashakoshka/tomo/elements/testing"
-import _ "git.tebibyte.media/sashakoshka/tomo/backends/all"
 
 func main () {
-	tomo.Run(run)
+	nasin.Run(Application { })
 }
 
-func run () {
-	window, _ := tomo.NewWindow(tomo.Bounds(0, 0, 128, 128))
+type Application struct { }
+
+func (Application) Init () error {
+	window, err := nasin.NewWindow(tomo.Bounds(0, 0, 128, 128))
+	if err != nil { return err }
 	window.SetTitle("vertical stack")
 
 	container := elements.NewVBox(elements.SpaceBoth)
@@ -25,13 +28,15 @@ func run () {
 		container.Adopt(okButton)
 		okButton.Focus()
 	})
-	okButton.OnClick(tomo.Stop)
+	okButton.OnClick(nasin.Stop)
 
 	container.AdoptExpand(label)
 	container.Adopt(button, okButton)
 	window.Adopt(container)
 	
 	okButton.Focus()
-	window.OnClose(tomo.Stop)
+	window.OnClose(nasin.Stop)
 	window.Show()
+	
+	return nil
 }

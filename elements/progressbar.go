@@ -4,6 +4,8 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 
+var progressBarCase = tomo.C("tomo", "progressBar")
+
 // ProgressBar displays a visual indication of how far along a task is.
 type ProgressBar struct {
 	entity tomo.Entity
@@ -16,8 +18,7 @@ func NewProgressBar (progress float64) (element *ProgressBar) {
 	if progress < 0 { progress = 0 }
 	if progress > 1 { progress = 1 }
 	element = &ProgressBar { progress: progress }
-	element.entity = tomo.NewEntity(element)
-	element.theme.Case = tomo.C("tomo", "progressBar")
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.updateMinimumSize()
 	return
 }
@@ -31,15 +32,15 @@ func (element *ProgressBar) Entity () tomo.Entity {
 func (element *ProgressBar) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
 
-	pattern := element.theme.Pattern(tomo.PatternSunken, tomo.State { })
-	padding := element.theme.Padding(tomo.PatternSunken)
+	pattern := element.entity.Theme().Pattern(tomo.PatternSunken, tomo.State { }, progressBarCase)
+	padding := element.entity.Theme().Padding(tomo.PatternSunken, progressBarCase)
 	pattern.Draw(destination, bounds)
 	bounds = padding.Apply(bounds)
 	meterBounds := image.Rect (
 		bounds.Min.X, bounds.Min.Y,
 		bounds.Min.X + int(float64(bounds.Dx()) * element.progress),
 		bounds.Max.Y)
-	mercury := element.theme.Pattern(tomo.PatternMercury, tomo.State { })
+	mercury := element.entity.Theme().Pattern(tomo.PatternMercury, tomo.State { }, progressBarCase)
 	mercury.Draw(destination, meterBounds)
 }
 
@@ -52,17 +53,14 @@ func (element *ProgressBar) SetProgress (progress float64) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *ProgressBar) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
+func (element *ProgressBar) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
 
 func (element *ProgressBar) updateMinimumSize() {
-	padding      := element.theme.Padding(tomo.PatternSunken)
-	innerPadding := element.theme.Padding(tomo.PatternMercury)
+	padding      := element.entity.Theme().Padding(tomo.PatternSunken, progressBarCase)
+	innerPadding := element.entity.Theme().Padding(tomo.PatternMercury, progressBarCase)
 	element.entity.SetMinimumSize (
 		padding.Horizontal() + innerPadding.Horizontal(),
 		padding.Vertical()   + innerPadding.Vertical())

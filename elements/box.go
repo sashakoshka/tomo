@@ -4,7 +4,6 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
 
 var boxCase = tomo.C("tomo", "box") 
 

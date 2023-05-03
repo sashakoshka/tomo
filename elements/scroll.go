@@ -6,6 +6,8 @@ import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/ability"
 
+var scrollCase = tomo.C("tomo", "scroll")
+
 // ScrollMode specifies which sides of a Scroll have scroll bars.
 type ScrollMode int; const (
 	ScrollNeither    ScrollMode = 0
@@ -33,8 +35,7 @@ type Scroll struct {
 // NewScroll creates a new scroll element.
 func NewScroll (mode ScrollMode, child ability.Scrollable) (element *Scroll) {
 	element = &Scroll { }
-	element.theme.Case = tomo.C("tomo", "scroll")
-	element.entity = tomo.NewEntity(element).(scrollEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 
 	if mode.Includes(ScrollHorizontal) {
 		element.horizontal = NewHScrollBar()
@@ -82,8 +83,8 @@ func (element *Scroll) Draw (destination artist.Canvas) {
 			bounds.Max.X - element.vertical.Entity().Bounds().Dx(),
 			bounds.Max.Y - element.horizontal.Entity().Bounds().Dy())
 		state := tomo.State { }
-		deadArea := element.theme.Pattern(tomo.PatternDead, state)
-		deadArea.Draw(canvas.Cut(destination, bounds), bounds)
+		deadArea := element.entity.Theme().Pattern(tomo.PatternDead, state, scrollCase)
+		deadArea.Draw(artist.Cut(destination, bounds), bounds)
 	}
 }
 
@@ -185,18 +186,10 @@ func (element *Scroll) HandleScroll (
 	element.scrollChildBy(int(deltaX), int(deltaY))
 }
 
-// SetTheme sets the element's theme.
-func (element *Scroll) SetTheme (theme tomo.Theme) {
-	if theme == element.theme.Theme { return }
-	element.theme.Theme = theme
+func (element *Scroll) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
-}
-
-// SetConfig sets the element's configuration.
-func (element *Scroll) SetConfig (config tomo.Config) {
-	element.config.Config = config
 }
 
 func (element *Scroll) updateMinimumSize () {

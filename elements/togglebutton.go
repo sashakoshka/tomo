@@ -6,6 +6,8 @@ import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 
+var toggleButtonCase = tomo.C("tomo", "toggleButton")
+
 // ToggleButton is a togglable button.
 type ToggleButton struct {
 	entity tomo.Entity
@@ -30,11 +32,11 @@ func NewToggleButton (text string, on bool) (element *ToggleButton) {
 		enabled:  true,
 		on:       on,
 	}
-	element.entity = tomo.NewEntity(element)
-	element.theme.Case = tomo.C("tomo", "toggleButton")
-	element.drawer.SetFace (element.theme.FontFace (
+	element.entity = tomo.GetBackend().NewEntity(element)
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
+		tomo.FontSizeNormal,
+		toggleButtonCase))
 	element.SetText(text)
 	return
 }
@@ -48,10 +50,10 @@ func (element *ToggleButton) Entity () tomo.Entity {
 func (element *ToggleButton) Draw (destination artist.Canvas) {
 	state   := element.state()
 	bounds  := element.entity.Bounds()
-	pattern := element.theme.Pattern(tomo.PatternButton, state)
+	pattern := element.entity.Theme().Pattern(tomo.PatternButton, state, toggleButtonCase)
 	
-	lampPattern := element.theme.Pattern(tomo.PatternLamp, state)
-	lampPadding := element.theme.Padding(tomo.PatternLamp).Horizontal()
+	lampPattern := element.entity.Theme().Pattern(tomo.PatternLamp, state, toggleButtonCase)
+	lampPadding := element.entity.Theme().Padding(tomo.PatternLamp, toggleButtonCase).Horizontal()
 	lampBounds  := bounds
 	lampBounds.Max.X = lampBounds.Min.X + lampPadding
 	bounds.Min.X += lampPadding
@@ -59,9 +61,9 @@ func (element *ToggleButton) Draw (destination artist.Canvas) {
 	pattern.Draw(destination, bounds)
 	lampPattern.Draw(destination, lampBounds)
 	
-	foreground := element.theme.Color(tomo.ColorForeground, state)
-	sink       := element.theme.Sink(tomo.PatternButton)
-	margin     := element.theme.Margin(tomo.PatternButton)
+	foreground := element.entity.Theme().Color(tomo.ColorForeground, state, toggleButtonCase)
+	sink       := element.entity.Theme().Sink(tomo.PatternButton, toggleButtonCase)
+	margin     := element.entity.Theme().Margin(tomo.PatternButton, toggleButtonCase)
 	
 	offset := image.Pt (
 		bounds.Dx() / 2,
@@ -76,7 +78,7 @@ func (element *ToggleButton) Draw (destination artist.Canvas) {
 	}
 
 	if element.hasIcon {
-		icon := element.theme.Icon(element.iconId, tomo.IconSizeSmall) 
+		icon := element.entity.Theme().Icon(element.iconId, tomo.IconSizeSmall, toggleButtonCase) 
 		if icon != nil {
 			iconBounds := icon.Bounds()
 			addedWidth := iconBounds.Dx()
@@ -166,21 +168,10 @@ func (element *ToggleButton) ShowText (showText bool) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *ToggleButton) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.drawer.SetFace (element.theme.FontFace (
+func (element *ToggleButton) HandleThemeChange () {
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *ToggleButton) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+		tomo.FontSizeNormal, toggleButtonCase))
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -239,15 +230,15 @@ func (element *ToggleButton) HandleKeyUp(key input.Key, modifiers input.Modifier
 }
 
 func (element *ToggleButton) updateMinimumSize () {
-	padding     := element.theme.Padding(tomo.PatternButton)
-	margin      := element.theme.Margin(tomo.PatternButton)
-	lampPadding := element.theme.Padding(tomo.PatternLamp)
+	padding     := element.entity.Theme().Padding(tomo.PatternButton, toggleButtonCase)
+	margin      := element.entity.Theme().Margin(tomo.PatternButton, toggleButtonCase)
+	lampPadding := element.entity.Theme().Padding(tomo.PatternLamp, toggleButtonCase)
 
 	textBounds  := element.drawer.LayoutBounds()
 	minimumSize := textBounds.Sub(textBounds.Min)
 	
 	if element.hasIcon {
-		icon := element.theme.Icon(element.iconId, tomo.IconSizeSmall) 
+		icon := element.entity.Theme().Icon(element.iconId, tomo.IconSizeSmall, toggleButtonCase) 
 		if icon != nil {
 			bounds := icon.Bounds()
 			if element.showText {

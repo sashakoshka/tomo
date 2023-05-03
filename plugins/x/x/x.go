@@ -1,6 +1,8 @@
 package x
 
 import "git.tebibyte.media/sashakoshka/tomo"
+import defaultTheme  "git.tebibyte.media/sashakoshka/tomo/default/theme"
+import defaultConfig "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 import "github.com/jezek/xgbutil"
 import "github.com/jezek/xgb/xproto"
@@ -96,17 +98,26 @@ func (backend *backend) Do (callback func ()) {
 
 func (backend *backend) SetTheme (theme tomo.Theme) {
 	backend.assert()
-	backend.theme = theme
+	if theme == nil {
+		backend.theme = defaultTheme.Default { }
+	} else {
+		backend.theme = theme
+	}
 	for _, window := range backend.windows {
-		window.setTheme(theme)
+		window.handleThemeChange()
 	}
 }
 
 func (backend *backend) SetConfig (config tomo.Config) {
 	backend.assert()
+	if config == nil {
+		backend.config = defaultConfig.Default { }
+	} else {
+		backend.config = config
+	}
 	backend.config = config
 	for _, window := range backend.windows {
-		window.setConfig(config)
+		window.handleConfigChange()
 	}
 } 
 

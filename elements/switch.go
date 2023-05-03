@@ -6,6 +6,8 @@ import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/textdraw"
 
+var switchCase = tomo.C("tomo", "switch")
+
 // Switch is a toggle-able on/off switch with an optional label. It is
 // functionally identical to Checkbox, but plays a different semantic role.
 type Switch struct {
@@ -27,11 +29,10 @@ func NewSwitch (text string, on bool) (element *Switch) {
 		text:    text,
 		enabled: true,
 	}
-	element.entity = tomo.NewEntity(element).(checkboxEntity)
-	element.theme.Case = tomo.C("tomo", "switch")
-	element.drawer.SetFace (element.theme.FontFace (
+	element.entity = tomo.GetBackend().NewEntity(element)
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
+		tomo.FontSizeNormal, switchCase))
 	element.drawer.SetText([]rune(text))
 	element.updateMinimumSize()
 	return
@@ -71,24 +72,24 @@ func (element *Switch) Draw (destination artist.Canvas) {
 		}
 	}
 
-	gutterPattern := element.theme.Pattern (
-		tomo.PatternGutter, state)
+	gutterPattern := element.entity.Theme().Pattern (
+		tomo.PatternGutter, state, switchCase)
 	gutterPattern.Draw(destination, gutterBounds)
 	
-	handlePattern := element.theme.Pattern (
-		tomo.PatternHandle, state)
+	handlePattern := element.entity.Theme().Pattern (
+		tomo.PatternHandle, state, switchCase)
 	handlePattern.Draw(destination, handleBounds)
 
 	textBounds := element.drawer.LayoutBounds()
 	offset := bounds.Min.Add(image.Point {
 		X: bounds.Dy() * 2 +
-			element.theme.Margin(tomo.PatternBackground).X,
+			element.entity.Theme().Margin(tomo.PatternBackground, switchCase).X,
 	})
 
 	offset.Y -= textBounds.Min.Y
 	offset.X -= textBounds.Min.X
 
-	foreground := element.theme.Color(tomo.ColorForeground, state)
+	foreground := element.entity.Theme().Color(tomo.ColorForeground, state, switchCase)
 	element.drawer.Draw(destination, foreground, offset)
 }
 
@@ -181,21 +182,10 @@ func (element *Switch) SetText (text string) {
 	element.entity.Invalidate()
 }
 
-// SetTheme sets the element's theme.
-func (element *Switch) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.drawer.SetFace (element.theme.FontFace (
+func (element *Switch) HandleThemeChange () {
+	element.drawer.SetFace (element.entity.Theme().FontFace (
 		tomo.FontStyleRegular,
-		tomo.FontSizeNormal))
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *Switch) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+		tomo.FontSizeNormal, switchCase))
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
@@ -209,7 +199,7 @@ func (element *Switch) updateMinimumSize () {
 	} else {
 		element.entity.SetMinimumSize (
 			lineHeight * 2 +
-			element.theme.Margin(tomo.PatternBackground).X +
+			element.entity.Theme().Margin(tomo.PatternBackground, switchCase).X +
 			textBounds.Dx(),
 			lineHeight)
 	}

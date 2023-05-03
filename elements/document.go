@@ -6,6 +6,8 @@ import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/ability"
 import "git.tebibyte.media/sashakoshka/tomo/shatter"
 
+var documentCase = tomo.C("tomo", "document")
+
 // Document is a scrollable container capcable of laying out flexible child
 // elements. Children can be added either inline (similar to an HTML/CSS inline
 // element), or expanding (similar to an HTML/CSS block element).
@@ -22,8 +24,7 @@ type Document struct {
 // NewDocument creates a new document container.
 func NewDocument (children ...tomo.Element) (element *Document) {
 	element = &Document { }
-	element.theme.Case = tomo.C("tomo", "document")
-	element.entity = tomo.NewEntity(element)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.container.entity = element.entity
 	element.minimumSize = element.updateMinimumSize
 	element.init()
@@ -40,7 +41,7 @@ func (element *Document) Draw (destination artist.Canvas) {
 
 	tiles := shatter.Shatter(element.entity.Bounds(), rocks...)
 	for _, tile := range tiles {
-		element.entity.DrawBackground(canvas.Cut(destination, tile))
+		element.entity.DrawBackground(artist.Cut(destination, tile))
 	}
 }
 
@@ -50,8 +51,8 @@ func (element *Document) Layout () {
 		element.scroll.Y = element.maxScrollHeight()
 	}
 	
-	margin := element.theme.Margin(tomo.PatternBackground)
-	padding := element.theme.Padding(tomo.PatternBackground)
+	margin := element.entity.Theme().Margin(tomo.PatternBackground, documentCase)
+	padding := element.entity.Theme().Padding(tomo.PatternBackground, documentCase)
 	bounds := padding.Apply(element.entity.Bounds())
 	element.contentBounds = image.Rectangle { }
 
@@ -82,7 +83,7 @@ func (element *Document) Layout () {
 		if width < bounds.Dx() && entry.expand {
 			width = bounds.Dx()
 		}
-		if typedChild, ok := child.(tomo.Flexible); ok {
+		if typedChild, ok := child.(ability.Flexible); ok {
 			height = typedChild.FlexibleHeightFor(width)
 		}
 		if rowHeight < height {
@@ -135,10 +136,7 @@ func (element *Document) DrawBackground (destination artist.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 
-// SetTheme sets the element's theme.
-func (element *Document) SetTheme (theme tomo.Theme) {
-	if theme == element.theme.Theme { return }
-	element.theme.Theme = theme
+func (element *Document) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 	element.entity.InvalidateLayout()
@@ -152,7 +150,7 @@ func (element *Document) ScrollContentBounds () image.Rectangle {
 // ScrollViewportBounds returns the size and position of the element's
 // viewport relative to ScrollBounds.
 func (element *Document) ScrollViewportBounds () image.Rectangle {
-	padding := element.theme.Padding(tomo.PatternBackground)
+	padding := element.entity.Theme().Padding(tomo.PatternBackground, documentCase)
 	bounds  := padding.Apply(element.entity.Bounds())
 	bounds   = bounds.Sub(bounds.Min).Add(element.scroll)
 	return bounds
@@ -185,7 +183,7 @@ func (element *Document) ScrollAxes () (horizontal, vertical bool) {
 }
 
 func (element *Document) maxScrollHeight () (height int) {
-	padding := element.theme.Padding(tomo.PatternSunken)
+	padding := element.entity.Theme().Padding(tomo.PatternBackground, documentCase)
 	viewportHeight := element.entity.Bounds().Dy() - padding.Vertical()
 	height = element.contentBounds.Dy() - viewportHeight
 	if height < 0 { height = 0 }
@@ -193,7 +191,7 @@ func (element *Document) maxScrollHeight () (height int) {
 }
 
 func (element *Document) updateMinimumSize () {
-	padding := element.theme.Padding(tomo.PatternBackground)
+	padding := element.entity.Theme().Padding(tomo.PatternBackground, documentCase)
 	minimumWidth := 0
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		width, height := element.entity.ChildMinimumSize(index)

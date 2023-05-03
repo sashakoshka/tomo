@@ -2,8 +2,9 @@ package elements
 
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
+import "git.tebibyte.media/sashakoshka/tomo/artist/artutil"
 
+var cellCase = tomo.C("tomo", "cell")
 
 // Cell is a single-element container that satisfies tomo.Selectable. It
 // provides styling based on whether or not it is selected.
@@ -20,8 +21,7 @@ type Cell struct {
 // method.
 func NewCell (child tomo.Element) (element *Cell) {
 	element = &Cell { enabled: true }
-	element.theme.Case = tomo.C("tomo", "cell")
-	element.entity = tomo.NewEntity(element).(cellEntity)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.Adopt(child)
 	return
 }
@@ -34,11 +34,11 @@ func (element *Cell) Entity () tomo.Entity {
 // Draw causes the element to draw to the specified destination canvas.
 func (element *Cell) Draw (destination artist.Canvas) {
 	bounds  := element.entity.Bounds()
-	pattern := element.theme.Pattern(tomo.PatternTableCell, element.state())
+	pattern := element.entity.Theme().Pattern(tomo.PatternTableCell, element.state(), cellCase)
 	if element.child == nil {
 		pattern.Draw(destination, bounds)
 	} else {
-		artist.DrawShatter (
+		artutil.DrawShatter (
 			destination, pattern, bounds,
 			element.child.Entity().Bounds())
 	}
@@ -49,7 +49,7 @@ func (element *Cell) Layout () {
 	if element.child == nil { return }
 	
 	bounds := element.entity.Bounds()
-	bounds = element.theme.Padding(tomo.PatternTableCell).Apply(bounds)
+	bounds = element.entity.Theme().Padding(tomo.PatternTableCell, cellCase).Apply(bounds)
 
 	element.entity.PlaceChild(0, bounds)
 }
@@ -57,7 +57,7 @@ func (element *Cell) Layout () {
 // DrawBackground draws this element's background pattern to the specified
 // destination canvas.
 func (element *Cell) DrawBackground (destination artist.Canvas) {
-	element.theme.Pattern(tomo.PatternTableCell, element.state()).
+	element.entity.Theme().Pattern(tomo.PatternTableCell, element.state(), cellCase).
 		Draw(destination, element.entity.Bounds())
 }
 
@@ -96,16 +96,6 @@ func (element *Cell) SetEnabled (enabled bool) {
 	element.invalidateChild()
 }
 
-// SetTheme sets this element's theme.
-func (element *Cell) SetTheme (theme tomo.Theme) {
-	if theme == element.theme.Theme { return }
-	element.theme.Theme = theme
-	element.updateMinimumSize()
-	element.entity.Invalidate()
-	element.invalidateChild()
-	element.entity.InvalidateLayout()
-}
-
 // OnSelectionChange sets a function to be called when this element is selected
 // or unselected.
 func (element *Cell) OnSelectionChange (callback func ()) {
@@ -114,6 +104,13 @@ func (element *Cell) OnSelectionChange (callback func ()) {
 
 func (element *Cell) Selected () bool {
 	return element.entity.Selected()
+}
+
+func (element *Cell) HandleThemeChange () {
+	element.updateMinimumSize()
+	element.entity.Invalidate()
+	element.invalidateChild()
+	element.entity.InvalidateLayout()
 }
 
 func (element *Cell) HandleSelectionChange () {
@@ -145,7 +142,7 @@ func (element *Cell) updateMinimumSize () {
 		width  += childWidth
 		height += childHeight
 	}
-	padding := element.theme.Padding(tomo.PatternTableCell)
+	padding := element.entity.Theme().Padding(tomo.PatternTableCell, cellCase)
 	width  += padding.Horizontal()
 	height += padding.Vertical()
 	

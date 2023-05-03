@@ -4,7 +4,6 @@ import "image"
 import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/input"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
-import "git.tebibyte.media/sashakoshka/tomo/ability"
 
 // Slider is a slider control with a floating point value between zero and one.
 type Slider struct {
@@ -22,12 +21,16 @@ func NewVSlider (value float64) (element *Slider) {
 func NewHSlider (value float64) (element *Slider) {
 	element = &Slider { }
 	element.value = value
-	element.entity = tomo.NewEntity(element)
+	element.entity = tomo.GetBackend().NewEntity(element)
 	element.construct()
 	return
 }
 
 type slider struct {
+	entity tomo.Entity
+
+	c tomo.Case
+
 	value      float64
 	vertical   bool
 	dragging   bool
@@ -43,9 +46,9 @@ type slider struct {
 func (element *slider) construct () {
 	element.enabled = true
 	if element.vertical {
-		element.theme.Case = tomo.C("tomo", "sliderVertical")
+		element.c = tomo.C("tomo", "sliderVertical")
 	} else {
-		element.theme.Case = tomo.C("tomo", "sliderHorizontal")
+		element.c = tomo.C("tomo", "sliderHorizontal")
 	}
 	element.updateMinimumSize()
 }
@@ -58,7 +61,7 @@ func (element *slider) Entity () tomo.Entity {
 // Draw causes the element to draw to the specified destination canvas.
 func (element *slider) Draw (destination artist.Canvas) {
 	bounds := element.entity.Bounds()
-	element.track = element.theme.Padding(tomo.PatternGutter).Apply(bounds)
+	element.track = element.entity.Theme().Padding(tomo.PatternGutter, element.c).Apply(bounds)
 	if element.vertical {
 		barSize := element.track.Dx()
 		element.bar = image.Rect(0, 0, barSize, barSize).Add(element.track.Min)
@@ -80,8 +83,8 @@ func (element *slider) Draw (destination artist.Canvas) {
 		Focused:  element.entity.Focused(),
 		Pressed:  element.dragging,
 	}
-	element.theme.Pattern(tomo.PatternGutter, state).Draw(destination, bounds)
-	element.theme.Pattern(tomo.PatternHandle, state).Draw(destination, element.bar)
+	element.entity.Theme().Pattern(tomo.PatternGutter, state, element.c).Draw(destination, bounds)
+	element.entity.Theme().Pattern(tomo.PatternHandle, state, element.c).Draw(destination, element.bar)
 }
 
 // Focus gives this element input focus.
@@ -205,20 +208,11 @@ func (element *slider) OnRelease (callback func ()) {
 	element.onRelease = callback
 }
 
-// SetTheme sets the element's theme.
-func (element *slider) SetTheme (new tomo.Theme) {
-	if new == element.theme.Theme { return }
-	element.theme.Theme = new
-	element.entity.Invalidate()
-}
-
-// SetConfig sets the element's configuration.
-func (element *slider) SetConfig (new tomo.Config) {
-	if new == element.config.Config { return }
-	element.config.Config = new
+func (element *slider) HandleThemeChange () {
 	element.updateMinimumSize()
 	element.entity.Invalidate()
 }
+
 
 func (element *slider) changeValue (delta float64) {
 	element.value += delta
@@ -252,8 +246,8 @@ func (element *slider) valueFor (x, y int) (value float64) {
 }
 
 func (element *slider) updateMinimumSize () {
-	gutterPadding := element.theme.Padding(tomo.PatternGutter)
-	handlePadding := element.theme.Padding(tomo.PatternHandle)
+	gutterPadding := element.entity.Theme().Padding(tomo.PatternGutter, element.c)
+	handlePadding := element.entity.Theme().Padding(tomo.PatternHandle, element.c)
 	if element.vertical {
 		element.entity.SetMinimumSize (
 			gutterPadding.Horizontal() + handlePadding.Horizontal(),

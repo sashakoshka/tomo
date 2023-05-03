@@ -1,11 +1,8 @@
 package x
 
 import "image"
-import "git.tebibyte.media/sashakoshka/tomo"
 import "git.tebibyte.media/sashakoshka/tomo/artist"
 import "git.tebibyte.media/sashakoshka/tomo/ability"
-import defaultTheme  "git.tebibyte.media/sashakoshka/tomo/default/theme"
-import defaultConfig "git.tebibyte.media/sashakoshka/tomo/default/config"
 
 type entitySet map[*entity] struct { }
 
@@ -26,10 +23,7 @@ type system struct {
 	child   *entity
 	focused *entity
 	canvas  artist.BasicCanvas
-
-	theme  tomo.Theme
-	config tomo.Config
-
+	
 	invalidateIgnore bool
 	drawingInvalid   entitySet
 	anyLayoutInvalid bool
@@ -43,12 +37,7 @@ func (system *system) initialize () {
 	system.drawingInvalid = make(entitySet)
 }
 
-func (system *system) setTheme (theme tomo.Theme) {
-	if theme == nil {
-		system.theme = defaultTheme.Default { }
-	} else {
-		system.theme = theme
-	}
+func (system *system) handleThemeChange () {
 	system.propagate (func (entity *entity) bool {
 		if child, ok := system.child.element.(ability.Themeable); ok {
 			child.HandleThemeChange()
@@ -57,12 +46,7 @@ func (system *system) setTheme (theme tomo.Theme) {
 	})
 }
 
-func (system *system) setConfig (config tomo.Config) {
-	if config == nil {
-		system.config = defaultConfig.Default { }
-	} else {
-		system.config = config
-	}
+func (system *system) handleConfigChange () {
 	system.propagate (func (entity *entity) bool {
 		if child, ok := system.child.element.(ability.Configurable); ok {
 			child.HandleConfigChange()
