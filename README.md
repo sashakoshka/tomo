@@ -20,5 +20,5 @@ it. It will be placed in `~/.local/lib/nasin/plugins`.
 You can find out more about how to use Tomo and Nasin by visiting the examples
 directory, or pull up the documentation by running `godoc` within the
 repository. You can also view it on the web on
-[pkg.go.dev](https://pkg.go.dev/git.tebibyte.media/sashakoshka/tomo) (although
+[pkg.go.dev](https://pkg.go.dev/git.tebibyte.media/tomo/tomo) (although
 it may be slightly out of date).
