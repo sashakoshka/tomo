@@ -5,7 +5,7 @@ import "io/fs"
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 
 var fileCase = tomo.C("files", "file")
 
@@ -45,7 +45,7 @@ func (element *File) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *File) Draw (destination artist.Canvas) {
+func (element *File) Draw (destination art.Canvas) {
 	// background
 	state  := element.state()
 	bounds := element.entity.Bounds()
@@ -199,7 +199,7 @@ func (element *File) state () tomo.State {
 	}
 }
 
-func (element *File) icon () artist.Icon {
+func (element *File) icon () art.Icon {
 	return element.entity.Theme().Icon(element.iconID, tomo.IconSizeLarge, fileCase)
 }
 

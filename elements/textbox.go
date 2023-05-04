@@ -6,11 +6,11 @@ import "image"
 import "tomo"
 import "tomo/data"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 import "tomo/textdraw"
 import "tomo/textmanip"
 import "tomo/fixedutil"
-import "tomo/artist/shapes"
+import "art/shapes"
 
 var textBoxCase = tomo.C("tomo", "textBox")
 
@@ -60,13 +60,13 @@ func (element *TextBox) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *TextBox) Draw (destination artist.Canvas) {
+func (element *TextBox) Draw (destination art.Canvas) {
 	bounds := element.entity.Bounds()
 
 	state := element.state()
 	pattern := element.entity.Theme().Pattern(tomo.PatternInput, state, textBoxCase)
 	padding := element.entity.Theme().Padding(tomo.PatternInput, textBoxCase)
-	innerCanvas := artist.Cut(destination, padding.Apply(bounds))
+	innerCanvas := art.Cut(destination, padding.Apply(bounds))
 	pattern.Draw(destination, bounds)
 	offset := element.textOffset()
 
@@ -208,8 +208,8 @@ func (element *TextBox) textOffset () image.Point {
 	innerBounds := padding.Apply(bounds)
 	textHeight  := element.valueDrawer.LineHeight().Round()
 	return bounds.Min.Add (image.Pt (
-		padding[artist.SideLeft] - element.scroll,
-		padding[artist.SideTop] + (innerBounds.Dy() - textHeight) / 2))
+		padding[art.SideLeft] - element.scroll,
+		padding[art.SideTop] + (innerBounds.Dy() - textHeight) / 2))
 }
 
 func (element *TextBox) atPosition (position image.Point) int {

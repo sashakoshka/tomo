@@ -2,7 +2,7 @@ package elements
 
 import "image"
 import "tomo"
-import "tomo/artist"
+import "art"
 
 var iconCase = tomo.C("tomo", "icon")
 
@@ -44,7 +44,7 @@ func (element *Icon) HandleThemeChange () {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Icon) Draw (destination artist.Canvas) {
+func (element *Icon) Draw (destination art.Canvas) {
 	if element.entity == nil { return }
 	
 	bounds := element.entity.Bounds()
@@ -65,7 +65,7 @@ func (element *Icon) Draw (destination artist.Canvas) {
 	}
 }
 
-func (element *Icon) icon () artist.Icon {
+func (element *Icon) icon () art.Icon {
 	return element.entity.Theme().Icon(element.id, element.size, iconCase)
 }
 

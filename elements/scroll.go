@@ -3,7 +3,7 @@ package elements
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 import "tomo/ability"
 
 var scrollCase = tomo.C("tomo", "scroll")
@@ -76,7 +76,7 @@ func (element *Scroll) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Scroll) Draw (destination artist.Canvas) {
+func (element *Scroll) Draw (destination art.Canvas) {
 	if element.horizontal != nil && element.vertical != nil {
 		bounds := element.entity.Bounds()
 		bounds.Min = image.Pt (
@@ -84,7 +84,7 @@ func (element *Scroll) Draw (destination artist.Canvas) {
 			bounds.Max.Y - element.horizontal.Entity().Bounds().Dy())
 		state := tomo.State { }
 		deadArea := element.entity.Theme().Pattern(tomo.PatternDead, state, scrollCase)
-		deadArea.Draw(artist.Cut(destination, bounds), bounds)
+		deadArea.Draw(art.Cut(destination, bounds), bounds)
 	}
 }
 
@@ -131,7 +131,7 @@ func (element *Scroll) Layout () {
 
 // DrawBackground draws this element's background pattern to the specified
 // destination canvas.
-func (element *Scroll) DrawBackground (destination artist.Canvas) {
+func (element *Scroll) DrawBackground (destination art.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 

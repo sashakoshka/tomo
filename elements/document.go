@@ -2,9 +2,9 @@ package elements
 
 import "image"
 import "tomo"
-import "tomo/artist"
+import "art"
 import "tomo/ability"
-import "tomo/shatter"
+import "art/shatter"
 
 var documentCase = tomo.C("tomo", "document")
 
@@ -33,7 +33,7 @@ func NewDocument (children ...tomo.Element) (element *Document) {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Document) Draw (destination artist.Canvas) {
+func (element *Document) Draw (destination art.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -41,7 +41,7 @@ func (element *Document) Draw (destination artist.Canvas) {
 
 	tiles := shatter.Shatter(element.entity.Bounds(), rocks...)
 	for _, tile := range tiles {
-		element.entity.DrawBackground(artist.Cut(destination, tile))
+		element.entity.DrawBackground(art.Cut(destination, tile))
 	}
 }
 
@@ -132,7 +132,7 @@ func (element *Document) HandleChildFlexibleHeightChange (child ability.Flexible
 
 // DrawBackground draws this element's background pattern to the specified
 // destination canvas.
-func (element *Document) DrawBackground (destination artist.Canvas) {
+func (element *Document) DrawBackground (destination art.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 

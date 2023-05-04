@@ -3,9 +3,9 @@ package testing
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
-import "tomo/artist/shapes"
-import "tomo/artist/artutil"
+import "art"
+import "art/shapes"
+import "art/artutil"
 
 var mouseCase = tomo.C("tomo", "mouse")
 
@@ -29,7 +29,7 @@ func (element *Mouse) Entity () tomo.Entity {
 	return element.entity
 }
 
-func (element *Mouse) Draw (destination artist.Canvas) {
+func (element *Mouse) Draw (destination art.Canvas) {
 	bounds := element.entity.Bounds()
 	accent := element.entity.Theme().Color (
 		tomo.ColorAccent,

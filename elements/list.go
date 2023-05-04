@@ -3,9 +3,9 @@ package elements
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 import "tomo/ability"
-import "tomo/artist/artutil"
+import "art/artutil"
 
 type list struct {
 	container
@@ -61,7 +61,7 @@ func (element *list) init (children ...tomo.Element) {
 	element.Adopt(children...)
 }
 
-func (element *list) Draw (destination artist.Canvas) {
+func (element *list) Draw (destination art.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -274,7 +274,7 @@ func (element *list) HandleKeyDown (key input.Key, modifiers input.Modifiers) {
 
 func (element *list) HandleKeyUp(key input.Key, modifiers input.Modifiers) { }
 
-func (element *list) DrawBackground (destination artist.Canvas) {
+func (element *list) DrawBackground (destination art.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 

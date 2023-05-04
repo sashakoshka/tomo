@@ -3,8 +3,8 @@ package fun
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
-import "tomo/artist/artutil"
+import "art"
+import "art/artutil"
 import "tomo/elements/fun/music"
 
 var pianoCase = tomo.C("tomo", "piano")
@@ -57,7 +57,7 @@ func (element *Piano) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Piano) Draw (destination artist.Canvas) {
+func (element *Piano) Draw (destination art.Canvas) {
 	element.recalculate()
 
 	state := tomo.State {
@@ -304,7 +304,7 @@ func (element *Piano) recalculate () {
 }
 
 func (element *Piano) drawFlat (
-	destination artist.Canvas,
+	destination art.Canvas,
 	bounds image.Rectangle,
 	pressed bool,
 	state tomo.State,
@@ -315,7 +315,7 @@ func (element *Piano) drawFlat (
 }
 
 func (element *Piano) drawSharp (
-	destination artist.Canvas,
+	destination art.Canvas,
 	bounds image.Rectangle,
 	pressed bool,
 	state tomo.State,

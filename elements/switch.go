@@ -3,7 +3,7 @@ package elements
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 import "tomo/textdraw"
 
 var switchCase = tomo.C("tomo", "switch")
@@ -44,7 +44,7 @@ func (element *Switch) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Switch) Draw (destination artist.Canvas) {
+func (element *Switch) Draw (destination art.Canvas) {
 	bounds := element.entity.Bounds()
 	handleBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 	gutterBounds := image.Rect(0, 0, bounds.Dy() * 2, bounds.Dy()).Add(bounds.Min)

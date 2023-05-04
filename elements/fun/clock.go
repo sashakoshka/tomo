@@ -5,8 +5,8 @@ import "math"
 import "image"
 import "image/color"
 import "tomo"
-import "tomo/artist"
-import "tomo/artist/shapes"
+import "art"
+import "art/shapes"
 
 var clockCase = tomo.C("tomo", "clock")
 
@@ -30,7 +30,7 @@ func (element *AnalogClock) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *AnalogClock) Draw (destination artist.Canvas) {
+func (element *AnalogClock) Draw (destination art.Canvas) {
 	bounds := element.entity.Bounds()
 
 	state   := tomo.State { }
@@ -71,7 +71,7 @@ func (element *AnalogClock) HandleThemeChange () {
 }
 
 func (element *AnalogClock) radialLine (
-	destination artist.Canvas,
+	destination art.Canvas,
 	source color.RGBA,
 	inner  float64,
 	outer  float64,

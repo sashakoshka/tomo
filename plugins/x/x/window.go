@@ -13,7 +13,7 @@ import "github.com/jezek/xgbutil/mousebind"
 import "github.com/jezek/xgbutil/xgraphics"
 import "tomo"
 import "tomo/data"
-import "tomo/artist"
+import "art"
 
 type mainWindow struct { *window }
 type menuWindow struct { *window }
@@ -414,7 +414,7 @@ func (window *window) pasteAndPush (region image.Rectangle) {
 }
 
 func (window *window) paste (region image.Rectangle) {
-	canvas := artist.Cut(window.canvas, region)
+	canvas := art.Cut(window.canvas, region)
 	data, stride := canvas.Buffer()
 	bounds := canvas.Bounds().Intersect(window.xCanvas.Bounds())
 

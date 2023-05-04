@@ -9,14 +9,14 @@ import "golang.org/x/image/font"
 import "golang.org/x/image/font/basicfont"
 import "tomo"
 import "tomo/data"
-import "tomo/artist"
-import "tomo/artist/artutil"
-import "tomo/artist/patterns"
+import "art"
+import "art/artutil"
+import "art/patterns"
 
 //go:embed assets/default.png
 var defaultAtlasBytes []byte
-var defaultAtlas      artist.Canvas
-var defaultTextures   [7][7]artist.Pattern
+var defaultAtlas      art.Canvas
+var defaultTextures   [7][7]art.Pattern
 //go:embed assets/wintergreen-icons-small.png
 var defaultIconsSmallAtlasBytes []byte
 var defaultIconsSmall [640]binaryIcon
@@ -24,15 +24,15 @@ var defaultIconsSmall [640]binaryIcon
 var defaultIconsLargeAtlasBytes []byte
 var defaultIconsLarge [640]binaryIcon
 
-func atlasCell (col, row int, border artist.Inset) {
+func atlasCell (col, row int, border art.Inset) {
 	bounds := image.Rect(0, 0, 8, 8).Add(image.Pt(col, row).Mul(8))
 	defaultTextures[col][row] = patterns.Border {
-		Canvas: artist.Cut(defaultAtlas, bounds),
+		Canvas: art.Cut(defaultAtlas, bounds),
 		Inset:  border,
 	}
 }
 
-func atlasCol (col int, border artist.Inset) {
+func atlasCol (col int, border art.Inset) {
 	for index, _ := range defaultTextures[col] {
 		atlasCell(col, index, border)
 	}
@@ -43,7 +43,7 @@ type binaryIcon struct {
 	stride int
 }
 
-func (icon binaryIcon) Draw (destination artist.Canvas, color color.RGBA, at image.Point) {
+func (icon binaryIcon) Draw (destination art.Canvas, color color.RGBA, at image.Point) {
 	bounds := icon.Bounds().Add(at).Intersect(destination.Bounds())
 	point := image.Point { }
 	data, stride := destination.Buffer()
@@ -85,15 +85,15 @@ func binaryIconFrom (source image.Image, clip image.Rectangle) (icon binaryIcon)
 
 func init () {
 	defaultAtlasImage, _, _ := image.Decode(bytes.NewReader(defaultAtlasBytes))
-	defaultAtlas = artist.FromImage(defaultAtlasImage)
+	defaultAtlas = art.FromImage(defaultAtlasImage)
 
-	atlasCol(0, artist.I(0))
-	atlasCol(1, artist.I(3))
-	atlasCol(2, artist.I(1))
-	atlasCol(3, artist.I(1))
-	atlasCol(4, artist.I(1))
-	atlasCol(5, artist.I(3))
-	atlasCol(6, artist.I(1))
+	atlasCol(0, art.I(0))
+	atlasCol(1, art.I(3))
+	atlasCol(2, art.I(1))
+	atlasCol(3, art.I(1))
+	atlasCol(4, art.I(1))
+	atlasCol(5, art.I(3))
+	atlasCol(6, art.I(1))
 
 	// set up small icons
 	defaultIconsSmallAtlasImage, _, _ := image.Decode (
@@ -139,7 +139,7 @@ func (Default) FontFace (style tomo.FontStyle, size tomo.FontSize, c tomo.Case) 
 }
 
 // Icon returns an icon from the default set corresponding to the given name.
-func (Default) Icon (id tomo.Icon, size tomo.IconSize, c tomo.Case) artist.Icon {
+func (Default) Icon (id tomo.Icon, size tomo.IconSize, c tomo.Case) art.Icon {
 	if size == tomo.IconSizeLarge {
 		if id < 0 || int(id) >= len(defaultIconsLarge) {
 			return nil
@@ -157,14 +157,14 @@ func (Default) Icon (id tomo.Icon, size tomo.IconSize, c tomo.Case) artist.Icon 
 
 // MimeIcon returns an icon from the default set corresponding to the given mime.
 // type.
-func (Default) MimeIcon (data.Mime, tomo.IconSize, tomo.Case) artist.Icon {
+func (Default) MimeIcon (data.Mime, tomo.IconSize, tomo.Case) art.Icon {
 	// TODO
 	return nil
 }
 
 // Pattern returns a pattern from the default theme corresponding to the given
 // pattern ID.
-func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) artist.Pattern {
+func (Default) Pattern (id tomo.Pattern, state tomo.State, c tomo.Case) art.Pattern {
 	offset := 0; switch {
 	case state.Disabled:            offset = 1
 	case state.Pressed && state.On: offset = 4
@@ -224,11 +224,11 @@ func (Default) Color (id tomo.Color, state tomo.State, c tomo.Case) color.RGBA {
 }
 
 // Padding returns the default padding value for the given pattern.
-func (Default) Padding (id tomo.Pattern, c tomo.Case) artist.Inset {
+func (Default) Padding (id tomo.Pattern, c tomo.Case) art.Inset {
 	switch id {
-	case tomo.PatternGutter: return artist.I(0)
-	case tomo.PatternLine:   return artist.I(1)
-	default:                 return artist.I(6)
+	case tomo.PatternGutter: return art.I(0)
+	case tomo.PatternLine:   return art.I(1)
+	default:                 return art.I(6)
 	}
 }
 

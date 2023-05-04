@@ -4,9 +4,9 @@ import "image"
 import "path/filepath"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 import "tomo/ability"
-import "tomo/shatter"
+import "art/shatter"
 
 // TODO: base on flow implementation of list. also be able to switch to a table
 // variant for a more information dense view.
@@ -52,7 +52,7 @@ func NewDirectory (
 	return
 }
 
-func (element *Directory) Draw (destination artist.Canvas) {
+func (element *Directory) Draw (destination art.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -60,7 +60,7 @@ func (element *Directory) Draw (destination artist.Canvas) {
 
 	tiles := shatter.Shatter(element.entity.Bounds(), rocks...)
 	for _, tile := range tiles {
-		element.DrawBackground(artist.Cut(destination, tile))
+		element.DrawBackground(art.Cut(destination, tile))
 	}
 }
 
@@ -199,7 +199,7 @@ func (element *Directory) ScrollAxes () (horizontal, vertical bool) {
 	return false, true
 }
 
-func (element *Directory) DrawBackground (destination artist.Canvas) {
+func (element *Directory) DrawBackground (destination art.Canvas) {
 	element.entity.Theme().Pattern(tomo.PatternPinboard, tomo.State { }, directoryCase).
 		Draw(destination, element.entity.Bounds())
 }

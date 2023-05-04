@@ -1,8 +1,8 @@
 package elements
 
 import "tomo"
-import "tomo/artist"
-import "tomo/artist/artutil"
+import "art"
+import "art/artutil"
 
 var cellCase = tomo.C("tomo", "cell")
 
@@ -32,7 +32,7 @@ func (element *Cell) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Cell) Draw (destination artist.Canvas) {
+func (element *Cell) Draw (destination art.Canvas) {
 	bounds  := element.entity.Bounds()
 	pattern := element.entity.Theme().Pattern(tomo.PatternTableCell, element.state(), cellCase)
 	if element.child == nil {
@@ -56,7 +56,7 @@ func (element *Cell) Layout () {
 
 // DrawBackground draws this element's background pattern to the specified
 // destination canvas.
-func (element *Cell) DrawBackground (destination artist.Canvas) {
+func (element *Cell) DrawBackground (destination art.Canvas) {
 	element.entity.Theme().Pattern(tomo.PatternTableCell, element.state(), cellCase).
 		Draw(destination, element.entity.Bounds())
 }

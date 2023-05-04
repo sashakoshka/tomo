@@ -3,7 +3,7 @@ package elements
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 import "tomo/textdraw"
 
 var checkboxCase = tomo.C("tomo", "checkbox")
@@ -39,7 +39,7 @@ func (element *Checkbox) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Checkbox) Draw (destination artist.Canvas) {
+func (element *Checkbox) Draw (destination art.Canvas) {
 	bounds := element.entity.Bounds()
 	boxBounds := image.Rect(0, 0, bounds.Dy(), bounds.Dy()).Add(bounds.Min)
 

@@ -2,8 +2,8 @@ package elements
 
 import "image"
 import "tomo"
-import "tomo/artist"
-import "tomo/shatter"
+import "art"
+import "art/shatter"
 
 var boxCase = tomo.C("tomo", "box") 
 
@@ -61,7 +61,7 @@ func NewVBox (space Space, children ...tomo.Element) (element *Box) {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Box) Draw (destination artist.Canvas) {
+func (element *Box) Draw (destination art.Canvas) {
 	rocks := make([]image.Rectangle, element.entity.CountChildren())
 	for index := 0; index < element.entity.CountChildren(); index ++ {
 		rocks[index] = element.entity.Child(index).Entity().Bounds()
@@ -69,7 +69,7 @@ func (element *Box) Draw (destination artist.Canvas) {
 
 	tiles := shatter.Shatter(element.entity.Bounds(), rocks...)
 	for _, tile := range tiles {
-		element.entity.DrawBackground(artist.Cut(destination, tile))
+		element.entity.DrawBackground(art.Cut(destination, tile))
 	}
 }
 
@@ -126,7 +126,7 @@ func (element *Box) AdoptExpand (children ...tomo.Element) {
 
 // DrawBackground draws this element's background pattern to the specified
 // destination canvas.
-func (element *Box) DrawBackground (destination artist.Canvas) {
+func (element *Box) DrawBackground (destination art.Canvas) {
 	element.entity.DrawBackground(destination)
 }
 

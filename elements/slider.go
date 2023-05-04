@@ -3,7 +3,7 @@ package elements
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 
 // Slider is a slider control with a floating point value between zero and one.
 type Slider struct {
@@ -59,7 +59,7 @@ func (element *slider) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *slider) Draw (destination artist.Canvas) {
+func (element *slider) Draw (destination art.Canvas) {
 	bounds := element.entity.Bounds()
 	element.track = element.entity.Theme().Padding(tomo.PatternGutter, element.c).Apply(bounds)
 	if element.vertical {

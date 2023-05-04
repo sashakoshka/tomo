@@ -2,7 +2,10 @@ module tomo
 
 go 1.19
 
+replace art => git.tebibyte.media/tomo/art v1.0.0
+
 require (
+	art v1.0.0
 	git.tebibyte.media/sashakoshka/ezprof v0.0.0-20230309044548-401cba83602b
 	github.com/jezek/xgbutil v0.0.0-20230403164920-e2f86723ca07
 	golang.org/x/image v0.7.0

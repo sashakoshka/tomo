@@ -2,7 +2,7 @@ package elements
 
 import "image"
 import "tomo"
-import "tomo/artist"
+import "art"
 
 var progressBarCase = tomo.C("tomo", "progressBar")
 
@@ -29,7 +29,7 @@ func (element *ProgressBar) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *ProgressBar) Draw (destination artist.Canvas) {
+func (element *ProgressBar) Draw (destination art.Canvas) {
 	bounds := element.entity.Bounds()
 
 	pattern := element.entity.Theme().Pattern(tomo.PatternSunken, tomo.State { }, progressBarCase)

@@ -4,7 +4,7 @@ import "image"
 import "image/color"
 import "golang.org/x/image/font"
 import "tomo/data"
-import "tomo/artist"
+import "art"
 
 // Color lits a number of cannonical colors, each with its own ID.
 type Color int; const (
@@ -309,7 +309,7 @@ type Hints struct {
 	// StaticInset defines an inset rectangular area in the middle of the
 	// pattern that does not change between PatternStates. If the inset is
 	// zero on all sides, this hint does not apply.
-	StaticInset artist.Inset
+	StaticInset art.Inset
 
 	// Uniform specifies a singular color for the entire pattern. If the
 	// alpha channel is zero, this hint does not apply.
@@ -322,15 +322,15 @@ type Theme interface {
 	FontFace (FontStyle, FontSize, Case) font.Face
 
 	// Icon returns an appropriate icon given an icon name, size, and case.
-	Icon (Icon, IconSize, Case) artist.Icon
+	Icon (Icon, IconSize, Case) art.Icon
 	
 	// Icon returns an appropriate icon given a file mime type, size, and,
 	// case.
-	MimeIcon (data.Mime, IconSize, Case) artist.Icon
+	MimeIcon (data.Mime, IconSize, Case) art.Icon
 
 	// Pattern returns an appropriate pattern given a pattern name, case,
 	// and state.
-	Pattern (Pattern, State, Case) artist.Pattern
+	Pattern (Pattern, State, Case) art.Pattern
 
 	// Color returns an appropriate pattern given a color name, case, and
 	// state.
@@ -338,7 +338,7 @@ type Theme interface {
 
 	// Padding returns how much space should be between the bounds of a
 	// pattern whatever an element draws inside of it.
-	Padding (Pattern, Case) artist.Inset
+	Padding (Pattern, Case) art.Inset
 
 	// Margin returns the left/right (x) and top/bottom (y) margins that
 	// should be put between any self-contained objects drawn within this

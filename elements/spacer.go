@@ -1,7 +1,7 @@
 package elements
 
 import "tomo"
-import "tomo/artist"
+import "art"
 
 var spacerCase = tomo.C("tomo", "spacer")
 
@@ -32,7 +32,7 @@ func (element *Spacer) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Spacer) Draw (destination artist.Canvas) {
+func (element *Spacer) Draw (destination art.Canvas) {
 	bounds := element.entity.Bounds()
 
 	if element.line {

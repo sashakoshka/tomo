@@ -1,7 +1,7 @@
 package tomo
 
 import "image"
-import "tomo/artist"
+import "art"
 
 // Entity is a handle given to elements by the backend. Extended entity
 // interfaces are defined in the ability module.
@@ -33,7 +33,7 @@ type Entity interface {
 	// labels. If there is no parent element (that is, the element is
 	// directly inside of the window), the backend will draw a default
 	// background pattern.
-	DrawBackground (artist.Canvas)
+	DrawBackground (art.Canvas)
 
 	// --- Behaviors relating to parenting ---
 

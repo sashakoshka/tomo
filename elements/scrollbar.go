@@ -3,7 +3,7 @@ package elements
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 
 // ScrollBar is an element similar to Slider, but it has special behavior that
 // makes it well suited for controlling the viewport position on one axis of a
@@ -63,7 +63,7 @@ func (element *ScrollBar) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *ScrollBar) Draw (destination artist.Canvas) {
+func (element *ScrollBar) Draw (destination art.Canvas) {
 	element.recalculate()
 
 	bounds := element.entity.Bounds()

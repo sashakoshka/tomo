@@ -5,7 +5,7 @@ import "golang.org/x/image/math/fixed"
 import "tomo"
 import "tomo/data"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 import "tomo/textdraw"
 
 var labelCase = tomo.C("tomo", "label")
@@ -48,7 +48,7 @@ func (element *Label) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Label) Draw (destination artist.Canvas) {
+func (element *Label) Draw (destination art.Canvas) {
 	bounds := element.entity.Bounds()
 	
 	if element.wrap {

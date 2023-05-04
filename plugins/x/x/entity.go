@@ -2,7 +2,7 @@ package x
 
 import "image"
 import "tomo"
-import "tomo/artist"
+import "art"
 import "tomo/ability"
 
 type entity struct {
@@ -159,7 +159,7 @@ func (entity *entity) SetMinimumSize (width, height int) {
 	}
 }
 
-func (entity *entity) DrawBackground (destination artist.Canvas) {
+func (entity *entity) DrawBackground (destination art.Canvas) {
 	if entity.parent != nil {
 		entity.parent.element.(ability.Container).DrawBackground(destination)
 	} else if entity.window != nil {

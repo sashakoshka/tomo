@@ -3,7 +3,7 @@ package elements
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 import "tomo/ability"
 import "tomo/textdraw"
 
@@ -53,7 +53,7 @@ func (element *ComboBox) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *ComboBox) Draw (destination artist.Canvas) {
+func (element *ComboBox) Draw (destination art.Canvas) {
 	state   := element.state()
 	bounds  := element.entity.Bounds()
 	pattern := element.entity.Theme().Pattern(tomo.PatternButton, state, comboBoxCase)

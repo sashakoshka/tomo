@@ -3,7 +3,7 @@ package elements
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 import "tomo/textdraw"
 
 var buttonCase = tomo.C("tomo", "button")
@@ -42,7 +42,7 @@ func (element *Button) Entity () tomo.Entity {
 }
 
 // Draw causes the element to draw to the specified destination canvas.
-func (element *Button) Draw (destination artist.Canvas) {
+func (element *Button) Draw (destination art.Canvas) {
 	state   := element.state()
 	bounds  := element.entity.Bounds()
 	pattern := element.entity.Theme().Pattern(tomo.PatternButton, state, buttonCase)

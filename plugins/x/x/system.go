@@ -1,7 +1,7 @@
 package x
 
 import "image"
-import "tomo/artist"
+import "art"
 import "tomo/ability"
 
 type entitySet map[*entity] struct { }
@@ -22,7 +22,7 @@ func (set entitySet) Add (entity *entity) {
 type system struct {
 	child   *entity
 	focused *entity
-	canvas  artist.BasicCanvas
+	canvas  art.BasicCanvas
 	
 	invalidateIgnore bool
 	drawingInvalid   entitySet
@@ -167,7 +167,7 @@ func (system *system) draw () {
 
 	for entity := range system.drawingInvalid {
 		if entity.clippedBounds.Empty() { continue }
-		entity.element.Draw (artist.Cut (
+		entity.element.Draw (art.Cut (
 			system.canvas,
 			entity.clippedBounds))
 		finalBounds = finalBounds.Union(entity.clippedBounds)

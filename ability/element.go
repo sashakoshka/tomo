@@ -4,7 +4,7 @@ package ability
 import "image"
 import "tomo"
 import "tomo/input"
-import "tomo/artist"
+import "art"
 
 // Layoutable represents an element that needs to perform layout calculations
 // before it can draw itself.
@@ -24,7 +24,7 @@ type Container interface {
 	// the specified canvas. The bounds of this canvas specify the area that
 	// is actually drawn to, while the Entity bounds specify the actual area
 	// of the element.
-	DrawBackground (artist.Canvas)
+	DrawBackground (art.Canvas)
 
 	// HandleChildMinimumSizeChange is called when a child's minimum size is
 	// changed.
